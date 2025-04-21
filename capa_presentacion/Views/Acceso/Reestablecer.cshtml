@@ -1,0 +1,222 @@
+﻿﻿@{
+    Layout = null;
+}
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="@Url.Content("~/faviconUNAN.ico")" />   
+    <title>Restablecer Contraseña</title>
+
+    <style>
+        .background-overlay {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('@Url.Content("~/assets/img/Fondo-de-pantalla-web.jpg")');
+            background-size: cover;
+            background-position: center;
+            min-height: 100vh;
+        }
+
+        .login-card {
+            background: rgb(255, 255, 255);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .form-control {
+            border-radius: 25px;
+        }
+
+        .btn-custom {
+            background-color: #004a8d;
+            color: white;
+            border-radius: 25px;
+            padding: 10px 30px;
+        }
+    </style>
+    @Styles.Render("~/Content/css")
+</head>
+<body>
+    
+    <div class="background-overlay d-flex align-items-center">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="login-card p-4">
+                        <!-- Encabezado -->
+                        <div class="text-center mb-4">
+                            <h1 class="fw-bold fs-2" style="color: #555555">RESTABLECER CONTRASEÑA</h1>
+                            <p class="text-muted">Ingrese su nueva contraseña</p>
+                        </div>
+
+                        <!-- Formulario -->
+                        <form id="resetForm" method="post" action="@Url.Action("Reestablecer", "Acceso")">
+
+                            @Html.AntiForgeryToken()
+
+
+                            <div class="mb-3">
+                                <label for="passwordActual" class="form-label" style="color: #555555">Contraseña Actual</label>
+                                <div class="input-wrapper">
+                                    <input type="password" name="passwordActual" id="passwordActual" required
+                                           class="form-control">
+                                    <span class="icon">
+                                        <i class="fas fa-lock fs-5"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            @*Nueva Contraseña*@
+                            <div class="mb-3">
+                                <label for="nuevaPassword" class="form-label" style="color: #555555">Nueva Contraseña</label>
+                                <div class="input-wrapper">
+                                    <input type="password" name="nuevaPassword" id="nuevaPassword" required
+                                           class="form-control"
+                                           pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                                           title="Debe contener al menos 8 caracteres, una mayúscula, una minúscula y un número">
+                                    <span class="icon">
+                                        <i class="fas fa-lock fs-5"></i>
+                                    </span>
+                                </div>
+                                <div class="password-strength mb-2"></div>
+                                <small class="form-text text-muted">Mínimo 8 caracteres con al menos una mayúscula, minúscula y número</small>
+                            </div>
+
+                            @*Confirmar Contraseña*@
+                            <div class="mb-3">
+                                <label for="confirmarPassword" class="form-label" style="color: #555555">Confirmar Contraseña</label>
+                                <div class="input-wrapper">
+                                    <input type="password" name="confirmarPassword" id="confirmarPassword" required
+                                           class="form-control">
+                                    <span class="icon">
+                                        <i class="fas fa-lock fs-5"></i>
+                                    </span>
+                                </div>
+                            </div>
+
+                            @*Boton de subit*@
+                            <div class="d-grid gap-2 mt-5">
+                                <button type="submit" class="btn btn-primary fw-bold btnLogin"
+                                        style="background-color: #0072BB;" id="btnReset">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+                                    Actualizar Contraseña
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @Scripts.Render("~/bundles/jquery")
+    @Scripts.Render("~/bundles/bootstrap")
+    @Scripts.Render("~/bundles/complementos")
+
+    <script>
+        $(document).ready(function() {
+            // Validación de fortaleza de contraseña
+            $('#nuevaPassword').on('input', function() {
+                const password = $(this).val();
+                const strengthBar = $('.password-strength');
+
+                // Resetear barra
+                strengthBar.removeClass('strength-weak strength-medium strength-strong');
+
+                if (password.length === 0) {
+                    strengthBar.css('width', '0');
+                    return;
+                }
+
+                // Calcular fortaleza
+                let strength = 0;
+                if (password.length >= 8) strength++;
+                if (/[A-Z]/.test(password)) strength++;
+                if (/[0-9]/.test(password)) strength++;
+                if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+                // Actualizar barra
+                if (strength < 2) {
+                    strengthBar.addClass('strength-weak').css('width', '25%');
+                } else if (strength < 4) {
+                    strengthBar.addClass('strength-medium').css('width', '50%');
+                } else {
+                    strengthBar.addClass('strength-strong').css('width', '100%');
+                }
+            });
+
+            // Manejo del envío del formulario
+            $('#resetForm').on('submit', function(e) {
+                e.preventDefault();
+                const $form = $(this);
+                const $btn = $('#btnReset');
+                const $spinner = $('#spinner');
+                const $btnText = $('#btnText');
+
+                // Mostrar spinner y deshabilitar botón
+                $btn.prop('disabled', true);
+                $spinner.removeClass('d-none');
+                $btnText.text('Procesando...');
+
+                // Validaciones
+                const nuevaPassword = $('#nuevaPassword').val();
+                const confirmarPassword = $('#confirmarPassword').val();
+
+                if (nuevaPassword !== confirmarPassword) {
+                    showError('Las contraseñas no coinciden');
+                    resetButton();
+                    return;
+                }
+
+                if (!/(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}/.test(nuevaPassword)) {
+                    showError('La contraseña debe tener al menos 8 caracteres, una mayúscula, una minúscula y un número');
+                    resetButton();
+                    return;
+                }
+
+                // Enviar datos via AJAX
+                $.ajax({
+                    url: $form.attr('action'),
+                    method: 'POST',
+                    data: $form.serialize(),
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: '¡Éxito!',
+                                text: 'Contraseña actualizada correctamente',
+                                willClose: () => {
+                                    window.location.href = '@Url.Action("Index", "Home")';
+                                }
+                            });
+                        } else {
+                            showError(response.message || 'Error al actualizar la contraseña');
+                        }
+                    },
+                    error: function(xhr) {
+                        showError(xhr.responseJSON?.message || 'Error en el servidor');
+                    },
+                    complete: function() {
+                        resetButton();
+                    }
+                });
+            });
+
+            function showError(message) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: message
+                });
+            }
+
+            function resetButton() {
+                $('#btnReset').prop('disabled', false);
+                $('#spinner').addClass('d-none');
+                $('#btnText').text('Actualizar Contraseña');
+            }
+        });
+    </script>
+</body>
+</html>

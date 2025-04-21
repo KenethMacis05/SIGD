@@ -1,4 +1,8 @@
-﻿using System;
+﻿using capa_presentacion.Filters;
+using capa_presentacion.Controllers;
+using capa_negocio;
+using capa_datos;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -6,6 +10,7 @@ using System.Web.Mvc;
 
 namespace capa_presentacion.Controllers
 {
+    [VerificarSession]
     public class HomeController : Controller
     {
         public ActionResult Index()
@@ -13,18 +18,13 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        public ActionResult About()
+        public ActionResult CerrarSesion()
         {
-            ViewBag.Message = "Your application description page.";
-
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            ViewBag.Message = "Your contact page.";
-
-            return View();
+            Session["UsuarioAutenticado"] = null;
+            Session["RolUsuario"] = null;
+            Session.Clear();
+            Session.Abandon();
+            return RedirectToAction("Index", "Acceso");
         }
     }
 }

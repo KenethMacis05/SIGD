@@ -478,6 +478,7 @@
     <Content Include="webfonts\fa-brands-400.ttf" />
     <Content Include="webfonts\fa-brands-400.eot" />
     <Content Include="Views\Acceso\Index.cshtml" />
+    <Content Include="Views\Acceso\Reestablecer.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
