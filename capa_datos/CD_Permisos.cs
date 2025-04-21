@@ -9,7 +9,7 @@ using capa_entidad;
 
 namespace capa_datos
 {
-    public class CD_Permiso
+    public class CD_Permisos
     {
         public bool VerificarPermiso(int IdUsuario, string controlador, string accion)
         {

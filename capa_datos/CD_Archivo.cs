@@ -11,15 +11,15 @@ namespace capa_datos
 {
     public class CD_Archivo
     {
-        // Listar archivos
-        public List<ARCHIVO> Listar(int id_carpeta, out int resultado, out string mensaje)
-        {
-            return
-        }
+        //// Listar archivos
+        //public List<ARCHIVO> Listar(int id_carpeta, out int resultado, out string mensaje)
+        //{
+        //    return
+        //}
 
-        public bool SubirArchivo(ARCHIVO archivo, out string mensaje)
-        {
+        //public bool SubirArchivo(ARCHIVO archivo, out string mensaje)
+        //{
 
-        }
+        //}
     }
 }
