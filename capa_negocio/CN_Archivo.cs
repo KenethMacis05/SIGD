@@ -12,21 +12,21 @@ namespace capa_negocio
     {
         private CD_Archivo CD_Archivo = new CD_Archivo();
 
-        public List<ARCHIVO> ListarCarpeta(int id_carpeta, out int resultado, out string mensaje)
-        {
-            return CD_Archivo.Listar(id_carpeta, out resultado, out mensaje);
-        }
+        //public List<ARCHIVO> ListarCarpeta(int id_carpeta, out int resultado, out string mensaje)
+        //{
+        //    return CD_Archivo.Listar(id_carpeta, out resultado, out mensaje);
+        //}
 
-        public int SubirArchivo(ARCHIVO archivo, out string mensaje)
-        {
-            mensaje = string.Empty;
-            if (string.IsNullOrEmpty(archivo.nombre))
-            {
-                mensaje = "Por favor, ingrese el nombre del archivo";
-            }
+        //public int SubirArchivo(ARCHIVO archivo, out string mensaje)
+        //{
+        //    mensaje = string.Empty;
+        //    if (string.IsNullOrEmpty(archivo.nombre))
+        //    {
+        //        mensaje = "Por favor, ingrese el nombre del archivo";
+        //    }
 
-            bool resultado = CD_Archivo.SubirArchivo(archivo, out mensaje);
-            return resultado ? 1 : 0;
-        }
+        //    bool resultado = CD_Archivo.SubirArchivo(archivo, out mensaje);
+        //    return resultado ? 1 : 0;
+        //}
     }
 }

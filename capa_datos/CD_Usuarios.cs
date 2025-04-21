@@ -9,7 +9,7 @@ using capa_entidad;
 
 namespace capa_datos
 {
-    public class CD_Usuario
+    public class CD_Usuarios
     {
         //Listar usuarios
         public List<USUARIOS> Listar()
