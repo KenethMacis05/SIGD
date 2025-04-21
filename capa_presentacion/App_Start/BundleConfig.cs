@@ -13,7 +13,7 @@ namespace capa_presentacion
 
             bundles.Add(new Bundle("~/bundles/bootstrap").Include(
                       "~/Scripts/bootstrap.bundle.js",
-                      "~/Scripts/bootstrap.bundle.min.js",
+                      "~/Scripts/bootstrap.bundle.min.js",                      
                       "~/Scripts/bootstrap.js"));
 
             bundles.Add(new Bundle("~/bundles/complementos").Include(
