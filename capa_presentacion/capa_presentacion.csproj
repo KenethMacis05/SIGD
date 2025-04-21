@@ -115,6 +115,8 @@
     <Compile Include="Controllers\AccesoController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MenuController.cs" />
+    <Compile Include="Controllers\PermisosController.cs" />
+    <Compile Include="Controllers\RolController.cs" />
     <Compile Include="Filters\VerificarSession.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -480,6 +482,8 @@
     <Content Include="webfonts\fa-brands-400.eot" />
     <Content Include="Views\Acceso\Index.cshtml" />
     <Content Include="Views\Acceso\Reestablecer.cshtml" />
+    <Content Include="Views\Permisos\Index.cshtml" />
+    <Content Include="Views\Rol\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

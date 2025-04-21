@@ -54,30 +54,30 @@ namespace capa_negocio
             }
         }
 
-        //public Dictionary<int, (int Codigo, string Mensaje)> AsignarPermisos(int IdRol, List<int> IdsControladores)
-        //{
-        //    var resultados = new Dictionary<int, (int, string)>();
+        public Dictionary<int, (int Codigo, string Mensaje)> AsignarPermisos(int IdRol, List<int> IdsControladores)
+        {
+            var resultados = new Dictionary<int, (int, string)>();
 
-        //    foreach (var idControlador in IdsControladores)
-        //    {
-        //        try
-        //        {
-        //            int resultado = CD_Permisos.AsignarPermiso(IdRol, idControlador);
-        //            string mensaje = ObtenerMensajeResultado(resultado);
+            foreach (var idControlador in IdsControladores)
+            {
+                try
+                {
+                    int resultado = CD_Permisos.AsignarPermiso(IdRol, idControlador);
+                    string mensaje = ObtenerMensajeResultado(resultado);
 
-        //            // Considerar como éxito tanto los nuevos permisos como los ya existentes
-        //            bool esExitoso = resultado > 0 || resultado == -2;
+                    // Considerar como éxito tanto los nuevos permisos como los ya existentes
+                    bool esExitoso = resultado > 0 || resultado == -2;
 
-        //            resultados.Add(idControlador, (esExitoso ? 1 : -1, mensaje));
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            resultados.Add(idControlador, (-1, $"Error al asignar permiso: {ex.Message}"));
-        //        }
-        //    }
+                    resultados.Add(idControlador, (esExitoso ? 1 : -1, mensaje));
+                }
+                catch (Exception ex)
+                {
+                    resultados.Add(idControlador, (-1, $"Error al asignar permiso: {ex.Message}"));
+                }
+            }
 
-        //    return resultados;
-        //}
+            return resultados;
+        }
 
         private string ObtenerMensajeResultado(int codigo)
         {
