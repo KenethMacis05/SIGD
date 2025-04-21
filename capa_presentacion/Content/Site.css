@@ -1,4 +1,4 @@
-﻿/* Set padding to keep content from hitting the edges */
+﻿﻿ /* Set padding to keep content from hitting the edges */
 .body-content {
     margin-top: 15px;
     padding-left: 15px;
@@ -12,9 +12,321 @@
     white-space: normal;
 }
 
-/* Set width on the form input elements since they're 100% wide by default */
-input,
-select,
-textarea {
-    max-width: 280px;
+:root {
+    --colorPrimario: #02116F;
+    --colorSecundario: #0072BB;
+    --colorGris: #E6E6E6;
+}
+
+.esp-background {
+    background-color: var(--colorPrimario)
+}
+
+.esp-link {
+    color: var(--colorPrimario);
+    font-weight: 500 !important
+}
+
+@media (max-width: 768px) {
+    .img-marca, .titulo, .esp-background {
+        display: none !important;
+    }
+
+    .sb-topnav {
+        position: fixed !important;
+    }
+
+    .container-fluid {
+        margin-top: 70px
+    }
+
+    #layoutSidenav_nav {
+        margin-top: 50px
+    }
+}
+
+.esp-link:hover {
+    color: var(--colorSecundario) !important
+}
+
+.nav-link.esp-link-hover:hover {
+    background-color: var(--colorGris);
+    color: var(--colorSecundario);
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.nav-link.esp-link-hover:focus {
+    background-color: var(--colorGris);
+    color: var(--colorSecundario);
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+/* Estilos para los enlaces del submenú */
+.nav-link.esp-submenu-link {
+    color: #343A40;
+    position: relative;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+    /* Crear la línea inferior con ::after */
+    .nav-link.esp-submenu-link::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        width: 0; /* Inicialmente sin anchura */
+        height: 2px; /* Grosor de la línea */
+        background-color: var(--colorSecundario);
+        transition: width 0.3s ease; /* Animación de la anchura */
+    }
+
+    /* Animación al hacer hover */
+    .nav-link.esp-submenu-link:hover {
+        color: var(--colorSecundario);
+    }
+
+        .nav-link.esp-submenu-link:hover::after {
+            width: 100%; /* La línea se expande de izquierda a derecha */
+        }
+
+.table-cabezera {
+    background: var(--colorSecundario) !important
+}
+
+.titulo {
+    height: 100px !important;
+}
+
+.collapse {
+    max-height: 0 !important; /* Altura inicial (colapsado) */
+    overflow: hidden !important; /* Oculta el contenido que excede la altura */
+    transition: max-height 0.5s ease !important; /* Animación suave */
+}
+
+    .collapse.show {
+        max-height: 500px !important; /* Altura máxima (ajusta según tu contenido) */
+    }
+
+.sb-sidenav-collapse-arrow i {
+    transition: transform 0.3s ease !important; /* Animación para el ícono */
+}
+
+.collapsed .sb-sidenav-collapse-arrow i {
+    transform: rotate(0deg) !important; /* Flecha hacia abajo */
+}
+
+.sb-sidenav-collapse-arrow i {
+    transform: rotate(180deg) !important; /* Flecha hacia arriba */
+}
+
+/*Estilos del Login*/
+.bodyLogin {
+    background-color: #f8f9fa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    padding: 1rem;
+}
+
+.contenedorLogin {
+    background-color: #fff;
+    border-radius: 0.625rem;
+    box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+}
+
+.login-image {
+    width: 100%;
+    height: auto;
+    border-top-left-radius: 0.625rem;
+    border-bottom-left-radius: 0.625rem;
+}
+
+.cartLogin {
+    border-radius: 0.625rem;
+    box-shadow: 0 0 0.625rem rgba(0, 0, 0, 0.1);
+}
+
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f4f4f4;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+    overflow: hidden;
+    transition: border-color 0.3s ease-in-out;
+}
+
+    .input-wrapper input {
+        flex: 1;
+        border: none;
+        background: none;
+        padding: 10px;
+        font-size: 14px;
+        outline: none;
+        color: #333;
+    }
+
+    .input-wrapper .icon {
+        background-color: #0a1f5e;
+        padding: 11px 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 3px;
+        color: white;
+        cursor: pointer;
+    }
+
+    .input-wrapper:focus-within {
+        border: 1px solid #0072BB;
+        box-shadow: 0px 0px 5px rgba(0, 115, 187, 0.658);
+    }
+
+        .input-wrapper:focus-within .icon {
+            background-color: #0072BB;
+        }
+
+.toggle-password {
+    cursor: pointer;
+    color: #0072BB;
+    text-decoration: underline;
+}
+
+.btnLogin {
+    box-shadow: -3px 3px 10px rgb(128, 128, 128, 0.658);
+}
+
+    .btnLogin:hover {
+        background-color: #0283D5 !important;
+    }
+
+    .btnLogin:active {
+        background-color: #025E99 !important;
+    }
+
+@media (max-width: 768px) {
+    .separador {
+        margin: 1rem 0px !important;
+    }
+
+    .contenedorLogin {
+        padding: 3rem 1rem !important
+    }
+}
+
+.btnLoginCorreoInstitucional:hover {
+    background: #F4F4F4;
+    border-color: #0072BB !important;
+    color: #0072BB !important;
+}
+
+.custom-loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.spinner {
+    display: flex;
+    gap: 8px;
+}
+
+    .spinner .dot {
+        width: 12px;
+        height: 12px;
+        background-color: #0072BB;
+        border-radius: 50%;
+        animation: bounce 1.5s infinite ease-in-out;
+    }
+
+        .spinner .dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+
+        .spinner .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .spinner .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+@keyframes bounce {
+    0%, 80%, 100% {
+        transform: scale(0);
+        opacity: 0.3;
+    }
+
+    40% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/*Estilos de carpetas*/
+
+.file-manager-group {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 10px;
+}
+
+    .file-manager-group:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+        border-color: var(--bs-primary) !important;
+    }
+
+    .file-manager-group .card-body {
+        cursor: pointer;
+        position: relative;
+    }
+
+.file-manager-group-title {
+    transition: color 0.2s ease;
+}
+
+.file-manager-group:hover .file-manager-group-title {
+    color: var(--bs-primary) !important;
+}
+
+.file-manager-recent-file-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.file-manager-group:hover .file-manager-recent-file-actions {
+    opacity: 1;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.password-strength {
+    height: 5px;
+    margin-top: 5px;
+    transition: all 300ms ease;
+}
+
+.strength-weak {
+    background-color: #dc3545;
+    width: 25%;
+}
+
+.strength-medium {
+    background-color: #ffc107;
+    width: 50%;
+}
+
+.strength-strong {
+    background-color: #28a745;
+    width: 100%;
 }
