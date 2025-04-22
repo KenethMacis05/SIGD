@@ -732,6 +732,15 @@ BEGIN
             RETURN;
         END
 
+        -- Verificar si la carpeta padre existe (si se especifica)
+        IF @CarpetaPadre IS NOT NULL AND NOT EXISTS (
+            SELECT 1 FROM CARPETA WHERE id_carpeta = @CarpetaPadre AND estado = 1
+        )
+        BEGIN
+            SET @Mensaje = 'La carpeta padre especificada no existe o está inactiva';
+            RETURN;
+        END
+
         -- Verificar si ya existe una carpeta con ese nombre para el mismo usuario
         IF EXISTS (
             SELECT 1 
@@ -748,7 +757,7 @@ BEGIN
 
         -- Insertar la nueva carpeta
         INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre) 
-        VALUES (@Nombre, @IdUsuario, @CarpetaPadre)
+        VALUES (@Nombre, @IdUsuario, @CarpetaPadre);
 
         SET @Resultado = SCOPE_IDENTITY();
         SET @Mensaje = 'Carpeta creada exitosamente';

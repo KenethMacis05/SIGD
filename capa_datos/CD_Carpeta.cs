@@ -78,7 +78,16 @@ namespace capa_datos
                     // Agregar parámetros
                     cmd.Parameters.AddWithValue("Nombre", carpeta.nombre);
                     cmd.Parameters.AddWithValue("IdUsuario", carpeta.fk_id_usuario);
-                    cmd.Parameters.AddWithValue("CarpetaPadre", carpeta.carpeta_padre);
+                                        
+                    // Manejar CarpetaPadre como NULL si no está especificado
+                    if (carpeta.carpeta_padre.HasValue)
+                    {
+                        cmd.Parameters.AddWithValue("CarpetaPadre", carpeta.carpeta_padre.Value);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("CarpetaPadre", DBNull.Value);
+                    }
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;

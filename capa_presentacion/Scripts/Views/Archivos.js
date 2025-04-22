@@ -31,12 +31,20 @@ function GuardarCarpeta() {
     var Carpeta = {
         id_carpeta: $("#idCarpeta").val(),
         nombre: $("#nombre").val(),
+        carpeta_padre: $("#carpetaPadre").val() || null
     };
 
     if (!Carpeta.nombre) {
         Swal.fire("Campo obligatorio", "El nombre de la carpeta no puede estar vacío", "warning");
         return;
     }
+
+    // Validar que el nombre no contenga caracteres especiales
+    const regex = /^[a-zA-Z0-9_ ]*$/;
+    if (!regex.test(Carpeta.nombre)) {
+        Swal.fire("Nombre inválido", "El nombre de la carpeta no puede contener caracteres especiales", "warning");
+        return;
+    }    
 
     showLoadingAlert("Procesando", "Guardando datos la carpeta...");
 
@@ -125,6 +133,12 @@ function cargarCarpetas() {
                                         <i class="fas fa-ellipsis-v"></i>
                                     </a>
                                     <ul class="dropdown-menu dropdown-menu-end">
+                                        <li>
+                                            <a class="dropdown-item btn-crearSubCarpeta" href="#"
+                                            data-carpetaPadre-id="${carpeta.id_carpeta}" 
+                                            data-carpeta-nombre="${carpeta.nombre}">
+                                            <i class="fas fa-plus me-2"></i>Crear carpeta</a>
+                                        </li>
                                         <li>
                                             <a class="dropdown-item btn-subirArchivo" href="#"
                                             data-carpeta-id="${carpeta.id_carpeta}" 
@@ -260,7 +274,49 @@ $(document).ready(function () {
 });
 
 
+$(document).on('click', '.btn-crearSubCarpeta', function (e) {
+    e.preventDefault();
 
+    const idCarpetaPadre = $(this).data('carpetapadre-id');
+    $('#idCarpetaPadre').val(idCarpetaPadre);
+    $('#createSubCarpeta').modal('show');
+});
+
+function GuardarSubCarpeta() {
+    const SubCarpeta = {
+        nombre: $('#subcarpetanombre').val(),
+        carpeta_padre: $('#idCarpetaPadre').val()
+    };
+
+    if (!SubCarpeta.nombre) {
+        Swal.fire("Campo obligatorio", "El nombre de la subcarpeta no puede estar vacío", "warning");
+        return;
+    }
+
+    showLoadingAlert("Procesando", "Guardando subcarpeta...");
+
+    jQuery.ajax({
+        url: guardarSubCarpetaUrl, // Usa la misma URL para guardar carpetas
+        type: "POST",
+        data: JSON.stringify(SubCarpeta),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            Swal.close();
+            $('#createSubCarpeta').modal('hide');
+
+            if (data.Resultado) {
+                Swal.fire("¡Éxito!", data.Mensaje || "Subcarpeta creada correctamente", "success");
+                cargarCarpetas();
+            } else {
+                Swal.fire("Error", data.Mensaje || "No se pudo crear la subcarpeta", "error");
+            }
+        },
+        error: (xhr) => {
+            Swal.fire("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+        }
+    });
+}
 
 
 

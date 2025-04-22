@@ -45,7 +45,7 @@ namespace capa_presentacion.Controllers
             carpeta.fk_id_usuario = (int)Session["IdUsuario"];
 
             string mensaje = string.Empty;
-            int resultado = 0;
+            int resultado = 0;            
 
             if (carpeta.id_carpeta == 0)
             {
