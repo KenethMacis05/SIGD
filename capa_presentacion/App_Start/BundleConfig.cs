@@ -26,6 +26,7 @@ namespace capa_presentacion
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
+                      "~/Content/estilosLauyaut.css",
                       "~/Content/icheck-bootstrap.min.css",
                       "~/Content/icheck-bootstrap.css",
                       "~/Content/DataTables/css/jquery.dataTables.css",

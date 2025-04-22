@@ -307,6 +307,7 @@
     <Content Include="Content\DataTables\css\select.jqueryui.min.css" />
     <Content Include="Content\DataTables\css\select.semanticui.css" />
     <Content Include="Content\DataTables\css\select.semanticui.min.css" />
+    <Content Include="Content\estilosLauyaut.css" />
     <Content Include="Content\DataTables\images\details_close.png" />
     <Content Include="Content\DataTables\images\details_open.png" />
     <Content Include="Content\DataTables\images\sort_asc.png" />

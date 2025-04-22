@@ -32,14 +32,6 @@
         display: none !important;
     }
 
-    .sb-topnav {
-        position: fixed !important;
-    }
-
-    .container-fluid {
-        margin-top: 70px
-    }
-
     #layoutSidenav_nav {
         margin-top: 50px
     }
