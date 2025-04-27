@@ -27,7 +27,7 @@ namespace capa_presentacion.Controllers
 
         // Controlador para Listar carpetas recientes
         [HttpGet]
-        public JsonResult ListarCarpetas()
+        public JsonResult ListarCarpetasRecientes()
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
             int resultado;
@@ -37,20 +37,7 @@ namespace capa_presentacion.Controllers
             lst = CN_Carpeta.ListarCarpeta(usuario.id_usuario, out resultado, out mensaje);
 
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-        }
-
-        [HttpGet]
-        public JsonResult ListarArchivosRecientes()
-        {
-            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            int resultado;
-            string mensaje;
-
-            List<ARCHIVO> lst = new List<ARCHIVO>();
-            lst = CN_Archivo.ListarArchivos(usuario.id_usuario, out resultado, out mensaje);
-
-            return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-        }
+        }        
 
         // Controlador para Guardar carpetas        
         [HttpPost]
@@ -106,6 +93,27 @@ namespace capa_presentacion.Controllers
         #endregion
 
         #region Archivos      
+
+        // Controlador para listar archivos recientes
+        [HttpGet]
+        public JsonResult ListarArchivosRecientes()
+        {
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                int resultado;
+                string mensaje;                
+
+                List<ARCHIVO> lst = new List<ARCHIVO>();
+                lst = CN_Archivo.ListarArchivos(usuario.id_usuario, out resultado, out mensaje);
+
+                return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { resultado = 0, mensaje = "Error al obtener los archivos recientes: " + ex.Message, data = new List<ARCHIVO>() }, JsonRequestBehavior.AllowGet);
+            }
+        }
 
         // Controlador para Subir archivos (INCOMPLETO, EN DESAROLLO)
         [HttpPost]

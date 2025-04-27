@@ -31,10 +31,10 @@ VALUES
     ('Usuario', 'EliminarUsuario', 'Eliminar usuario', 'API'),
 
     -- ArchivoController
-    ('Archivo', 'ListarCarpetas', 'Listar carpetas por el id de usuario', 'API'),
+    ('Archivo', 'ListarCarpetasRecientes', 'Listar carpetas recientes del usuario', 'API'),
     ('Archivo', 'GuardarCarpeta', 'Guardar/Actualizar carpeta', 'API'),
     ('Archivo', 'EliminarCarpeta', 'Eliminar carpeta', 'API'),
-    ('Archivo', 'SubirArchivo', 'Subir archivo al sistema', 'API'),
+    ('Archivo', 'SubirArchivo', 'Subir archivo al sistema', 'API'),    
     ('Planificacion', 'GenerarPlan', 'Generar planificación', 'API'),
 
     -- MenuController
@@ -56,7 +56,9 @@ VALUES
     ('Permisos', 'ObtenerPermisosPorRol', 'Listar permisos por rol', 'API'),
     ('Permisos', 'ObtenerPermisosNoAsignados', 'Listar permisos no asignados', 'API'),
     ('Permisos', 'AsignarPermisos', 'Asignar permiso a un rol', 'API'),
-    ('Permisos', 'EliminarPermiso', 'Eliminar permiso de un rol', 'API')
+    ('Permisos', 'EliminarPermiso', 'Eliminar permiso de un rol', 'API'),
+
+    ('Archivo', 'ListarArchivosRecientes', 'Listar archivos recientes del usuario', 'API')
 GO
 --------------------------------------------------------------------------------------------------------------------
 

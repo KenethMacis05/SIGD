@@ -1,5 +1,4 @@
-﻿const listarCarpetasUrl = config.listarCarpetasUrl;
-const guardarCarpetaUrl = config.guardarCarpetaUrl;
+﻿const guardarCarpetaUrl = config.guardarCarpetaUrl;
 const eliminarCarpetaUrl = config.eliminarCarpetaUrl;
 const compartirCarpetaUrl = config.compartirCarpetaUrl;
 const subirArchivoUrl = config.subirArchivoUrl;
@@ -179,9 +178,6 @@ function cargarCarpetas() {
     });
 }
 
-
-
-// Función para cargar los archivos
 function cargarArchivos() {
     $.ajax({
         url: config.listarArchivosUrl,
@@ -194,52 +190,60 @@ function cargarArchivos() {
 
                 $.each(response.data, function (index, archivo) {
                     // Determinar el ícono según el tipo de archivo
-                    //let icono = '';
-                    //let color = '';
+                    let icono = '';
+                    let color = '';
 
-                    //switch (archivo.tipo.toLowerCase()) {
-                    //    case '.pdf':
-                    //        icono = 'fa-file-pdf';
-                    //        color = 'text-danger';
-                    //        break;
-                    //    case '.doc':
-                    //    case '.docx':
-                    //        icono = 'fa-file-word';
-                    //        color = 'text-primary';
-                    //        break;
-                    //    case '.xls':
-                    //    case '.xlsx':
-                    //        icono = 'fa-file-excel';
-                    //        color = 'text-success';
-                    //        break;
-                    //    case '.png':
-                    //    case '.jpg':
-                    //    case '.jpeg':
-                    //    case '.gif':
-                    //        icono = 'fa-file-image';
-                    //        color = 'text-warning';
-                    //        break;
-                    //    case '.zip':
-                    //    case '.rar':
-                    //        icono = 'fa-file-archive';
-                    //        color = 'text-secondary';
-                    //        break;
-                    //    case '.txt':
-                    //        icono = 'fa-file-alt';
-                    //        color = 'text-info';
-                    //        break;
-                    //    default:
-                    //        icono = 'fa-file';
-                    //        color = 'text-muted';
-                    //        break;
-                    //}
+                    switch (archivo.tipo.toLowerCase()) {
+                        case '.pdf':
+                            icono = 'fa-file-pdf';
+                            color = 'text-danger';
+                            break;
+                        case '.doc':
+                        case '.docx':
+                            icono = 'fa-file-word';
+                            color = 'text-primary';
+                            break;
+                        case '.xls':
+                        case '.xlsx':
+                            icono = 'fa-file-excel';
+                            color = 'text-success';
+                            break;
+                        case '.png':
+                        case '.jpg':
+                        case '.jpeg':
+                        case '.gif':
+                            icono = 'fa-file-image';
+                            color = 'text-warning';
+                            break;
+                        case '.zip':
+                        case '.rar':
+                            icono = 'fa-file-archive';
+                            color = 'text-secondary';
+                            break;
+                        case '.txt':
+                            icono = 'fa-file-alt';
+                            color = 'text-info';
+                            break;
+                        case '.mp3':
+                            icono = 'fa-file-audio';
+                            color = 'text-success';
+                            break;
+                        case '.mp4':
+                            icono = 'fa-file-video';
+                            color = 'text-danger';
+                            break;
+                        default:
+                            icono = 'fa-file';
+                            color = 'text-muted';
+                            break;
+                    }
 
                     html += `
                     <div class="col-sm-12 col-md-12 col-lg-6">
                         <div class="card file-manager-recent-item h-100 shadow-sm">
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-3">
-                                    /*<i class="fas ${icono} fa-lg ${color}"></i>*/
+                                    <i class="fas ${icono} fa-lg ${color} fa-2x"></i>
                                     <div class="flex-fill">
                                         <a href="#" class="file-manager-recent-item-title text-decoration-none text-truncate d-block">${archivo.nombre}</a>
                                         <small class="text-muted">${archivo.size}kb • ${formatASPNetDate(archivo.fecha_subida)}</small>
@@ -279,6 +283,15 @@ $(document).on('mouseenter', '.file-manager-group', function () {
 }).on('mouseleave', '.file-manager-group', function () {
     $(this).find('.fa-folder-open').addClass('d-none');
     $(this).find('.fa-folder').removeClass('d-none');
+});
+
+// Efectos hover para archivos
+$(document).on('mouseenter', '.file-manager-recent-item', function () {
+    $(this).find('.fa-file').addClass('d-none');
+    $(this).find('.fa-file-alt').removeClass('d-none'); // Cambia al ícono alternativo (hover)
+}).on('mouseleave', '.file-manager-recent-item', function () {
+    $(this).find('.fa-file-alt').addClass('d-none');
+    $(this).find('.fa-file').removeClass('d-none'); // Vuelve al ícono original
 });
 
 // Inicialización

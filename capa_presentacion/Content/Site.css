@@ -302,6 +302,45 @@
     display: none;
 }
 
+/* Estilos de archivos */
+.file-manager-recent-item {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 10px;
+}
+
+    .file-manager-recent-item:hover {
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+        border-color: var(--bs-success) !important;
+    }
+
+    .file-manager-recent-item .card-body {
+        cursor: pointer;
+        position: relative;
+    }
+
+.file-manager-recent-item-title {
+    transition: color 0.2s ease;
+}
+
+.file-manager-recent-item:hover .file-manager-recent-item-title {
+    color: var(--bs-success) !important;
+}
+
+.file-manager-recent-file-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.file-manager-recent-item:hover .file-manager-recent-file-actions {
+    opacity: 1;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+/*Estilos de la barra restablecer*/
 .password-strength {
     height: 5px;
     margin-top: 5px;

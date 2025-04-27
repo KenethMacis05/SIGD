@@ -6,3 +6,49 @@
 
 <!--Titulo-->
 <div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Archivos Compartidos</h2></div>
+
+<!-- Input y botón -->
+<label for="mensajeInput">Escribe un mensaje:</label>
+<input type="text" id="mensajeInput" placeholder="Escribe algo aquí">
+<button id="enviarMensaje">Enviar</button>
+<div id="resultado" style="margin-top: 20px; color: #333;"></div>
+
+@section scripts {    
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('#enviarMensaje').click(function () {
+                const mensaje = $('#mensajeInput').val(); // Obtener el valor del input
+
+                if (!mensaje) {
+                    alert("Por favor, escribe un mensaje.");
+                    return;
+                }
+
+                // Realizar la solicitud AJAX
+                $.ajax({
+                    url: '@Url.Action("ProcesarMensaje", "Usuario")',
+                    type: 'POST',
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    data: JSON.stringify({ mensaje: mensaje }), // Enviar el mensaje como JSON
+                    success: function (response) {
+                        if (response.error) {
+                            $('#resultado').html(`<p style="color:red;">Error: ${response.mensaje}</p>`);
+                        } else {
+                            $('#resultado').html(`
+                                <p><strong>Mensaje Original:</strong> ${response.original}</p>
+                                <p><strong>Respuesta:</strong> ${response.respuesta}</p>
+                                <p><strong>Fecha:</strong> ${response.fecha}</p>
+                            `);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Error en la solicitud:", error);
+                        console.error("Detalles:", xhr.responseText);
+                        $('#resultado').html('<p style="color:red;">Ocurrió un error al procesar tu mensaje. Inténtalo de nuevo más tarde.</p>');
+                    }
+                });
+            });
+        });
+    </script>
+}

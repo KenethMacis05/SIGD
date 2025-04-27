@@ -66,5 +66,35 @@ namespace capa_presentacion.Controllers
 
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
+
+
+
+
+        //[HttpPost]
+        //public JsonResult ProcesarMensaje(string mensaje)
+        //{
+        //    try
+        //    {
+        //        if (string.IsNullOrWhiteSpace(mensaje))
+        //        {
+        //            throw new ArgumentException("El mensaje no puede estar vacío.");
+        //        }
+
+        //        // Crear una respuesta personalizada
+        //        var respuesta = new
+        //        {
+        //            original = mensaje,
+        //            respuesta = $"Recibimos tu mensaje: {mensaje}",
+        //            fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+        //        };
+
+        //        // Retornar la respuesta en JSON
+        //        return Json(respuesta);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return Json(new { error = true, mensaje = "Ocurrió un error: " + ex.Message });
+        //    }
+        //}
     }
 }

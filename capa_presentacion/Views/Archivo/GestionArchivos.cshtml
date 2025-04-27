@@ -207,35 +207,14 @@
 
 @section scripts{
     <script type="text/javascript">
-
         const config = {
-            listarCarpetasUrl: '@Url.Action("ListarCarpetas", "Archivo")',
+            listarCarpetasUrl: '@Url.Action("ListarCarpetasRecientes", "Archivo")',
+            listarArchivosUrl: '@Url.Action("ListarArchivosRecientes", "Archivo")',
             guardarCarpetaUrl: '@Url.Action("GuardarCarpeta", "Archivo")',
             eliminarCarpetaUrl: '@Url.Action("EliminarCarpeta", "Archivo")',
             compartirCarpetaUrl: '@Url.Action("CompartirCarpeta", "Archivo")',
-            subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")',
-            listarArchivosUrl: '@Url.Action("ListarArchivosRecientes", "Archivo")'
-            };
-
-            jQuery.ajax({
-                url: '@Url.Action("ListarCarpetas", "Archivo")',
-                type: "GET",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                success: function (data) {
-                    console.log(data)
-                },
-            });
-
-            jQuery.ajax({
-                url: '@Url.Action("ListarArchivosRecientes", "Archivo")',
-                type: "GET",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                success: function (data) {
-                    console.log(data)
-                },
-            });
+            subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")'
+            };            
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
 }
