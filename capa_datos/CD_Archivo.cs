@@ -2,16 +2,12 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using capa_entidad;
 
 namespace capa_datos
 {
     public class CD_Archivo
     {
-        //// Listar archivos
         public List<ARCHIVO> ListarArchivosRecientes(int id_usuario, out int resultado, out string mensaje)
         {
             List<ARCHIVO> listaArchivo = new List<ARCHIVO>();
@@ -25,7 +21,6 @@ namespace capa_datos
                     SqlCommand cmd = new SqlCommand("usp_LeerArchivosRecientes", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // Parámetro de entrada
                     cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
 
                     // Parámetros de salida
@@ -35,45 +30,36 @@ namespace capa_datos
                     // Abrir conexión
                     conexion.Open();
 
-                    // Leer los datos
                     using (SqlDataReader dr = cmd.ExecuteReader())
                     {
                         while (dr.Read())
                         {
-                            ARCHIVO archivo = new ARCHIVO
-                            {
-                                id_archivo = Convert.ToInt32(dr["id_archivo"]),
-                                nombre = dr["nombre_archivo"].ToString(),
-                                ruta = dr["ruta"].ToString(),
-                                size = Convert.ToInt32(dr["size"]),
-                                tipo = dr["tipo"].ToString(),
-                                estado = Convert.ToBoolean(dr["estado"]),
-                                id_carpeta = Convert.ToInt32(dr["fk_id_carpeta"]),
-                                nombre_carpeta = dr["nombre_carpeta"].ToString(),
-                                fecha_subida = Convert.ToDateTime(dr["fecha_subida"])
-                            };
-
-                            listaArchivo.Add(archivo);
-                        }
+                            listaArchivo.Add(
+                                new ARCHIVO
+                                {
+                                    id_archivo = dr["id_archivo"] != DBNull.Value ? Convert.ToInt32(dr["id_archivo"]) : 0,
+                                    nombre = dr["nombre_archivo"] != DBNull.Value ? dr["nombre_archivo"].ToString() : string.Empty,
+                                    ruta = dr["ruta"] != DBNull.Value ? dr["ruta"].ToString() : string.Empty,
+                                    size = dr["size"] != DBNull.Value ? Convert.ToInt32(dr["size"]) : 0,
+                                    tipo = dr["tipo"] != DBNull.Value ? dr["tipo"].ToString() : string.Empty,
+                                    estado = dr["estado"] != DBNull.Value && Convert.ToBoolean(dr["estado"]),
+                                    id_carpeta = dr["fk_id_carpeta"] != DBNull.Value ? Convert.ToInt32(dr["fk_id_carpeta"]) : 0,
+                                    nombre_carpeta = dr["nombre_carpeta"] != DBNull.Value ? dr["nombre_carpeta"].ToString() : string.Empty,
+                                    fecha_subida = dr["fecha_subida"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_subida"]) : DateTime.MinValue
+                                }
+                            );
+                        }                     
                     }
 
-                    // Obtener los valores de los parámetros de salida
                     resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
                     mensaje = cmd.Parameters["Mensaje"].Value.ToString();
                 }
             }
             catch (Exception ex)
             {
-                // Manejar excepciones y lanzar un mensaje claro
                 throw new Exception("Error al listar los archivos recientes: " + ex.Message);
             }
-
             return listaArchivo;
         }
-
-        //public bool SubirArchivo(ARCHIVO archivo, out string mensaje)
-        //{
-
-        //}
     }
 }

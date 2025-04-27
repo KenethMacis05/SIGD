@@ -39,6 +39,19 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public JsonResult ListarArchivosRecientes()
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            int resultado;
+            string mensaje;
+
+            List<ARCHIVO> lst = new List<ARCHIVO>();
+            lst = CN_Archivo.ListarArchivos(usuario.id_usuario, out resultado, out mensaje);
+
+            return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         // Controlador para Guardar carpetas        
         [HttpPost]
         public JsonResult GuardarCarpeta(CARPETA carpeta)
@@ -88,39 +101,11 @@ namespace capa_presentacion.Controllers
 
         // Controlador para Borrar carpetas compartidas
 
+        // Controlador para Listar carpetas recientes                
+
         #endregion
 
-        #region Archivos
-
-        // Controlador para Listar archivos reciente
-        [HttpGet]
-        public JsonResult ListarArchivosRecientes()
-        {            
-            if (Session["UsuarioAutenticado"] == null)
-            {
-                return Json(new { resultado = 0, mensaje = "Sesión expirada. Por favor, inicie sesión nuevamente." }, JsonRequestBehavior.AllowGet);
-            }
-            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            int resultado;
-            string mensaje;
-
-            List<ARCHIVO> lst = new List<ARCHIVO>();
-            try
-            {             
-                lst = CN_Archivo.ListarArchivosRecientes(usuario.id_usuario, out resultado, out mensaje);
-             
-                if (lst == null)
-                {
-                    lst = new List<ARCHIVO>();
-                }
-            }
-            catch (Exception ex)
-            {
-                return Json(new { resultado = 0, mensaje = "Error interno: " + ex.Message }, JsonRequestBehavior.AllowGet);
-            }
-
-            return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-        }
+        #region Archivos      
 
         // Controlador para Subir archivos (INCOMPLETO, EN DESAROLLO)
         [HttpPost]
