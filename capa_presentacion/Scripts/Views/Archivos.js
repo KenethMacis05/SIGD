@@ -179,6 +179,97 @@ function cargarCarpetas() {
     });
 }
 
+// Función para cargar los archivos
+function cargarArchivos() {
+    $.ajax({
+        url: config.listarArchivosUrl,
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: () => $('#contenedor-archivos').LoadingOverlay("show"),
+        success: function (response) {
+            if (response.data && response.data.length > 0) {
+                let html = '';
+
+                $.each(response.data, function (index, archivo) {
+                    // Determinar el ícono según el tipo de archivo
+                    let icono = '';
+                    let color = '';
+
+                    switch (archivo.tipo.toLowerCase()) {
+                        case '.pdf':
+                            icono = 'fa-file-pdf';
+                            color = 'text-danger';
+                            break;
+                        case '.doc':
+                        case '.docx':
+                            icono = 'fa-file-word';
+                            color = 'text-primary';
+                            break;
+                        case '.xls':
+                        case '.xlsx':
+                            icono = 'fa-file-excel';
+                            color = 'text-success';
+                            break;
+                        case '.png':
+                        case '.jpg':
+                        case '.jpeg':
+                        case '.gif':
+                            icono = 'fa-file-image';
+                            color = 'text-warning';
+                            break;
+                        case '.zip':
+                        case '.rar':
+                            icono = 'fa-file-archive';
+                            color = 'text-secondary';
+                            break;
+                        case '.txt':
+                            icono = 'fa-file-alt';
+                            color = 'text-info';
+                            break;
+                        default:
+                            icono = 'fa-file';
+                            color = 'text-muted';
+                            break;
+                    }
+
+                    html += `
+                    <div class="col-sm-12 col-md-12 col-lg-6">
+                        <div class="card file-manager-recent-item h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="fas ${icono} fa-lg ${color}"></i>
+                                    <div class="flex-fill">
+                                        <a href="#" class="file-manager-recent-item-title text-decoration-none text-truncate d-block">${archivo.nombre}</a>
+                                        <small class="text-muted">${archivo.size}kb • ${formatASPNetDate(archivo.fecha_subida)}</small>
+                                    </div>
+                                    <div class="dropdown">
+                                        <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </a>
+                                        <ul class="dropdown-menu dropdown-menu-end">
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Compartir</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Descargar</a></li>
+                                            <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+
+                $('#contenedor-archivos').html(html);
+            } else {
+                $('#contenedor-archivos').html('<div class="alert alert-light">No hay archivos disponibles</div>');
+            }
+        },
+        error: function () {
+            $('#contenedor-archivos').html('<div class="alert alert-danger">Error al cargar los archivos</div>');
+        },
+        complete: () => $('#contenedor-archivos').LoadingOverlay("hide")
+    });
+}
+
 // EN DESARROLLO (Abrir modal para subir archivo)
 function abrirModalSubirArchivo(json) {
     $("#idCarpeta2").val("0");
@@ -271,6 +362,7 @@ $(document).on('mouseenter', '.file-manager-group', function () {
 // Inicialización
 $(document).ready(function () {
     cargarCarpetas();
+    cargarArchivos();
 });
 
 

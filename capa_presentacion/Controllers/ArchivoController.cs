@@ -25,6 +25,7 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
+        // Controlador para Listar carpetas recientes
         [HttpGet]
         public JsonResult ListarCarpetas()
         {
@@ -38,7 +39,7 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        // Metodo para Guardar carpetas        
+        // Controlador para Guardar carpetas        
         [HttpPost]
         public JsonResult GuardarCarpeta(CARPETA carpeta)
         {
@@ -61,6 +62,7 @@ namespace capa_presentacion.Controllers
             return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
+        // Controlador para Eliminar una carpeta
         [HttpPost]
         public JsonResult EliminarCarpeta(int id_carpeta)
         {
@@ -80,17 +82,47 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        // Metodo para Listar las carpetas compartidas
+        // Controlador para Listar las carpetas compartidas
 
-        // Metodo para Guardar carpetas compartidas
+        // Controlador para Guardar carpetas compartidas
 
-        // Metodo para Borrar carpetas compartidas
+        // Controlador para Borrar carpetas compartidas
 
         #endregion
 
         #region Archivos
 
-        // Metodo para Subir archivos (INCOMPLETO, EN DESAROLLO)
+        // Controlador para Listar archivos reciente
+        [HttpGet]
+        public JsonResult ListarArchivosRecientes()
+        {            
+            if (Session["UsuarioAutenticado"] == null)
+            {
+                return Json(new { resultado = 0, mensaje = "Sesión expirada. Por favor, inicie sesión nuevamente." }, JsonRequestBehavior.AllowGet);
+            }
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            int resultado;
+            string mensaje;
+
+            List<ARCHIVO> lst = new List<ARCHIVO>();
+            try
+            {             
+                lst = CN_Archivo.ListarArchivosRecientes(usuario.id_usuario, out resultado, out mensaje);
+             
+                if (lst == null)
+                {
+                    lst = new List<ARCHIVO>();
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { resultado = 0, mensaje = "Error interno: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+
+            return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Controlador para Subir archivos (INCOMPLETO, EN DESAROLLO)
         [HttpPost]
         public JsonResult SubirArchivo(HttpPostedFileBase ARCHIVO, string CARPETAJSON)
         {
@@ -110,7 +142,7 @@ namespace capa_presentacion.Controllers
                 archivo.tipo = Path.GetExtension(ARCHIVO.FileName);
                 archivo.size = ARCHIVO.ContentLength;
                 archivo.ruta = Path.Combine(rutaGuardar, archivo.nombre);
-                archivo.fk_id_carpeta = idCarpeta;
+                archivo.id_carpeta = idCarpeta;
 
                 // Crear la carpeta si no existe
                 if (!Directory.Exists(rutaFisica))

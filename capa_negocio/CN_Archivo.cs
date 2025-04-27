@@ -12,10 +12,10 @@ namespace capa_negocio
     {
         private CD_Archivo CD_Archivo = new CD_Archivo();
 
-        //public List<ARCHIVO> ListarCarpeta(int id_carpeta, out int resultado, out string mensaje)
-        //{
-        //    return CD_Archivo.Listar(id_carpeta, out resultado, out mensaje);
-        //}
+        public List<ARCHIVO> ListarArchivosRecientes(int id_usuario, out int resultado, out string mensaje)
+        {
+            return CD_Archivo.ListarArchivosRecientes(id_usuario, out resultado, out mensaje);
+        }
 
         //public int SubirArchivo(ARCHIVO archivo, out string mensaje)
         //{

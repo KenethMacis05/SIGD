@@ -15,7 +15,8 @@ namespace capa_entidad
         public string ruta { get; set; }
         public DateTime fecha_subida { get; set; }
         public bool estado { get; set; }
-        public int fk_id_carpeta { get; set; }
+        public int id_carpeta { get; set; }
+        public string nombre_carpeta { get; set; }
         public byte[] Contenido { get; set; }
     }
 }

@@ -874,6 +874,46 @@ BEGIN
 END
 GO
 
+---------------------------------------------------------------------------------------------------------------
+CREATE OR ALTER PROCEDURE usp_LeerArchivosRecientes
+    @IdUsuario INT,
+	@Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+	-- Validar si el usuario existe
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+	BEGIN
+		SET @Resultado = 0
+		SET @Mensaje = 'El usuario no existe'
+		RETURN
+	END
+
+    -- Seleccionar los 10 archivos más recientes asociados a las carpetas del usuario
+    SELECT TOP 10 
+        a.id_archivo,
+        a.nombre AS nombre_archivo,
+        a.ruta,
+        a.size,
+        a.tipo,
+        a.fecha_subida,
+        a.estado,
+        a.fk_id_carpeta,
+        c.nombre AS nombre_carpeta
+    FROM ARCHIVO a
+    INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+    WHERE c.fk_id_usuario = @IdUsuario
+      AND a.estado = 1                
+      AND c.estado = 1                
+    ORDER BY a.fecha_subida DESC;
+
+	SET @Resultado = 1
+	SET @Mensaje = 'Archivos cargadas correctamente'
+END
+GO
+
 -- (1) PROCEDIMIENTO ALMACENADO PARA SUBIR UN ARCHIVO
 CREATE OR ALTER PROCEDURE usp_SubirArchivo
     @Nombre VARCHAR(60),

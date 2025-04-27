@@ -64,64 +64,11 @@
                     <h2 class="mb-0">Archivos</h2>
                 </div>
 
-
                 <hr>
-
                 <!-- Archivos -->
                 <div class="container-fluid">
-                    <div class="row g-3">
-                        <!-- Archivo 1 -->
-                        <div class="col-sm-12 col-md-12 col-lg-6">
-                            <div class="card file-manager-recent-item h-100 shadow-sm">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <i class="fas fa-file-pdf fa-lg text-danger"></i>
-                                        <div class="flex-fill">
-                                            <a href="#" class="file-manager-recent-item-title text-decoration-none text-truncate d-block">design-components.pdf</a>
-                                            <small class="text-muted">167kb • 09.14.21</small>
-                                        </div>
-                                        <div class="dropdown">
-                                            <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </a>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Compartir</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Descargar</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Repetir para los demás archivos cambiando iconos y colores -->
-                        <!-- Ejemplo Archivo 2 -->
-                        <div class="col-sm-12 col-md-12 col-lg-6">
-                            <div class="card file-manager-recent-item h-100 shadow-sm">
-                                <div class="card-body">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <i class="fas fa-file-code fa-lg text-primary"></i>
-                                        <div class="flex-fill">
-                                            <a href="#" class="file-manager-recent-item-title text-decoration-none text-truncate d-block">MainFragment.kt</a>
-                                            <small class="text-muted">14kb • 09.03.21</small>
-                                        </div>
-                                        <div class="dropdown">
-                                            <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
-                                                <i class="fas fa-ellipsis-v"></i>
-                                            </a>
-                                            <ul class="dropdown-menu dropdown-menu-end">
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Compartir</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Descargar</a></li>
-                                                <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Los demás archivos seguirían el mismo patrón -->
+                    <div class="row g-3" id="contenedor-archivos">
+                        <!-- Los archivos se cargarán dinámicamente aquí -->
                     </div>
                 </div>
             </div>
@@ -256,6 +203,7 @@
             </div>
         </div>
     </div>
+</div>
 
     @section scripts{
         <script type="text/javascript">
@@ -265,7 +213,8 @@
             guardarCarpetaUrl: '@Url.Action("GuardarCarpeta", "Archivo")',
             eliminarCarpetaUrl: '@Url.Action("EliminarCarpeta", "Archivo")',
             compartirCarpetaUrl: '@Url.Action("CompartirCarpeta", "Archivo")',
-            subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")'
+            subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")',
+            listarArchivosUrl: '@Url.Action("ListarArchivosRecientes", "Archivo")'             
         };
         </script>
         <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
