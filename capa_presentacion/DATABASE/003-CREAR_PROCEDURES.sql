@@ -711,6 +711,49 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE usp_LeerCarpeta
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si el usuario tiene carpetas creadas (excluyendo la DEFAULT)
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM CARPETA c
+        INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
+        WHERE fk_id_usuario = @IdUsuario 
+          AND nombre <> CONCAT('DEFAULT_', u.usuario)
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario aún no ha creado carpetas'
+        RETURN
+    END
+
+    -- Mostrar todas las carpetas, excluyendo DEFAULT
+    SELECT * 
+    FROM CARPETA c
+    INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
+    WHERE fk_id_usuario = @IdUsuario 
+      AND c.estado = 1 
+      AND c.nombre <> CONCAT('DEFAULT_', u.usuario)
+    ORDER BY c.fecha_registro DESC
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Carpetas cargadas correctamente'
+END
+GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- (2) PROCEDIMIENTO ALMACENADO PARA REGISTRAR UNA NUEVA CARPETA

@@ -35,10 +35,24 @@ namespace capa_presentacion.Controllers
             string mensaje;
 
             List<CARPETA> lst = new List<CARPETA>();
-            lst = CN_Carpeta.ListarCarpeta(usuario.id_usuario, out resultado, out mensaje);
+            lst = CN_Carpeta.ListarCarpetasRecientes(usuario.id_usuario, out resultado, out mensaje);
 
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-        }        
+        }
+
+        // Controlador para Listar carpetas recientes
+        [HttpGet]
+        public JsonResult ListarCarpetas()
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            int resultado;
+            string mensaje;
+
+            List<CARPETA> lst = new List<CARPETA>();
+            lst = CN_Carpeta.ListarCarpetas(usuario.id_usuario, out resultado, out mensaje);
+
+            return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
 
         // Controlador para Guardar carpetas        
         [HttpPost]
@@ -47,7 +61,12 @@ namespace capa_presentacion.Controllers
             carpeta.fk_id_usuario = (int)Session["IdUsuario"];
 
             string mensaje = string.Empty;
-            int resultado = 0;            
+            int resultado = 0;
+
+            if (carpeta.carpeta_padre == 0)
+            {
+                carpeta.carpeta_padre = null;
+            }
 
             if (carpeta.id_carpeta == 0)
             {
@@ -116,7 +135,7 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Controlador para Subir archivos (INCOMPLETO, EN DESAROLLO)
+        // Controlador para Subir archivos
         [HttpPost]
         public JsonResult SubirArchivo(HttpPostedFileBase ARCHIVO, string CARPETAJSON)
         {

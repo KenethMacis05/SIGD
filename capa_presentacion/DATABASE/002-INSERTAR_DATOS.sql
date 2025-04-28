@@ -58,7 +58,8 @@ VALUES
     ('Permisos', 'AsignarPermisos', 'Asignar permiso a un rol', 'API'),
     ('Permisos', 'EliminarPermiso', 'Eliminar permiso de un rol', 'API'),
 
-    ('Archivo', 'ListarArchivosRecientes', 'Listar archivos recientes del usuario', 'API')
+    ('Archivo', 'ListarArchivosRecientes', 'Listar archivos recientes del usuario', 'API'),
+    ('Archivo', 'ListarCarpetas', 'Listar todas las carpetas', 'API')
 GO
 --------------------------------------------------------------------------------------------------------------------
 
