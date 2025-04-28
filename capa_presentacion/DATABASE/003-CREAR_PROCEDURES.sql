@@ -686,9 +686,10 @@ BEGIN
     -- Validar si el usuario tiene carpetas creadas (excluyendo la DEFAULT)
     IF NOT EXISTS (
         SELECT 1 
-        FROM CARPETA 
+        FROM CARPETA c
+        INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
         WHERE fk_id_usuario = @IdUsuario 
-          AND nombre <> 'DEFAULT'
+          AND nombre <> CONCAT('DEFAULT_', u.usuario)
     )
     BEGIN
         SET @Resultado = 0
@@ -698,11 +699,12 @@ BEGIN
 
     -- Mostrar las 10 carpetas más recientes, excluyendo DEFAULT
     SELECT TOP 10 * 
-    FROM CARPETA 
+    FROM CARPETA c
+    INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
     WHERE fk_id_usuario = @IdUsuario 
-      AND estado = 1 
-      AND nombre <> 'DEFAULT'
-    ORDER BY fecha_registro DESC
+      AND c.estado = 1 
+      AND c.nombre <> CONCAT('DEFAULT_', u.usuario)
+    ORDER BY c.fecha_registro DESC
 
     SET @Resultado = 1
     SET @Mensaje = 'Carpetas cargadas correctamente'
@@ -732,22 +734,38 @@ BEGIN
             RETURN;
         END
 
-        -- Verificar si la carpeta padre existe (si se especifica)
-        IF @CarpetaPadre IS NOT NULL AND NOT EXISTS (
-            SELECT 1 FROM CARPETA WHERE id_carpeta = @CarpetaPadre AND estado = 1
-        )
+        -- Si @CarpetaPadre es NULL, buscar la carpeta raíz predeterminada (DEFAULT_NOMBREUSUARIO)
+        IF @CarpetaPadre IS NULL
+        BEGIN
+            SELECT @CarpetaPadre = id_carpeta
+            FROM CARPETA c
+            INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
+            WHERE c.nombre = CONCAT('DEFAULT_', u.usuario)
+              AND c.fk_id_usuario = @IdUsuario
+              AND c.estado = 1;
+
+            -- Si no se encuentra la carpeta raíz predeterminada, devolver error
+            IF @CarpetaPadre IS NULL
+            BEGIN
+                SET @Mensaje = 'No se encontró la carpeta raíz predeterminada para el usuario';
+                RETURN;
+            END
+        END
+
+        -- Verificar si la carpeta padre existe
+        IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @CarpetaPadre AND estado = 1)
         BEGIN
             SET @Mensaje = 'La carpeta padre especificada no existe o está inactiva';
             RETURN;
         END
 
-        -- Verificar si ya existe una carpeta con ese nombre para el mismo usuario
+        -- Verificar si ya existe una carpeta con ese nombre en la misma ubicación
         IF EXISTS (
             SELECT 1 
             FROM CARPETA 
             WHERE nombre = @Nombre 
               AND fk_id_usuario = @IdUsuario 
-              AND ISNULL(carpeta_padre, 0) = ISNULL(@CarpetaPadre, 0)
+              AND ISNULL(carpeta_padre, 0) = @CarpetaPadre
               AND estado = 1
         )
         BEGIN

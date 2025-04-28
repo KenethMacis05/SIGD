@@ -244,9 +244,9 @@ function cargarArchivos() {
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-3">
                                     <i class="fas ${icono} fa-lg ${color} fa-2x"></i>
-                                    <div class="flex-fill">
-                                        <a href="#" class="file-manager-recent-item-title text-decoration-none text-truncate d-block">${archivo.nombre}</a>
-                                        <small class="text-muted">${archivo.size}kb • ${formatASPNetDate(archivo.fecha_subida)}</small>
+                                    <div class="flex-fill">                                        
+                                        <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block">${archivo.nombre}</a>
+                                        <small class="text-muted">${archivo.size}kb - ${formatASPNetDate(archivo.fecha_subida)}</small>
                                     </div>
                                     <div class="dropdown">
                                         <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
@@ -356,8 +356,8 @@ $(document).on('click', '.btn-subirArchivo', function (e) {
 function SubirArchivo() {
     var ArchivoSelecionado = $("#file")[0].files[0];
     var Carpeta = {
-        id_carpeta: 16,
-        nombre: "DEFAULT_KMACIS",
+        id_carpeta: 9,
+        nombre: "Música",
     };
 
     // Validar que se haya seleccionado un archivo
@@ -387,7 +387,7 @@ function SubirArchivo() {
     showLoadingAlert("Procesando", "Subiendo archivo...");
 
     jQuery.ajax({
-        url: subirArchivoUrl,
+        url: config.subirArchivoUrl,
         type: "POST",
         data: request,
         processData: false,

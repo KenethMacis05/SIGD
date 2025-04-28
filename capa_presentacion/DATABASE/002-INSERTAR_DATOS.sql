@@ -174,23 +174,17 @@ VALUES
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Plan Didáctico
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11); -- Plan Clases
 GO
---------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------    
 
 -- (1) REGISTROS EN TABLA CARPETA
 INSERT INTO CARPETA (nombre, fk_id_usuario) 
-    VALUES ('Fotos', 1), ('Documentos', 1), ('Videos', 1), ('Música', 1), ('DEFAULT', 1),
-           ('Fotos', 2), ('Documentos', 2), ('Videos', 2), ('Música', 2), ('DEFAULT', 2)
+    VALUES ('DEFAULT_KENY', 1), ('DEFAULT_ADMIN', 2)           
 GO
 
 INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre)
-VALUES 
-('Universidad', 1, 1),
-('Trabajo', 1, 1),
-('Proyectos', 1, 1);
-
-INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre)
-VALUES 
-('Proyecto Final', 1, (SELECT id_carpeta FROM CARPETA WHERE nombre = 'Universidad'));
+VALUES
+('Fotos', 1, 1), ('Documentos', 1, 1), ('Videos', 1, 1), ('Música', 1, 1),
+('Fotos', 2, 2), ('Documentos', 2, 2), ('Videos', 2, 2), ('Música', 2, 2)
 
 -- (2) REGISTROS EN TABLA ARCHIVO
 INSERT INTO ARCHIVO (nombre, size, tipo, fk_id_carpeta) 
