@@ -9,6 +9,7 @@ using capa_entidad;
 using Newtonsoft.Json;
 using System.Configuration;
 using System.IO;
+using capa_datos;
 
 namespace capa_presentacion.Controllers
 {
@@ -120,7 +121,7 @@ namespace capa_presentacion.Controllers
         public JsonResult SubirArchivo(HttpPostedFileBase ARCHIVO, string CARPETAJSON)
         {
             // Deserializar el objeto carpeta desde el JSON recibido
-            CARPETA carpeta = JsonConvert.DeserializeObject<CARPETA>(CARPETAJSON);
+            CARPETA carpeta = JsonConvert.DeserializeObject<CARPETA>(CARPETAJSON);            
             string mensaje = string.Empty;
 
             if (ARCHIVO != null && carpeta != null)
@@ -135,7 +136,13 @@ namespace capa_presentacion.Controllers
                 archivo.tipo = Path.GetExtension(ARCHIVO.FileName);
                 archivo.size = ARCHIVO.ContentLength;
                 archivo.ruta = Path.Combine(rutaGuardar, archivo.nombre);
+                archivo.id_usuario = (int)Session["IdUsuario"];
                 archivo.id_carpeta = idCarpeta;
+
+                if (idCarpeta == 0)
+                {
+                    archivo.id_carpeta = null;
+                }
 
                 // Crear la carpeta si no existe
                 if (!Directory.Exists(rutaFisica))
@@ -154,7 +161,16 @@ namespace capa_presentacion.Controllers
                 {
                     // Guardar el archivo físicamente
                     ARCHIVO.SaveAs(Path.Combine(rutaFisica, archivo.nombre));
-                    mensaje = "Archivo subido exitosamente";
+
+                    // Guardar los datos del archivo en la base de datos
+                    int resultado = CN_Archivo.SubirArchivo(archivo, out mensaje);
+
+                    if (resultado == 0)
+                    {
+                        mensaje = "Error al guardar el archivo en la base de datos: " + mensaje;
+                        return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+                    }
+
                 }
                 catch (Exception ex)
                 {

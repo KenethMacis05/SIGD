@@ -17,16 +17,15 @@ namespace capa_negocio
             return CD_Archivo.ListarArchivosRecientes(id_usuario, out resultado, out mensaje);
         }
 
-        //public int SubirArchivo(ARCHIVO archivo, out string mensaje)
-        //{
-        //    mensaje = string.Empty;
-        //    if (string.IsNullOrEmpty(archivo.nombre))
-        //    {
-        //        mensaje = "Por favor, ingrese el nombre del archivo";
-        //    }
+        public int SubirArchivo(ARCHIVO archivo, out string mensaje)
+        {
+            mensaje = string.Empty;
+            if (string.IsNullOrEmpty(archivo.nombre))
+            {
+                mensaje = "Por favor, ingrese el nombre del archivo";
+            }
 
-        //    bool resultado = CD_Archivo.SubirArchivo(archivo, out mensaje);
-        //    return resultado ? 1 : 0;
-        //}
+            return CD_Archivo.SubirArchivo(archivo, out mensaje);
+        }
     }
 }

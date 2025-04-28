@@ -61,5 +61,59 @@ namespace capa_datos
             }
             return listaArchivo;
         }
+
+        public int SubirArchivo(ARCHIVO archivo, out string mensaje)
+        {
+            int idAutogeneradoCarpeta = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_SubirArchivo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetros
+                    cmd.Parameters.AddWithValue("Nombre", archivo.nombre);
+                    cmd.Parameters.AddWithValue("Ruta", archivo.ruta);
+                    cmd.Parameters.AddWithValue("Size", archivo.size);
+                    cmd.Parameters.AddWithValue("Tipo", archivo.tipo);
+                    cmd.Parameters.AddWithValue("IdUsuario", archivo.id_usuario);
+
+                    // Manejar Carpeta como NULL si no está especificado
+                    if (archivo.id_carpeta.HasValue)
+                    {                        
+                        cmd.Parameters.AddWithValue("Carpeta", archivo.id_carpeta.Value);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("Carpeta", DBNull.Value);
+                    }
+                    
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    // Ejecutar comando
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    idAutogeneradoCarpeta = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                idAutogeneradoCarpeta = 0;
+                mensaje = "Error al subir el archivo: " + ex.Message;
+            }
+
+            return idAutogeneradoCarpeta;
+        }
     }
 }

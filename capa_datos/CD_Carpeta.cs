@@ -45,7 +45,8 @@ namespace capa_datos
                                     nombre = dr["nombre"].ToString(),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
                                     estado = Convert.ToBoolean(dr["estado"]),
-                                    fk_id_usuario = Convert.ToInt32(dr["fk_id_usuario"])
+                                    fk_id_usuario = Convert.ToInt32(dr["fk_id_usuario"]),
+                                    carpeta_padre = Convert.ToInt32(dr["carpeta_padre"])
                                 }
                             );
                         }

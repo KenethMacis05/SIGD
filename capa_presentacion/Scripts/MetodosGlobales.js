@@ -123,3 +123,56 @@ const showLoading = (element) => {
 const hideLoading = (element) => {
     $(element).LoadingOverlay("hide");
 };
+
+// Función para determinar ícono y color según el tipo de archivo
+function obtenerIconoYColor(tipoArchivo) {
+    let icono = '';
+    let color = '';
+
+    switch (tipoArchivo.toLowerCase()) {
+        case '.pdf':
+            icono = 'fa-file-pdf';
+            color = 'text-danger';
+            break;
+        case '.doc':
+        case '.docx':
+            icono = 'fa-file-word';
+            color = 'text-primary';
+            break;
+        case '.xls':
+        case '.xlsx':
+            icono = 'fa-file-excel';
+            color = 'text-success';
+            break;
+        case '.png':
+        case '.jpg':
+        case '.jpeg':
+        case '.gif':
+            icono = 'fa-file-image';
+            color = 'text-warning';
+            break;
+        case '.zip':
+        case '.rar':
+            icono = 'fa-file-archive';
+            color = 'text-secondary';
+            break;
+        case '.txt':
+            icono = 'fa-file-alt';
+            color = 'text-info';
+            break;
+        case '.mp3':
+            icono = 'fa-file-audio';
+            color = 'text-success';
+            break;
+        case '.mp4':
+            icono = 'fa-file-video';
+            color = 'text-danger';
+            break;
+        default:
+            icono = 'fa-file';
+            color = 'text-muted';
+            break;
+    }
+
+    return { icono, color };
+}

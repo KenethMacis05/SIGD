@@ -910,7 +910,7 @@ BEGIN
 	END
 
     -- Seleccionar los 10 archivos más recientes asociados a las carpetas del usuario
-    SELECT TOP 10 
+    SELECT TOP 4
         a.id_archivo,
         a.nombre AS nombre_archivo,
         a.ruta,
@@ -938,8 +938,9 @@ CREATE OR ALTER PROCEDURE usp_SubirArchivo
 	@Ruta VARCHAR(255),
 	@Size INT,
 	@Tipo VARCHAR(60),
-    @Carpeta INT,
-    
+    @Carpeta INT = NULL,
+    @IdUsuario INT,
+
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(500) OUTPUT
 AS
@@ -949,6 +950,24 @@ BEGIN
     SET @Mensaje = '';
 
     BEGIN TRY
+		-- Si @Carpeta es NULL, buscar la carpeta raíz del usuario
+        IF @Carpeta IS NULL
+        BEGIN
+            SELECT @Carpeta = c.id_carpeta
+            FROM CARPETA c
+            INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
+            WHERE c.nombre = CONCAT('DEFAULT_', u.usuario) 
+              AND c.fk_id_usuario = @IdUsuario
+              AND c.estado = 1;
+
+            -- Si no se encuentra la carpeta raíz, devolver error
+            IF @Carpeta IS NULL
+            BEGIN
+                SET @Mensaje = 'No se encontró la carpeta raíz predeterminada para el usuario';
+                RETURN;
+            END
+        END
+			
         -- Verificar si la carpeta existe
         IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @Carpeta AND estado = 1)
         BEGIN
@@ -969,7 +988,7 @@ BEGIN
             RETURN;
         END
 
-        -- Insertar la nueva carpeta
+        -- Insertar el nuevo archivo
         INSERT INTO ARCHIVO(nombre, tipo, size, ruta, fk_id_carpeta) 
         VALUES (@Nombre, @Tipo, @Size, @Ruta, @Carpeta)
 

@@ -188,10 +188,10 @@ VALUES
 
 -- (2) REGISTROS EN TABLA ARCHIVO
 INSERT INTO ARCHIVO (nombre, size, tipo, fk_id_carpeta) 
-    VALUES ('foto1.jpg', '1111', 'imagen', 1), ('documento1.pdf', '1111', 'documento', 2), 
-           ('video1.mp4', '1111', 'video', 3), ('musica1.mp3', '1111', 'audio', 4),
-           ('foto2.jpg', '1111', 'imagen', 5), ('documento2.pdf', '1111', 'documento', 6), 
-           ('video2.mp4', '1111', 'video', 7), ('musica2.mp3', '1111', 'audio', 8)
+    VALUES ('foto1.jpg', '1111', '.jpg', 1), ('documento1.pdf', '1111', '.pdf', 2), 
+           ('video1.mp4', '1111', '.mp4', 3), ('musica1.mp3', '1111', '.mp3', 4),
+           ('foto2.jpg', '1111', '.jpg', 5), ('documento2.pdf', '1111', '.pdf', 6), 
+           ('video2.mp4', '1111', '.mp4', 7), ('musica2.mp3', '1111', '.mp3', 8)
 GO
 
 -- (3) REGISTROS EN TABLA ARCHIVO/CARPETAS COMPARTIDAS

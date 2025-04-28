@@ -90,8 +90,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body g-2">
+                    <label for="idCarpeta">Id de carpeta</label>
+                    <input type="text" name="idCarpeta" id="idCarpeta" value="0">
+                    <label for="idCarpetaPadre">Id de carpeta padre</label>                    
+                    <input type="text" name="idCarpetaPadre" id="idCarpetaPadre" value="0">
 
-                    <input type="hidden" name="idCarpeta" id="idCarpeta" value="0">
 
                     <div class="row mb-3">
                         <div class="input-group flex-nowrap">
@@ -111,39 +114,7 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Modal para crear una subcarpeta dentro de una carpeta-->
-    <div class="modal fade" id="createSubCarpeta" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header text-light" style="background-color: #0072BB">
-                    <h5 class="modal-title" id="exampleModalLabel">Crear carpeta</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body g-2">
-
-                    <input type="text" name="idCarpetaPadre" id="idCarpetaPadre" value="0">
-
-                    <div class="row mb-3">
-                        <div class="input-group flex-nowrap">
-                            <span class="input-group-text" id="addon-wrapping"><i class="fa fa-folder"></i></span>
-                            <input type="text" class="form-control" placeholder="Nombre" aria-label="Nombre" aria-describedby="addon-wrapping" id="subcarpetanombre">
-                        </div>
-                    </div>
-
-                    <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                        <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                            <i class="fas fa-times-circle me-2"></i>Cerrar
-                        </button>
-                        <button type="submit" style="background: #0072BB " onclick="GuardarSubCarpeta()" class="btn btn-success w-50">
-                            <i class="fas fa-save me-2"></i>Guardar
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    </div>    
 
     <!-- Modal para compartir carpeta -->
     <div class="modal fade" id="modalCompartir" tabindex="-1" aria-hidden="true">
@@ -184,7 +155,6 @@
                 </div>
                 <div class="modal-body g-2">
                     <input type="text" name="idCarpeta2" id="idCarpeta2" value="0">
-                    <input type="text" name="nombre2" id="nombre2">
 
                     <div class="row mb-3">
                         <label for="formFile" class="form-label">Seleccionar archivo</label>

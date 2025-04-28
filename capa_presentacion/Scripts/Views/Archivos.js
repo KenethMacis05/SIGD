@@ -6,10 +6,12 @@ const subirArchivoUrl = config.subirArchivoUrl;
 function abrirModalCarpeta(json) {
     $("#idCarpeta").val("0");
     $("#nombre").val("");
+    $("#idCarpetaPadre3").val("0");
 
     if (json !== null) {
         $("#idCarpeta").val(json.id_carpeta);
         $("#nombre").val(json.nombre);
+        $("#idCarpetaPadre3").val(json.id_carpeta);
     }
 
     $("#createCarpeta").modal("show");
@@ -25,12 +27,43 @@ $(document).on('click', '.btn-editar', function (e) {
     abrirModalCarpeta(data);
 });
 
+$(document).on('click', '.btn-crearSubCarpeta', function (e) {
+    e.preventDefault();
+
+    const idCarpetaPadre = $(this).data('carpetapadre-id');
+    $('#idCarpetaPadre').val(idCarpetaPadre);
+    $('#createCarpeta').modal('show');
+});
+
+
+function abrirModalSubirArchivo(json) {
+    $("#idCarpeta2").val("0");
+    $("#nombre2").val("");
+    $("#file").val("");
+
+    if (json !== null) {
+        $("#idCarpeta2").val(json.id_carpeta);
+        $("#nombre2").val(json.nombre);
+    }
+    $("#subirArchivo").modal("show");
+}
+
+// Seleccionar los datos de la carpeta para subir un archivo
+$(document).on('click', '.btn-subirArchivo', function (e) {
+    e.preventDefault();
+    const data = {
+        id_carpeta: $(this).data('carpeta-id'),
+        nombre: $(this).data('carpeta-nombre')
+    };
+    abrirModalSubirArchivo(data);
+});
+
 function GuardarCarpeta() {
 
     var Carpeta = {
         id_carpeta: $("#idCarpeta").val(),
         nombre: $("#nombre").val(),
-        carpeta_padre: $("#carpetaPadre").val() || null
+        carpeta_padre: $("#idCarpetaPadre").val() || null
     };
 
     if (!Carpeta.nombre) {
@@ -68,6 +101,62 @@ function GuardarCarpeta() {
             }
         },
         error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+    });
+}
+
+// Subir archivo
+function SubirArchivo() {
+    var ArchivoSelecionado = $("#file")[0].files[0];
+    var Carpeta = {
+        id_carpeta: $("#idCarpeta2").val() || null,        
+    };
+
+    // Validar que se haya seleccionado un archivo
+    if (!ArchivoSelecionado) {
+        Swal.fire("Campo obligatorio", "No ingresó ningún archivo para subir", "warning");
+        return;
+    }
+
+    // Validar tamaño del archivo (10 MB como máximo)
+    if (ArchivoSelecionado.size > 10 * 1024 * 1024) {
+        Swal.fire("Archivo demasiado grande", "El archivo no debe superar los 10 MB", "error");
+        return;
+    }
+
+    // Validar tipo de archivo permitido
+    const tiposPermitidos = ["image/jpeg", "image/png", "application/pdf"];
+    if (!tiposPermitidos.includes(ArchivoSelecionado.type)) {
+        Swal.fire("Tipo de archivo no permitido", "Solo se permiten imágenes y PDFs", "error");
+        return;
+    }
+
+    // Preparar el objeto FormData
+    var request = new FormData();
+    request.append("CARPETAJSON", JSON.stringify(Carpeta));
+    request.append("ARCHIVO", ArchivoSelecionado);
+
+    showLoadingAlert("Procesando", "Subiendo archivo...");
+
+    jQuery.ajax({
+        url: config.subirArchivoUrl,
+        type: "POST",
+        data: request,
+        processData: false,
+        contentType: false,
+        success: function (data) {
+            Swal.close();
+            $("#subirArchivo").modal("hide");
+
+            if (data.Respuesta) {
+                Swal.fire("Éxito", data.Mensaje, "success");
+                cargarArchivos()
+            } else {
+                Swal.fire("Error", data.Mensaje, "error");
+            }
+        },
+        error: (xhr) => {
+            Swal.fire("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+        }
     });
 }
 
@@ -134,8 +223,7 @@ function cargarCarpetas() {
                                     <ul class="dropdown-menu dropdown-menu-end">
                                         <li>
                                             <a class="dropdown-item btn-crearSubCarpeta" href="#"
-                                            data-carpetaPadre-id="${carpeta.id_carpeta}" 
-                                            data-carpeta-nombre="${carpeta.nombre}">
+                                            data-carpetaPadre-id="${carpeta.id_carpeta}">
                                             <i class="fas fa-plus me-2"></i>Crear carpeta</a>
                                         </li>
                                         <li>
@@ -178,6 +266,59 @@ function cargarCarpetas() {
     });
 }
 
+// Función para determinar ícono y color según el tipo de archivo
+function obtenerIconoYColor(tipoArchivo) {
+    let icono = '';
+    let color = '';
+
+    switch (tipoArchivo.toLowerCase()) {
+        case '.pdf':
+            icono = 'fa-file-pdf';
+            color = 'text-danger';
+            break;
+        case '.doc':
+        case '.docx':
+            icono = 'fa-file-word';
+            color = 'text-primary';
+            break;
+        case '.xls':
+        case '.xlsx':
+            icono = 'fa-file-excel';
+            color = 'text-success';
+            break;
+        case '.png':
+        case '.jpg':
+        case '.jpeg':
+        case '.gif':
+            icono = 'fa-file-image';
+            color = 'text-warning';
+            break;
+        case '.zip':
+        case '.rar':
+            icono = 'fa-file-archive';
+            color = 'text-secondary';
+            break;
+        case '.txt':
+            icono = 'fa-file-alt';
+            color = 'text-info';
+            break;
+        case '.mp3':
+            icono = 'fa-file-audio';
+            color = 'text-success';
+            break;
+        case '.mp4':
+            icono = 'fa-file-video';
+            color = 'text-danger';
+            break;
+        default:
+            icono = 'fa-file';
+            color = 'text-muted';
+            break;
+    }
+
+    return { icono, color };
+}
+
 function cargarArchivos() {
     $.ajax({
         url: config.listarArchivosUrl,
@@ -189,54 +330,7 @@ function cargarArchivos() {
                 let html = '';
 
                 $.each(response.data, function (index, archivo) {
-                    // Determinar el ícono según el tipo de archivo
-                    let icono = '';
-                    let color = '';
-
-                    switch (archivo.tipo.toLowerCase()) {
-                        case '.pdf':
-                            icono = 'fa-file-pdf';
-                            color = 'text-danger';
-                            break;
-                        case '.doc':
-                        case '.docx':
-                            icono = 'fa-file-word';
-                            color = 'text-primary';
-                            break;
-                        case '.xls':
-                        case '.xlsx':
-                            icono = 'fa-file-excel';
-                            color = 'text-success';
-                            break;
-                        case '.png':
-                        case '.jpg':
-                        case '.jpeg':
-                        case '.gif':
-                            icono = 'fa-file-image';
-                            color = 'text-warning';
-                            break;
-                        case '.zip':
-                        case '.rar':
-                            icono = 'fa-file-archive';
-                            color = 'text-secondary';
-                            break;
-                        case '.txt':
-                            icono = 'fa-file-alt';
-                            color = 'text-info';
-                            break;
-                        case '.mp3':
-                            icono = 'fa-file-audio';
-                            color = 'text-success';
-                            break;
-                        case '.mp4':
-                            icono = 'fa-file-video';
-                            color = 'text-danger';
-                            break;
-                        default:
-                            icono = 'fa-file';
-                            color = 'text-muted';
-                            break;
-                    }
+                    const { icono, color } = obtenerIconoYColor(archivo.tipo);
 
                     html += `
                     <div class="col-sm-12 col-md-12 col-lg-6">
@@ -315,145 +409,6 @@ $(document).ready(function () {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// EN DESARROLLO (Abrir modal para subir archivo)
-function abrirModalSubirArchivo(json) {
-    $("#idCarpeta2").val("0");
-    $("#nombre2").val("");
-    $("#file").val("");
-
-    if (json !== null) {
-        $("#idCarpeta2").val(json.id_carpeta);
-        $("#nombre2").val(json.nombre);
-    }
-    $("#subirArchivo").modal("show");
-}
-
-// EN DESARROLLO (Seleccionar los datos de la carpeta para subir un archivo)
-$(document).on('click', '.btn-subirArchivo', function (e) {
-    e.preventDefault();
-    const data = {
-        id_carpeta: $(this).data('carpeta-id'),
-        nombre: $(this).data('carpeta-nombre')
-    };
-    abrirModalSubirArchivo(data);
-});
-
-// EN DESARROLLO (Subir archivo)
-function SubirArchivo() {
-    var ArchivoSelecionado = $("#file")[0].files[0];
-    var Carpeta = {
-        id_carpeta: 9,
-        nombre: "Música",
-    };
-
-    // Validar que se haya seleccionado un archivo
-    if (!ArchivoSelecionado) {
-        Swal.fire("Campo obligatorio", "No ingresó ningún archivo para subir", "warning");
-        return;
-    }
-
-    // Validar tamaño del archivo (10 MB como máximo)
-    if (ArchivoSelecionado.size > 10 * 1024 * 1024) {
-        Swal.fire("Archivo demasiado grande", "El archivo no debe superar los 10 MB", "error");
-        return;
-    }
-
-    // Validar tipo de archivo permitido
-    const tiposPermitidos = ["image/jpeg", "image/png", "application/pdf"];
-    if (!tiposPermitidos.includes(ArchivoSelecionado.type)) {
-        Swal.fire("Tipo de archivo no permitido", "Solo se permiten imágenes y PDFs", "error");
-        return;
-    }
-
-    // Preparar el objeto FormData
-    var request = new FormData();
-    request.append("CARPETAJSON", JSON.stringify(Carpeta));
-    request.append("ARCHIVO", ArchivoSelecionado);
-
-    showLoadingAlert("Procesando", "Subiendo archivo...");
-
-    jQuery.ajax({
-        url: config.subirArchivoUrl,
-        type: "POST",
-        data: request,
-        processData: false,
-        contentType: false,
-        success: function (data) {
-            Swal.close();
-            $("#subirArchivo").modal("hide");
-
-            if (data.Respuesta) {
-                Swal.fire("Éxito", data.Mensaje, "success");
-                // Aquí puedes agregar lógica adicional, como recargar la lista de archivos
-            } else {
-                Swal.fire("Error", data.Mensaje, "error");
-            }
-        },
-        error: (xhr) => {
-            Swal.fire("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
-        }
-    });
-}
-
-
-
-$(document).on('click', '.btn-crearSubCarpeta', function (e) {
-    e.preventDefault();
-
-    const idCarpetaPadre = $(this).data('carpetapadre-id');
-    $('#idCarpetaPadre').val(idCarpetaPadre);
-    $('#createSubCarpeta').modal('show');
-});
-
-function GuardarSubCarpeta() {
-    const SubCarpeta = {
-        nombre: $('#subcarpetanombre').val(),
-        carpeta_padre: $('#idCarpetaPadre').val()
-    };
-
-    if (!SubCarpeta.nombre) {
-        Swal.fire("Campo obligatorio", "El nombre de la subcarpeta no puede estar vacío", "warning");
-        return;
-    }
-
-    showLoadingAlert("Procesando", "Guardando subcarpeta...");
-
-    jQuery.ajax({
-        url: guardarSubCarpetaUrl, // Usa la misma URL para guardar carpetas
-        type: "POST",
-        data: JSON.stringify(SubCarpeta),
-        dataType: "json",
-        contentType: "application/json; charset=utf-8",
-        success: function (data) {
-            Swal.close();
-            $('#createSubCarpeta').modal('hide');
-
-            if (data.Resultado) {
-                Swal.fire("¡Éxito!", data.Mensaje || "Subcarpeta creada correctamente", "success");
-                cargarCarpetas();
-            } else {
-                Swal.fire("Error", data.Mensaje || "No se pudo crear la subcarpeta", "error");
-            }
-        },
-        error: (xhr) => {
-            Swal.fire("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
-        }
-    });
-}
 
 
 
