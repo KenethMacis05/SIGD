@@ -38,12 +38,10 @@ $(document).on('click', '.btn-crearSubCarpeta', function (e) {
 
 function abrirModalSubirArchivo(json) {
     $("#idCarpeta2").val("0");
-    $("#nombre2").val("");
     $("#file").val("");
 
     if (json !== null) {
-        $("#idCarpeta2").val(json.id_carpeta);
-        $("#nombre2").val(json.nombre);
+        $("#idCarpeta2").val(json.id_carpeta);        
     }
     $("#subirArchivo").modal("show");
 }
@@ -52,8 +50,7 @@ function abrirModalSubirArchivo(json) {
 $(document).on('click', '.btn-subirArchivo', function (e) {
     e.preventDefault();
     const data = {
-        id_carpeta: $(this).data('carpeta-id'),
-        nombre: $(this).data('carpeta-nombre')
+        id_carpeta: $(this).data('carpeta-id'),        
     };
     abrirModalSubirArchivo(data);
 });
@@ -95,6 +92,8 @@ function GuardarCarpeta() {
                 showAlert("¡Éxito!", mensaje, "success");
                 cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
                 cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
+                $("#nombre").val("");
+
             }
             else {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "No se pudo crear la carpeta" : "No se pudo actualizar la carpeta");
@@ -109,7 +108,7 @@ function GuardarCarpeta() {
 function SubirArchivo() {
     var ArchivoSelecionado = $("#file")[0].files[0];
     var Carpeta = {
-        id_carpeta: $("#idCarpeta2").val() || null,        
+        id_carpeta: $("#idCarpeta2").val() || null,
     };
 
     // Validar que se haya seleccionado un archivo
@@ -268,59 +267,6 @@ function cargarCarpetas(url, contenedorId) {
     });
 }
 
-// Función para determinar ícono y color según el tipo de archivo
-function obtenerIconoYColor(tipoArchivo) {
-    let icono = '';
-    let color = '';
-
-    switch (tipoArchivo.toLowerCase()) {
-        case '.pdf':
-            icono = 'fa-file-pdf';
-            color = 'text-danger';
-            break;
-        case '.doc':
-        case '.docx':
-            icono = 'fa-file-word';
-            color = 'text-primary';
-            break;
-        case '.xls':
-        case '.xlsx':
-            icono = 'fa-file-excel';
-            color = 'text-success';
-            break;
-        case '.png':
-        case '.jpg':
-        case '.jpeg':
-        case '.gif':
-            icono = 'fa-file-image';
-            color = 'text-warning';
-            break;
-        case '.zip':
-        case '.rar':
-            icono = 'fa-file-archive';
-            color = 'text-secondary';
-            break;
-        case '.txt':
-            icono = 'fa-file-alt';
-            color = 'text-info';
-            break;
-        case '.mp3':
-            icono = 'fa-file-audio';
-            color = 'text-success';
-            break;
-        case '.mp4':
-            icono = 'fa-file-video';
-            color = 'text-danger';
-            break;
-        default:
-            icono = 'fa-file';
-            color = 'text-muted';
-            break;
-    }
-
-    return { icono, color };
-}
-
 function cargarArchivos() {
     $.ajax({
         url: config.listarArchivosUrl,
@@ -398,13 +344,10 @@ function handleTabClick(activeTabId) {
         // Cargar todas las carpetas
         cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
     }
-
-    console.log("Tab activo:", activeTabId);
 }
 
 // Inicialización
 $(document).ready(function () {
-    /* cargarCarpetas();*/
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos();
 });
