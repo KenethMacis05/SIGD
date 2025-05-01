@@ -1215,6 +1215,73 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE usp_LeerArchivosDelaCarpetaRaizRecientes
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si el usuario tiene una carpeta DEFAULT
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM CARPETA 
+        WHERE fk_id_usuario = @IdUsuario 
+          AND nombre = CONCAT('DEFAULT_', (SELECT usuario FROM USUARIOS WHERE id_usuario = @IdUsuario))
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no tiene una carpeta raíz (DEFAULT)'
+        RETURN
+    END
+
+    -- Obtener el ID de la carpeta raíz DEFAULT del usuario
+    DECLARE @IdCarpetaRaiz INT;
+    SELECT @IdCarpetaRaiz = id_carpeta
+    FROM CARPETA
+    WHERE fk_id_usuario = @IdUsuario
+      AND nombre = CONCAT('DEFAULT_', (SELECT usuario FROM USUARIOS WHERE id_usuario = @IdUsuario))
+      AND estado = 1;
+
+    -- Validar si se encontró la carpeta raíz
+    IF @IdCarpetaRaiz IS NULL
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'No se encontró la carpeta raíz del usuario'
+        RETURN
+    END
+
+    -- Seleccionar los 4 archivos más recientes de la carpeta raíz
+    SELECT TOP 4
+        a.id_archivo,
+        a.nombre AS nombre_archivo,
+        a.ruta,
+        a.size,
+        a.tipo,
+        a.fecha_subida,
+        a.estado,
+        a.fk_id_carpeta,
+        c.nombre AS nombre_carpeta
+    FROM ARCHIVO a
+    INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+    WHERE c.id_carpeta = @IdCarpetaRaiz -- Solo archivos de la carpeta raíz
+      AND a.estado = 1 -- Archivos activos
+    ORDER BY a.fecha_subida DESC;
+
+    -- Establecer resultado de éxito
+    SET @Resultado = 1
+    SET @Mensaje = 'Archivos cargados correctamente'
+END
+GO
 -----------------------------------------------------------------------------------------------------------------
 
 -- (7) PROCEDIMIENTO ALMACENADO PARA OBTENER LOS TODOS LOS ARCHIVOS DEL USUARIO
