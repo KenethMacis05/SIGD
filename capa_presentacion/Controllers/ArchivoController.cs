@@ -125,6 +125,26 @@ namespace capa_presentacion.Controllers
                 string mensaje;                
 
                 List<ARCHIVO> lst = new List<ARCHIVO>();
+                lst = CN_Archivo.ListarArchivosRecientes(usuario.id_usuario, out resultado, out mensaje);
+
+                return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { resultado = 0, mensaje = "Error al obtener los archivos recientes: " + ex.Message, data = new List<ARCHIVO>() }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpGet]
+        public JsonResult ListarArchivos()
+        {
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                int resultado;
+                string mensaje;
+
+                List<ARCHIVO> lst = new List<ARCHIVO>();
                 lst = CN_Archivo.ListarArchivos(usuario.id_usuario, out resultado, out mensaje);
 
                 return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);

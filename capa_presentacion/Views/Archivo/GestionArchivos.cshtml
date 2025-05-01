@@ -67,7 +67,7 @@
                 <hr>
                 <!-- Archivos -->
 
-                <div class="row g-3" id="contenedor-archivos">
+                <div class="row g-3" id="contenedor-archivos-recientes">
                     <!-- Los archivos se cargarán dinámicamente aquí -->
                 </div>
 
@@ -103,7 +103,7 @@
                 <hr>
                 <!-- Archivos -->
 
-                <div class="row g-3" id="contenedor-archivos">
+                <div class="row g-3" id="contenedor-archivos-todos">
                     <!-- Los archivos se cargarán dinámicamente aquí -->
                 </div>
             </div>
@@ -210,7 +210,8 @@
         const config = {
             listarCarpetasRecientesUrl: '@Url.Action("ListarCarpetasRecientes", "Archivo")',
             listarCarpetasUrl: '@Url.Action("ListarCarpetas", "Archivo")',
-            listarArchivosUrl: '@Url.Action("ListarArchivosRecientes", "Archivo")',
+            listarArchivosRecientesUrl: '@Url.Action("ListarArchivosRecientes", "Archivo")',
+            listarArchivosUrl: '@Url.Action("ListarArchivos", "Archivo")',
             guardarCarpetaUrl: '@Url.Action("GuardarCarpeta", "Archivo")',
             eliminarCarpetaUrl: '@Url.Action("EliminarCarpeta", "Archivo")',
             compartirCarpetaUrl: '@Url.Action("CompartirCarpeta", "Archivo")',

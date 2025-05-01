@@ -267,16 +267,16 @@ function cargarCarpetas(url, contenedorId) {
     });
 }
 
-function cargarArchivos() {
+function cargarArchivos(url, contenedorId) {
     $.ajax({
-        url: config.listarArchivosUrl,
+        url: url,
         type: 'GET',
         dataType: 'json',
-        beforeSend: () => $('#contenedor-archivos').LoadingOverlay("show"),
+        beforeSend: () => $(`#${contenedorId}`).LoadingOverlay("show"),
         success: function (response) {
+            console.log(response.data)
             if (response.data && response.data.length > 0) {
                 let html = '';
-
                 $.each(response.data, function (index, archivo) {
                     const { icono, color } = obtenerIconoYColor(archivo.tipo);
 
@@ -306,15 +306,15 @@ function cargarArchivos() {
                     </div>`;
                 });
 
-                $('#contenedor-archivos').html(html);
-            } else {
-                $('#contenedor-archivos').html('<div class="alert alert-light">No hay archivos disponibles</div>');
+                $(`#${contenedorId}`).html(html);
+            } else {                
+                $(`#${contenedorId}`).html('<div class="alert alert-light">No hay archivos disponibles</div>');
             }
         },
         error: function () {
-            $('#contenedor-archivos').html('<div class="alert alert-danger">Error al cargar los archivos</div>');
+            $(`#${contenedorId}`).html('<div class="alert alert-danger">Error al cargar las archivos</div>');            
         },
-        complete: () => $('#contenedor-archivos').LoadingOverlay("hide")
+        complete: () => $(`#${contenedorId}`).LoadingOverlay("hide")
     });
 }
 
@@ -340,16 +340,18 @@ function handleTabClick(activeTabId) {
     if (activeTabId === "home") {
         // Cargar carpetas recientes
         cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+        cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     } else if (activeTabId === "archivos") {
         // Cargar todas las carpetas
         cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
+        cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
     }
 }
 
 // Inicialización
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-    cargarArchivos();
+    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
 });
 
 

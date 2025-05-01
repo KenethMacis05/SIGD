@@ -59,7 +59,8 @@ VALUES
     ('Permisos', 'EliminarPermiso', 'Eliminar permiso de un rol', 'API'),
 
     ('Archivo', 'ListarArchivosRecientes', 'Listar archivos recientes del usuario', 'API'),
-    ('Archivo', 'ListarCarpetas', 'Listar todas las carpetas', 'API')
+    ('Archivo', 'ListarCarpetas', 'Listar todas las carpetas', 'API'),
+    ('Archivo', 'ListarArchivos', 'Listar todos archivos de la carpeta raiz', 'API')
 GO
 --------------------------------------------------------------------------------------------------------------------
 
