@@ -83,12 +83,20 @@ namespace capa_presentacion.Filters
             {
 
                 CN_Permisos CN_Permisos = new CN_Permisos();
-                bool tienePermiso = CN_Permisos.VerificarPermiso(sesionUsuario.id_usuario, controlador, accion);
+                int resultadoPermiso = CN_Permisos.VerificarPermiso(sesionUsuario.id_usuario, controlador, accion);
 
-                if (!tienePermiso)
+                if (resultadoPermiso == -1)
                 {
+                    // El controlador o acción no existen en la base de datos
+                    controller.TempData["MensajeErrorPermisos"] = "El controlador o la acción no existen en la base de datos.";
                     filterContext.Result = new RedirectResult("~/Home/Index");
-                    controller.ViewBag.MensajeNoTienePermisos = "Usted no tiene permisos para realizar esta acción";
+                    return;
+                }
+                else if (resultadoPermiso == 0)
+                {
+                    // El usuario no tiene permisos para acceder
+                    controller.TempData["MensajeErrorPermisos"] = "Usted no tiene permisos para realizar esta acción.";
+                    filterContext.Result = new RedirectResult("~/Home/Index");
                     return;
                 }
             }

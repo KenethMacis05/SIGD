@@ -16,31 +16,77 @@ namespace capa_presentacion.Controllers
         [HttpGet]
         public ActionResult Index(int? error)
         {
+            // Verificar si existe una sesión activa
+            if (Session["UsuarioAutenticado"] != null)
+            {
+                // Obtener el usuario autenticado de la sesión
+                USUARIOS UsuarioAutenticado = (USUARIOS)Session["UsuarioAutenticado"];
+
+                // Verificar si el usuario necesita restablecer su contraseña
+                if (UsuarioAutenticado.reestablecer)
+                {
+                    // Redirigir a la vista de restablecer contraseña
+                    return RedirectToAction("Reestablecer", "Acceso");
+                }
+
+                // Si no necesita restablecer, redirigir a la página de inicio
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Si no hay sesión activa, mostrar la vista de login
             return View();
         }
 
         [HttpGet]
         public ActionResult Reestablecer()
         {
+            // Verificar si existe una sesión y el usuario está autenticado
+            if (Session["UsuarioAutenticado"] == null)
+            {
+                TempData["ErrorMessage"] = "Sesión no válida. Por favor, inicie sesión nuevamente.";
+                return RedirectToAction("Index", "Acceso");
+            }
+
+            // Verificar si el usuario ya restableció su contraseña
+            USUARIOS UsuarioAutenticado = (USUARIOS)Session["UsuarioAutenticado"];
+            if (!UsuarioAutenticado.reestablecer)
+            {
+                TempData["ErrorMessage"] = "El usuario ya ha restablecido la contraseña.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            // Mostrar la vista de restablecer contraseña
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public JsonResult Reestablecer(string passwordActual, string nuevaPassword, string confirmarPassword)
+        public ActionResult Reestablecer(string passwordActual, string nuevaPassword, string confirmarPassword)
         {
             try
             {
-                if (string.IsNullOrEmpty(Session["IdUsuario"]?.ToString()))
+                // Validar si hay una sesión activa
+                if (Session["UsuarioAutenticado"] == null || string.IsNullOrEmpty(Session["IdUsuario"]?.ToString()))
                 {
-                    return Json(new { success = false, message = "Sesión no válida" });
+                    TempData["ErrorMessage"] = "Sesión no válida. Por favor, inicie sesión nuevamente.";
+                    return RedirectToAction("Index", "Acceso");
                 }
 
-                int idUsuario = Convert.ToInt32(Session["IdUsuario"]);
+                // Obtener el usuario autenticado de la sesión
+                USUARIOS UsuarioAutenticado = (USUARIOS)Session["UsuarioAutenticado"];
 
+                // Verificar si el usuario ya restableció su contraseña
+                if (!UsuarioAutenticado.reestablecer)
+                {
+                    TempData["ErrorMessage"] = "El usuario ya ha restablecido la contraseña.";
+                    return RedirectToAction("Index", "Home");
+                }
+
+                // Validar si las contraseñas coinciden
                 if (nuevaPassword != confirmarPassword)
                 {
-                    return Json(new { success = false, message = "Las contraseñas no coinciden" });
+                    TempData["ErrorMessage"] = "Las contraseñas no coinciden";
+                    return RedirectToAction("Reestablecer", "Acceso");
                 }
 
                 // Encriptar contraseñas
@@ -49,7 +95,7 @@ namespace capa_presentacion.Controllers
 
                 // Llamar al método de capa de datos
                 int resultado = CD_Usuarios.ReestablecerContrasena(
-                    idUsuario,
+                    Convert.ToInt32(Session["IdUsuario"]),
                     contrasenaActualHash,
                     nuevaContraseñaHash,
                     out string mensaje
@@ -58,17 +104,20 @@ namespace capa_presentacion.Controllers
                 if (resultado == 1)
                 {
                     // Actualizar sesión
-                    var usuarioActualizado = CD_Usuarios.ObtenerUsuarioPorId(idUsuario);
+                    var usuarioActualizado = CD_Usuarios.ObtenerUsuarioPorId(Convert.ToInt32(Session["IdUsuario"]));
                     Session["UsuarioAutenticado"] = usuarioActualizado;
 
-                    return Json(new { success = true });
+                    TempData["SuccessMessage"] = "Contraseña reestablecida correctamente.";
+                    return RedirectToAction("Index", "Home");
                 }
 
-                return Json(new { success = false, message = mensaje });
+                TempData["ErrorMessage"] = mensaje ?? "Error al reestablecer la contraseña.";
+                return RedirectToAction("Reestablecer", "Acceso");
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error: " + ex.Message });
+                TempData["ErrorMessage"] = "Error: " + ex.Message;
+                return RedirectToAction("Reestablecer", "Acceso");
             }
         }
 

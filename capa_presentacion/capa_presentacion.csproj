@@ -119,6 +119,7 @@
     <Compile Include="Controllers\PermisosController.cs" />
     <Compile Include="Controllers\PlanificacionController.cs" />
     <Compile Include="Controllers\RolController.cs" />
+    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Controllers\UsuarioController.cs" />
     <Compile Include="Filters\VerificarSession.cs" />
     <Compile Include="Global.asax.cs">
@@ -348,6 +349,7 @@
     <Content Include="Content\DataTables\css\semanticui.scss" />
     <Content Include="Content\DataTables\css\mixins.scss" />
     <Content Include="Content\DataTables\css\common.scss" />
+    <None Include="Properties\PublishProfiles\MyFirstAzureWebAppASP - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.7.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.min.js" />
@@ -453,6 +455,7 @@
     <Content Include="Scripts\modernizr-2.8.3.js" />
     <Content Include="Scripts\popper.min.js" />
     <Content Include="Scripts\sweetalert2.min.js" />
+    <Content Include="Scripts\Views\Acceso.js" />
     <Content Include="Scripts\Views\Archivos.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\Roles.js" />
@@ -495,6 +498,7 @@
     <Content Include="Views\Archivo\GestionArchivos.cshtml" />
     <Content Include="Views\Archivo\CarpetasCompartidas.cshtml" />
     <Content Include="Views\Archivo\ArchivosCompartidos.cshtml" />
+    <Content Include="Views\Test\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

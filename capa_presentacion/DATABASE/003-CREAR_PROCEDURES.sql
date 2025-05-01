@@ -41,7 +41,7 @@ DROP PROCEDURE usp_LeerRoles
 GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_CrearRol')
-DROP PROCEDURE usp_CrearRol
+DROP PROCEDURE usp_CrearRolver
 GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ActualizarRol')
@@ -63,6 +63,75 @@ GO
 IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_AsignarPermiso')
 DROP PROCEDURE usp_AsignarPermiso
 GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerPermisosNoAsignados')
+DROP PROCEDURE usp_LeerPermisosNoAsignados
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerCarpetaRecientes')
+DROP PROCEDURE usp_LeerCarpetaRecientes
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerCarpeta')
+DROP PROCEDURE usp_LeerCarpeta
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerCarpetasHijas')
+DROP PROCEDURE usp_LeerCarpetasHijas
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_CrearCarpeta')
+DROP PROCEDURE usp_CrearCarpeta
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ActualizarCarpeta')
+DROP PROCEDURE usp_ActualizarCarpeta
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_EliminarCarpeta')
+DROP PROCEDURE usp_EliminarCarpeta
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_RestablecerCarpeta')
+DROP PROCEDURE usp_RestablecerCarpeta
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerArchivosRecientes')
+DROP PROCEDURE usp_LeerArchivosRecientes
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerArchivos')
+DROP PROCEDURE usp_LeerArchivos
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerArchivosPorCarpeta')
+DROP PROCEDURE usp_LeerArchivosPorCarpeta
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_SubirArchivo')
+DROP PROCEDURE usp_SubirArchivo
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_EditarArchivo')
+DROP PROCEDURE usp_SubirArchivo
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_EliminarArchivo')
+DROP PROCEDURE usp_EliminarArchivo
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_RestablecerArchivo')
+DROP PROCEDURE usp_RestablecerArchivo
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_EliminarCarpetasExpiradas')
+DROP PROCEDURE usp_EliminarCarpetasExpiradas
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_EliminarArchivosExpiradas')
+DROP PROCEDURE usp_EliminarArchivosExpiradas
+GO
+
 --------------------------------------------------------------------------------------------------------------------
 
 -- (1) PROCEDIMIENTO ALMACENADO PARA INICIAR SESIÓN DE USUARIO
@@ -144,6 +213,55 @@ END
 GO
 
 -- PROCEDIMIENTO ALMACENADO PARA VERIFICAR LOS PERMISOS DE UN USUARIO
+--CREATE OR ALTER PROCEDURE usp_VerificarPermiso
+--    @IdUsuario INT,
+--    @Controlador VARCHAR(60),
+--    @Accion VARCHAR(50)
+--AS
+--BEGIN
+--    SET NOCOUNT ON;
+    
+--    DECLARE @TienePermiso BIT = 0;
+--    DECLARE @IdRol INT;
+    
+--    -- Obtener el rol del usuario
+--    SELECT @IdRol = fk_rol 
+--    FROM USUARIOS 
+--    WHERE id_usuario = @IdUsuario AND estado = 1;
+    
+--    -- Si no encuentra usuario o está inactivo
+--    IF @IdRol IS NULL
+--    BEGIN
+--        SELECT @TienePermiso AS tiene_permiso;
+--        RETURN;
+--    END;
+    
+--    -- Verificar si la acción es pública (no requiere permiso)
+--    IF (@Controlador = 'Home' AND @Accion = 'Index')
+--    BEGIN
+--        SET @TienePermiso = 1;
+--    END
+--    ELSE
+--    BEGIN
+--        -- Verificar permiso en la tabla de permisos
+--        IF EXISTS (
+--            SELECT 1 
+--            FROM PERMISOS p
+--            INNER JOIN CONTROLLER c ON p.fk_controlador = c.id_controlador
+--            WHERE p.fk_rol = @IdRol
+--            AND c.controlador = @Controlador
+--            AND c.accion = @Accion
+--            AND p.estado = 1            
+--        )
+--        BEGIN
+--            SET @TienePermiso = 1;
+--        END;
+--    END;
+    
+--    SELECT @TienePermiso AS tiene_permiso;
+--END
+--GO
+
 CREATE OR ALTER PROCEDURE usp_VerificarPermiso
     @IdUsuario INT,
     @Controlador VARCHAR(60),
@@ -154,19 +272,40 @@ BEGIN
     
     DECLARE @TienePermiso BIT = 0;
     DECLARE @IdRol INT;
-    
+    DECLARE @ControladorExiste BIT;
+
+    -- Verificar si el controlador y acción existen en la tabla CONTROLLER
+    SET @ControladorExiste = (
+        SELECT CASE 
+            WHEN EXISTS (
+                SELECT 1 
+                FROM CONTROLLER 
+                WHERE controlador = @Controlador 
+                  AND accion = @Accion
+            ) THEN 1
+            ELSE 0
+        END
+    );
+
+    -- Si el controlador no existe, devolver resultado indicando que no se encontró
+    IF @ControladorExiste = 0
+    BEGIN
+        SELECT -1 AS tiene_permiso; -- -1 indica que el controlador no existe
+        RETURN;
+    END
+
     -- Obtener el rol del usuario
     SELECT @IdRol = fk_rol 
     FROM USUARIOS 
     WHERE id_usuario = @IdUsuario AND estado = 1;
-    
+
     -- Si no encuentra usuario o está inactivo
     IF @IdRol IS NULL
     BEGIN
-        SELECT @TienePermiso AS tiene_permiso;
+        SELECT @TienePermiso AS tiene_permiso; -- 0 indica que no tiene permisos
         RETURN;
     END;
-    
+
     -- Verificar si la acción es pública (no requiere permiso)
     IF (@Controlador = 'Home' AND @Accion = 'Index')
     BEGIN
@@ -185,7 +324,7 @@ BEGIN
             AND p.estado = 1            
         )
         BEGIN
-            SET @TienePermiso = 1;
+            SET @TienePermiso = 1; -- 1 indica que tiene permisos
         END;
     END;
     
@@ -331,40 +470,70 @@ BEGIN
     SET @Resultado = 0
     SET @Mensaje = ''
 
-    -- Verificar si el nombre de usuario ya existe
-    IF EXISTS (SELECT * FROM USUARIOS WHERE usuario = @Usuario)
-    BEGIN
-        SET @Mensaje = 'El nombre de usuario ya está en uso'
-        RETURN
-    END
+    BEGIN TRY
+        BEGIN TRANSACTION;
 
-    -- Verificar si el correo electrónico ya existe
-    IF EXISTS (SELECT * FROM USUARIOS WHERE correo = @Correo)
-    BEGIN
-        SET @Mensaje = 'El correo electrónico ya está registrado'
-        RETURN
-    END
+        -- Verificar si el nombre de usuario ya existe
+        IF EXISTS (SELECT * FROM USUARIOS WHERE usuario = @Usuario)
+        BEGIN
+            SET @Mensaje = 'El nombre de usuario ya está en uso'
+            RETURN
+        END
 
-	-- Verificar si el numero de telefono ya existe
-	IF EXISTS (SELECT * FROM USUARIOS WHERE telefono = @Telefono)
-    BEGIN
-        SET @Mensaje = 'El numero de telefono ya está registrado'
-        RETURN
-    END
+        -- Verificar si el correo electrónico ya existe
+        IF EXISTS (SELECT * FROM USUARIOS WHERE correo = @Correo)
+        BEGIN
+            SET @Mensaje = 'El correo electrónico ya está registrado'
+            RETURN
+        END
 
-    -- Insertar el nuevo usuario
-    INSERT INTO USUARIOS (pri_nombre, seg_nombre, pri_apellido, seg_apellido, usuario, contrasena, correo, telefono, fk_rol, estado)
-    VALUES (@PriNombre, @SegNombre, @PriApellido, @SegApellido, @Usuario, CONVERT(VARBINARY(64), @Clave), @Correo, @Telefono, @FkRol, @Estado)
+	       -- Verificar si el numero de telefono ya existe
+	       IF EXISTS (SELECT * FROM USUARIOS WHERE telefono = @Telefono)
+        BEGIN
+            SET @Mensaje = 'El numero de telefono ya está registrado'
+            RETURN
+        END
 
-    SET @Resultado = SCOPE_IDENTITY()
-    SET @Mensaje = 'Usuario registrado exitosamente'
+        -- Insertar el nuevo usuario
+        INSERT INTO USUARIOS (pri_nombre, seg_nombre, pri_apellido, seg_apellido, usuario, contrasena, correo, telefono, fk_rol, estado)
+        VALUES (@PriNombre, @SegNombre, @PriApellido, @SegApellido, @Usuario, CONVERT(VARBINARY(64), @Clave), @Correo, @Telefono, @FkRol, @Estado)
 
-    DECLARE @CarpetaRaiz VARCHAR(255) = CONCAT('DEFAULT_', @Usuario)
+        SET @Resultado = SCOPE_IDENTITY();        
 
-    -- Insertar la carpeta por defecto del usuario
-    INSERT INTO CARPETA (nombre, fk_id_usuario)
-    VALUES (@CarpetaRaiz, @Resultado)
+        -- Insertar la carpeta DEFAULT_
+        DECLARE @CarpetaRaiz VARCHAR(255) = CONCAT('DEFAULT_', @Usuario);
+        DECLARE @IdCarpetaRaiz INT;
+        
+        INSERT INTO CARPETA (nombre, fk_id_usuario)
+        VALUES (@CarpetaRaiz, @Resultado)
 
+        -- Validar si la carpeta DEFAULT_ existe
+        SELECT @IdCarpetaRaiz = id_carpeta 
+        FROM CARPETA 
+        WHERE nombre = @CarpetaRaiz;
+        
+        IF @IdCarpetaRaiz IS NULL
+        BEGIN
+            RAISERROR('La carpeta DEFAULT_ no existe', 16, 1)
+            RETURN
+        END
+
+        -- Insertar carpetas por defecto dentro de la carpeta DEFAULT_
+        INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre)
+        VALUES ('Fotos', @Resultado, @IdCarpetaRaiz),
+               ('Documentos', @Resultado, @IdCarpetaRaiz),
+               ('Videos', @Resultado, @IdCarpetaRaiz),
+               ('Música', @Resultado, @IdCarpetaRaiz);
+
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'Usuario registrado exitosamente'
+   END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = ERROR_MESSAGE();
+    END CATCH
 END
 GO
 --------------------------------------------------------------------------------------------------------------------
@@ -697,13 +866,19 @@ BEGIN
         RETURN
     END
 
-    -- Mostrar las 10 carpetas más recientes, excluyendo DEFAULT
-    SELECT TOP 10 * 
+	-- Mostrar las 10 carpetas más recientes que estén en la raíz (dentro de la carpeta DEFAULT del usuario)    
+	SELECT TOP 10 * 
     FROM CARPETA c
     INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
     WHERE fk_id_usuario = @IdUsuario 
       AND c.estado = 1 
       AND c.nombre <> CONCAT('DEFAULT_', u.usuario)
+	  AND c.carpeta_padre = (
+          SELECT id_carpeta 
+          FROM CARPETA 
+          WHERE fk_id_usuario = @IdUsuario 
+            AND nombre = CONCAT('DEFAULT_', u.usuario)
+      )
     ORDER BY c.fecha_registro DESC
 
     SET @Resultado = 1
@@ -711,6 +886,9 @@ BEGIN
 END
 GO
 
+--------------------------------------------------------------------------------------------------------------------
+
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER TODAS LAS CARPETAS DEL USUARIO
 CREATE PROCEDURE usp_LeerCarpeta
     @IdUsuario INT,
     @Resultado INT OUTPUT,
@@ -741,19 +919,61 @@ BEGIN
         RETURN
     END
 
-    -- Mostrar todas las carpetas, excluyendo DEFAULT
+    -- Mostrar todas las carpetas de la raiz, excluyendo DEFAULT
     SELECT * 
     FROM CARPETA c
     INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
     WHERE fk_id_usuario = @IdUsuario 
       AND c.estado = 1 
-      AND c.nombre <> CONCAT('DEFAULT_', u.usuario)
+      AND c.carpeta_padre = (
+          SELECT id_carpeta 
+          FROM CARPETA 
+          WHERE fk_id_usuario = @IdUsuario 
+            AND nombre = CONCAT('DEFAULT_', u.usuario)
+      )
     ORDER BY c.fecha_registro DESC
 
     SET @Resultado = 1
     SET @Mensaje = 'Carpetas cargadas correctamente'
 END
 GO
+
+----------------------------------------------------------------------------------------------------------------------
+
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER CARPETAS HIJAS
+CREATE OR ALTER PROCEDURE usp_LeerCarpetasHijas
+    @IdCarpetaPadre INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si la carpeta padre existe
+    IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpetaPadre)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'La carpeta padre no existe'
+        RETURN
+    END
+
+    -- Seleccionar todas las carpetas hijas de la carpeta padre especificada
+    SELECT 
+        c.id_carpeta,
+        c.nombre AS nombre_carpeta,
+        c.fecha_registro,
+        c.estado,
+        c.carpeta_padre
+    FROM CARPETA c
+    WHERE c.carpeta_padre = @IdCarpetaPadre
+      AND c.estado = 1 -- Opcional: Solo selecciona carpetas activas
+    ORDER BY c.fecha_registro DESC;
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Carpetas cargadas correctamente'
+END
+GO
+
 --------------------------------------------------------------------------------------------------------------------
 
 -- (2) PROCEDIMIENTO ALMACENADO PARA REGISTRAR UNA NUEVA CARPETA
@@ -936,6 +1156,7 @@ END
 GO
 
 ---------------------------------------------------------------------------------------------------------------
+-- (6) PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS RECIENTES DEL USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerArchivosRecientes
     @IdUsuario INT,
 	@Resultado INT OUTPUT,
@@ -952,7 +1173,20 @@ BEGIN
 		RETURN
 	END
 
-    -- Seleccionar los 10 archivos más recientes asociados a las carpetas del usuario
+    -- Validar si el usuario tiene una carpeta DEFAULT
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM CARPETA 
+        WHERE fk_id_usuario = @IdUsuario 
+          AND nombre = CONCAT('DEFAULT_', (SELECT usuario FROM USUARIOS WHERE id_usuario = @IdUsuario))
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no tiene una carpeta raíz (DEFAULT)'
+        RETURN
+    END
+
+    -- Seleccionar los 4 archivos más recientes asociados a las carpetas del usuario
     SELECT TOP 4
         a.id_archivo,
         a.nombre AS nombre_archivo,
@@ -967,7 +1201,13 @@ BEGIN
     INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
     WHERE c.fk_id_usuario = @IdUsuario
       AND a.estado = 1                
-      AND c.estado = 1                
+      AND c.estado = 1
+      AND c.carpeta_padre = (
+          SELECT id_carpeta 
+          FROM CARPETA 
+          WHERE fk_id_usuario = @IdUsuario 
+            AND nombre = CONCAT('DEFAULT_', (SELECT usuario FROM USUARIOS WHERE id_usuario = @IdUsuario))
+      )
     ORDER BY a.fecha_subida DESC;
 
 	SET @Resultado = 1
@@ -975,7 +1215,112 @@ BEGIN
 END
 GO
 
--- (1) PROCEDIMIENTO ALMACENADO PARA SUBIR UN ARCHIVO
+-----------------------------------------------------------------------------------------------------------------
+
+-- (7) PROCEDIMIENTO ALMACENADO PARA OBTENER LOS TODOS LOS ARCHIVOS DEL USUARIO
+CREATE OR ALTER PROCEDURE usp_LeerArchivos
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si la carpeta DEFAULT_ existe para el usuario
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM CARPETA 
+        WHERE fk_id_usuario = @IdUsuario 
+          AND nombre = CONCAT('DEFAULT_', (SELECT usuario FROM USUARIOS WHERE id_usuario = @IdUsuario))
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'La carpeta DEFAULT_ no existe para este usuario'
+        RETURN
+    END
+
+    -- Seleccionar todos los archivos de la carpeta DEFAULT_
+    SELECT 
+        a.id_archivo,
+        a.nombre AS nombre_archivo,
+        a.ruta,
+        a.size,
+        a.tipo,
+        a.fecha_subida,
+        a.estado,
+        a.fk_id_carpeta,
+        c.nombre AS nombre_carpeta
+    FROM ARCHIVO a
+    INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+    WHERE c.fk_id_usuario = @IdUsuario
+      AND c.estado = 1
+      AND a.estado = 1
+      AND c.nombre = CONCAT('DEFAULT_', (SELECT usuario FROM USUARIOS WHERE id_usuario = @IdUsuario))
+    ORDER BY a.fecha_subida DESC;
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Archivos cargados correctamente'
+END
+GO
+
+-----------------------------------------------------------------------------------------------------------------
+
+-- (8) PROCEDIMIENTO ALMACENADO PARA OBTENER TODOS LOS ARCHIVOS DE UNA CARPETA
+CREATE OR ALTER PROCEDURE usp_LeerArchivosPorCarpeta
+    @IdCarpeta INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        -- Validar si la carpeta existe
+        IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
+        BEGIN
+            SET @Resultado = 0
+            SET @Mensaje = 'La carpeta no existe'
+            RETURN
+        END
+
+        -- Seleccionar todos los archivos de la carpeta especificada
+        SELECT 
+            a.id_archivo,
+            a.nombre AS nombre_archivo,
+            a.ruta,
+            a.size,
+            a.tipo,
+            a.fecha_subida,
+            a.estado,
+            c.nombre AS nombre_carpeta
+        FROM ARCHIVO a
+        INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+        WHERE c.id_carpeta = @IdCarpeta
+          AND a.estado = 1                
+          AND c.estado = 1
+        ORDER BY a.fecha_subida DESC;
+
+        SET @Resultado = 1
+        SET @Mensaje = 'Archivos cargados correctamente'
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1
+        SET @Mensaje = ERROR_MESSAGE()
+    END CATCH
+END
+GO
+
+-----------------------------------------------------------------------------------------------------------------
+
+-- (9) PROCEDIMIENTO ALMACENADO PARA SUBIR UN ARCHIVO
 CREATE OR ALTER PROCEDURE usp_SubirArchivo
     @Nombre VARCHAR(60),
 	@Ruta VARCHAR(255),
@@ -1045,7 +1390,9 @@ BEGIN
 END
 GO
 
--- (2) PROCEDIMIENTO ALMACENADO PARA RENOMBRAR ARCHIVO
+-----------------------------------------------------------------------------------------------------------------
+
+-- (10) PROCEDIMIENTO ALMACENADO PARA RENOMBRAR ARCHIVO
 CREATE PROCEDURE usp_EditarArchivo
     @IdArchivo INT,
     @Nombre VARCHAR(60),
@@ -1080,7 +1427,9 @@ BEGIN
 END
 GO
 
--- (3) PROCEDIMIENTO ALMACENADO PARA ELIMINAR UN ARCHIVO
+-----------------------------------------------------------------------------------------------------------------
+
+-- (11) PROCEDIMIENTO ALMACENADO PARA ELIMINAR UN ARCHIVO
 CREATE PROCEDURE usp_EliminarArchivo
     @IdArchivo INT,
     @Resultado BIT OUTPUT
@@ -1099,7 +1448,9 @@ BEGIN
 END
 GO
 
--- (4) PROCEDIMIENTO ALMACENADO PARA RESTABLECER UN ARCHIVO
+------------------------------------------------------------------------------------------------------------------
+
+-- (12) PROCEDIMIENTO ALMACENADO PARA RESTABLECER UN ARCHIVO
 CREATE PROCEDURE usp_RestablecerArchivo
     @IdArchivo INT,
     @Resultado BIT OUTPUT
@@ -1118,7 +1469,9 @@ BEGIN
 END
 GO
 
--- (6) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UNA CARPETA
+-----------------------------------------------------------------------------------------------------------------
+
+-- (13) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UNA CARPETA
 CREATE PROCEDURE usp_EliminarCarpetasExpiradas
 AS
 BEGIN
@@ -1131,7 +1484,9 @@ BEGIN
 END
 GO
 
--- (6) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UN ARCHIVO
+-----------------------------------------------------------------------------------------------------------------
+
+-- (14) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UN ARCHIVO
 CREATE PROCEDURE usp_EliminarArchivosExpiradas
 AS
 BEGIN

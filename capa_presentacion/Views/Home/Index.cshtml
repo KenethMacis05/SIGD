@@ -13,4 +13,13 @@
             @ViewBag.Mensaje
         </div>
     }
+
+    @if (TempData["MensajeErrorPermisos"] != null)
+    {
+        <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            showAlert("Error", "@Html.Raw(TempData["MensajeErrorPermisos"])", "error", true);
+        });
+        </script>
+    }
 </div>

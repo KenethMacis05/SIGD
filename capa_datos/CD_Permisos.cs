@@ -11,9 +11,9 @@ namespace capa_datos
 {
     public class CD_Permisos
     {
-        public bool VerificarPermiso(int IdUsuario, string controlador, string accion)
+        public int VerificarPermiso(int IdUsuario, string controlador, string accion)
         {
-            bool tienePermiso = false;
+            int tienePermiso = -1;
 
             try
             {
@@ -30,7 +30,7 @@ namespace capa_datos
                     {
                         if (dr.Read())
                         {
-                            tienePermiso = Convert.ToBoolean(dr["tiene_permiso"]);
+                            tienePermiso = Convert.ToInt32(dr["tiene_permiso"]);
                         }
                     }
                 }

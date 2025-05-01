@@ -12,21 +12,24 @@ namespace capa_negocio
     {
         private CD_Permisos CD_Permisos = new CD_Permisos();
 
-        public bool VerificarPermiso(int IdUsuario, string controlador, string vista)
+        public int VerificarPermiso(int IdUsuario, string controlador, string vista)
         {
+            // Validar parámetros
             if (IdUsuario <= 0)
-                return false;
+                return -1; // Indica error en los parámetros (usuario inválido)
 
             if (string.IsNullOrEmpty(controlador) || string.IsNullOrEmpty(vista))
-                return false;
+                return -1; // Indica error en los parámetros (controlador o acción vacíos)
 
             try
             {
+                // Llamar a la capa de datos para verificar el permiso
                 return CD_Permisos.VerificarPermiso(IdUsuario, controlador, vista);
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                // Manejar excepciones: podrías registrar el error aquí
+                throw new Exception("Error al verificar permiso: " + ex.Message);
             }
         }
 
