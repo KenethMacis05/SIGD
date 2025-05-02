@@ -294,5 +294,77 @@ namespace capa_datos
             }
             return resultado;
         }
+
+        public bool EliminarCarpetaDefinitivamente(int id_carpeta, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_EliminarCarpetaDefinitivamente", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetro de entrada
+                    cmd.Parameters.AddWithValue("IdCarpeta", id_carpeta);
+
+                    // Agregar parámetro de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = resultado ? "Carpeta eliminada correctamente" : "La carpeta no existe";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al eliminar la carpeta: " + ex.Message;
+            }
+            return resultado;
+        }
+
+        public bool VaciarPapelera(int IdUsuario, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_VaciarPapelera", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetro de entrada
+                    cmd.Parameters.AddWithValue("IdUsuario", IdUsuario);
+
+                    // Agregar parámetro de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = resultado ? "Papelera eliminada correctamente" : "No se encontraron elementos para eliminar en la papelera.";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = $"Error al vaciar la papelera: {ex.Message}";
+            }
+            return resultado;
+        }
     }
 }

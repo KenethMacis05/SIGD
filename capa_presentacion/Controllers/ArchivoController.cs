@@ -40,7 +40,7 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        // Controlador para Listar carpetas recientes
+        // Controlador para Listar todas las carpetas
         [HttpGet]
         public JsonResult ListarCarpetas()
         {
@@ -54,7 +54,7 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        // Controlador para Guardar carpetas        
+        // Controlador para Crear o Editar carpetas        
         [HttpPost]
         public JsonResult GuardarCarpeta(CARPETA carpeta)
         {
@@ -75,7 +75,7 @@ namespace capa_presentacion.Controllers
             }
             else
             {
-                // Editar usuario existente
+                // Editar carpeta existente
                 resultado = CN_Carpeta.Editar(carpeta, out mensaje);
             }
 
@@ -89,6 +89,30 @@ namespace capa_presentacion.Controllers
             string mensaje = string.Empty;
 
             int resultado = CN_Carpeta.Eliminar(id_carpeta, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Controlador para Eliminar Difinitivamente una carpeta o archivo
+        public JsonResult EliminarDefinitivamente(int id_eliminar, string tipo_registro)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            // Validar parámetros
+            if (id_eliminar <= 0 || string.IsNullOrEmpty(tipo_registro) || (tipo_registro != "Carpeta" && tipo_registro != "Archivo"))
+            {
+                return Json(new { Respuesta = false, Mensaje = "Parámetros inválidos." }, JsonRequestBehavior.AllowGet);
+            }
+
+            if (tipo_registro == "Carpeta")
+            {             
+                resultado = CN_Carpeta.EliminarDefinitivamente(id_eliminar, out mensaje);
+            }
+            else
+            {
+                resultado = CN_Archivo.EliminarDefinitivamente(id_eliminar, out mensaje);
+            }
 
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
@@ -135,6 +159,7 @@ namespace capa_presentacion.Controllers
             }
         }
 
+        // Controlador para listar todos los archivos
         [HttpGet]
         public JsonResult ListarArchivos()
         {
@@ -153,66 +178,7 @@ namespace capa_presentacion.Controllers
             {
                 return Json(new { resultado = 0, mensaje = "Error al obtener los archivos recientes: " + ex.Message, data = new List<ARCHIVO>() }, JsonRequestBehavior.AllowGet);
             }
-        }
-        
-        [HttpGet]
-        public JsonResult ArchivosEliminados()
-        {
-            try
-            {
-                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-                int resultado;
-                string mensaje;
-
-                List<ARCHIVO> lst = new List<ARCHIVO>();
-                lst = CN_Archivo.ListarArchivos(usuario.id_usuario, out resultado, out mensaje);
-
-                return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { resultado = 0, mensaje = "Error al obtener los archivos recientes: " + ex.Message, data = new List<ARCHIVO>() }, JsonRequestBehavior.AllowGet);
-            }
-        }
-
-        [HttpGet]
-        public JsonResult ListarArchivosYCarpetasEliminados()
-        {
-            try
-            {
-                // Obtener el usuario autenticado desde la sesión
-                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-
-                if (usuario == null)
-                {
-                    return Json(new { resultado = 0, mensaje = "El usuario no está autenticado.", data = new { archivos = new List<ARCHIVO>(), carpetas = new List<CARPETA>() } }, JsonRequestBehavior.AllowGet);
-                }
-
-                int resultadoArchivos, resultadoCarpetas;
-                string mensajeArchivos, mensajeCarpetas;
-
-                // Obtener archivos eliminados
-                List<ARCHIVO> archivosEliminados = CN_Archivo.ListarArchivosElimandos(usuario.id_usuario, out resultadoArchivos, out mensajeArchivos);
-
-                // Obtener carpetas eliminadas
-                List<CARPETA> carpetasEliminadas = CN_Carpeta.ListarCarpetasEliminadas(usuario.id_usuario, out resultadoCarpetas, out mensajeCarpetas);
-
-                // Verificar los resultados de ambos métodos
-                if (resultadoArchivos == 0 && resultadoCarpetas == 0)
-                {
-                    return Json(new { resultado = 0, mensaje = "No se encontraron archivos ni carpetas eliminados para el usuario.", data = new { archivos = archivosEliminados, carpetas = carpetasEliminadas } }, JsonRequestBehavior.AllowGet);
-                }
-
-                // Combinar mensajes si ambos tienen éxito
-                string mensaje = $"Archivos: {mensajeArchivos}. Carpetas: {mensajeCarpetas}.";
-
-                return Json(new { resultado = 1, mensaje = mensaje, data = new { archivos = archivosEliminados, carpetas = carpetasEliminadas } }, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { resultado = 0, mensaje = "Error al obtener archivos y carpetas eliminados: " + ex.Message, data = new { archivos = new List<ARCHIVO>(), carpetas = new List<CARPETA>() } }, JsonRequestBehavior.AllowGet);
-            }
-        }
+        }        
 
         // Controlador para Subir archivos
         [HttpPost]
@@ -295,6 +261,56 @@ namespace capa_presentacion.Controllers
         }
         #endregion
 
+        // Controlador para Listar la papelera
+        [HttpGet]
+        public JsonResult ListarPapelera()
+        {
+            try
+            {
+                // Obtener el usuario autenticado desde la sesión
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+                if (usuario == null)
+                {
+                    return Json(new { resultado = 0, mensaje = "El usuario no está autenticado.", data = new { archivos = new List<ARCHIVO>(), carpetas = new List<CARPETA>() } }, JsonRequestBehavior.AllowGet);
+                }
+
+                int resultadoArchivos, resultadoCarpetas;
+                string mensajeArchivos, mensajeCarpetas;
+
+                // Obtener archivos eliminados
+                List<ARCHIVO> archivosEliminados = CN_Archivo.ListarArchivosElimandos(usuario.id_usuario, out resultadoArchivos, out mensajeArchivos);
+
+                // Obtener carpetas eliminadas
+                List<CARPETA> carpetasEliminadas = CN_Carpeta.ListarCarpetasEliminadas(usuario.id_usuario, out resultadoCarpetas, out mensajeCarpetas);
+
+                // Verificar los resultados de ambos métodos
+                if (resultadoArchivos == 0 && resultadoCarpetas == 0)
+                {
+                    return Json(new { resultado = 0, mensaje = "No se encontraron archivos ni carpetas eliminados para el usuario.", data = new { archivos = archivosEliminados, carpetas = carpetasEliminadas } }, JsonRequestBehavior.AllowGet);
+                }
+
+                // Combinar mensajes si ambos tienen éxito
+                string mensaje = $"Archivos: {mensajeArchivos}. Carpetas: {mensajeCarpetas}.";
+
+                return Json(new { resultado = 1, mensaje = mensaje, data = new { archivos = archivosEliminados, carpetas = carpetasEliminadas } }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { resultado = 0, mensaje = "Error al obtener archivos y carpetas eliminados: " + ex.Message, data = new { archivos = new List<ARCHIVO>(), carpetas = new List<CARPETA>() } }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // Controlador para Vaciar la papelera
+        [HttpPost]
+        public JsonResult VaciarPapelera()
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];            
+            string mensaje;
+
+            int resultado = CN_Carpeta.VaciarPapelera(usuario.id_usuario ,out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
         #region ArchivosCompartidos
 
         // Vista a la vista de Archivos Compartidos

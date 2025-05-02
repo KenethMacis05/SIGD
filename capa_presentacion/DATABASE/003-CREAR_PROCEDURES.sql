@@ -1105,24 +1105,34 @@ CREATE PROCEDURE usp_EliminarCarpeta
     @Resultado BIT OUTPUT
 AS
 BEGIN
-    SET @Resultado = 0
+    SET @Resultado = 0;
     
     IF EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
     BEGIN
+        -- Marcar la carpeta como eliminada
         UPDATE CARPETA
-		SET estado = 0,
-		fecha_eliminacion = GETDATE()
-		WHERE id_carpeta = @IdCarpeta;
-        SET @Resultado = 1
+        SET estado = 0,
+            fecha_eliminacion = GETDATE()
+        WHERE id_carpeta = @IdCarpeta;
+
+        -- Marcar carpetas hijas como eliminadas
+        UPDATE CARPETA
+        SET estado = 0,
+            fecha_eliminacion = GETDATE()
+        WHERE carpeta_padre = @IdCarpeta;
+
+        SET @Resultado = 1;
     END
 
     IF EXISTS (SELECT 1 FROM ARCHIVO WHERE fk_id_carpeta = @IdCarpeta)
     BEGIN
+        -- Marcar los archivos asociados como eliminados
         UPDATE ARCHIVO
-		SET estado = 0,
-		fecha_eliminacion = GETDATE()
-		WHERE fk_id_carpeta = @IdCarpeta;
-        SET @Resultado = 1
+        SET estado = 0,
+            fecha_eliminacion = GETDATE()
+        WHERE fk_id_carpeta = @IdCarpeta;
+
+        SET @Resultado = 1;
     END
 END
 GO
@@ -1155,6 +1165,38 @@ BEGIN
 END
 GO
 
+------------------------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE usp_EliminarCarpetaDefinitivamente
+    @IdCarpeta INT,
+    @Resultado BIT OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0;
+
+    -- Verificar si la carpeta existe
+    IF EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
+    BEGIN
+        -- Eliminar archivos dentro de la carpeta y subcarpetas
+        DELETE FROM ARCHIVO
+        WHERE fk_id_carpeta IN (
+            SELECT id_carpeta
+            FROM CARPETA
+            WHERE id_carpeta = @IdCarpeta OR fk_id_carpeta = @IdCarpeta
+        );
+
+        -- Eliminar carpetas hijas
+        DELETE FROM CARPETA
+        WHERE carpeta_padre = @IdCarpeta;
+
+        -- Eliminar la carpeta principal
+        DELETE FROM CARPETA
+        WHERE id_carpeta = @IdCarpeta;
+
+        SET @Resultado = 1;
+    END
+END
+GO
 ---------------------------------------------------------------------------------------------------------------
 -- (6) PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS RECIENTES DEL USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerArchivosRecientes
@@ -1498,7 +1540,7 @@ GO
 
 -----------------------------------------------------------------------------------------------------------------
 
--- (11) PROCEDIMIENTO ALMACENADO PARA ELIMINAR UN ARCHIVO
+-- (11) PROCEDIMIENTO ALMACENADO PARA ENVIAR A LA PAPELERA UN ARCHIVO
 CREATE PROCEDURE usp_EliminarArchivo
     @IdArchivo INT,
     @Resultado BIT OUTPUT
@@ -1517,6 +1559,43 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE usp_EliminarArchivoDefinitivamente
+    @IdArchivo INT,
+    @Resultado BIT OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0;
+
+    BEGIN TRY
+        -- Iniciar una transacción para asegurar la consistencia
+        BEGIN TRANSACTION;
+
+        -- Verificar si el archivo existe
+        IF EXISTS (SELECT 1 FROM ARCHIVO WHERE id_archivo = @IdArchivo)
+        BEGIN
+            -- Eliminar registros relacionados en DETALLEARCHIVO
+            DELETE FROM DETALLEARCHIVO
+            WHERE fk_id_archivo = @IdArchivo;
+
+            -- Eliminar el archivo de manera definitiva
+            DELETE FROM ARCHIVO
+            WHERE id_archivo = @IdArchivo;
+
+            -- Indicar que la operación fue exitosa
+            SET @Resultado = 1;
+        END
+
+        -- Confirmar la transacción
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- En caso de error, deshacer los cambios
+        ROLLBACK TRANSACTION;        
+        SET @Resultado = 0;        
+        THROW;
+    END CATCH
+END
+GO
 ------------------------------------------------------------------------------------------------------------------
 
 -- (12) PROCEDIMIENTO ALMACENADO PARA RESTABLECER UN ARCHIVO
@@ -1575,25 +1654,6 @@ GO
 
 -----------------------------------------------------------------------------------------------------------------
 
-CREATE PROCEDURE usp_VerCarpetasEliminadas
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT 
-        'Carpeta' AS Tipo,
-        id_carpeta AS ID,
-        nombre AS Nombre,
-        fecha_eliminacion AS FechaEliminacion,
-        estado AS Estado
-    FROM CARPETA
-    WHERE estado = 0
-      AND fecha_eliminacion IS NOT NULL;
-END
-GO
-
------------------------------------------------------------------------------------------------------------------
-
 CREATE PROCEDURE usp_VerCarpetasEliminadasPorUsuario
     @IdUsuario INT,
     @Resultado INT OUTPUT,
@@ -1637,24 +1697,6 @@ BEGIN
 
     SET @Resultado = 1
     SET @Mensaje = 'Carpetas eliminadas cargadas correctamente'
-END
-GO
------------------------------------------------------------------------------------------------------------------
-
-CREATE PROCEDURE usp_VerArchivosEliminados
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT 
-        'Archivo' AS Tipo,
-        id_archivo AS ID,
-        nombre AS Nombre,
-        fecha_eliminacion AS FechaEliminacion,
-        estado AS Estado
-    FROM ARCHIVO
-    WHERE estado = 0
-      AND fecha_eliminacion IS NOT NULL;
 END
 GO
 
@@ -1710,6 +1752,48 @@ BEGIN
 
     SET @Resultado = 1
     SET @Mensaje = 'Archivos eliminados cargados correctamente'
+END
+GO
+
+CREATE PROCEDURE usp_VaciarPapelera
+    @IdUsuario INT,
+    @Resultado BIT OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0;
+
+    BEGIN TRY
+        -- Iniciar una transacción para asegurar consistencia
+        BEGIN TRANSACTION;
+       
+        -- Eliminar todas las carpetas con estado = 0 y pertenecientes al usuario
+        DELETE FROM CARPETA
+        WHERE estado = 0 AND fk_id_usuario = @IdUsuario;
+
+		-- Eliminar todos los archivos con estado = 0 y pertenecientes al usuario
+        DELETE FROM ARCHIVO
+        WHERE estado = 0 AND fk_id_carpeta IN (
+			SELECT id_carpeta 
+			FROM CARPETA WHERE 
+			estado = 0 AND fk_id_usuario = @IdUsuario
+		);
+
+        -- Indicar que la operación fue exitosa
+        SET @Resultado = 1;
+
+        -- Confirmar la transacción
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        -- En caso de error, deshacer los cambios
+        ROLLBACK TRANSACTION;
+
+        -- Mantener @Resultado en 0 para indicar fallo
+        SET @Resultado = 0;
+
+        -- Opcional: Lanza el error para depuración
+        THROW;
+    END CATCH
 END
 GO
 -----------------------------------------------------------------------------------------------------------------

@@ -52,10 +52,28 @@ namespace capa_negocio
             return actualizado ? 1 : 0;
         }
 
-
         public int Eliminar(int id_carpeta, out string mensaje)
         {
             bool eliminado = CD_Carpeta.EliminarCarpeta(id_carpeta, out mensaje);
+            return eliminado ? 1 : 0;
+        }
+        
+        public int EliminarDefinitivamente(int id_carpeta, out string mensaje)
+        {
+            bool eliminado = CD_Carpeta.EliminarCarpetaDefinitivamente(id_carpeta, out mensaje);
+            return eliminado ? 1 : 0;
+        }
+        
+        public int VaciarPapelera(int IdUsuario, out string mensaje)
+        {
+            // Validar el ID del usuario
+            if (IdUsuario <= 0)
+            {
+                mensaje = "El ID del usuario no es válido.";
+                return 0;
+            }
+
+            bool eliminado = CD_Carpeta.VaciarPapelera(IdUsuario, out mensaje);
             return eliminado ? 1 : 0;
         }
     }

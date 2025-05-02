@@ -18,7 +18,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_LeerArchivosRecientes", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_LeerArchivosDelaCarpetaRaizRecientes", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
@@ -115,7 +115,7 @@ namespace capa_datos
             }
             return listaArchivo;
         }
-
+        
         public List<ARCHIVO> ListarArchivosEliminados(int id_usuario, out int resultado, out string mensaje)
         {
             List<ARCHIVO> listaArchivoEliminado = new List<ARCHIVO>();
@@ -236,6 +236,42 @@ namespace capa_datos
                 {
                     // Consulta SQL con parámetros
                     SqlCommand cmd = new SqlCommand("usp_EliminarArchivo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetro de entrada
+                    cmd.Parameters.AddWithValue("IdArchivo", id_archivo);
+
+                    // Agregar parámetro de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = resultado ? "Archivo eliminado correctamente" : "El archivo no existe";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al eliminar el archivo: " + ex.Message;
+            }
+            return resultado;
+        }
+        
+        public bool EliminarArchivoDefinitivamente(int id_archivo, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_EliminarArchivoDefinitivamente", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     // Agregar parámetro de entrada
