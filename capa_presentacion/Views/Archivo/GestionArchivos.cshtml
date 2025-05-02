@@ -3,6 +3,11 @@
     ViewBag.Title = "Gestión de Archivos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<style>
+    .file-manager-recent-item:hover .file-manager-recent-file-actions {
+        opacity: 1 !important;
+    }
+</style>
 
 <!--Titulo-->
 <div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Gestión de Archivos</h2></div>
@@ -73,7 +78,7 @@
 
             </div>
 
-            <!--Contenedor 2-->
+            <!-- Contenedor 2-->
             <div class="tab-pane fade" id="archivo" role="tabpanel" aria-labelledby="archivos-tab">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="mb-0">Carpetas</h2>
@@ -108,18 +113,16 @@
                 </div>
             </div>
 
-            <!--Contenedor 2-->
+            <!-- Contenedor 3-->
             <div class="tab-pane fade" id="eliminados" role="tabpanel" aria-labelledby="eliminados-tab">
                 <h2 class="mb-0">Archivos eliminados</h2>
-
                 <hr />
-
                 <!--Tabla-->
                 <table class="display cell-border" style="width: 100%" id="datatableArchivoEliminados">
                     <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
-                        <tr>
+                        <tr>                            
                             <th>Nombre</th>
-                            <th>Fecha de eliminación</th>
+                            <th>Fecha de elimiación</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -145,7 +148,7 @@
                 <div class="modal-body g-2">
                     <label for="idCarpeta">Id de carpeta</label>
                     <input type="text" name="idCarpeta" id="idCarpeta" value="0">
-                    <label for="idCarpetaPadre">Id de carpeta padre</label>                    
+                    <label for="idCarpetaPadre">Id de carpeta padre</label>
                     <input type="text" name="idCarpetaPadre" id="idCarpetaPadre" value="0">
 
 
@@ -167,7 +170,7 @@
                 </div>
             </div>
         </div>
-    </div>    
+    </div>
 
     <!-- Modal para compartir carpeta -->
     <div class="modal fade" id="modalCompartir" tabindex="-1" aria-hidden="true">
@@ -237,9 +240,10 @@
             listarArchivosUrl: '@Url.Action("ListarArchivos", "Archivo")',
             guardarCarpetaUrl: '@Url.Action("GuardarCarpeta", "Archivo")',
             eliminarCarpetaUrl: '@Url.Action("EliminarCarpeta", "Archivo")',
+            eliminarArchivoUrl: '@Url.Action("EliminarArchivo", "Archivo")',
             compartirCarpetaUrl: '@Url.Action("CompartirCarpeta", "Archivo")',
             subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")',
-            listarArchivosEliminadosUrl: '@Url.Action("ArchivosEliminados", "Archivo")'
+            listarArchivosCarpetasEliminadasUrl: '@Url.Action("ListarArchivosYCarpetasEliminados", "Archivo")'
         };
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>

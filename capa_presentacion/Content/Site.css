@@ -263,7 +263,7 @@
     }
 }
 
-/*Estilos de carpetas*/
+/*Estilos de carpetas y archivos*/
 
 .file-manager-group {
     transition: all 0.3s ease;
@@ -316,6 +316,10 @@
 
 .file-manager-group:hover .file-manager-recent-file-actions {
     opacity: 1;
+}
+
+.file-manager-recent-item:hover .file-manager-recent-file-actions {
+    opacity: 1 !important;
 }
 
 .dropdown-toggle::after {

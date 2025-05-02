@@ -1215,6 +1215,8 @@ BEGIN
 END
 GO
 
+-----------------------------------------------------------------------------------------------------------------
+
 CREATE OR ALTER PROCEDURE usp_LeerArchivosDelaCarpetaRaizRecientes
     @IdUsuario INT,
     @Resultado INT OUTPUT,
@@ -1537,8 +1539,182 @@ END
 GO
 
 -----------------------------------------------------------------------------------------------------------------
+-- (13) PROCEDIMIENTO ALMACENADO PARA OBTENER CARPETAS Y ARCHIVOS ELIMINADOS
+CREATE PROCEDURE usp_VerCarpetasYArchivosEliminados
+AS
+BEGIN
+    SET NOCOUNT ON;
 
--- (13) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UNA CARPETA
+    -- Seleccionar todas las carpetas eliminadas
+    SELECT 
+        'Carpeta' AS Tipo,
+        c.id_carpeta AS ID,
+        c.nombre AS Nombre,
+        c.fecha_eliminacion AS FechaEliminacion,
+        c.estado AS Estado
+    FROM CARPETA c
+    WHERE c.estado = 0
+      AND c.fecha_eliminacion IS NOT NULL
+
+    UNION ALL
+
+    -- Seleccionar todos los archivos eliminados
+    SELECT 
+        'Archivo' AS Tipo,
+        a.id_archivo AS ID,
+        a.nombre AS Nombre,		
+        a.fecha_eliminacion AS FechaEliminacion,
+        a.estado AS Estado
+    FROM ARCHIVO a
+    WHERE a.estado = 0
+      AND a.fecha_eliminacion IS NOT NULL
+
+    ORDER BY FechaEliminacion DESC;
+END
+GO
+
+-----------------------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE usp_VerCarpetasEliminadas
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        'Carpeta' AS Tipo,
+        id_carpeta AS ID,
+        nombre AS Nombre,
+        fecha_eliminacion AS FechaEliminacion,
+        estado AS Estado
+    FROM CARPETA
+    WHERE estado = 0
+      AND fecha_eliminacion IS NOT NULL;
+END
+GO
+
+-----------------------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE usp_VerCarpetasEliminadasPorUsuario
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si el usuario tiene carpetas eliminadas
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM CARPETA 
+        WHERE fk_id_usuario = @IdUsuario 
+          AND estado = 0 -- Estado = 0 significa eliminada
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no tiene carpetas eliminadas'
+        RETURN
+    END
+
+    -- Mostrar todas las carpetas eliminadas del usuario
+    SELECT 
+        c.id_carpeta,
+        c.nombre,
+        c.fecha_eliminacion,
+        c.estado,
+        c.carpeta_padre
+    FROM CARPETA c
+    WHERE c.fk_id_usuario = @IdUsuario 
+      AND c.estado = 0 -- Mostrar solo carpetas eliminadas
+    ORDER BY c.fecha_eliminacion DESC;
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Carpetas eliminadas cargadas correctamente'
+END
+GO
+-----------------------------------------------------------------------------------------------------------------
+
+CREATE PROCEDURE usp_VerArchivosEliminados
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        'Archivo' AS Tipo,
+        id_archivo AS ID,
+        nombre AS Nombre,
+        fecha_eliminacion AS FechaEliminacion,
+        estado AS Estado
+    FROM ARCHIVO
+    WHERE estado = 0
+      AND fecha_eliminacion IS NOT NULL;
+END
+GO
+
+-----------------------------------------------------------------------------------------------------------------
+
+CREATE OR ALTER PROCEDURE usp_VerArchivosEliminadosPorUsuario
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si el usuario tiene archivos eliminados
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM ARCHIVO a
+        INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+        WHERE c.fk_id_usuario = @IdUsuario
+          AND a.estado = 0 -- Archivos eliminados
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no tiene archivos eliminados'
+        RETURN
+    END
+
+    -- Seleccionar archivos eliminados del usuario
+    SELECT 
+        a.id_archivo,
+        a.nombre AS nombre_archivo,
+        a.ruta,
+        a.size,
+        a.tipo,
+        a.fecha_subida,
+        a.fecha_eliminacion,
+        a.estado,
+        a.fk_id_carpeta,
+        c.nombre AS nombre_carpeta
+    FROM ARCHIVO a
+    INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+    WHERE c.fk_id_usuario = @IdUsuario
+      AND a.estado = 0 -- Mostrar solo archivos eliminados
+    ORDER BY a.fecha_eliminacion DESC;
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Archivos eliminados cargados correctamente'
+END
+GO
+-----------------------------------------------------------------------------------------------------------------
+
+-- (14) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UNA CARPETA
 CREATE PROCEDURE usp_EliminarCarpetasExpiradas
 AS
 BEGIN
@@ -1553,7 +1729,7 @@ GO
 
 -----------------------------------------------------------------------------------------------------------------
 
--- (14) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UN ARCHIVO
+-- (15) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UN ARCHIVO
 CREATE PROCEDURE usp_EliminarArchivosExpiradas
 AS
 BEGIN

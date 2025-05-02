@@ -192,6 +192,40 @@ $(document).on('click', '.btn-eliminar', function (e) {
     });
 });
 
+// Eliminar archivo
+$(document).on('click', '.btn-eliminarArchivo', function (e) {
+    e.preventDefault();
+    const idArchivo = $(this).data('archivo-id');
+
+    confirmarEliminacion().then((result) => {
+
+        if (result.isConfirmed) {
+            showLoadingAlert("Eliminando archivo", "Por favor espere...")
+
+            // Enviar petición AJAX
+            $.ajax({
+                url: config.eliminarArchivoUrl,
+                type: "POST",
+                data: JSON.stringify({ id_archivo: idArchivo }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        showAlert("¡Eliminado!", response.Mensaje || "Archivo eliminado correctamente", "success", true);
+                        cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+                        cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");                        
+                        $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el archivo", "error"); }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+            });
+        }
+    });
+});
+
+
 // Función para cargar las carpetas
 function cargarCarpetas(url, contenedorId) {
     $.ajax({
@@ -297,6 +331,9 @@ function cargarArchivos(url, contenedorId) {
                                             <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Compartir</a></li>
                                             <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Descargar</a></li>
                                             <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
+                                            <li><a class="dropdown-item btn-eliminarArchivo" href="#"
+                                            data-archivo-id="${archivo.id_archivo}">
+                                            <i class="fas fa-trash me-2"></i>Eliminar</a></li>
                                         </ul>
                                     </div>
                                 </div>
@@ -350,25 +387,80 @@ function handleTabClick(activeTabId) {
 var filaSeleccionada
 let dataTable;
 
+jQuery.ajax({
+    url: config.listarArchivosCarpetasEliminadasUrl,
+    type: "GET",
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+    success: function (data) {
+        console.log(data)
+    }
+})
+
 const dataTableOptions = {
     ...dataTableConfig,
 
     ajax: {
-        url: config.listarArchivosEliminadosUrl,
+        url: config.listarArchivosCarpetasEliminadasUrl,
         type: "GET",
-        dataType: "json"
+        dataType: "json",
+        dataSrc: function (json) {
+            const archivos = json.data.archivos.map(item => ({ ...item, tipo: "Archivo" }));
+            const carpetas = json.data.carpetas.map(item => ({ ...item, tipo: "Carpeta" }));
+            return archivos.concat(carpetas);
+        }
     },
 
-    columns: [
-        { data: "nombre" },
-        { data: "fecha_eliminacion" },
+    columns: [        
+        {
+            data: "nombre", title: "Nombre",
+            render: function (data, type, row) {
+                if (row.tipo === "Carpeta") {
+                    // Si es una carpeta, mostrar el ícono de carpeta
+                    return `<i class="fa fa-folder fa-2x text-warning"></i> ${data}`;
+                } else if (row.tipo === "Archivo") {
+                    // Si es un archivo, obtener la extensión del nombre
+                    const extension = `.${data.split('.').pop().toLowerCase()}`; // Extraer extensión del nombre del archivo
+                    const { icono, color } = obtenerIconoYColor(extension); // Llamar a tu método para obtener el ícono y color
+
+                    return `<i class="fa ${icono} ${color} fa-2x"></i> ${data}`; // Renderizar el ícono junto al nombre
+                } else {
+                    // Si no es ni archivo ni carpeta, solo mostrar el nombre
+                    return data;
+                }
+            }
+
+        },
+        {
+            data: "fecha_eliminacion",
+            title: "Fecha de Eliminación",
+            render: function (data) {
+                if (data) {                    
+                    const timestampMatch = data.match(/\/Date\((\d+)\)\//);
+                    if (timestampMatch) {
+                        const timestamp = parseInt(timestampMatch[1], 10);
+                        return new Date(timestamp).toLocaleDateString();
+                    }
+                }
+                return "N/A";
+            }
+
+        },
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-restablecer"><i class="fa fa-upload"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "90"
+            title: "Acciones",
+            width: "120"
         }
     ],
+
+    rowCallback: function (row, data) {
+        // Opcional: Puedes aplicar estilos o lógica personalizada según el tipo
+        if (data.tipo === "Carpeta") {
+            $(row).addClass("table-warning"); // Ejemplo: filas de carpetas con color
+        }
+    }
 };
 
 // Inicialización
@@ -380,8 +472,92 @@ $(document).ready(function () {
 
 
 
+// EN DESAROLLO
+$('#miDataTable').on('click', '.btn-restablecer', function () {
+    const data = $('#miDataTable').DataTable().row($(this).parents('tr')).data();
+    if (data.tipo === "Archivo") {
+        // Llamar a un método para restablecer archivos
+        restablecerArchivo(data.id_archivo);
+    } else if (data.tipo === "Carpeta") {
+        // Llamar a un método para restablecer carpetas
+        restablecerCarpeta(data.id_carpeta);
+    }
+});
 
+$('#miDataTable').on('click', '.btn-eliminar', function () {
+    const data = $('#miDataTable').DataTable().row($(this).parents('tr')).data();
+    if (data.tipo === "Archivo") {
+        // Llamar a un método para eliminar archivos definitivamente
+        eliminarArchivo(data.id_archivo);
+    } else if (data.tipo === "Carpeta") {
+        // Llamar a un método para eliminar carpetas definitivamente
+        eliminarCarpeta(data.id_carpeta);
+    }
+});
 
+function restablecerArchivo(idArchivo) {
+    $.ajax({
+        url: '/Archivo/RestablecerArchivo',
+        type: 'POST',
+        data: { id: idArchivo },
+        success: function (response) {
+            if (response.resultado === 1) {
+                alert('Archivo restablecido correctamente.');
+                $('#miDataTable').DataTable().ajax.reload();
+            } else {
+                alert(response.mensaje);
+            }
+        }
+    });
+}
+
+function restablecerCarpeta(idCarpeta) {
+    $.ajax({
+        url: '/Carpeta/RestablecerCarpeta',
+        type: 'POST',
+        data: { id: idCarpeta },
+        success: function (response) {
+            if (response.resultado === 1) {
+                alert('Carpeta restablecida correctamente.');
+                $('#miDataTable').DataTable().ajax.reload();
+            } else {
+                alert(response.mensaje);
+            }
+        }
+    });
+}
+
+function eliminarArchivo(idArchivo) {
+    $.ajax({
+        url: '/Archivo/EliminarArchivo',
+        type: 'POST',
+        data: { id: idArchivo },
+        success: function (response) {
+            if (response.resultado === 1) {
+                alert('Archivo eliminado definitivamente.');
+                $('#miDataTable').DataTable().ajax.reload();
+            } else {
+                alert(response.mensaje);
+            }
+        }
+    });
+}
+
+function eliminarCarpeta(idCarpeta) {
+    $.ajax({
+        url: '/Carpeta/EliminarCarpeta',
+        type: 'POST',
+        data: { id: idCarpeta },
+        success: function (response) {
+            if (response.resultado === 1) {
+                alert('Carpeta eliminada definitivamente.');
+                $('#miDataTable').DataTable().ajax.reload();
+            } else {
+                alert(response.mensaje);
+            }
+        }
+    });
+}
 
 
 

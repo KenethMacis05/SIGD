@@ -116,6 +116,61 @@ namespace capa_datos
             return listaArchivo;
         }
 
+        public List<ARCHIVO> ListarArchivosEliminados(int id_usuario, out int resultado, out string mensaje)
+        {
+            List<ARCHIVO> listaArchivoEliminado = new List<ARCHIVO>();
+            resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_VerArchivosEliminadosPorUsuario", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            listaArchivoEliminado.Add(
+                                new ARCHIVO
+                                {
+                                    id_archivo = dr["id_archivo"] != DBNull.Value ? Convert.ToInt32(dr["id_archivo"]) : 0,
+                                    nombre = dr["nombre_archivo"] != DBNull.Value ? dr["nombre_archivo"].ToString() : string.Empty,
+                                    ruta = dr["ruta"] != DBNull.Value ? dr["ruta"].ToString() : string.Empty,
+                                    size = dr["size"] != DBNull.Value ? Convert.ToInt32(dr["size"]) : 0,
+                                    tipo = dr["tipo"] != DBNull.Value ? dr["tipo"].ToString() : string.Empty,
+                                    estado = dr["estado"] != DBNull.Value && Convert.ToBoolean(dr["estado"]),
+                                    id_carpeta = dr["fk_id_carpeta"] != DBNull.Value ? Convert.ToInt32(dr["fk_id_carpeta"]) : 0,
+                                    nombre_carpeta = dr["nombre_carpeta"] != DBNull.Value ? dr["nombre_carpeta"].ToString() : string.Empty,
+                                    fecha_subida = dr["fecha_subida"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_subida"]) : DateTime.MinValue,
+                                    fecha_eliminacion = dr["fecha_eliminacion"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_eliminacion"]) : DateTime.MinValue
+                                }
+                            );
+                        }
+                    }
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los archivos eliminados: " + ex.Message);
+            }
+            return listaArchivoEliminado;
+        }
+
         public int SubirArchivo(ARCHIVO archivo, out string mensaje)
         {
             int idAutogeneradoCarpeta = 0;
@@ -168,6 +223,42 @@ namespace capa_datos
             }
 
             return idAutogeneradoCarpeta;
+        }
+
+        public bool EliminarArchivo(int id_archivo, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_EliminarArchivo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetro de entrada
+                    cmd.Parameters.AddWithValue("IdArchivo", id_archivo);
+
+                    // Agregar parámetro de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = resultado ? "Archivo eliminado correctamente" : "El archivo no existe";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al eliminar el archivo: " + ex.Message;
+            }
+            return resultado;
         }
     }
 }

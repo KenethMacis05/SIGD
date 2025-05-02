@@ -60,7 +60,10 @@ VALUES
 
     ('Archivo', 'ListarArchivosRecientes', 'Listar archivos recientes del usuario', 'API'),
     ('Archivo', 'ListarCarpetas', 'Listar todas las carpetas', 'API'),
-    ('Archivo', 'ListarArchivos', 'Listar todos archivos de la carpeta raiz', 'API')
+    ('Archivo', 'ListarArchivos', 'Listar todos archivos de la carpeta raiz', 'API'),
+    ('Archivo', 'ListarArchivosYCarpetasEliminados', 'Listar todos los archivos y carpetas eliminadas', 'API'),
+    ('Archivo', 'EliminarArchivo', 'Eliminar arhivos', 'API')
+
 GO
 --------------------------------------------------------------------------------------------------------------------
 

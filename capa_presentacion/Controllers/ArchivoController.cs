@@ -175,6 +175,45 @@ namespace capa_presentacion.Controllers
             }
         }
 
+        [HttpGet]
+        public JsonResult ListarArchivosYCarpetasEliminados()
+        {
+            try
+            {
+                // Obtener el usuario autenticado desde la sesión
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+                if (usuario == null)
+                {
+                    return Json(new { resultado = 0, mensaje = "El usuario no está autenticado.", data = new { archivos = new List<ARCHIVO>(), carpetas = new List<CARPETA>() } }, JsonRequestBehavior.AllowGet);
+                }
+
+                int resultadoArchivos, resultadoCarpetas;
+                string mensajeArchivos, mensajeCarpetas;
+
+                // Obtener archivos eliminados
+                List<ARCHIVO> archivosEliminados = CN_Archivo.ListarArchivosElimandos(usuario.id_usuario, out resultadoArchivos, out mensajeArchivos);
+
+                // Obtener carpetas eliminadas
+                List<CARPETA> carpetasEliminadas = CN_Carpeta.ListarCarpetasEliminadas(usuario.id_usuario, out resultadoCarpetas, out mensajeCarpetas);
+
+                // Verificar los resultados de ambos métodos
+                if (resultadoArchivos == 0 && resultadoCarpetas == 0)
+                {
+                    return Json(new { resultado = 0, mensaje = "No se encontraron archivos ni carpetas eliminados para el usuario.", data = new { archivos = archivosEliminados, carpetas = carpetasEliminadas } }, JsonRequestBehavior.AllowGet);
+                }
+
+                // Combinar mensajes si ambos tienen éxito
+                string mensaje = $"Archivos: {mensajeArchivos}. Carpetas: {mensajeCarpetas}.";
+
+                return Json(new { resultado = 1, mensaje = mensaje, data = new { archivos = archivosEliminados, carpetas = carpetasEliminadas } }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { resultado = 0, mensaje = "Error al obtener archivos y carpetas eliminados: " + ex.Message, data = new { archivos = new List<ARCHIVO>(), carpetas = new List<CARPETA>() } }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         // Controlador para Subir archivos
         [HttpPost]
         public JsonResult SubirArchivo(HttpPostedFileBase ARCHIVO, string CARPETAJSON)
@@ -244,6 +283,16 @@ namespace capa_presentacion.Controllers
             return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
+        // Controlador para Eliminar una carpeta
+        [HttpPost]
+        public JsonResult EliminarArchivo(int id_archivo)
+        {
+            string mensaje = string.Empty;
+
+            int resultado = CN_Archivo.Eliminar(id_archivo, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
         #endregion
 
         #region ArchivosCompartidos

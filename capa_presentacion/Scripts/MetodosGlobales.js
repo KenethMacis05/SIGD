@@ -8,7 +8,7 @@ const dataTableConfig = {
     destroy: true,
     language: {
         lengthMenu: "Mostrar _MENU_ registros por página",
-        zeroRecords: "Ningún permiso encontrado",
+        zeroRecords: "Ningún resgistro encontrado",
         info: "Mostrando de _START_ a _END_ de un total de _TOTAL_ registros",
         infoEmpty: "Ningún rol encontrado",
         infoFiltered: "(filtrados desde _MAX_ registros totales)",

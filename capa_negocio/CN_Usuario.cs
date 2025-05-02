@@ -64,7 +64,7 @@ namespace capa_negocio
                             </tr>
                         </table>
                         <p style='text-align: center;'>
-                            <a href='https://tusistema.com/login' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
+                            <a href='https://sigd-f0enhxetceeca7du.canadacentral-01.azurewebsites.net' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
                                 Iniciar Sesión
                             </a>
                         </p>
@@ -72,19 +72,19 @@ namespace capa_negocio
                         <p style='text-align: center; font-size: 18px; font-weight: bold;'>¡Síguenos en nuestras redes sociales!</p>
                         <div style='text-align: center; margin-top: 20px;'>
                             <a href='https://www.tiktok.com/@unanmanagua' style='margin: 0 10px; text-decoration: none;'>
-                                <img src='https://localhost:44344/assets/img/tiktok.png' alt='Sitio Web' style='width: 40px; height: 40px;'>
+                                <img src='https://localhost:44344/Assets/img/tiktok.png' alt='Sitio Web' style='width: 40px; height: 40px;'>
                             </a>
                             <a href='https://www.facebook.com/UNAN.Managua' style='margin: 0 10px; text-decoration: none;'>
-                                <img src='https://localhost:44344/assets/img/facebook.png' alt='Facebook' style='width: 40px; height: 40px;'>
+                                <img src='https://localhost:44344/Assets/img/facebook.png' alt='Facebook' style='width: 40px; height: 40px;'>
                             </a>
                              <a href='https://x.com/UNANManagua' style='margin: 0 10px; text-decoration: none;'>
-                                <img src='https://localhost:44344/assets/img/x.png' alt='Twitter' style='width: 40px; height: 40px;'>
+                                <img src='https://localhost:44344/Assets/img/x.png' alt='Twitter' style='width: 40px; height: 40px;'>
                             </a>
                             <a href='https://www.instagram.com/unan.managua' style='margin: 0 10px; text-decoration: none;'>
-                                <img src='https://localhost:44344/assets/img/instagram.png' alt='Instagram' style='width: 40px; height: 40px;'>
+                                <img src='https://localhost:44344/Assets/img/instagram.png' alt='Instagram' style='width: 40px; height: 40px;'>
                             </a>
                             <a href='https://www.youtube.com/channel/UCaAtEPINZNv738R3vZI2Kjg' style='margin: 0 10px; text-decoration: none;'>
-                                <img src='https://localhost:44344/assets/img/youtube.png' alt='YouTube' style='width: 40px; height: 40px;'>
+                                <img src='https://localhost:44344/Assets/img/youtube.png' alt='YouTube' style='width: 40px; height: 40px;'>
                             </a>
                         </div>
                         <p style='text-align: center; margin-top: 30px; font-size: 14px; color: #666;'>

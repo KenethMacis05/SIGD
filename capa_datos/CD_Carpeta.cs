@@ -117,6 +117,58 @@ namespace capa_datos
             return listaCarpeta;
         }
 
+        // Listar carpetas eliminadas por usuario
+        public List<CARPETA> ListarCarpetasEliminadasPorUsuario(int id_usuario, out int resultado, out string mensaje)
+        {
+            List<CARPETA> listaCarpetaEliminada = new List<CARPETA>();
+            resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_VerCarpetasEliminadasPorUsuario", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            listaCarpetaEliminada.Add(
+                                new CARPETA
+                                {
+                                    id_carpeta = Convert.ToInt32(dr["id_carpeta"]),
+                                    nombre = dr["nombre"].ToString(),
+                                    fecha_eliminacion = Convert.ToDateTime(dr["fecha_eliminacion"]),
+                                    estado = Convert.ToBoolean(dr["estado"]),
+                                    fk_id_usuario = id_usuario, // Este valor ya está confirmado para este usuario
+                                    carpeta_padre = dr["carpeta_padre"] == DBNull.Value ? (int?)null : Convert.ToInt32(dr["carpeta_padre"])
+                                }
+                            );
+                        }
+                    }
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar las carpetas eliminadas: " + ex.Message);
+            }
+            return listaCarpetaEliminada;
+        }
+
         public int CrearCarpeta(CARPETA carpeta, out string mensaje)
         {
             int idAutogeneradoCarpeta = 0;

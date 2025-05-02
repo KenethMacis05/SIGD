@@ -21,6 +21,11 @@ namespace capa_negocio
         {
             return CD_Archivo.ListarArchivos(id_usuario, out resultado, out mensaje);
         }
+        
+        public List<ARCHIVO> ListarArchivosElimandos(int id_usuario, out int resultado, out string mensaje)
+        {
+            return CD_Archivo.ListarArchivosEliminados(id_usuario, out resultado, out mensaje);
+        }
 
         public int SubirArchivo(ARCHIVO archivo, out string mensaje)
         {
@@ -31,6 +36,12 @@ namespace capa_negocio
             }
 
             return CD_Archivo.SubirArchivo(archivo, out mensaje);
+        }
+
+        public int Eliminar(int id_archivo, out string mensaje)
+        {
+            bool eliminado = CD_Archivo.EliminarArchivo(id_archivo, out mensaje);
+            return eliminado ? 1 : 0;
         }
     }
 }

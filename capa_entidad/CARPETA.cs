@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,7 @@ namespace capa_entidad
         public int id_carpeta { get; set; }
         public string nombre { get; set; }
         public DateTime fecha_registro { get; set; }
+        public DateTime fecha_eliminacion { get; set; }
         public bool estado { get; set; }
         public int fk_id_usuario { get; set; }
         public int? carpeta_padre { get; set; }
