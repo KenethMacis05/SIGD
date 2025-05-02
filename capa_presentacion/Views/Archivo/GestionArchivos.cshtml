@@ -29,7 +29,7 @@
             </li>
             <!--Boton 3-->
             <li class="nav-item" role="presentation">
-                <button class="nav-link esp-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab" aria-controls="contact" aria-selected="false">
+                <button class="nav-link esp-link" id="eliminados-tab" data-bs-toggle="tab" data-bs-target="#eliminados" type="button" role="tab" aria-controls="eliminados" aria-selected="false">
                     Archivos eliminados
                 </button>
             </li>
@@ -106,6 +106,29 @@
                 <div class="row g-3" id="contenedor-archivos-todos">
                     <!-- Los archivos se cargarán dinámicamente aquí -->
                 </div>
+            </div>
+
+            <!--Contenedor 2-->
+            <div class="tab-pane fade" id="eliminados" role="tabpanel" aria-labelledby="eliminados-tab">
+                <h2 class="mb-0">Archivos eliminados</h2>
+
+                <hr />
+
+                <!--Tabla-->
+                <table class="display cell-border" style="width: 100%" id="datatableArchivoEliminados">
+                    <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Fecha de eliminación</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tfoot>
+
+                    </tfoot>
+                </table>
             </div>
         </div>
     </div>
@@ -215,7 +238,8 @@
             guardarCarpetaUrl: '@Url.Action("GuardarCarpeta", "Archivo")',
             eliminarCarpetaUrl: '@Url.Action("EliminarCarpeta", "Archivo")',
             compartirCarpetaUrl: '@Url.Action("CompartirCarpeta", "Archivo")',
-            subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")'
+            subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")',
+            listarArchivosEliminadosUrl: '@Url.Action("ArchivosEliminados", "Archivo")'
         };
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>

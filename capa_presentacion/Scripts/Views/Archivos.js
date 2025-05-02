@@ -274,7 +274,6 @@ function cargarArchivos(url, contenedorId) {
         dataType: 'json',
         beforeSend: () => $(`#${contenedorId}`).LoadingOverlay("show"),
         success: function (response) {
-            console.log(response.data)
             if (response.data && response.data.length > 0) {
                 let html = '';
                 $.each(response.data, function (index, archivo) {
@@ -348,10 +347,35 @@ function handleTabClick(activeTabId) {
     }
 }
 
+var filaSeleccionada
+let dataTable;
+
+const dataTableOptions = {
+    ...dataTableConfig,
+
+    ajax: {
+        url: config.listarArchivosEliminadosUrl,
+        type: "GET",
+        dataType: "json"
+    },
+
+    columns: [
+        { data: "nombre" },
+        { data: "fecha_eliminacion" },
+        {
+            defaultContent:
+                '<button type="button" class="btn btn-primary btn-sm btn-restablecer"><i class="fa fa-upload"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
+            width: "90"
+        }
+    ],
+};
+
 // Inicialización
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+    dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
 });
 
 
