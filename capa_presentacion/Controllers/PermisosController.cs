@@ -68,9 +68,13 @@ namespace capa_presentacion.Controllers
         }
 
         [HttpPost]
-        public JsonResult EliminarPermiso(int idRol, int idPermiso)
+        public JsonResult EliminarPermiso(int id_permiso)
         {
-            return Json(new { success = false, message = "Método no implementado" });
+            string mensaje = string.Empty;
+
+            int resultado = CN_Permisos.Eliminar(id_permiso, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
     }
 }

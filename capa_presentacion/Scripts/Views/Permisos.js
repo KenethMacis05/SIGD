@@ -13,7 +13,7 @@ jQuery.ajax({
     contentType: "application/json; charset=utf-8",
 
     success: function (response) {
-        $('#obtenerRol').empty().append('<option value="">Seleccione un rol</option>');
+        $('#obtenerRol').empty().append('<option value="" disabled selected>Seleccione un rol</option>');
         $.each(response.data, function (index, rol) {
             $('#obtenerRol').append(`<option value="${rol.id_rol}">${rol.descripcion}</option>`);
         });
@@ -23,50 +23,34 @@ jQuery.ajax({
 })
 
 // Mostrar permisos del Rol
-$("#btnBuscar").click(function () {
-    var IdRol = $('#obtenerRol').val();
+$("#btnBuscar").off("click").on("click", function () {
+    IdRol = $('#obtenerRol').val();
     if (!IdRol) {
         showAlert("¡Atención!", "Primero debe seleccionar un rol", "warning");
         return false;
-    }
+    }    
+    dataTable.column(1).search('').draw();
+    dataTable.column(4).search('').draw();
+    carparPermisos(IdRol)
+});
 
+function carparPermisos(IdRol) {
     $.ajax({
         url: listarPermisosPorRolUrl,
         type: "GET",
         dataType: "json",
         data: { IdRol: IdRol },
         contentType: "application/json; charset=utf-8",
-
-        beforeSend: () => $(".tbody").LoadingOverlay("show"),
-
+        beforeSend: () => $("#datatable tbody").LoadingOverlay("show"),
+        
         success: function (data) {
-            dataTable.clear().draw();
-
-            if (data && data.data && Array.isArray(data.data)) {
-                try {
-                    $.each(data.data, function (index, permiso) {
-                        const controller = permiso.Controller;
-
-                        dataTable.row.add([
-                            index + 1,
-                            controller.controlador,
-                            controller.accion,
-                            controller.descripcion,
-                            controller.tipo
-                        ]);
-                    });
-                    dataTable.draw();
-                } catch (e) {
-                    console.error("Error al agregar filas:", e);
-                }
-            } else {
-                console.warn("Datos no válidos recibidos", data);
-            }
+            dataTable.clear().rows.add(data.data).draw();
         },
-        complete: () => $(".tbody").LoadingOverlay("hide"),
+
+        complete: () => $("#datatable tbody").LoadingOverlay("hide"),
         error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
-    })
-});
+    });
+}
 
 // Función para cargar permisos no asignados
 function cargarPermisosNoAsignados(IdRol) {
@@ -109,6 +93,72 @@ function cargarPermisosNoAsignados(IdRol) {
         error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
     });
 }
+
+// Obtener controladores del rol
+$("#obtenerRol").on("change", function () {
+    var IdRol = $(this).val();
+    
+    if (!IdRol) {
+        showAlert("¡Atención!", "Primero debe seleccionar un rol", "warning");        
+        return false;
+    }     
+
+    $('#inputGroupSelectControlador').empty().append('<option value="Todos">Todos</option>');
+
+    jQuery.ajax({
+        url: listarPermisosPorRolUrl,
+        type: "GET",
+        dataType: "json",
+        data: { IdRol: IdRol },
+        contentType: "application/json; charset=utf-8",        
+        success: function (response) {
+            // Utilizar un Set para evitar duplicados
+            let controladoresSet = new Set();
+
+            $.each(response.data, function (index, registro) {
+                if (!controladoresSet.has(registro.Controller.controlador)) {
+                    controladoresSet.add(registro.Controller.controlador);
+                    $('#inputGroupSelectControlador').append(`<option value="${registro.Controller.controlador}">${registro.Controller.controlador}</option>`);
+                }
+            });
+        },
+        complete: () => $("#datatable tbody").LoadingOverlay("hide"),
+        error: () => {
+            showAlert("Error", "Error al cargar los controladores", "error");                        
+        }
+    });
+});
+
+// Manejar el cambio en el select de controladores
+$("#inputGroupSelectControlador").on("change", function () {
+    var controladorSeleccionado = $(this).val();    
+    var IdRol = $('#obtenerRol').val();
+
+    if (controladorSeleccionado === "Todos") {        
+        carparPermisos(IdRol)
+        dataTable.column(1).search('').draw();               
+    } else {
+        // Mostrar registros filtrados por el controlador seleccionado
+        carparPermisos(IdRol)
+        dataTable.column(1).search(controladorSeleccionado).draw();        
+    }
+});
+
+// Filtro por Tipo
+$("#inputGroupSelectTipo").on("change", function () {
+    const tipoSelecionado = $(this).val();
+    var IdRol = $('#obtenerRol').val();
+
+    if (tipoSelecionado === "Todos") {
+        carparPermisos(IdRol)
+        dataTable.column(4).search('').draw();
+    } else {
+        carparPermisos(IdRol)
+        dataTable.column(4).search(tipoSelecionado).draw();
+    }
+
+});
+
 
 // Función para abrir el modal y cargar permisos no asignados
 function abrirModal() {
@@ -177,41 +227,71 @@ $('#btnGuardarPermisos').click(function () {
 });
 
 
-// EN DESAROLLO (Eliminar permiso)
-$('#tbPermisos').on('click', '.btn-eliminar-permiso', function () {
-    var idPermiso = $(this).data('id');
-    var idRol = $('#cboRol').val();
+//Boton eliminar un permiso
+$("#datatable tbody").on("click", '.btn-eliminar', function () {
+    const permisoSeleccionado = $(this).closest("tr");
+    const data = dataTable.row(permisoSeleccionado).data();
+    
+    confirmarEliminacion().then((result) => {
+        if (result.isConfirmed) {
+            showLoadingAlert("Eliminando permiso", "Por favor espere...")
 
-    if (confirm('¿Está seguro de eliminar este permiso?')) {
-        $.ajax({
-            url: '/Permisos/EliminarPermiso',
-            type: 'POST',
-            data: {
-                idRol: idRol,
-                idPermiso: idPermiso
-            },
-            success: function (response) {
-                if (response.success) {
-                    $('#btnBuscar').click(); // Refrescar tabla
-                }
-            }
-        });
-    }
+            // Enviar petición AJAX
+            $.ajax({
+                url: config.eliminarPermisoUrl,
+                type: "POST",
+                data: JSON.stringify({ id_permiso: data.id_permiso }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        dataTable.row(permisoSeleccionado).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Permiso eliminado correctamente", "success")
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el permiso", "error") }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+            });
+        }
+    });
 });
 
 const dataTableOptions = {
     ...dataTableConfig,
     columns: [
-        { title: "#" },
-        { title: "Controlador" },
-        { title: "Acción" },
-        { title: "Descripcion" },
-        { title: "Tipo" },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
+            data: null,
+            title: "#",
+            render: function (data, type, row, meta) {
+                return meta.row + 1;
+            },
+            orderable: false
+        },
+        { data: "Controller.controlador", title: "Controlador" },
+        { data: "Controller.accion", title: "Acción" },
+        { data: "Controller.descripcion", title: "Descripción" },
+        {
+            data: "Controller.tipo",
+            title: "Tipo",
+            render: function (data, type, row) {
+                if (row.Controller.tipo === "API" || row.Controller.tipo === "Vista") {
+                    // Mostrar el ícono y el texto según el tipo
+                    const icon = row.Controller.tipo === "API"
+                        ? '<i class="fa fa-cogs  text-warning"></i>' // Ícono para API
+                        : '<i class="fa fa-eye text-primary"></i>'; // Ícono para Vista
+
+                    return `${icon} ${data}`;
+                } else {
+                    // Si no es ni API ni Vista, devolver el texto sin ícono
+                    return data;
+                }
+            }
+        },
+        {
+            defaultContent:                
                 '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "90"
+            width: "50"
         }
     ],
 };

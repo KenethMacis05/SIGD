@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using capa_presentacion.Filters;
 using capa_negocio;
 using capa_entidad;
+using capa_presentacion.Services;
 
 namespace capa_presentacion.Controllers
 {
@@ -40,11 +41,20 @@ namespace capa_presentacion.Controllers
         {
             string mensaje = string.Empty;
             int resultado = 0;
+            string mensajeCarpeta = string.Empty;
+            bool carpetaCreada = false;
 
             if (usuario.id_usuario == 0)
             {
                 // Crear nuevo usuario
                 resultado = CN_Usuario.Registra(usuario, out mensaje);
+
+                if (resultado != 0) // Se registró correctamente
+                {
+                    // Crear carpeta para el usuario
+                    ArchivoService archivoService = new ArchivoService();
+                    carpetaCreada = archivoService.CrearCarpeta("DEFAULT_" + usuario.usuario, out mensajeCarpeta);
+                }
             }
             else
             {
@@ -65,36 +75,6 @@ namespace capa_presentacion.Controllers
             int resultado = CN_Usuario.Eliminar(id_usuario, out mensaje);
 
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-        }
-
-
-
-
-        //[HttpPost]
-        //public JsonResult ProcesarMensaje(string mensaje)
-        //{
-        //    try
-        //    {
-        //        if (string.IsNullOrWhiteSpace(mensaje))
-        //        {
-        //            throw new ArgumentException("El mensaje no puede estar vacío.");
-        //        }
-
-        //        // Crear una respuesta personalizada
-        //        var respuesta = new
-        //        {
-        //            original = mensaje,
-        //            respuesta = $"Recibimos tu mensaje: {mensaje}",
-        //            fecha = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
-        //        };
-
-        //        // Retornar la respuesta en JSON
-        //        return Json(respuesta);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { error = true, mensaje = "Ocurrió un error: " + ex.Message });
-        //    }
-        //}
+        }        
     }
 }

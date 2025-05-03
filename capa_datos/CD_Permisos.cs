@@ -150,5 +150,42 @@ namespace capa_datos
                 throw new Exception("Error al asignar permiso: " + ex.Message);
             }
         }
+
+        // Eliminar usuario
+        public bool EliminarPermiso(int id_permiso, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_EliminarPermiso", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetro de entrada
+                    cmd.Parameters.AddWithValue("IdPermiso", id_permiso);
+
+                    // Agregar parámetro de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = resultado ? "Permiso eliminado correctamente" : "El permiso no existe";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al eliminar el permiso: " + ex.Message;
+            }
+            return resultado;
+        }
     }
 }

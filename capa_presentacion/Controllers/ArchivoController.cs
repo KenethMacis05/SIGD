@@ -9,7 +9,6 @@ using capa_entidad;
 using Newtonsoft.Json;
 using System.Configuration;
 using System.IO;
-using capa_datos;
 
 namespace capa_presentacion.Controllers
 {
@@ -319,6 +318,6 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        #endregion
+        #endregion        
     }
 }

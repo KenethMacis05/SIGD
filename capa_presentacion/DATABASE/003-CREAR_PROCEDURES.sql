@@ -212,56 +212,6 @@ BEGIN
 END
 GO
 
--- PROCEDIMIENTO ALMACENADO PARA VERIFICAR LOS PERMISOS DE UN USUARIO
---CREATE OR ALTER PROCEDURE usp_VerificarPermiso
---    @IdUsuario INT,
---    @Controlador VARCHAR(60),
---    @Accion VARCHAR(50)
---AS
---BEGIN
---    SET NOCOUNT ON;
-    
---    DECLARE @TienePermiso BIT = 0;
---    DECLARE @IdRol INT;
-    
---    -- Obtener el rol del usuario
---    SELECT @IdRol = fk_rol 
---    FROM USUARIOS 
---    WHERE id_usuario = @IdUsuario AND estado = 1;
-    
---    -- Si no encuentra usuario o está inactivo
---    IF @IdRol IS NULL
---    BEGIN
---        SELECT @TienePermiso AS tiene_permiso;
---        RETURN;
---    END;
-    
---    -- Verificar si la acción es pública (no requiere permiso)
---    IF (@Controlador = 'Home' AND @Accion = 'Index')
---    BEGIN
---        SET @TienePermiso = 1;
---    END
---    ELSE
---    BEGIN
---        -- Verificar permiso en la tabla de permisos
---        IF EXISTS (
---            SELECT 1 
---            FROM PERMISOS p
---            INNER JOIN CONTROLLER c ON p.fk_controlador = c.id_controlador
---            WHERE p.fk_rol = @IdRol
---            AND c.controlador = @Controlador
---            AND c.accion = @Accion
---            AND p.estado = 1            
---        )
---        BEGIN
---            SET @TienePermiso = 1;
---        END;
---    END;
-    
---    SELECT @TienePermiso AS tiene_permiso;
---END
---GO
-
 CREATE OR ALTER PROCEDURE usp_VerificarPermiso
     @IdUsuario INT,
     @Controlador VARCHAR(60),
@@ -421,6 +371,21 @@ BEGIN
         AND p.estado = 1
     )
     ORDER BY c.id_controlador DESC;
+END
+GO
+
+CREATE PROCEDURE usp_EliminarPermiso
+    @IdPermiso INT,
+    @Resultado BIT OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    
+    IF EXISTS (SELECT 1 FROM PERMISOS WHERE id_permiso = @IdPermiso)
+    BEGIN
+        DELETE FROM PERMISOS WHERE id_permiso = @IdPermiso
+        SET @Resultado = 1
+    END
 END
 GO
 --------------------------------------------------------------------------------------------------------------------

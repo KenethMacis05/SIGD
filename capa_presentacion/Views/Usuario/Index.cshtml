@@ -34,7 +34,34 @@
             <!--Contenedor 1-->
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                 <button type="button" class="btn btn-primary" onclick="abrirModal(null)"><i class="fa fa-plus"></i> Crear usuario</button>
+
+                <!-- Filtros -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelectRol">Filtrar por rol:</label>
+                            <select class="form-select" id="inputGroupSelectRol">
+                                <option selected>Seleccionar...</option>
+                                <option value="1">Archivo</option>
+                                <option value="2">Usuario</option>
+                                <option value="3">Rol</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelectEstado">Filtrar por estado:</label>
+                            <select class="form-select" id="inputGroupSelectEstado">
+                                <option selected>Seleccionar...</option>
+                                <option value="1">ACTIVO</option>
+                                <option value="0">NO ACTIVO</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <hr />
+
                 <!--Tabla-->
                 <table class="display cell-border" style="width: 100%" id="datatable">
                     <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
@@ -139,9 +166,6 @@
                     <!-- Columna de Filtros (25% del ancho) -->
                     <div class="col-md-3">
                         <div class="card">
-                            <div class="card-header bg-light">
-                                <span class="card-title mb-0 fs-6"><i class="fas fa-filter me-2"></i>FILTROS</span>
-                            </div>
                             <div class="card-body">
                                 <div class="mb-3">
                                     <label for="filtroUsuario" class="form-label">Cuenta Usuario</label>
@@ -169,19 +193,11 @@
 
                     <div class="col-md-9">
                         <div class="card">
-                            <div class="card-header bg-light">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="card-title mb-0 fs-6"><i class="fas fa-users me-2"></i>RESULTADOS</h5>
-                                    <button class="btn btn-success" id="btnReiniciar" disabled>
-                                        <i class="fas fa-redo-alt me-2"></i>Reiniciar Contraseñas
-                                    </button>
-                                </div>
-                            </div>
                             <div class="card-body">
                                 <!-- Resultados -->
                                 <div class="table-responsive">
-                                    <table class="table cell-border table-hover" id="tablaReinicio" style="width:100%">
-                                        <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                                    <table class="table cell-border" id="tablaReinicio" style="width:100%">
+                                        <thead class="table-cabezera cell-border" style="background: #0072BB !important; color: white">
                                             <tr>
                                                 <th width="5%">#</th>
                                                 <th>Usuario</th>

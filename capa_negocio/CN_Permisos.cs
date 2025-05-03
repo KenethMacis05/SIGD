@@ -93,5 +93,11 @@ namespace capa_negocio
                 default: return "Error desconocido al asignar permiso";
             }
         }
+
+        public int Eliminar(int id_permiso, out string mensaje)
+        {
+            bool eliminado = CD_Permisos.EliminarPermiso(id_permiso, out mensaje);
+            return eliminado ? 1 : 0;
+        }
     }
 }
