@@ -335,28 +335,31 @@ namespace capa_datos
         {
             bool resultado = false;
             mensaje = string.Empty;
+
             try
             {
-                // Crear conexión
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    // Consulta SQL con parámetros
                     SqlCommand cmd = new SqlCommand("usp_VaciarPapelera", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // Agregar parámetro de entrada
+                    // Parámetros
                     cmd.Parameters.AddWithValue("IdUsuario", IdUsuario);
 
-                    // Agregar parámetro de salida
+                    // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.NVarChar, 200).Direction = ParameterDirection.Output;
 
-                    // Abrir conexión
                     conexion.Open();
                     cmd.ExecuteNonQuery();
 
-                    // Obtener valores de los parámetros de salida
-                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
-                    mensaje = resultado ? "Papelera eliminada correctamente" : "No se encontraron elementos para eliminar en la papelera.";
+                    // Obtener resultados
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value &&
+                               Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+
+                    mensaje = cmd.Parameters["Mensaje"].Value != DBNull.Value ?
+                             cmd.Parameters["Mensaje"].Value.ToString() :
+                             "Operación completada sin mensaje específico";
                 }
             }
             catch (Exception ex)
@@ -364,6 +367,7 @@ namespace capa_datos
                 resultado = false;
                 mensaje = $"Error al vaciar la papelera: {ex.Message}";
             }
+
             return resultado;
         }
     }

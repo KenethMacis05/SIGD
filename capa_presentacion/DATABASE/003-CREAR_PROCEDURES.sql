@@ -1722,12 +1722,32 @@ GO
 
 CREATE PROCEDURE usp_VaciarPapelera
     @IdUsuario INT,
-    @Resultado BIT OUTPUT
+    @Resultado BIT OUTPUT,
+    @Mensaje NVARCHAR(200) OUTPUT
 AS
 BEGIN
     SET @Resultado = 0;
+    SET @Mensaje = '';
 
     BEGIN TRY
+        -- Verificar si hay registros en la papelera
+        DECLARE @TotalRegistros INT = 0;
+        
+        SELECT @TotalRegistros = COUNT(*) 
+        FROM (
+            SELECT id_carpeta FROM CARPETA WHERE estado = 0 AND fk_id_usuario = @IdUsuario
+            UNION ALL
+            SELECT id_archivo FROM ARCHIVO WHERE estado = 0 AND fk_id_carpeta IN (
+                SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario
+            )
+        ) AS RegistrosPapelera;
+
+        IF @TotalRegistros = 0
+        BEGIN
+            SET @Mensaje = 'La papelera no contiene registros';
+            RETURN;
+        END
+
         -- Iniciar una transacción para asegurar consistencia
         BEGIN TRANSACTION;
        
@@ -1735,26 +1755,27 @@ BEGIN
         DELETE FROM CARPETA
         WHERE estado = 0 AND fk_id_usuario = @IdUsuario;
 
-		-- Eliminar todos los archivos con estado = 0 y pertenecientes al usuario
+        -- Eliminar todos los archivos con estado = 0 y pertenecientes al usuario
         DELETE FROM ARCHIVO
         WHERE estado = 0 AND fk_id_carpeta IN (
-			SELECT id_carpeta 
-			FROM CARPETA WHERE 
-			estado = 0 AND fk_id_usuario = @IdUsuario
-		);
+            SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario
+        );
 
         -- Indicar que la operación fue exitosa
         SET @Resultado = 1;
+        SET @Mensaje = 'Papelera vaciada correctamente';
 
         -- Confirmar la transacción
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
         -- En caso de error, deshacer los cambios
-        ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
 
         -- Mantener @Resultado en 0 para indicar fallo
         SET @Resultado = 0;
+        SET @Mensaje = 'Error al vaciar la papelera: ' + ERROR_MESSAGE();
 
         -- Opcional: Lanza el error para depuración
         THROW;

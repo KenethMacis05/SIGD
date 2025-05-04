@@ -308,7 +308,7 @@ namespace capa_presentacion.Controllers
             string mensaje;
 
             int resultado = CN_Carpeta.VaciarPapelera(usuario.id_usuario ,out mensaje);
-            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            return Json(new { Respuesta = (resultado == 1), EsPapeleraVacia = resultado == -1, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
         #region ArchivosCompartidos
 

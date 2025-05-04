@@ -35,7 +35,7 @@ namespace capa_presentacion.Helpers
             foreach (var iten in menu)
             {
                 sb.Append($@"                            
-                     <a class='nav-link esp-link esp-link-hover' href='/{iten.Controller.controlador}/{iten.Controller.accion}'>
+                     <a class='nav-link esp-link esp-link-hover loading-overlay' href='/{iten.Controller.controlador}/{iten.Controller.accion}'>
                          <div class='sb-nav-link-icon'>
                              <i class='{iten.icono}'></i>
                          </div>

@@ -63,18 +63,33 @@ namespace capa_negocio
             bool eliminado = CD_Carpeta.EliminarCarpetaDefinitivamente(id_carpeta, out mensaje);
             return eliminado ? 1 : 0;
         }
-        
+
         public int VaciarPapelera(int IdUsuario, out string mensaje)
         {
-            // Validar el ID del usuario
+            mensaje = string.Empty;
+            
             if (IdUsuario <= 0)
             {
                 mensaje = "El ID del usuario no es válido.";
                 return 0;
             }
 
-            bool eliminado = CD_Carpeta.VaciarPapelera(IdUsuario, out mensaje);
-            return eliminado ? 1 : 0;
+            try
+            {
+                bool resultado = CD_Carpeta.VaciarPapelera(IdUsuario, out mensaje);
+
+                if (mensaje.Contains("no contiene registros"))
+                {
+                    return -1;
+                }
+
+                return resultado ? 1 : 0;
+            }
+            catch (Exception ex)
+            {
+                mensaje = $"Error en capa de negocio: {ex.Message}";
+                return 0;
+            }
         }
     }
 }

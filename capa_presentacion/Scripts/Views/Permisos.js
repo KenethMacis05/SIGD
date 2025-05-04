@@ -104,7 +104,9 @@ $("#obtenerRol").on("change", function () {
     }     
 
     $('#inputGroupSelectControlador').empty().append('<option value="Todos">Todos</option>');
+    $('#inputGroupSelectControladorNoAsignado').empty().append('<option value="Todos">Todos</option>');
 
+    // Controladores del rol
     jQuery.ajax({
         url: listarPermisosPorRolUrl,
         type: "GET",
@@ -126,6 +128,37 @@ $("#obtenerRol").on("change", function () {
         error: () => {
             showAlert("Error", "Error al cargar los controladores", "error");                        
         }
+    });
+
+    // Controladores no asignados
+    jQuery.ajax({
+        url: listarPermisosNoAsignados,
+        type: "GET",
+        dataType: "json",
+        data: { IdRol: IdRol },
+        contentType: "application/json; charset=utf-8",
+        success: function (response) {            
+            if (response && response.data && Array.isArray(response.data)) {                
+                let controladoresSet = new Set();
+
+                $.each(response.data, function (index, registro) {
+                    if (registro.Controller && registro.Controller.controlador) {
+                        controladoresSet.add(registro.Controller.controlador);
+                    }
+                });
+
+                const selectControladoresNoAsignados = $('#inputGroupSelectControladorNoAsignado');
+                selectControladoresNoAsignados.empty().append('<option value="Todos">Todos</option>');
+
+                controladoresSet.forEach(function (controlador) {
+                    selectControladoresNoAsignados.append(`<option value="${controlador}">${controlador}</option>`);
+                });
+            } else {
+                console.warn("Formato de datos no válido para controladores no asignados.", response);
+            }
+        },
+        complete: () => $("#dataTablePermisosNoAsignados tbody").LoadingOverlay("hide"),
+        error: () => { showAlert("Error", "Error al cargar los permisos no asignados", "error"); }
     });
 });
 
@@ -156,9 +189,21 @@ $("#inputGroupSelectTipo").on("change", function () {
         carparPermisos(IdRol)
         dataTable.column(4).search(tipoSelecionado).draw();
     }
-
 });
 
+// Filtro por Tipo
+$("#inputGroupSelectTipoNoAsignado").on("change", function () {
+    const tipoSelecionado = $(this).val();
+    var IdRol = $('#obtenerRol').val();
+
+    if (tipoSelecionado === "Todos") {
+        cargarPermisosNoAsignados(IdRol)
+        dataTableNoAsignados.column(4).search('').draw();
+    } else {
+        cargarPermisosNoAsignados(IdRol)
+        dataTableNoAsignados.column(4).search(tipoSelecionado).draw();
+    }
+});
 
 // Función para abrir el modal y cargar permisos no asignados
 function abrirModal() {

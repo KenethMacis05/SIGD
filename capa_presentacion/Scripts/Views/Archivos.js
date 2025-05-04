@@ -89,14 +89,14 @@ function GuardarCarpeta() {
 
             if (data.Resultado || data.Respuesta) {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "Carpeta creada correctamente" : "Carpeta actualizada correctamente");
-                showAlert("¡Éxito!", mensaje, "success");
+                showAlert("¡Éxito!", mensaje, "success", true);
                 cargarTodo();
                 $("#nombre").val("");
 
             }
             else {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "No se pudo crear la carpeta" : "No se pudo actualizar la carpeta");
-                showAlert("Error", mensaje, "error");
+                showAlert("Error", mensaje, "error", true);
             }
         },
         error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
@@ -221,6 +221,32 @@ $(document).on('click', '.btn-eliminarArchivo', function (e) {
     });
 });
 
+// Vaciar papelera
+function vaciarPapelera() {
+    confirmarEliminacion().then((result) => {
+
+        if (result.isConfirmed) {
+            showLoadingAlert("Vaciando papelera", "Por favor espere...")
+
+            // Enviar petición AJAX
+            $.ajax({
+                url: config.vaciarPapeleraUrl,
+                type: "POST",                
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        showAlert("¡Éxito!", response.Mensaje || "La papelera fue vaciada correctamente", "success", true);
+                        cargarTodo();
+                    } else { showAlert("Error", response.Mensaje || "No se pudo vaciar la papelera", "error"); }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+            });
+        }
+    });
+}
 
 // Función para cargar las carpetas
 function cargarCarpetas(url, contenedorId) {
@@ -362,10 +388,10 @@ $(document).on('mouseenter', '.file-manager-group', function () {
 // Efectos hover para archivos
 $(document).on('mouseenter', '.file-manager-recent-item', function () {
     $(this).find('.fa-file').addClass('d-none');
-    $(this).find('.fa-file-alt').removeClass('d-none'); // Cambia al ícono alternativo (hover)
+    $(this).find('.fa-file-alt').removeClass('d-none');
 }).on('mouseleave', '.file-manager-recent-item', function () {
     $(this).find('.fa-file-alt').addClass('d-none');
-    $(this).find('.fa-file').removeClass('d-none'); // Vuelve al ícono original
+    $(this).find('.fa-file').removeClass('d-none');
 });
 
 function cargarTodo() {
@@ -393,7 +419,6 @@ function handleTabClick(activeTabId) {
     }
 }
 
-var filaSeleccionada
 let dataTable;
 
 const dataTableOptions = {
@@ -407,11 +432,15 @@ const dataTableOptions = {
             const archivos = json.data.archivos.map(item => ({ ...item, tipoRegistro: "Archivo" }));
             const carpetas = json.data.carpetas.map(item => ({ ...item, tipoRegistro: "Carpeta" }));
 
-            // Combinar y ordenar por fecha de eliminación
+            // Combinar y ordenar por fecha de eliminación (timestamp)
             const combinados = archivos.concat(carpetas).sort((a, b) => {
-                const fechaA = new Date(a.fecha_eliminacion.match(/\/Date\((\d+)\)\//)[1]);
-                const fechaB = new Date(b.fecha_eliminacion.match(/\/Date\((\d+)\)\//)[1]);
-                return fechaB - fechaA; // Orden descendente (más reciente primero)
+                const getTimestamp = (dateStr) => {
+                    const match = dateStr.match(/\/Date\((\d+)\)\//);
+                    return match ? parseInt(match[1], 10) : 0;
+                };
+                const timestampA = getTimestamp(a.fecha_eliminacion);
+                const timestampB = getTimestamp(b.fecha_eliminacion);
+                return timestampB - timestampA;
             });
 
             return combinados;
@@ -437,17 +466,15 @@ const dataTableOptions = {
             }
         },
         {
+            data: "tipoRegistro",
+            title: "Tipo",
+            visible: false
+        },
+        {
             data: "fecha_eliminacion",
             title: "Fecha de Eliminación",
             render: function (data) {
-                if (data) {
-                    const timestampMatch = data.match(/\/Date\((\d+)\)\//);
-                    if (timestampMatch) {
-                        const timestamp = parseInt(timestampMatch[1], 10);
-                        return new Date(timestamp).toLocaleDateString();
-                    }
-                }
-                return "N/A";
+                return data ? formatASPNetDate(data) : "N/A";
             }
         },
         {
@@ -465,6 +492,17 @@ const dataTableOptions = {
         }
     }
 };
+
+// Filtro por Tipo
+$("#inputGroupSelectTipo").on("change", function () {
+    const tipoSelecionado = $(this).val();
+
+    if (tipoSelecionado === "Todos") {        
+        dataTable.column(1).search('').draw();
+    } else {        
+        dataTable.column(1).search(tipoSelecionado).draw();
+    }
+});
 
 // Inicialización
 $(document).ready(function () {
