@@ -96,9 +96,9 @@ function Guardar() {
             if (Usuario.id_usuario == 0) {
                 if (data.Resultado != 0) {
                     Usuario.id_usuario = data.Resultado;
-                    dataTable.clear().rows.add(Usuario).draw();                    
-                    showAlert("¡Éxito!", "Usuario creado correctamente", "success")
-
+                    dataTable.row.add(Usuario).draw();
+                    dataTable.ajax.reload(null, false);
+                    console.log(Usuario)
                 } else { showAlert("Error", data.Mensaje || "No se pudo crear el usuario", "error") }
             }
             // Actualizar Usuario
@@ -200,6 +200,42 @@ const dataTableOptions = {
         }
     ]
 };
+
+$(document).ready(function () {
+    dataTable = $("#datatable").DataTable(dataTableOptions);
+    tablaReinicio = $("#tablaReinicio").DataTable(tablaReinicioOptions);
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // EN DESARROLLO (TABLA DE USUARIOS PARA RESTABLECER CONTRASEÑA)
 const tablaReinicioOptions = {
@@ -362,9 +398,4 @@ $("#btnReiniciar").click(function () {
             });
         }
     });
-});
-
-$(document).ready(function () {
-    dataTable = $("#datatable").DataTable(dataTableOptions);
-    tablaReinicio = $("#tablaReinicio").DataTable(tablaReinicioOptions);
 });
