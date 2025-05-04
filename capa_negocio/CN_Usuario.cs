@@ -82,7 +82,7 @@ namespace capa_negocio
                                 <img src='{urlBase}/Assets/img/facebook.png' alt='Facebook' style='width: 40px; height: 40px;'>
                             </a>
                              <a href='https://x.com/UNANManagua' style='margin: 0 10px; text-decoration: none;'>
-                                <img src='{urlBase}Assets/img/x.png' alt='Twitter' style='width: 40px; height: 40px;'>
+                                <img src='{urlBase}/Assets/img/x.png' alt='Twitter' style='width: 40px; height: 40px;'>
                             </a>
                             <a href='https://www.instagram.com/unan.managua' style='margin: 0 10px; text-decoration: none;'>
                                 <img src='{urlBase}/Assets/img/instagram.png' alt='Instagram' style='width: 40px; height: 40px;'>

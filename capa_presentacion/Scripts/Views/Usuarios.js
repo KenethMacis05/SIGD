@@ -96,8 +96,7 @@ function Guardar() {
             if (Usuario.id_usuario == 0) {
                 if (data.Resultado != 0) {
                     Usuario.id_usuario = data.Resultado;
-                    dataTable.clear().rows.add(Usuario).draw();
-                    console.log(Usuario);
+                    dataTable.clear().rows.add(Usuario).draw();                    
                     showAlert("¡Éxito!", "Usuario creado correctamente", "success")
 
                 } else { showAlert("Error", data.Mensaje || "No se pudo crear el usuario", "error") }
