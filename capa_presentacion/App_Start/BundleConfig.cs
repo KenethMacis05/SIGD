@@ -22,6 +22,12 @@ namespace capa_presentacion
                       "~/Scripts/DataTables/dataTables.responsive.js",
                       "~/Scripts/LoadingOverlay/loadingoverlay.min.js",
                       "~/Scripts/MetodosGlobales.js",
+
+                      "~/Scripts/Select2/select2.min.js",
+                      "~/Scripts/Duallistbox/dual-listbox.min.js",
+                      "~/Scripts/Dropzone/dropzone.min.js",
+                      
+
                       "~/Scripts/sweetalert2.min.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(
@@ -32,6 +38,11 @@ namespace capa_presentacion
                       "~/Content/DataTables/css/jquery.dataTables.css",
                       "~/Content/DataTables/css/responsive.dataTables.css",
                       "~/Content/sweetalert2.css",
+                      
+                      "~/Content/Select2/select2.min.css",
+                      "~/Content/Duallistbox/dual-listbox.css",
+                      "~/Content/Dropzone/dropzone.min.css",
+
                       "~/Content/Site.css"));
         }
     }
