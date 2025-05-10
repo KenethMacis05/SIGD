@@ -21,6 +21,11 @@ namespace capa_negocio
         {
             return CD_Carpeta.ListarCarpetas(id_usuario, out resultado, out mensaje);
         }
+        
+        public List<CARPETA> ListarSubCarpetas(int carpeta_padre, out int resultado, out string mensaje)
+        {
+            return CD_Carpeta.ListarSubCarpetas(carpeta_padre, out resultado, out mensaje);
+        }
 
         public List<CARPETA> ListarCarpetasEliminadas(int id_usuario, out int resultado, out string mensaje)
         {

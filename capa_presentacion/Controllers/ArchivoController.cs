@@ -53,6 +53,29 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
+        // Controlador para Listar todas las subcarpetas
+        [HttpPost]
+        public JsonResult ListarSubCarpetas(int idCarpeta)
+        {            
+            int resultado;
+            string mensaje;
+
+            if (idCarpeta <= 0)
+            {
+                return Json(new { data = new List<CARPETA>(), resultado = 0, mensaje = "El ID de la carpeta no es válido" }, JsonRequestBehavior.AllowGet);
+            }
+
+            try
+            {
+                List<CARPETA> lst = CN_Carpeta.ListarSubCarpetas(idCarpeta, out resultado, out mensaje);
+                return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { data = new List<CARPETA>(), resultado = -1, mensaje = "Error interno: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         // Controlador para Crear o Editar carpetas        
         [HttpPost]
         public JsonResult GuardarCarpeta(CARPETA carpeta)

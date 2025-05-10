@@ -35,6 +35,14 @@ $(document).on('click', '.btn-crearSubCarpeta', function (e) {
     $('#createCarpeta').modal('show');
 });
 
+$(document).on('click', '.file-manager-group-title', function (e) {
+    e.preventDefault();
+
+    const idCarpeta = $(this).data('carpetapadre-id');
+    console.log("ID de la carpeta seleccionada:", idCarpeta);
+    
+    cargarSubCarpetas(idCarpeta);
+});
 
 function abrirModalSubirArchivo(json) {
     $("#idCarpeta2").val("0");
@@ -269,7 +277,7 @@ function cargarCarpetas(url, contenedorId) {
                                 <i class="fas fa-folder-open fa-2x text-${color} me-3 d-none"></i>
                                 <i class="fas fa-folder fa-2x text-${color} me-3"></i>
                                 <div class="file-manager-group-info flex-fill">
-                                    <a href="#" class="file-manager-group-title h5 d-block text-decoration-none text-dark">${carpeta.nombre}</a>
+                                    <a href="#" class="file-manager-group-title h5 d-block text-decoration-none text-dark" data-carpetaPadre-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
                                     <span class="file-manager-group-about text-muted small">${formatASPNetDate(carpeta.fecha_registro)}</span>
                                 </div>
                                 <div class="ms-auto">
@@ -323,6 +331,45 @@ function cargarCarpetas(url, contenedorId) {
     });
 }
 
+function cargarSubCarpetas(idCarpeta) {
+    $.ajax({
+        url: config.listarSubCarpetasUrl,
+        type: 'POST',
+        data: { idCarpeta: idCarpeta },
+        beforeSend: () => $("#contenedor-carpetas-todos").LoadingOverlay("show"),
+        success: function (response) {
+            if (response.resultado === 1) {
+                let html = '';
+                $.each(response.data, function (index, carpeta) {
+                    html += `
+                    <div class="col-sm-12 col-md-4 col-lg-3">
+                        <div class="card file-manager-recent-item h-100 shadow-sm">
+                            <div class="card-body">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="fas fa-folder fa-lg text-warning fa-2x"></i>
+                                    <div class="flex-fill">
+                                        <a href="#" 
+                                           class="file-manager-group-title h5 d-block text-decoration-none text-dark"
+                                           data-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
+                                        <small class="text-muted">Creado: ${formatASPNetDate(carpeta.fecha_registro)}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+
+                $("#contenedor-carpetas-todos").html(html);
+            } else {
+                $("#contenedor-carpetas-todos").html('<div class="alert alert-light">No hay subcarpetas disponibles</div>');
+            }
+        },
+        error: function () {
+            $("#contenedor-carpetas-todos").html('<div class="alert alert-danger">Error al cargar las subcarpetas</div>');
+        },
+        complete: () => $("#contenedor-carpetas-todos").LoadingOverlay("hide")
+    });
+}
 function cargarArchivos(url, contenedorId) {
     $.ajax({
         url: url,
@@ -514,9 +561,7 @@ $(document).ready(function () {
 //Boton eliminar difinitivamente un archivo o carpeta
 $("#datatableArchivoEliminados tbody").on("click", '.btn-eliminarDifinitivamente', function () {
     const archivoleccionado = $(this).closest("tr");
-    const data = dataTable.row(archivoleccionado).data();    
-
-    console.log(data);
+    const data = dataTable.row(archivoleccionado).data();        
 
     if (data.tipoRegistro === "Carpeta") {
         id_eliminar = data.id_carpeta;
@@ -562,6 +607,28 @@ $("#datatableArchivoEliminados tbody").on("click", '.btn-eliminarDifinitivamente
         }
     });
 });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // EN DESAROLLO
 $('#miDataTable').on('click', '.btn-restablecer', function () {

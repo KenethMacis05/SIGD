@@ -265,8 +265,26 @@
             subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")',
             listarPapeleraUrl: '@Url.Action("ListarPapelera", "Archivo")',
             vaciarPapeleraUrl: '@Url.Action("VaciarPapelera", "Archivo")',
-            eliminarDefinitivamenteUrl: '@Url.Action("EliminarDefinitivamente", "Archivo")'
+            eliminarDefinitivamenteUrl: '@Url.Action("EliminarDefinitivamente", "Archivo")',
+            listarSubCarpetasUrl: '@Url.Action("ListarSubCarpetas", "Archivo")'
         };
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
+    <script>
+        $.ajax({
+            url: '@Url.Action("ListarSubCarpetas", "Archivo")',
+            type: 'POST',
+            data: { idCarpeta: 1 },
+            success: function (response) {
+                if (response.resultado === 1) {
+                    console.log("Carpetas cargadas:", response.data);
+                } else {
+                    console.error("Error:", response.mensaje);
+                }
+            },
+            error: function (xhr, status, error) {
+                console.error("Error en la solicitud:", error);
+            }
+        });
+    </script>
 }

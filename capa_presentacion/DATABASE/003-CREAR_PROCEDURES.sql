@@ -923,16 +923,11 @@ BEGIN
     END
 
     -- Seleccionar todas las carpetas hijas de la carpeta padre especificada
-    SELECT 
-        c.id_carpeta,
-        c.nombre AS nombre_carpeta,
-        c.fecha_registro,
-        c.estado,
-        c.carpeta_padre
-    FROM CARPETA c
-    WHERE c.carpeta_padre = @IdCarpetaPadre
-      AND c.estado = 1 -- Opcional: Solo selecciona carpetas activas
-    ORDER BY c.fecha_registro DESC;
+    SELECT *        
+    FROM CARPETA
+    WHERE carpeta_padre = @IdCarpetaPadre
+      AND estado = 1 -- Opcional: Solo selecciona carpetas activas
+    ORDER BY fecha_registro DESC;
 
     SET @Resultado = 1
     SET @Mensaje = 'Carpetas cargadas correctamente'
