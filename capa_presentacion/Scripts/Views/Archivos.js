@@ -35,15 +35,6 @@ $(document).on('click', '.btn-crearSubCarpeta', function (e) {
     $('#createCarpeta').modal('show');
 });
 
-$(document).on('click', '.file-manager-group-title', function (e) {
-    e.preventDefault();
-
-    const idCarpeta = $(this).data('carpetapadre-id');
-    console.log("ID de la carpeta seleccionada:", idCarpeta);
-    
-    cargarSubCarpetas(idCarpeta);
-});
-
 function abrirModalSubirArchivo(json) {
     $("#idCarpeta2").val("0");
     $("#file").val("");
@@ -336,7 +327,7 @@ function cargarSubCarpetas(idCarpeta) {
         url: config.listarSubCarpetasUrl,
         type: 'POST',
         data: { idCarpeta: idCarpeta },
-        beforeSend: () => $("#contenedor-carpetas-todos").LoadingOverlay("show"),
+        beforeSend: () => $("#contenedor-subcarpetas-todos").LoadingOverlay("show"),
         success: function (response) {
             if (response.resultado === 1) {
                 let html = '';
@@ -370,6 +361,32 @@ function cargarSubCarpetas(idCarpeta) {
         complete: () => $("#contenedor-carpetas-todos").LoadingOverlay("hide")
     });
 }
+
+$(document).on('click', '.file-manager-group-title', function (e) {
+    e.preventDefault();
+
+    const idCarpeta = $(this).data('carpetapadre-id');
+    console.log("ID de la carpeta seleccionada:", idCarpeta);    
+
+    $.ajax({
+        url: config.listarSubCarpetasUrl,
+        type: 'POST',
+        data: { idCarpeta: idCarpeta },
+        success: function (response) {
+            if (response.resultado === 1) {
+                console.log("Carpetas cargadas:", response.data);
+            } else {
+                console.error("Error:", response.mensaje);
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error("Error en la solicitud:", error);
+        }
+    });
+
+    cargarSubCarpetas(idCarpeta)
+});
+
 function cargarArchivos(url, contenedorId) {
     $.ajax({
         url: url,

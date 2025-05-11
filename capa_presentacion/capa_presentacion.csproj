@@ -662,12 +662,12 @@
     <Content Include="Scripts\Summernote\lang\summernote-vi-VN.js.map" />
     <Content Include="Scripts\Summernote\lang\summernote-zh-CN.js.map" />
     <Content Include="Scripts\Summernote\lang\summernote-zh-TW.js.map" />
+    <Content Include="Views\Menu\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
     <Folder Include="ARCHIVOS\" />
     <Folder Include="Models\" />
-    <Folder Include="Views\Menu\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
