@@ -276,16 +276,6 @@ function cargarCarpetasGenerico(url, contenedorId, idCarpeta = null) {
             if (response.data && response.data.length > 0) {
                 let html = '';
 
-                // Agregar botón de "Regresar" si se está cargando subcarpetas
-                if (idCarpeta) {
-                    html += `
-                    <div class="col-12 mb-3">
-                        <button class="btn btn-secondary btn-sm" id="btn-regresar" data-id="${idCarpeta}">
-                            <i class="fas fa-arrow-left me-2"></i>Regresar
-                        </button>
-                    </div>`;
-                }
-
                 // Generar el HTML para cada carpeta
                 $.each(response.data, function (index, carpeta) {
                     html += generarHtmlCarpeta(carpeta, index);
@@ -324,10 +314,9 @@ function cargarArchivos(url, contenedorId) {
                 let html = '';
                 $.each(response.data, function (index, archivo) {
                     const html = response.data.map(generarHtmlArchivo).join("");
-                
+                    $(`#${contenedorId}`).html(html);                
                 });
 
-                $(`#${contenedorId}`).html(html);
             } else {                
                 $(`#${contenedorId}`).html('<div class="alert alert-light">No hay archivos disponibles</div>');
             }

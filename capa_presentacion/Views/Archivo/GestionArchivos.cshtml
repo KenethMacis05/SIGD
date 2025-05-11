@@ -11,10 +11,6 @@
 
 <!--Titulo-->
 <div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Gestión de Archivos</h2></div>
-@*<ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item"><a href="index.html">Dashboard</a></li>
-        <li class="breadcrumb-item active">Usuarios</li>
-    </ol>*@
 
 <!--Contenedor-->
 <div class="card shadow-sm">
@@ -81,7 +77,7 @@
             <!-- Contenedor 2-->
             <div class="tab-pane fade" id="archivo" role="tabpanel" aria-labelledby="archivos-tab">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="mb-0">Carpetas</h2>
+                    <h2 class="mb-0">Mis archivos</h2>
                     <div>
                         <button type="button" class="btn btn-secondary" onclick="abrirModalCarpeta(null)">
                             <i class="fa fa-folder me-2"></i>Crear Carpeta
@@ -92,8 +88,11 @@
                     </div>
                 </div>
 
+                <ol class="breadcrumb mb-4">
+                    <li class="breadcrumb-item"><a href="index.html">Incio</a></li>
+                    <li class="breadcrumb-item active">sub carpeta</li>
+                </ol>
                 <hr />
-
                 <!--Carpetas-->
                 <div class="container-fluid mb-3">
                     <div class="row g-3" id="contenedor-carpetas-todos">
@@ -101,15 +100,13 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2 class="mb-0">Archivos</h2>
-                </div>
-
                 <hr>
-                <!-- Archivos -->
 
-                <div class="row g-3" id="contenedor-archivos-todos">
-                    <!-- Los archivos se cargarán dinámicamente aquí -->
+                <div class="container-fluid">
+                    <!-- Archivos -->
+                    <div class="row g-3" id="contenedor-archivos-todos">
+                        <!-- Los archivos se cargarán dinámicamente aquí -->
+                    </div>
                 </div>
             </div>
 
