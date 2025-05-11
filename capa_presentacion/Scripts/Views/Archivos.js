@@ -2,11 +2,26 @@
 const eliminarCarpetaUrl = config.eliminarCarpetaUrl;
 const compartirCarpetaUrl = config.compartirCarpetaUrl;
 const subirArchivoUrl = config.subirArchivoUrl;
+let carpetaActualId = null;
 
+// Al hacer clic en una carpeta, navegar a sus subcarpetas
+$(document).on('click', '.file-manager-group-title', function (e) {
+    e.preventDefault();
+    let idCarpetaPadre = $(this).data('carpetapadre-id');
+    let contenedorId = $(this).closest('.row').attr('id');
+
+    carpetaActualId = idCarpetaPadre;
+
+    if (contenedorId) {
+        cargarSubCarpetas(idCarpetaPadre, contenedorId);
+    }
+});
+
+// Abrir el modal para crear o editar una carpeta
 function abrirModalCarpeta(json) {
     $("#idCarpeta").val("0");
     $("#nombre").val("");
-    $("#idCarpetaPadre").val("0");
+    $("#idCarpetaPadre").val(carpetaActualId || "0");
 
     if (json !== null) {
         $("#idCarpeta").val(json.id_carpeta);
@@ -27,6 +42,7 @@ $(document).on('click', '.btn-editar', function (e) {
     abrirModalCarpeta(data);
 });
 
+// Crear una sub carpeta
 $(document).on('click', '.btn-crearSubCarpeta', function (e) {
     e.preventDefault();
 
@@ -35,6 +51,7 @@ $(document).on('click', '.btn-crearSubCarpeta', function (e) {
     $('#createCarpeta').modal('show');
 });
 
+// Abrir el modal para subir un archivo
 function abrirModalSubirArchivo(json) {
     $("#idCarpeta2").val("0");
     $("#file").val("");
@@ -54,6 +71,7 @@ $(document).on('click', '.btn-subirArchivo', function (e) {
     abrirModalSubirArchivo(data);
 });
 
+// Guardar carpeta (crear o actualizar)
 function GuardarCarpeta() {
 
     var Carpeta = {
@@ -247,67 +265,30 @@ function vaciarPapelera() {
     });
 }
 
-// Función para cargar las carpetas
-function cargarCarpetas(url, contenedorId) {
+// Función para cargar carpetas o subcarpetas
+function cargarCarpetasGenerico(url, contenedorId, idCarpeta = null) {
     $.ajax({
         url: url,
-        type: 'GET',
-        dataType: 'json',
+        type: idCarpeta ? 'POST' : 'GET',
+        data: idCarpeta ? { idCarpeta: idCarpeta } : null,
         beforeSend: () => $(`#${contenedorId}`).LoadingOverlay("show"),
         success: function (response) {
             if (response.data && response.data.length > 0) {
                 let html = '';
-                const colors = ['primary', 'warning', 'danger', 'success', 'info', 'secondary'];
 
-                $.each(response.data, function (index, carpeta) {
-                    const color = colors[index % colors.length];
+                // Agregar botón de "Regresar" si se está cargando subcarpetas
+                if (idCarpeta) {
                     html += `
-                    <div class="col-sm-6 col-md-4 col-lg-3">
-                        <div class="card file-manager-group h-100 shadow-sm">
-                            <div class="card-body d-flex align-items-center">
-                                <i class="fas fa-folder-open fa-2x text-${color} me-3 d-none"></i>
-                                <i class="fas fa-folder fa-2x text-${color} me-3"></i>
-                                <div class="file-manager-group-info flex-fill">
-                                    <a href="#" class="file-manager-group-title h5 d-block text-decoration-none text-dark" data-carpetaPadre-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
-                                    <span class="file-manager-group-about text-muted small">${formatASPNetDate(carpeta.fecha_registro)}</span>
-                                </div>
-                                <div class="ms-auto">
-                                    <a href="#" class="dropdown-toggle file-manager-recent-file-actions" 
-                                        data-bs-toggle="dropdown" data-carpeta-id="${carpeta.id_carpeta}">
-                                        <i class="fas fa-ellipsis-v"></i>
-                                    </a>
-                                    <ul class="dropdown-menu dropdown-menu-end">
-                                        <li>
-                                            <a class="dropdown-item btn-crearSubCarpeta" href="#"
-                                            data-carpetaPadre-id="${carpeta.id_carpeta}">
-                                            <i class="fas fa-plus me-2"></i>Crear carpeta</a>
-                                        </li>
-                                        <li>
-                                            <a class="dropdown-item btn-subirArchivo" href="#"
-                                            data-carpeta-id="${carpeta.id_carpeta}" 
-                                            data-carpeta-nombre="${carpeta.nombre}">
-                                            <i class="fas fa-file me-2"></i>Subir Archivo</a>
-                                        </li>
-                                        <li><a class="dropdown-item btn-compartir" href="#" 
-                                            data-carpeta-id="${carpeta.id_carpeta}">
-                                            <i class="fas fa-share me-2"></i>Compartir</a></li>
-                                        <li><a class="dropdown-item btn-descargar" href="#" 
-                                            data-carpeta-id="${carpeta.id_carpeta}">
-                                            <i class="fas fa-download me-2"></i>Descargar</a></li>
-                                        <li>
-                                            <a class="dropdown-item btn-editar" href="#" 
-                                            data-carpeta-id="${carpeta.id_carpeta}" 
-                                            data-carpeta-nombre="${carpeta.nombre}">
-                                            <i class="fas fa-edit me-2"></i>Renombrar</a>
-                                        </li>
-                                        <li><a class="dropdown-item btn-eliminar" href="#" 
-                                            data-carpeta-id="${carpeta.id_carpeta}">
-                                            <i class="fas fa-trash me-2"></i>Eliminar</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="col-12 mb-3">
+                        <button class="btn btn-secondary btn-sm" id="btn-regresar" data-id="${idCarpeta}">
+                            <i class="fas fa-arrow-left me-2"></i>Regresar
+                        </button>
                     </div>`;
+                }
+
+                // Generar el HTML para cada carpeta
+                $.each(response.data, function (index, carpeta) {
+                    html += generarHtmlCarpeta(carpeta, index);
                 });
 
                 $(`#${contenedorId}`).html(html);
@@ -322,70 +303,15 @@ function cargarCarpetas(url, contenedorId) {
     });
 }
 
-function cargarSubCarpetas(idCarpeta) {
-    $.ajax({
-        url: config.listarSubCarpetasUrl,
-        type: 'POST',
-        data: { idCarpeta: idCarpeta },
-        beforeSend: () => $("#contenedor-subcarpetas-todos").LoadingOverlay("show"),
-        success: function (response) {
-            if (response.resultado === 1) {
-                let html = '';
-                $.each(response.data, function (index, carpeta) {
-                    html += `
-                    <div class="col-sm-12 col-md-4 col-lg-3">
-                        <div class="card file-manager-recent-item h-100 shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center gap-3">
-                                    <i class="fas fa-folder fa-lg text-warning fa-2x"></i>
-                                    <div class="flex-fill">
-                                        <a href="#" 
-                                           class="file-manager-group-title h5 d-block text-decoration-none text-dark"
-                                           data-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
-                                        <small class="text-muted">Creado: ${formatASPNetDate(carpeta.fecha_registro)}</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
-                });
-
-                $("#contenedor-carpetas-todos").html(html);
-            } else {
-                $("#contenedor-carpetas-todos").html('<div class="alert alert-light">No hay subcarpetas disponibles</div>');
-            }
-        },
-        error: function () {
-            $("#contenedor-carpetas-todos").html('<div class="alert alert-danger">Error al cargar las subcarpetas</div>');
-        },
-        complete: () => $("#contenedor-carpetas-todos").LoadingOverlay("hide")
-    });
+// Función para cargar carpetas (nivel superior)
+function cargarCarpetas(url, contenedorId) {
+    cargarCarpetasGenerico(url, contenedorId);
 }
 
-$(document).on('click', '.file-manager-group-title', function (e) {
-    e.preventDefault();
-
-    const idCarpeta = $(this).data('carpetapadre-id');
-    console.log("ID de la carpeta seleccionada:", idCarpeta);    
-
-    $.ajax({
-        url: config.listarSubCarpetasUrl,
-        type: 'POST',
-        data: { idCarpeta: idCarpeta },
-        success: function (response) {
-            if (response.resultado === 1) {
-                console.log("Carpetas cargadas:", response.data);
-            } else {
-                console.error("Error:", response.mensaje);
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error("Error en la solicitud:", error);
-        }
-    });
-
-    cargarSubCarpetas(idCarpeta)
-});
+// Función para cargar subcarpetas
+function cargarSubCarpetas(idCarpeta, contenedorId) {
+    cargarCarpetasGenerico(config.listarSubCarpetasUrl, contenedorId, idCarpeta);
+}
 
 function cargarArchivos(url, contenedorId) {
     $.ajax({
@@ -397,35 +323,8 @@ function cargarArchivos(url, contenedorId) {
             if (response.data && response.data.length > 0) {
                 let html = '';
                 $.each(response.data, function (index, archivo) {
-                    const { icono, color } = obtenerIconoYColor(archivo.tipo);
-
-                    html += `
-                    <div class="col-sm-12 col-md-12 col-lg-6">
-                        <div class="card file-manager-recent-item h-100 shadow-sm">
-                            <div class="card-body">
-                                <div class="d-flex align-items-center gap-3">
-                                    <i class="fas ${icono} fa-lg ${color} fa-2x"></i>
-                                    <div class="flex-fill">                                        
-                                        <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block">${archivo.nombre}</a>
-                                        <small class="text-muted">${archivo.size}kb - ${formatASPNetDate(archivo.fecha_subida)}</small>
-                                    </div>
-                                    <div class="dropdown">
-                                        <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
-                                            <i class="fas fa-ellipsis-v"></i>
-                                        </a>
-                                        <ul class="dropdown-menu dropdown-menu-end">
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Compartir</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Descargar</a></li>
-                                            <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
-                                            <li><a class="dropdown-item btn-eliminarArchivo" href="#"
-                                            data-archivo-id="${archivo.id_archivo}">
-                                            <i class="fas fa-trash me-2"></i>Eliminar</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>`;
+                    const html = response.data.map(generarHtmlArchivo).join("");
+                
                 });
 
                 $(`#${contenedorId}`).html(html);
@@ -462,7 +361,7 @@ function cargarTodo() {
     // Cargar carpetas
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
-
+    
     // Cargar archivos
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
@@ -475,11 +374,11 @@ function handleTabClick(activeTabId) {
     if (activeTabId === "home") {
         // Cargar carpetas recientes
         cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-        cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+        cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");        
     } else if (activeTabId === "archivos") {
         // Cargar todas las carpetas
         cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
-        cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+        cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");        
     }
 }
 

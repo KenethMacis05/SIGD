@@ -130,10 +130,10 @@
                                 <option selected disabled>Seleccionar...</option>
                                 <option value="Todos">Todos</option>
                                 <option value="Archivo">Archivo</option>
-                                <option value="Carpeta">Carpeta</option>                                
+                                <option value="Carpeta">Carpeta</option>
                             </select>
                         </div>
-                    </div>                    
+                    </div>
                 </div>
                 <hr />
                 <!--Tabla-->
@@ -166,10 +166,12 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body g-2">
-                    <label for="idCarpeta">Id de carpeta</label>
-                    <input type="text" name="idCarpeta" id="idCarpeta" value="0">
+
                     <label for="idCarpetaPadre">Id de carpeta padre</label>
                     <input type="text" name="idCarpetaPadre" id="idCarpetaPadre" value="0">
+                    <br />
+                    <label for="idCarpeta">Id de carpeta</label>
+                    <input type="text" name="idCarpeta" id="idCarpeta" value="0">
 
 
                     <div class="row mb-3">
@@ -269,5 +271,5 @@
             listarSubCarpetasUrl: '@Url.Action("ListarSubCarpetas", "Archivo")'
         };
     </script>
-    <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>    
+    <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
 }
