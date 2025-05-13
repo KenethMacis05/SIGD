@@ -1168,29 +1168,48 @@ AS
 BEGIN
     SET @Resultado = 0;
 
-    -- Verificar si la carpeta existe
-    IF EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
-    BEGIN
-        -- Eliminar archivos dentro de la carpeta y subcarpetas
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        ;WITH CarpetasRecursivas AS (
+            SELECT id_carpeta 
+            FROM CARPETA 
+            WHERE id_carpeta = @IdCarpeta
+            UNION ALL
+            SELECT c.id_carpeta
+            FROM CARPETA c
+            INNER JOIN CarpetasRecursivas cr ON c.carpeta_padre = cr.id_carpeta
+        )
         DELETE FROM ARCHIVO
         WHERE fk_id_carpeta IN (
-            SELECT id_carpeta
-            FROM CARPETA
-            WHERE id_carpeta = @IdCarpeta OR fk_id_carpeta = @IdCarpeta
+            SELECT id_carpeta FROM CarpetasRecursivas
         );
-
-        -- Eliminar carpetas hijas
+        
+        ;WITH CarpetasRecursivas AS (
+            SELECT id_carpeta 
+            FROM CARPETA 
+            WHERE id_carpeta = @IdCarpeta
+            UNION ALL
+            SELECT c.id_carpeta
+            FROM CARPETA c
+            INNER JOIN CarpetasRecursivas cr ON c.carpeta_padre = cr.id_carpeta
+        )
         DELETE FROM CARPETA
-        WHERE carpeta_padre = @IdCarpeta;
-
-        -- Eliminar la carpeta principal
-        DELETE FROM CARPETA
-        WHERE id_carpeta = @IdCarpeta;
+        WHERE id_carpeta IN (SELECT id_carpeta FROM CarpetasRecursivas);
+        
+        COMMIT TRANSACTION;
 
         SET @Resultado = 1;
-    END
+    END TRY
+    BEGIN CATCH        
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;        
+        SET @Resultado = 0;        
+        THROW;
+    END CATCH
 END
 GO
+
 ---------------------------------------------------------------------------------------------------------------
 -- (6) PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS RECIENTES DEL USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerArchivosRecientes
@@ -1779,16 +1798,27 @@ BEGIN
 
         -- Iniciar una transacción para asegurar consistencia
         BEGIN TRANSACTION;
-       
-        -- Eliminar todas las carpetas con estado = 0 y pertenecientes al usuario
-        DELETE FROM CARPETA
-        WHERE estado = 0 AND fk_id_usuario = @IdUsuario;
 
-        -- Eliminar todos los archivos con estado = 0 y pertenecientes al usuario
+        -- Eliminar archivos con estado = 0 y pertenecientes al usuario
         DELETE FROM ARCHIVO
         WHERE estado = 0 AND fk_id_carpeta IN (
-            SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario
+            SELECT id_carpeta FROM CARPETA WHERE estado = 0 AND fk_id_usuario = @IdUsuario
         );
+
+        -- Eliminar carpetas recursivamente (de hojas a raíz)
+        WITH CarpetasRecursivas AS (
+            SELECT id_carpeta 
+            FROM CARPETA 
+            WHERE estado = 0 AND fk_id_usuario = @IdUsuario
+            AND carpeta_padre IS NULL -- Seleccionar las carpetas raíz primero
+            UNION ALL
+            SELECT c.id_carpeta
+            FROM CARPETA c
+            INNER JOIN CarpetasRecursivas cr ON c.carpeta_padre = cr.id_carpeta
+            WHERE c.estado = 0
+        )
+        DELETE FROM CARPETA
+        WHERE id_carpeta IN (SELECT id_carpeta FROM CarpetasRecursivas);
 
         -- Indicar que la operación fue exitosa
         SET @Resultado = 1;

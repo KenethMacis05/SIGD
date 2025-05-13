@@ -311,14 +311,14 @@ function vaciarPapelera() {
                 type: "POST",                
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
-
+                beforeSend: () => $("#datatableArchivoEliminados .tbody").LoadingOverlay("show"),
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        showAlert("¡Éxito!", response.Mensaje || "La papelera fue vaciada correctamente", "success", true);
-                        cargarTodo();
+                        showAlert("¡Éxito!", response.Mensaje || "La papelera fue vaciada correctamente", "success", true);                
                     } else { showAlert("Error", response.Mensaje || "No se pudo vaciar la papelera", "error"); }
                 },
+                complete: () => $("#datatableArchivoEliminados .tbody").LoadingOverlay("hide"),                
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
             });
         }
@@ -422,9 +422,6 @@ function cargarTodo() {
 
     // Recargar tabla de archivos eliminados
     $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);    
-
-    actualizarBreadcrumbHTML();
-
 }
 
 function handleTabClick(activeTabId) {
