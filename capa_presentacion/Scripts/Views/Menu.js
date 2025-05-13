@@ -57,8 +57,8 @@ function cargarMenusPorRol(idRol, lis) {
         success: function (response) {
             if (response.success) {
                 renderizarDuallistbox(response.data);
-            } else {
-                showAlert('Error: ' + response.message)                
+            } else {                
+                showAlert("Error", response.message, "error")
             }
         },
         complete: () => $(".dual-listbox-container").LoadingOverlay("hide"),

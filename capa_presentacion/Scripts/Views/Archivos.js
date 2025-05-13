@@ -414,14 +414,17 @@ $(document).on('mouseenter', '.file-manager-recent-item', function () {
 function cargarTodo() {
     // Cargar carpetas
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
+    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");    
     
     // Cargar archivos
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
 
     // Recargar tabla de archivos eliminados
-    $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
+    $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);    
+
+    actualizarBreadcrumbHTML();
+
 }
 
 function handleTabClick(activeTabId) {

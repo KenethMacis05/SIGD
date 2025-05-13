@@ -212,32 +212,38 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_LeerMenusPorRol
-    @IdRol INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    -- Verificar si el rol existe
-    IF NOT EXISTS (SELECT 1 FROM ROL WHERE id_rol = @IdRol)
-    BEGIN
-        -- Retornar un mensaje de error si el usuario no existe
-        RAISERROR ('El rol no existe.', 16, 1);
-        RETURN;
-    END
-
-    -- Devolver los menús ordenados con la columna is_checked
-    SELECT 
-        m.id_menu,
-        m.nombre,
-        CASE 
-            WHEN mr.fk_menu IS NOT NULL THEN 1
-            ELSE 0
-        END AS is_checked
-    FROM MENU m
-    LEFT JOIN MENU_ROL mr ON m.id_menu = mr.fk_menu AND mr.fk_rol = @IdRol
-    ORDER BY m.orden;
-END;
+CREATE PROCEDURE usp_LeerMenusPorRol  
+    @IdRol INT  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+  
+    -- Verificar si el rol existe  
+    IF NOT EXISTS (SELECT 1 FROM ROL WHERE id_rol = @IdRol)  
+    BEGIN  
+        -- Retornar un mensaje de error si el usuario no existe  
+        RAISERROR ('El rol no existe.', 16, 1);  
+        RETURN;  
+    END  
+  
+    -- Devolver los menús ordenados con la columna is_checked  
+    SELECT   
+        m.id_menu,  
+        m.nombre,  
+  c.controlador,  
+  c.accion AS vista,  
+  m.icono,  
+  m.orden,  
+        CASE   
+            WHEN mr.fk_menu IS NOT NULL THEN 1  
+            ELSE 0  
+        END AS is_checked  
+    FROM MENU m  
+    LEFT JOIN MENU_ROL mr ON m.id_menu = mr.fk_menu AND mr.fk_rol = @IdRol  
+ LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador  
+ Where m.estado = 1  
+    ORDER BY m.orden;  
+END;  
 GO
 
 CREATE OR ALTER PROCEDURE usp_VerificarPermiso

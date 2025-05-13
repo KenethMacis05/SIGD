@@ -65,8 +65,7 @@ VALUES
     ('Archivo', 'EliminarDefinitivamente', 'Eliminar arhivos y carpetas definitivamente', 'API'),
     ('Archivo', 'ListarPapelera', 'Listar las carpetas y archivos de la papelera', 'API'),
     ('Archivo', 'VaciarPapelera', 'Vaciar las carpetas y archivos de la papelera', 'API'),
-    ('Archivo', 'ListarSubCarpetas', 'Listar sub carpetas', 'API'),
-    ('Menu', 'ObtenerMenusPorRol', 'Listar menus del rol', 'API')
+    ('Archivo', 'ListarSubCarpetas', 'Listar sub carpetas', 'API')    
 
 GO
 --------------------------------------------------------------------------------------------------------------------
