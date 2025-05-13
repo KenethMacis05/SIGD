@@ -2,19 +2,79 @@
 const eliminarCarpetaUrl = config.eliminarCarpetaUrl;
 const compartirCarpetaUrl = config.compartirCarpetaUrl;
 const subirArchivoUrl = config.subirArchivoUrl;
+let breadcrumbStack = [];
 let carpetaActualId = null;
 
-// Al hacer clic en una carpeta, navegar a sus subcarpetas
+// Agregar una nueva entrada al breadcrumbStack
+function agregarBreadcrumb(nombreCarpeta, idCarpeta) {        
+    breadcrumbStack.push({ nombre: nombreCarpeta, id: idCarpeta });
+    actualizarBreadcrumbHTML();
+}
+
+// Actualizar el HTML del breadcrumb usando el contenido del breadcrumbStack
+function actualizarBreadcrumbHTML() {
+    let html = `
+        <li class="breadcrumb-item">
+            <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
+                <i class="fas fa-home me-2"></i>Inicio
+            </a>
+        </li>
+    `;
+
+    breadcrumbStack.forEach((carpeta, index) => {
+        if (index === breadcrumbStack.length - 1) {
+            html += `
+            <li class="breadcrumb-item active">${carpeta.nombre}</li>`;
+        } else {
+            html += `
+                <li class="breadcrumb-item fw-bold">
+                    <a href="#" onclick="retroceder(${index})">${carpeta.nombre}</a>
+                </li>
+            `;
+        }
+    });
+    document.getElementById("breadcrumb-paginador").innerHTML = html;
+}
+
+// Retroceder a una carpeta anterior
+function retroceder(index) {
+    breadcrumbStack = breadcrumbStack.slice(0, index + 1);
+
+    const carpetaSeleccionada = breadcrumbStack[index];
+
+    actualizarBreadcrumbHTML();
+    cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-recientes");
+    cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-todos");
+}
+
+// Navegar al inicio del paginador
+function navegarAInicio() {   
+    breadcrumbStack = [];
+
+    document.getElementById("breadcrumb-paginador").innerHTML = `
+    <li class="breadcrumb-item">
+        <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
+            <i class="fas fa-home me-2"></i>Inicio
+        </a>
+    </li>
+    `;
+
+    cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todo");
+}
+
+// Navegar a las sub carpetas
 $(document).on('click', '.file-manager-group-title', function (e) {
     e.preventDefault();
-    let idCarpetaPadre = $(this).data('carpetapadre-id');
-    let contenedorId = $(this).closest('.row').attr('id');
+
+    const idCarpetaPadre = $(this).data('carpetapadre-id');
+    const contenedorId = $(this).closest('.row').attr('id');
+    const nombreCarpeta = $(this).text().trim();
+   
+    agregarBreadcrumb(nombreCarpeta, idCarpetaPadre);
 
     carpetaActualId = idCarpetaPadre;
-
-    if (contenedorId) {
-        cargarSubCarpetas(idCarpetaPadre, contenedorId);
-    }
+    cargarSubCarpetas(idCarpetaPadre, contenedorId);
 });
 
 // Abrir el modal para crear o editar una carpeta
@@ -283,7 +343,12 @@ function cargarCarpetasGenerico(url, contenedorId, idCarpeta = null) {
 
                 $(`#${contenedorId}`).html(html);
             } else {
-                $(`#${contenedorId}`).html('<div class="alert alert-light">No hay carpetas disponibles</div>');
+                $(`#${contenedorId}`).html(`
+                    <div class="alert alert-light">
+                        No hay carpetas disponibles
+                            <img src="/Assets/img/carpeta_vacia.png" alt="No hay archivos" style="max-width: 150px; display: block; margin: 10px auto;" />
+                    </div>
+                `);
             }
         },
         error: function () {

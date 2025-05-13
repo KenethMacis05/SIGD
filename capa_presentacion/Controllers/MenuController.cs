@@ -30,6 +30,26 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public JsonResult ObtenerMenuPorRol(int idRol)
+        {
+            try
+            {
+                if (idRol <= 0)
+                {
+                    return Json(new { success = false, message = "El ID del rol debe ser mayor a 0." }, JsonRequestBehavior.AllowGet);
+                }
+
+                List<MENU> menus = CN_Menu.ObtenerMenusPorRol(idRol);
+
+                return Json(new { success = true, data = menus }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al obtener menús: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         // Metodo para Guardar los menus
         [HttpPost]
         public JsonResult GuardarMenu(MENU menu)

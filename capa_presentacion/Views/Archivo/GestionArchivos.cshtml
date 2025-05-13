@@ -3,17 +3,12 @@
     ViewBag.Title = "Gestión de Archivos";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<style>
-    .file-manager-recent-item:hover .file-manager-recent-file-actions {
-        opacity: 1 !important;
-    }
-</style>
 
 <!--Titulo-->
-<div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Gestión de Archivos</h2></div>
+@*<div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Gestión de Archivos</h2></div>*@
 
 <!--Contenedor-->
-<div class="card shadow-sm">
+<div class="card shadow-sm mt-3">
     <div class="card-header pb-0 border-bottom-0">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <!--Boton 1-->
@@ -41,16 +36,28 @@
             <!-- Contenedor 1-->
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h2 class="mb-0">Carpetas</h2>
+                    <h2 class="mb-0">Archivos recientes</h2>
                     <div>
                         <button type="button" class="btn btn-secondary" onclick="abrirModalCarpeta(null)">
                             <i class="fa fa-folder me-2"></i>Crear Carpeta
                         </button>
                         <button type="button" class="btn btn-primary" onclick="abrirModalSubirArchivo(null)">
-                            <i class="fa fa-file me-2"></i>Subir Archivo
+                            <i class="fas fa-upload me-2"></i>Subir Archivo
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="descargar()">
+                            <i class="fas fa-download me-2"></i>Descargar
                         </button>
                     </div>
                 </div>
+
+                <ol class="breadcrumb mb-4 shadow-sm rounded bg-light p-3 align-items-center" id="breadcrumb-paginador">
+                    <li class="breadcrumb-item">
+                        <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
+                            <i class="fas fa-home me-2"></i>Inicio
+                        </a>
+                    </li>
+                    <!-- Los elementos del paginador se generarán dinámicamente aquí -->
+                </ol>
 
                 <hr />
 
@@ -61,17 +68,14 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center">
-                    <h2 class="mb-0">Archivos</h2>
-                </div>
-
                 <hr>
+
                 <!-- Archivos -->
-
-                <div class="row g-3" id="contenedor-archivos-recientes">
-                    <!-- Los archivos se cargarán dinámicamente aquí -->
+                <div class="container-fluid mb-3">
+                    <div class="row g-3" id="contenedor-archivos-recientes">
+                        <!-- Los archivos se cargarán dinámicamente aquí -->
+                    </div>
                 </div>
-
             </div>
 
             <!-- Contenedor 2-->
@@ -83,16 +87,21 @@
                             <i class="fa fa-folder me-2"></i>Crear Carpeta
                         </button>
                         <button type="button" class="btn btn-primary" onclick="abrirModalSubirArchivo(null)">
-                            <i class="fa fa-file me-2"></i>Subir Archivo
+                            <i class="fas fa-upload me-2"></i>Subir Archivo
+                        </button>
+                        <button type="button" class="btn btn-outline-primary" onclick="descargar()">
+                            <i class="fas fa-download me-2"></i>Descargar
                         </button>
                     </div>
                 </div>
 
-                <ol class="breadcrumb mb-4">
-                    <li class="breadcrumb-item"><a href="index.html">Incio</a></li>
-                    <li class="breadcrumb-item active">sub carpeta</li>
+                <ol class="breadcrumb mb-4" id="breadcrumb-paginador">
+                    <li class="breadcrumb-item"><a href="#" onclick="navegarAInicio()">Inicio</a></li>
+                    <!-- Los elementos del paginador se generarán dinámicamente aquí -->
                 </ol>
+
                 <hr />
+
                 <!--Carpetas-->
                 <div class="container-fluid mb-3">
                     <div class="row g-3" id="contenedor-carpetas-todos">
@@ -102,8 +111,8 @@
 
                 <hr>
 
-                <div class="container-fluid">
-                    <!-- Archivos -->
+                <!-- Archivos -->
+                <div class="container-fluid mb-3">
                     <div class="row g-3" id="contenedor-archivos-todos">
                         <!-- Los archivos se cargarán dinámicamente aquí -->
                     </div>
@@ -165,16 +174,16 @@
                 <div class="modal-body g-2">
 
                     <label for="idCarpetaPadre">Id de carpeta padre</label>
-                    <input type="text" name="idCarpetaPadre" id="idCarpetaPadre" value="0">
+                    <input type="hidden" name="idCarpetaPadre" id="idCarpetaPadre" value="0">
                     <br />
                     <label for="idCarpeta">Id de carpeta</label>
-                    <input type="text" name="idCarpeta" id="idCarpeta" value="0">
+                    <input type="hidden" name="idCarpeta" id="idCarpeta" value="0">
 
 
                     <div class="row mb-3">
                         <div class="input-group flex-nowrap">
                             <span class="input-group-text" id="addon-wrapping"><i class="fa fa-folder"></i></span>
-                            <input type="text" class="form-control" placeholder="Nombre" aria-label="Nombre" aria-describedby="addon-wrapping" id="nombre">
+                            <input type="text" class="form-control" placeholder="Nombre" aria-label="Nombre" aria-describedby="addon-wrapping" id="nombre" autocomplete="off">
                         </div>
                     </div>
 
@@ -229,7 +238,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body g-2">
-                    <input type="text" name="idCarpeta2" id="idCarpeta2" value="0">
+                    <input type="hidden" name="idCarpeta2" id="idCarpeta2" value="0">
 
                     <div class="row mb-3">
                         <label for="formFile" class="form-label">Seleccionar archivo</label>

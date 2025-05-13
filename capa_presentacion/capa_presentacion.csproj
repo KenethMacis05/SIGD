@@ -131,6 +131,7 @@
     <Compile Include="Utilidades\Encriptar.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\img\carpeta_vacia.png" />
     <Content Include="Assets\img\facebook.png" />
     <Content Include="Assets\img\Fondo-de-pantalla-web.jpg" />
     <Content Include="Assets\img\instagram.png" />
@@ -568,6 +569,7 @@
     <Content Include="Scripts\sweetalert2.min.js" />
     <Content Include="Scripts\Views\Acceso.js" />
     <Content Include="Scripts\Views\Archivos.js" />
+    <Content Include="Scripts\Views\Menu.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\Roles.js" />
     <Content Include="Scripts\Views\Usuarios.js" />

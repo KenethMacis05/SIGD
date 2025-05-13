@@ -14,6 +14,7 @@ namespace capa_entidad
         public string icono { get; set; }
         public int orden { get; set; }
         public bool estado { get; set; } = true;
+        public bool is_checked { get; set; }
 
         public DateTime fecha_registro { get; set; } = DateTime.Now;
         public virtual CONTROLLER Controller { get; set; }

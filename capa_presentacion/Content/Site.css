@@ -348,3 +348,41 @@
     background-color: #28a745;
     width: 100%;
 }
+
+.file-manager-recent-item:hover .file-manager-recent-file-actions {
+    opacity: 1 !important;
+}
+/* Estilo general del breadcrumb */
+.breadcrumb {
+    background-color: #f8f9fa; /* Fondo claro */
+    border-radius: 0.5rem; /* Bordes redondeados */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave */
+}
+
+/* Elementos dentro del breadcrumb */
+.breadcrumb-item a {
+    text-decoration: none; /* Sin subrayado */
+    color: #007bff; /* Azul Bootstrap */
+    transition: color 0.2s ease;
+}
+
+    .breadcrumb-item a:hover {
+        color: #0056b3; /* Azul más oscuro al pasar el cursor */
+    }
+
+/* Último elemento (activo) */
+.breadcrumb-item.active {
+    color: #6c757d; /* Gris oscuro */
+    font-weight: bold; /* Texto más grueso */
+}
+
+/* Iconos */
+.breadcrumb-item i {
+    font-size: 1.2rem; /* Tamaño de los iconos */
+    vertical-align: middle;
+}
+
+/* Espaciado */
+.breadcrumb-item {
+    margin-right: 0.5rem; /* Espaciado entre elementos */
+}

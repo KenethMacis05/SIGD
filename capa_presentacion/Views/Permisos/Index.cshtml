@@ -4,6 +4,17 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    .menu-item.hovered {
+        background-color: #f0f8ff; /* Color de fondo al hacer hover */
+        cursor: pointer; /* Cambia el cursor a pointer */
+    }
+
+    .menu-item .menu-checkbox {
+        cursor: pointer; /* Mantener cursor pointer para el checkbox */
+    }
+</style>
+
 <!--Titulo-->
 <div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Permisos</h2></div>
 @*<ol class="breadcrumb mb-4">
@@ -14,17 +25,18 @@
 <!--Contenedor-->
 <div class="card">
     <div class="card-header pb-0 border-bottom-0">
+        <!-- Botones de navegación -->
         <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <!--Boton 1-->
+            <!-- Botón 1 -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link active esp-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#modalPermisos" type="button" role="tab" aria-controls="home" aria-selected="true">
+                <button class="nav-link active esp-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
                     Asignar permisos
                 </button>
             </li>
-            <!--Boton 2-->
+            <!-- Botón 2 -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link esp-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile" type="button" role="tab" aria-controls="profile" aria-selected="false">
-                    Asignar menu
+                    Asignar menú
                 </button>
             </li>
         </ul>
@@ -46,7 +58,7 @@
                         </button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-primary" onclick="abrirModal()"><i class="fa fa-plus"></i> Agregar permiso</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="abrirModal()"><i class="fa fa-plus"></i> Agregar permiso</button>
                     </div>
                 </form>
 
@@ -55,7 +67,7 @@
                     <div class="col-md-6">
                         <div class="input-group mb-3">
                             <label class="input-group-text" for="inputGroupSelectControlador">Filtrar por controlador:</label>
-                            <select class="form-select" id="inputGroupSelectControlador">                                
+                            <select class="form-select" id="inputGroupSelectControlador">
                                 <option selected disabled>Seleccionar...</option>
                             </select>
                         </div>
@@ -95,7 +107,43 @@
             </div>
             <!--Contenedor 2-->
             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
-                <h1>Hola</h1>
+                <form class="row g-3">
+                    <div class="col-auto">
+                        <label for="obtenerRol">Selecciona un Rol:</label>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-control form-control-sm" id="obtenerRolMenu">
+                            <option value="" disabled selected>Seleccione un rol</option>
+                        </select>
+                    </div>
+                    <div class="col-auto">
+                        <button id="btnBuscarMenu" type="button" class="btn btn-primary btn-block">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button id="guardarMenus" type="button" class="btn btn-primary btn-block">
+                            <i class="fas fa-search"></i> Guardar
+                        </button>
+                    </div>
+                    <div class="col-auto">
+                        <button id="selectAll" class="btn btn-outline-primary" type="button">Seleccionar Todo</button>
+                    </div>
+                    <div class="col-auto">
+                        <button id="deselectAll" class="btn btn-outline-secondary" type="button">Deseleccionar Todo</button>
+                    </div>
+                    <div class="col-auto">
+                        <button id="limpiar" class="btn btn-outline-warning" type="button">Limpiar</button>
+                    </div>
+                </form>
+                
+                <div class="dual-listbox mt-3">
+                    <div class="dual-listbox-container">
+                        <ul id="menuList" class="list-group">
+                            <!-- Aquí se agregarán los menús dinámicamente -->
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -170,14 +218,16 @@
 
 @section scripts{
     <script type="text/javascript">
-            const config = {
-                listarPermisosPorRolUrl: '@Url.Action("ObtenerPermisosPorRol", "Permisos")',
-                listarPermisosNoAsignados: '@Url.Action("ObtenerPermisosNoAsignados", "Permisos")',
-                AsignarPermisos: '@Url.Action("AsignarPermisos", "Permisos")',
-                listarRolesUrl: '@Url.Action("ListarRoles", "Rol")',
-                eliminarPermisoUrl: '@Url.Action("EliminarPermiso", "Rol")',
-            }
-
+        const config = {
+            listarPermisosPorRolUrl: '@Url.Action("ObtenerPermisosPorRol", "Permisos")',
+            listarPermisosNoAsignados: '@Url.Action("ObtenerPermisosNoAsignados", "Permisos")',
+            AsignarPermisos: '@Url.Action("AsignarPermisos", "Permisos")',
+            eliminarPermisoUrl: '@Url.Action("EliminarPermiso", "Permisos")',
+            listarRolesUrl: '@Url.Action("ListarRoles", "Rol")',
+            listarMenusPorRolUrl: '@Url.Action("ObtenerMenuPorRol", "Menu")',
+            guardarMenusPorRolUrl: '@Url.Action("GuardarMenu", "Menu")',
+        }
     </script>
     <script src="@Url.Content("~/Scripts/Views/Permisos.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Views/Menu.js")" type="text/javascript"></script>
 }
