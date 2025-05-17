@@ -58,7 +58,7 @@ function navegarAInicio() {
         </a>
     </li>
     `;
-
+    carpetaActualId = null
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todo");
 }
