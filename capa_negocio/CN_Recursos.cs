@@ -46,14 +46,14 @@ namespace capa_negocio
             {
                 MailMessage mail = new MailMessage();
                 mail.To.Add(correo);
-                mail.From = new MailAddress("kenethmacis92@gmail.com");
+                mail.From = new MailAddress("kenethmacis92@gmail.com"); 
                 mail.Subject = asunto;
                 mail.Body = mensaje;
                 mail.IsBodyHtml = true;
 
                 var smtp = new SmtpClient()
                 {
-                    Credentials = new NetworkCredential("kenethmacis92@gmail.com", "tyiflevgpbxycgbx"), 
+                    Credentials = new NetworkCredential("kenethmacis92@gmail.com", "tyiflevgpbxycgbx"),
                     Host = "smtp.gmail.com",
                     Port = 587,
                     EnableSsl = true
