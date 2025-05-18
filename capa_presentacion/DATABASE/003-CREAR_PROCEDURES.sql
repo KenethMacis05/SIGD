@@ -1100,36 +1100,59 @@ CREATE PROCEDURE usp_EliminarCarpeta
 AS
 BEGIN
     SET @Resultado = 0;
-    
-    IF EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
-    BEGIN
-        -- Marcar la carpeta como eliminada
-        UPDATE CARPETA
-        SET estado = 0,
-            fecha_eliminacion = GETDATE()
-        WHERE id_carpeta = @IdCarpeta;
 
-        -- Marcar carpetas hijas como eliminadas
-        UPDATE CARPETA
-        SET estado = 0,
-            fecha_eliminacion = GETDATE()
-        WHERE carpeta_padre = @IdCarpeta;
+    BEGIN TRY
+        -- Verificar si la carpeta existe
+        IF EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
+        BEGIN
+            -- Crear una tabla temporal para almacenar las carpetas a eliminar
+            CREATE TABLE #CarpetasRecursivas (
+                id_carpeta INT
+            );
 
-        SET @Resultado = 1;
-    END
+            -- Usar una CTE recursiva para obtener todas las carpetas hijas (incluyendo la carpeta principal)
+            WITH CarpetasRecursivas AS (
+                SELECT id_carpeta
+                FROM CARPETA
+                WHERE id_carpeta = @IdCarpeta
+                UNION ALL
+                SELECT c.id_carpeta
+                FROM CARPETA c
+                INNER JOIN CarpetasRecursivas cr ON c.carpeta_padre = cr.id_carpeta
+            )
+            -- Insertar los resultados en la tabla temporal
+            INSERT INTO #CarpetasRecursivas (id_carpeta)
+            SELECT id_carpeta FROM CarpetasRecursivas;
 
-    IF EXISTS (SELECT 1 FROM ARCHIVO WHERE fk_id_carpeta = @IdCarpeta)
-    BEGIN
-        -- Marcar los archivos asociados como eliminados
-        UPDATE ARCHIVO
-        SET estado = 0,
-            fecha_eliminacion = GETDATE()
-        WHERE fk_id_carpeta = @IdCarpeta;
+            -- Marcar todas las carpetas encontradas como eliminadas
+            UPDATE CARPETA
+            SET estado = 0,
+                fecha_eliminacion = GETDATE()
+            WHERE id_carpeta IN (SELECT id_carpeta FROM #CarpetasRecursivas);
 
-        SET @Resultado = 1;
-    END
+            -- Marcar todos los archivos asociados a estas carpetas como eliminados
+            UPDATE ARCHIVO
+            SET estado = 0,
+                fecha_eliminacion = GETDATE()
+            WHERE fk_id_carpeta IN (SELECT id_carpeta FROM #CarpetasRecursivas);
+
+            -- Eliminar la tabla temporal
+            DROP TABLE #CarpetasRecursivas;
+
+            SET @Resultado = 1;
+        END
+    END TRY
+    BEGIN CATCH
+        -- Manejar errores
+        IF OBJECT_ID('tempdb..#CarpetasRecursivas') IS NOT NULL
+            DROP TABLE #CarpetasRecursivas;
+
+        SET @Resultado = 0;
+        THROW;
+    END CATCH
 END
 GO
+
 
 -- (5) PROCEDIMIENTO ALMACENADO PARA RESTABLECER UNA CARPETA
 CREATE PROCEDURE usp_RestablecerCarpeta
@@ -1424,6 +1447,7 @@ BEGIN
             a.tipo,
             a.fecha_subida,
             a.estado,
+			a.fk_id_carpeta,
             c.nombre AS nombre_carpeta
         FROM ARCHIVO a
         INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
@@ -1768,77 +1792,62 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_VaciarPapelera
-    @IdUsuario INT,
-    @Resultado BIT OUTPUT,
-    @Mensaje NVARCHAR(200) OUTPUT
-AS
-BEGIN
-    SET @Resultado = 0;
-    SET @Mensaje = '';
-
-    BEGIN TRY
-        -- Verificar si hay registros en la papelera
-        DECLARE @TotalRegistros INT = 0;
-        
-        SELECT @TotalRegistros = COUNT(*) 
-        FROM (
-            SELECT id_carpeta FROM CARPETA WHERE estado = 0 AND fk_id_usuario = @IdUsuario
-            UNION ALL
-            SELECT id_archivo FROM ARCHIVO WHERE estado = 0 AND fk_id_carpeta IN (
-                SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario
-            )
-        ) AS RegistrosPapelera;
-
-        IF @TotalRegistros = 0
-        BEGIN
-            SET @Mensaje = 'La papelera no contiene registros';
-            RETURN;
-        END
-
-        -- Iniciar una transacción para asegurar consistencia
-        BEGIN TRANSACTION;
-
-        -- Eliminar archivos con estado = 0 y pertenecientes al usuario
-        DELETE FROM ARCHIVO
-        WHERE estado = 0 AND fk_id_carpeta IN (
-            SELECT id_carpeta FROM CARPETA WHERE estado = 0 AND fk_id_usuario = @IdUsuario
-        );
-
-        -- Eliminar carpetas recursivamente (de hojas a raíz)
-        WITH CarpetasRecursivas AS (
-            SELECT id_carpeta 
-            FROM CARPETA 
-            WHERE estado = 0 AND fk_id_usuario = @IdUsuario
-            AND carpeta_padre IS NULL -- Seleccionar las carpetas raíz primero
-            UNION ALL
-            SELECT c.id_carpeta
-            FROM CARPETA c
-            INNER JOIN CarpetasRecursivas cr ON c.carpeta_padre = cr.id_carpeta
-            WHERE c.estado = 0
-        )
-        DELETE FROM CARPETA
-        WHERE id_carpeta IN (SELECT id_carpeta FROM CarpetasRecursivas);
-
-        -- Indicar que la operación fue exitosa
-        SET @Resultado = 1;
-        SET @Mensaje = 'Papelera vaciada correctamente';
-
-        -- Confirmar la transacción
-        COMMIT TRANSACTION;
-    END TRY
-    BEGIN CATCH
-        -- En caso de error, deshacer los cambios
-        IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;
-
-        -- Mantener @Resultado en 0 para indicar fallo
-        SET @Resultado = 0;
-        SET @Mensaje = 'Error al vaciar la papelera: ' + ERROR_MESSAGE();
-
-        -- Opcional: Lanza el error para depuración
-        THROW;
-    END CATCH
+CREATE PROCEDURE usp_VaciarPapelera    
+    @IdUsuario INT,    
+    @Resultado BIT OUTPUT,    
+    @Mensaje NVARCHAR(200) OUTPUT    
+AS    
+BEGIN    
+    SET @Resultado = 0;    
+    SET @Mensaje = '';    
+    
+    BEGIN TRY    
+        -- Verificar si hay registros en la papelera    
+        DECLARE @TotalRegistros INT = 0;    
+            
+        SELECT @TotalRegistros = COUNT(*)     
+        FROM (    
+            SELECT id_carpeta FROM CARPETA WHERE estado = 0 AND fk_id_usuario = @IdUsuario    
+            UNION ALL    
+            SELECT id_archivo FROM ARCHIVO WHERE estado = 0 AND fk_id_carpeta IN (    
+                SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario    
+            )    
+        ) AS RegistrosPapelera;    
+    
+        IF @TotalRegistros = 0    
+        BEGIN    
+            SET @Mensaje = 'La papelera no contiene registros';    
+            RETURN;    
+        END    
+    
+        -- Iniciar una transacción para asegurar consistencia    
+        BEGIN TRANSACTION;    
+    
+        -- Eliminar archivos con estado = 0 y pertenecientes al usuario    
+        DELETE FROM ARCHIVO    
+        WHERE estado = 0 AND fk_id_carpeta IN (    
+            SELECT id_carpeta FROM CARPETA WHERE estado = 0 AND fk_id_usuario = @IdUsuario    
+        );    
+    
+        -- Eliminar archivos con estado = 0 y pertenecientes al usuario    
+        DELETE FROM CARPETA    
+        WHERE estado = 0 AND fk_id_usuario = @IdUsuario   
+    
+        -- Indicar que la operación fue exitosa    
+        SET @Resultado = 1;    
+        SET @Mensaje = 'Papelera vaciada correctamente';    
+    
+        -- Confirmar la transacción    
+        COMMIT TRANSACTION;    
+    END TRY    
+    BEGIN CATCH    
+        IF @@TRANCOUNT > 0    
+            ROLLBACK TRANSACTION;    
+    
+        SET @Resultado = 0;    
+        SET @Mensaje = 'Error al vaciar la papelera: ' + ERROR_MESSAGE();    
+        THROW;    
+    END CATCH    
 END
 GO
 -----------------------------------------------------------------------------------------------------------------

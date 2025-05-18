@@ -200,7 +200,26 @@ namespace capa_presentacion.Controllers
             {
                 return Json(new { resultado = 0, mensaje = "Error al obtener los archivos recientes: " + ex.Message, data = new List<ARCHIVO>() }, JsonRequestBehavior.AllowGet);
             }
-        }        
+        }
+        
+        [HttpGet]
+        public JsonResult ListarArchivosPorCarpeta(int idCarpeta)
+        {
+            try
+            {                
+                int resultado;
+                string mensaje;
+
+                List<ARCHIVO> lst = new List<ARCHIVO>();
+                lst = CN_Archivo.ListarArchivosPorCarpeta(idCarpeta, out resultado, out mensaje);
+
+                return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { resultado = 0, mensaje = "Error al obtener los archivos: " + ex.Message, data = new List<ARCHIVO>() }, JsonRequestBehavior.AllowGet);
+            }
+        }
 
         // Controlador para Subir archivos
         [HttpPost]

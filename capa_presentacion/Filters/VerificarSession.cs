@@ -13,6 +13,14 @@ namespace capa_presentacion.Filters
     {
         public override void OnActionExecuting(ActionExecutingContext filterContext)
         {
+            // Si la acción tiene el atributo [AllowAnonymous], no aplicar el filtro
+            if (filterContext.ActionDescriptor.IsDefined(typeof(AllowAnonymousAttribute), true) ||
+                filterContext.ActionDescriptor.ControllerDescriptor.IsDefined(typeof(AllowAnonymousAttribute), true))
+            {
+                base.OnActionExecuting(filterContext);
+                return;
+            }
+
             var controller = filterContext.Controller as Controller;
             USUARIOS sesionUsuario = null;
 

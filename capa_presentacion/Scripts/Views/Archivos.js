@@ -61,6 +61,8 @@ function navegarAInicio() {
     carpetaActualId = null
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todo");
+    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+    cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
 }
 
 // Navegar a las sub carpetas
@@ -75,6 +77,7 @@ $(document).on('click', '.file-manager-group-title', function (e) {
 
     carpetaActualId = idCarpetaPadre;
     cargarSubCarpetas(idCarpetaPadre, contenedorId);
+    cargarArchivosPorCarpeta(idCarpetaPadre, "contenedor-archivos-recientes")
 });
 
 // Abrir el modal para crear o editar una carpeta
@@ -315,6 +318,7 @@ function vaciarPapelera() {
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
+                        $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);    
                         showAlert("¡Éxito!", response.Mensaje || "La papelera fue vaciada correctamente", "success", true);                
                     } else { showAlert("Error", response.Mensaje || "No se pudo vaciar la papelera", "error"); }
                 },
@@ -388,6 +392,32 @@ function cargarArchivos(url, contenedorId) {
         },
         error: function () {
             $(`#${contenedorId}`).html('<div class="alert alert-danger">Error al cargar las archivos</div>');            
+        },
+        complete: () => $(`#${contenedorId}`).LoadingOverlay("hide")
+    });
+}
+
+function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
+    $.ajax({
+        url: config.listarArchivosPorCarpetaUrl,
+        type: 'GET',
+        dataType: 'json',
+        data: JSON.stringify({ idCarpeta: idCarpeta }),
+        beforeSend: () => $(`#${contenedorId}`).LoadingOverlay("show"),
+        success: function (response) {
+            if (response.data && response.data.length > 0) {
+                let html = '';
+                $.each(response.data, function (index, archivo) {
+                    const html = response.data.map(generarHtmlArchivo).join("");
+                    $(`#${contenedorId}`).html(html);
+                });                
+                console.log(response.data)
+            } else {
+                $(`#${contenedorId}`).html('<div class="alert alert-light">No hay archivos disponibles</div>');
+            }
+        },
+        error: function () {
+            $(`#${contenedorId}`).html('<div class="alert alert-danger">Error al cargar las archivos</div>');
         },
         complete: () => $(`#${contenedorId}`).LoadingOverlay("hide")
     });
@@ -524,7 +554,8 @@ $("#inputGroupSelectTipo").on("change", function () {
 // Inicialización
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+    /*cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");*/
+    cargarArchivosPorCarpeta(27, "contenedor-archivos-recientes")
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
 });
 

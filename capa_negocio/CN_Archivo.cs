@@ -22,6 +22,18 @@ namespace capa_negocio
             return CD_Archivo.ListarArchivos(id_usuario, out resultado, out mensaje);
         }
         
+        public List<ARCHIVO> ListarArchivosPorCarpeta(int idCarpeta, out int resultado, out string mensaje)
+        {
+            if (idCarpeta == 0)
+            {
+                mensaje = "Por favor, seleccione una carpeta";
+                resultado = 0;
+                return null;
+            }
+
+            return CD_Archivo.ListarArchivosPorCarpeta(idCarpeta, out resultado, out mensaje);
+        }
+        
         public List<ARCHIVO> ListarArchivosElimandos(int id_usuario, out int resultado, out string mensaje)
         {
             return CD_Archivo.ListarArchivosEliminados(id_usuario, out resultado, out mensaje);
