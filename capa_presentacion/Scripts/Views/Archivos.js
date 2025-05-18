@@ -45,6 +45,8 @@ function retroceder(index) {
     actualizarBreadcrumbHTML();
     cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-recientes");
     cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-todos");
+    cargarArchivos(carpetaSeleccionada.id, "contenedor-archivos-recientes");
+    cargarArchivos(carpetaSeleccionada.id, "contenedor-archivos-todos");
 }
 
 // Navegar al inicio del paginador
@@ -78,6 +80,7 @@ $(document).on('click', '.file-manager-group-title', function (e) {
     carpetaActualId = idCarpetaPadre;
     cargarSubCarpetas(idCarpetaPadre, contenedorId);
     cargarArchivosPorCarpeta(idCarpetaPadre, "contenedor-archivos-recientes")
+    cargarArchivosPorCarpeta(idCarpetaPadre, "contenedor-archivos-todos")    
 });
 
 // Abrir el modal para crear o editar una carpeta
@@ -170,9 +173,9 @@ function GuardarCarpeta() {
             if (data.Resultado || data.Respuesta) {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "Carpeta creada correctamente" : "Carpeta actualizada correctamente");
                 showAlert("¡Éxito!", mensaje, "success", true);
-                cargarTodo();
+                /*cargarTodo();*/
                 $("#nombre").val("");
-
+                cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-recientes");
             }
             else {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "No se pudo crear la carpeta" : "No se pudo actualizar la carpeta");
@@ -402,7 +405,7 @@ function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
         url: config.listarArchivosPorCarpetaUrl,
         type: 'GET',
         dataType: 'json',
-        data: JSON.stringify({ idCarpeta: idCarpeta }),
+        data: { idCarpeta: idCarpeta },
         beforeSend: () => $(`#${contenedorId}`).LoadingOverlay("show"),
         success: function (response) {
             if (response.data && response.data.length > 0) {
@@ -554,8 +557,7 @@ $("#inputGroupSelectTipo").on("change", function () {
 // Inicialización
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-    /*cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");*/
-    cargarArchivosPorCarpeta(27, "contenedor-archivos-recientes")
+    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");    
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
 });
 
