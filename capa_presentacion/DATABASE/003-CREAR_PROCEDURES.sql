@@ -866,7 +866,7 @@ BEGIN
     END
 
 	-- Mostrar las 10 carpetas más recientes que estén en la raíz (dentro de la carpeta DEFAULT del usuario)    
-	SELECT TOP 10 * 
+	SELECT TOP 4 * 
     FROM CARPETA c
     INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
     WHERE fk_id_usuario = @IdUsuario 

@@ -114,6 +114,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccesoController.cs" />
     <Compile Include="Controllers\ArchivoController.cs" />
+    <Compile Include="Controllers\ConfiguracionController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\PermisosController.cs" />
@@ -670,6 +671,7 @@
     <Folder Include="App_Data\" />
     <Folder Include="ARCHIVOS\" />
     <Folder Include="Models\" />
+    <Folder Include="Views\Configuracion\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

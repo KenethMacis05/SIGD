@@ -98,7 +98,7 @@ function Guardar() {
                     Usuario.id_usuario = data.Resultado;
                     dataTable.row.add(Usuario).draw();
                     dataTable.ajax.reload(null, false);
-                    console.log(Usuario)
+                    showAlert("¡Éxito!", "Usuario creado correctamente", "success")
                 } else { showAlert("Error", data.Mensaje || "No se pudo crear el usuario", "error") }
             }
             // Actualizar Usuario

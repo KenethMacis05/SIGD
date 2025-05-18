@@ -1,9 +1,6 @@
-﻿const guardarCarpetaUrl = config.guardarCarpetaUrl;
-const eliminarCarpetaUrl = config.eliminarCarpetaUrl;
-const compartirCarpetaUrl = config.compartirCarpetaUrl;
-const subirArchivoUrl = config.subirArchivoUrl;
-let breadcrumbStack = [];
+﻿let breadcrumbStack = [];
 let carpetaActualId = null;
+let dataTable;
 
 // Agregar una nueva entrada al breadcrumbStack
 function agregarBreadcrumb(nombreCarpeta, idCarpeta) {        
@@ -45,8 +42,8 @@ function retroceder(index) {
     actualizarBreadcrumbHTML();
     cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-recientes");
     cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-todos");
-    cargarArchivos(carpetaSeleccionada.id, "contenedor-archivos-recientes");
-    cargarArchivos(carpetaSeleccionada.id, "contenedor-archivos-todos");
+    cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-recientes");
+    cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-todos");
 }
 
 // Navegar al inicio del paginador
@@ -62,7 +59,7 @@ function navegarAInicio() {
     `;
     carpetaActualId = null
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todo");
+    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
 }
@@ -79,8 +76,8 @@ $(document).on('click', '.file-manager-group-title', function (e) {
 
     carpetaActualId = idCarpetaPadre;
     cargarSubCarpetas(idCarpetaPadre, contenedorId);
-    cargarArchivosPorCarpeta(idCarpetaPadre, "contenedor-archivos-recientes")
-    cargarArchivosPorCarpeta(idCarpetaPadre, "contenedor-archivos-todos")    
+    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes")
+    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos")    
 });
 
 // Abrir el modal para crear o editar una carpeta
@@ -119,7 +116,7 @@ $(document).on('click', '.btn-crearSubCarpeta', function (e) {
 
 // Abrir el modal para subir un archivo
 function abrirModalSubirArchivo(json) {
-    $("#idCarpeta2").val("0");
+    $("#idCarpeta2").val(carpetaActualId || "0");
     $("#file").val("");
 
     if (json !== null) {
@@ -161,21 +158,26 @@ function GuardarCarpeta() {
     showLoadingAlert("Procesando", "Guardando datos la carpeta...");
 
     jQuery.ajax({
-        url: guardarCarpetaUrl,
+        url: config.guardarCarpetaUrl,
         type: "POST",
         data: JSON.stringify(Carpeta),
         dataType: "json",
         contentType: "application/json; charset=utf-8",
         success: function (data) {
             Swal.close();
-            $("#createCarpeta").modal("hide");
-
+            $("#createCarpeta").modal("hide");            
             if (data.Resultado || data.Respuesta) {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "Carpeta creada correctamente" : "Carpeta actualizada correctamente");
-                showAlert("¡Éxito!", mensaje, "success", true);
-                /*cargarTodo();*/
+                showAlert("¡Éxito!", mensaje, "success", true);                
                 $("#nombre").val("");
-                cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-recientes");
+                console.log(carpetaActualId)
+                if (carpetaActualId == null) {
+                    cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+                    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
+                } else {
+                    cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-recientes");
+                    cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-todos");
+                }
             }
             else {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "No se pudo crear la carpeta" : "No se pudo actualizar la carpeta");
@@ -190,27 +192,14 @@ function GuardarCarpeta() {
 function SubirArchivo() {
     var ArchivoSelecionado = $("#file")[0].files[0];
     var Carpeta = {
-        id_carpeta: $("#idCarpeta2").val() || null,
+        id_carpeta: $("#idCarpeta2").val() || null,        
     };
 
     // Validar que se haya seleccionado un archivo
     if (!ArchivoSelecionado) {
         Swal.fire("Campo obligatorio", "No ingresó ningún archivo para subir", "warning");
         return;
-    }
-
-    // Validar tamaño del archivo (10 MB como máximo)
-    if (ArchivoSelecionado.size > 10 * 1024 * 1024) {
-        Swal.fire("Archivo demasiado grande", "El archivo no debe superar los 10 MB", "error");
-        return;
-    }
-
-    // Validar tipo de archivo permitido
-    const tiposPermitidos = ["image/jpeg", "image/png", "application/pdf"];
-    if (!tiposPermitidos.includes(ArchivoSelecionado.type)) {
-        Swal.fire("Tipo de archivo no permitido", "Solo se permiten imágenes y PDFs", "error");
-        return;
-    }
+    }  
 
     // Preparar el objeto FormData
     var request = new FormData();
@@ -227,11 +216,16 @@ function SubirArchivo() {
         contentType: false,
         success: function (data) {
             Swal.close();
-            $("#subirArchivo").modal("hide");
-
+            $("#subirArchivo").modal("hide");            
             if (data.Respuesta) {
                 Swal.fire("Éxito", data.Mensaje, "success");                
-                cargarTodo();
+                if (carpetaActualId == null) {
+                    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+                    cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+                } else {
+                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes");
+                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
+                }                              
             } else {
                 Swal.fire("Error", data.Mensaje, "error");
             }
@@ -254,7 +248,7 @@ $(document).on('click', '.btn-eliminar', function (e) {
 
             // Enviar petición AJAX
             $.ajax({
-                url: eliminarCarpetaUrl,
+                url: config.eliminarCarpetaUrl,
                 type: "POST",
                 data: JSON.stringify({ id_carpeta: idCarpeta }),
                 dataType: "json",
@@ -264,7 +258,14 @@ $(document).on('click', '.btn-eliminar', function (e) {
                     Swal.close();
                     if (response.Respuesta) {
                         showAlert("¡Eliminado!", response.Mensaje || "Carpeta eliminada correctamente", "success", true);                        
-                        cargarTodo();                       
+                        if (carpetaActualId == null) {
+                            cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+                            cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
+                        } else {
+                            cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-recientes");
+                            cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-todos");                            
+                        }                         
+                        $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la carpeta", "error"); }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
@@ -294,8 +295,15 @@ $(document).on('click', '.btn-eliminarArchivo', function (e) {
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        showAlert("¡Eliminado!", response.Mensaje || "Archivo eliminado correctamente", "success", true);                        
-                        cargarTodo();
+                        showAlert("¡Eliminado!", response.Mensaje || "Archivo eliminado correctamente", "success", true);
+                        if (carpetaActualId == null) {
+                            cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+                            cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+                        } else {
+                            cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes")
+                            cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos")                            
+                        }                          
+                        $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el archivo", "error"); }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
@@ -321,8 +329,8 @@ function vaciarPapelera() {
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);    
                         showAlert("¡Éxito!", response.Mensaje || "La papelera fue vaciada correctamente", "success", true);                
+                        $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);    
                     } else { showAlert("Error", response.Mensaje || "No se pudo vaciar la papelera", "error"); }
                 },
                 complete: () => $("#datatableArchivoEliminados .tbody").LoadingOverlay("hide"),                
@@ -375,6 +383,7 @@ function cargarSubCarpetas(idCarpeta, contenedorId) {
     cargarCarpetasGenerico(config.listarSubCarpetasUrl, contenedorId, idCarpeta);
 }
 
+// Función para cargar archivos
 function cargarArchivos(url, contenedorId) {
     $.ajax({
         url: url,
@@ -400,6 +409,7 @@ function cargarArchivos(url, contenedorId) {
     });
 }
 
+// Función para cargar archivos por carpeta
 function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
     $.ajax({
         url: config.listarArchivosPorCarpetaUrl,
@@ -413,8 +423,7 @@ function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
                 $.each(response.data, function (index, archivo) {
                     const html = response.data.map(generarHtmlArchivo).join("");
                     $(`#${contenedorId}`).html(html);
-                });                
-                console.log(response.data)
+                });                                
             } else {
                 $(`#${contenedorId}`).html('<div class="alert alert-light">No hay archivos disponibles</div>');
             }
@@ -426,37 +435,7 @@ function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
     });
 }
 
-// Efectos hover para carpetas
-$(document).on('mouseenter', '.file-manager-group', function () {
-    $(this).find('.fa-folder').addClass('d-none');
-    $(this).find('.fa-folder-open').removeClass('d-none');
-}).on('mouseleave', '.file-manager-group', function () {
-    $(this).find('.fa-folder-open').addClass('d-none');
-    $(this).find('.fa-folder').removeClass('d-none');
-});
-
-// Efectos hover para archivos
-$(document).on('mouseenter', '.file-manager-recent-item', function () {
-    $(this).find('.fa-file').addClass('d-none');
-    $(this).find('.fa-file-alt').removeClass('d-none');
-}).on('mouseleave', '.file-manager-recent-item', function () {
-    $(this).find('.fa-file-alt').addClass('d-none');
-    $(this).find('.fa-file').removeClass('d-none');
-});
-
-function cargarTodo() {
-    // Cargar carpetas
-    cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");    
-    
-    // Cargar archivos
-    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-    cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-
-    // Recargar tabla de archivos eliminados
-    $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);    
-}
-
+// Función para obtener el contenedor
 function handleTabClick(activeTabId) {
     if (activeTabId === "home") {
         // Cargar carpetas recientes
@@ -468,8 +447,6 @@ function handleTabClick(activeTabId) {
         cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");        
     }
 }
-
-let dataTable;
 
 const dataTableOptions = {
     ...dataTableConfig,

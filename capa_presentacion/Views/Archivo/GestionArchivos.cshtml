@@ -95,8 +95,12 @@
                     </div>
                 </div>
 
-                <ol class="breadcrumb mb-4" id="breadcrumb-paginador">
-                    <li class="breadcrumb-item"><a href="#" onclick="navegarAInicio()">Inicio</a></li>
+                <ol class="breadcrumb mb-4 shadow-sm rounded bg-light p-3 align-items-center" id="breadcrumb-paginador">
+                    <li class="breadcrumb-item">
+                        <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
+                            <i class="fas fa-home me-2"></i>Inicio
+                        </a>
+                    </li>
                     <!-- Los elementos del paginador se generarán dinámicamente aquí -->
                 </ol>
 
@@ -242,7 +246,7 @@
 
                     <div class="row mb-3">
                         <label for="formFile" class="form-label">Seleccionar archivo</label>
-                        <input class="form-control" type="file" id="file" accept="image/png, image/jpg, image/jpeg">
+                        <input class="form-control" type="file" id="file">
                     </div>
 
                     <div class="modal-footer pe-0 ps-0 flex-nowrap ">
@@ -278,16 +282,23 @@
             listarArchivosPorCarpetaUrl: '@Url.Action("ListarArchivosPorCarpeta", "Archivo")'
         };
 
-        @*jQuery.ajax({
-            url: '@Url.Action("ListarArchivosPorCarpeta", "Archivo")',
-            type: "POST",
-            dataType: "json",
-            data: JSON.stringify({ idCarpeta: 2 }),
-            contentType: "application/json; charset=utf-8",
-            success: function (data) {
-                console.log(data)
-            }
-        })*@
+        // Efectos hover para carpetas
+        $(document).on('mouseenter', '.file-manager-group', function () {
+            $(this).find('.fa-folder').addClass('d-none');
+            $(this).find('.fa-folder-open').removeClass('d-none');
+        }).on('mouseleave', '.file-manager-group', function () {
+            $(this).find('.fa-folder-open').addClass('d-none');
+            $(this).find('.fa-folder').removeClass('d-none');
+        });
+
+        // Efectos hover para archivos
+        $(document).on('mouseenter', '.file-manager-recent-item', function () {
+            $(this).find('.fa-file').addClass('d-none');
+            $(this).find('.fa-file-alt').removeClass('d-none');
+        }).on('mouseleave', '.file-manager-recent-item', function () {
+            $(this).find('.fa-file-alt').addClass('d-none');
+            $(this).find('.fa-file').removeClass('d-none');
+        });
 
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>

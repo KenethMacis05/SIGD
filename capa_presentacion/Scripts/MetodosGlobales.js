@@ -130,44 +130,116 @@ function obtenerIconoYColor(tipoArchivo) {
     let color = '';
 
     switch (tipoArchivo.toLowerCase()) {
+        // Archivos PDF (Adobe)
         case '.pdf':
             icono = 'fa-file-pdf';
             color = 'text-danger';
             break;
+
+        // Archivos de Microsoft Word
         case '.doc':
         case '.docx':
             icono = 'fa-file-word';
             color = 'text-primary';
             break;
+
+        // Archivos de Microsoft Excel
         case '.xls':
         case '.xlsx':
             icono = 'fa-file-excel';
             color = 'text-success';
             break;
+
+        // Archivos de Microsoft PowerPoint
+        case '.ppt':
+        case '.pptx':
+            icono = 'fa-file-powerpoint';
+            color = 'text-warning';
+            break;
+
+        // Archivos de imágenes
         case '.png':
         case '.jpg':
         case '.jpeg':
         case '.gif':
+        case '.bmp':
+        case '.svg':
+        case '.webp':
             icono = 'fa-file-image';
             color = 'text-warning';
             break;
+
+        // Archivos comprimidos
         case '.zip':
         case '.rar':
+        case '.tar':
+        case '.gz':
+        case '.7z':
             icono = 'fa-file-archive';
             color = 'text-secondary';
             break;
+
+        // Archivos de texto
         case '.txt':
+        case '.log':
+        case '.md':
             icono = 'fa-file-alt';
             color = 'text-info';
             break;
+
+        // Archivos de audio
         case '.mp3':
+        case '.wav':
+        case '.ogg':
+        case '.flac':
+        case '.aac':
             icono = 'fa-file-audio';
             color = 'text-success';
             break;
+
+        // Archivos de video
         case '.mp4':
+        case '.avi':
+        case '.mkv':
+        case '.mov':
+        case '.wmv':
+        case '.flv':
+        case '.webm':
             icono = 'fa-file-video';
             color = 'text-danger';
             break;
+
+        // Archivos de Adobe
+        case '.psd':
+        case '.ai':
+        case '.indd':
+        case '.xd':
+        case '.aep':
+        case '.prproj':
+        case '.pdf':
+        case '.ae':
+        case '.svg':
+            icono = 'fa-adobe';
+            color = 'text-danger';
+            break;
+
+        // Otros tipos de archivos
+        case '.json':
+        case '.xml':
+        case '.csv':
+            icono = 'fa-file-code';
+            color = 'text-info';
+            break;
+
+        case '.exe':
+        case '.msi':
+        case '.bat':
+        case '.sh':
+            icono = 'fa-file-code';
+            color = 'text-dark';
+            break;
+
+        // Por defecto
         default:
             icono = 'fa-file';
             color = 'text-muted';
