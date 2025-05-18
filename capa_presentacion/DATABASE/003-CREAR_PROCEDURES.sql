@@ -1792,7 +1792,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_VaciarPapelera    
+CREATE PROCEDURE usp_VaciarPapelera
     @IdUsuario INT,    
     @Resultado BIT OUTPUT,    
     @Mensaje NVARCHAR(200) OUTPUT    
@@ -1826,7 +1826,7 @@ BEGIN
         -- Eliminar archivos con estado = 0 y pertenecientes al usuario    
         DELETE FROM ARCHIVO    
         WHERE estado = 0 AND fk_id_carpeta IN (    
-            SELECT id_carpeta FROM CARPETA WHERE estado = 0 AND fk_id_usuario = @IdUsuario    
+            SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario    
         );    
     
         -- Eliminar archivos con estado = 0 y pertenecientes al usuario    
