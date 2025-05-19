@@ -9,7 +9,7 @@
 <div class="jumbotron">
     <h1 class="display-4">Bienvenido</h1>
     <p class="lead">@ViewBag.NombreUsuario</p>
-
+    
     <!-- Mensaje de error -->
     @if (ViewBag.Mensaje != null)
     {
@@ -19,7 +19,7 @@
     }
 
     <!-- Configuración de Tipos de Archivos Permitidos -->
-    <div class="mt-4">
+    @*<div class="mt-4">
         <h3>Configuración de Tipos de Archivos Permitidos</h3>
         <div class="mb-3">
             <label for="tiposArchivos" class="form-label">Tipos de Archivos Permitidos:</label>
@@ -27,7 +27,7 @@
         </div>
         <button class="btn btn-primary" id="guardarTiposArchivos">Guardar Cambios</button>
         <div id="mensajeTiposArchivos" class="mt-3"></div>
-    </div>
+    </div>*@
 </div>
 
 <script>

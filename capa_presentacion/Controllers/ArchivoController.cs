@@ -241,7 +241,7 @@ namespace capa_presentacion.Controllers
                 return Json(new { Respuesta = false, Mensaje = "La información de la carpeta no es válida." }, JsonRequestBehavior.AllowGet);
             }
 
-            //// Validar el tipo de archivo
+            // Validar el tipo de archivo
             string extension = Path.GetExtension(ARCHIVO.FileName);
             if (!ValidarTipoArchivo(extension, out mensaje))
             {
