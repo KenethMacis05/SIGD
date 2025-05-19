@@ -42,21 +42,17 @@
                     <div class="col-md-4">
                         <div class="input-group mb-3">
                             <label class="input-group-text" for="inputGroupSelectRol">Filtrar por rol:</label>
-                            <select class="form-select" id="inputGroupSelectRol">
-                                <option selected>Seleccionar...</option>
-                                <option value="1">Archivo</option>
-                                <option value="2">Usuario</option>
-                                <option value="3">Rol</option>
-                            </select>
+                            <select class="form-select" id="inputGroupSelectRol"></select>
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="input-group mb-3">
                             <label class="input-group-text" for="inputGroupSelectEstado">Filtrar por estado:</label>
                             <select class="form-select" id="inputGroupSelectEstado">
-                                <option selected>Seleccionar...</option>
-                                <option value="1">ACTIVO</option>
-                                <option value="0">NO ACTIVO</option>
+                                <option value="" disabled selected>Seleccionar...</option>
+                                <option value="Todos">Todos</option>
+                                <option value="true">Activo</option>
+                                <option value="false">No activo</option>
                             </select>
                         </div>
                     </div>
@@ -136,10 +132,10 @@
                                         </div>
                                     </div>
                                     <div class="col-lg-6 mb-3">
-                                        <label class="form-label" for="rol">Rol</label>
+                                        <label class="form-label" for="telefono">Selecionar rol</label>
                                         <div class="input-group mb-3">
-                                            <label class="input-group-text" for="rol">Optiones</label>
-                                            <select class="form-control form-control-sm" id="obtenerRol"></select>
+                                            <label class="input-group-text" for="obtenerRol"><i class="fas fa-user-shield"></i></label>
+                                            <select class="form-select" id="obtenerRol"></select>
                                         </div>
                                     </div>
                                     <div class="col-lg-6 mb-3">
@@ -208,7 +204,7 @@
                                                 <th>Apellidos</th>
                                                 <th>Correo</th>
                                                 <th>Teléfono</th>
-                                                <th>Estado</th>
+                                                <th>Estado</th>                                                
                                                 <th>Seleccionar</th>
                                             </tr>
                                         </thead>
@@ -240,15 +236,14 @@
 
     @section scripts{
         <script type="text/javascript">
-
-        var config = {
-            listarUsuariosUrl: '@Url.Action("ListarUsuarios", "Usuario")',
-            guardarUsuariosUrl: '@Url.Action("GuardarUsuario", "Usuario")',
-            eliminarUsuariosUrl: '@Url.Action("EliminarUsuario", "Usuario")',
-            reiniciarPasswordUrl: '@Url.Action("ReiniciarPassword", "Usuario")',
-            buscarUsuariosUrl: '@Url.Action("BuscarUsuarios", "Usuario")',
-            listarRolesUrl: '@Url.Action("ListarRoles", "Rol")',
-        };
+            var config = {
+                listarUsuariosUrl: '@Url.Action("ListarUsuarios", "Usuario")',
+                guardarUsuariosUrl: '@Url.Action("GuardarUsuario", "Usuario")',
+                eliminarUsuariosUrl: '@Url.Action("EliminarUsuario", "Usuario")',
+                reiniciarPasswordUrl: '@Url.Action("ReiniciarPassword", "Usuario")',
+                buscarUsuariosUrl: '@Url.Action("BuscarUsuarios", "Usuario")',
+                listarRolesUrl: '@Url.Action("ListarRoles", "Rol")',
+            };
         </script>
         <script src="@Url.Content("~/Scripts/Views/Usuarios.js")" type="text/javascript"></script>
     }

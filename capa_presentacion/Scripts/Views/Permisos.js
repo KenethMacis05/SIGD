@@ -69,12 +69,16 @@ function cargarPermisosNoAsignados(IdRol) {
 
             if (data && data.data && Array.isArray(data.data)) {
                 $.each(data.data, function (index, permiso) {
+                    const icon = permiso.tipo === "API"
+                        ? '<i class="fa fa-cogs text-warning"></i>'
+                        : '<i class="fa fa-eye text-primary"></i>';
+
                     dataTableNoAsignados.row.add([
                         index + 1,
                         permiso.controlador,
                         permiso.accion,
                         permiso.descripcion,
-                        permiso.tipo,
+                        `${icon} ${permiso.tipo}`,
                         `<div class="icheck-primary">
                             <input type="checkbox" class="checkboxIcheck permisoCheckbox"
                                    id="permiso_${permiso.id_controlador}" 
@@ -104,7 +108,7 @@ $("#obtenerRol").on("change", function () {
     }     
 
     $('#inputGroupSelectControlador').empty().append('<option value="Todos">Todos</option>');
-    $('#inputGroupSelectControladorNoAsignado').empty().append('<option value="Todos">Todos</option>');
+    $('#inputGroupSelectControladorNoAsignado').empty().append('<option value="Todos2">Todos2</option>');
 
     // Controladores del rol
     jQuery.ajax({
@@ -206,16 +210,16 @@ $("#inputGroupSelectControlador").on("change", function () {
 
 // Filtro controladores no asiganados
 $("#inputGroupSelectControladorNoAsignado").on("change", function () {
-    const tipoSelecionado = $(this).val();
+    const controladorSeleccionado = $(this).val();
     var IdRol = $('#obtenerRol').val();
 
-    if (tipoSelecionado === "Todos") {
+    if (controladorSeleccionado === "Todos2") {
         cargarPermisosNoAsignados(IdRol)
         dataTableNoAsignados.column(1).search('').draw();    
     } else {
         // Mostrar registros filtrados por el controlador seleccionado
         cargarPermisosNoAsignados(IdRol)
-        dataTableNoAsignados.column(1).search(tipoSelecionado).draw();
+        dataTableNoAsignados.column(1).search(controladorSeleccionado).draw();
     }
 });
 

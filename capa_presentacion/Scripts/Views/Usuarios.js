@@ -15,15 +15,47 @@ jQuery.ajax({
     type: "GET",
     dataType: "json",
     contentType: "application/json; charset=utf-8",
+
     success: function (response) {
-        $('#obtenerRol').empty().append('<option value="" disabled selected>Seleccione un rol...</option>');
+        $('#inputGroupSelectRol').empty()
+            .append('<option value="" disabled selected>Seleccionar...</option>')
+            .append('<option value="Todos">Todos</option>');
+        $('#obtenerRol').empty().append('<option value="" disabled selected>Seleccione un rol</option>');
         $.each(response.data, function (index, rol) {
+            $('#inputGroupSelectRol').append(`<option value="${rol.descripcion}">${rol.descripcion}</option>`);
             $('#obtenerRol').append(`<option value="${rol.id_rol}">${rol.descripcion}</option>`);
             rolesMap[rol.id_rol] = rol.descripcion;
         });
     },
-    error: () => showAlert("Error", "Error al cargar los Roles", "error")
-})
+
+    error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+});
+
+// Filtro por rol del usuario
+$("#inputGroupSelectRol").on("change", function () {
+    const rolSelecionado = $(this).val();
+    $("#datatable tbody").LoadingOverlay("show");
+
+    if (rolSelecionado === "Todos") {
+        dataTable.column(2).search('').draw();
+    } else {
+        dataTable.column(2).search(rolSelecionado).draw();
+    }
+    $("#datatable tbody").LoadingOverlay("hide");
+});
+
+// Filtro por estado del usuario
+$('#inputGroupSelectEstado').on('change', function () {
+    const estadoSelecionado = $(this).val();    
+    $("#datatable tbody").LoadingOverlay("show");
+
+    if (estadoSelecionado === "Todos") {
+        dataTable.column(9).search('').draw();
+    } else {
+        dataTable.column(9).search(estadoSelecionado).draw();
+    }
+    $("#datatable tbody").LoadingOverlay("hide");
+});
 
 //Abrir modal
 function abrirModal(json) {
@@ -182,7 +214,7 @@ const dataTableOptions = {
             }
         },
         { data: "correo" },
-        { data: "telefono" },
+        { data: "telefono" },        
         {
             data: "estado",
             render: function (valor) {
@@ -191,12 +223,16 @@ const dataTableOptions = {
                     : "<div class='d-flex justify-content-center align-items-center'><span class='badge text-bg-danger'>NO ACTIVO</span></div>";
             },
             width: "90"
-        },
+        },        
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
             width: "90"
+        },
+        {
+            data: "estado",
+            visible: false,
         }
     ]
 };
@@ -205,7 +241,6 @@ $(document).ready(function () {
     dataTable = $("#datatable").DataTable(dataTableOptions);
     tablaReinicio = $("#tablaReinicio").DataTable(tablaReinicioOptions);
 });
-
 
 
 
