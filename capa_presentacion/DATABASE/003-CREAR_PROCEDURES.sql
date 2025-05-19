@@ -212,38 +212,46 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_LeerMenusPorRol  
+CREATE OR ALTER PROCEDURE usp_LeerMenuPorRol
     @IdRol INT  
 AS  
 BEGIN  
     SET NOCOUNT ON;  
-  
-    -- Verificar si el rol existe  
-    IF NOT EXISTS (SELECT 1 FROM ROL WHERE id_rol = @IdRol)  
+      
+    -- Verificar si el rol existe
+    IF NOT EXISTS (SELECT 1 FROM ROL WHERE id_rol = @IdRol AND estado = 1)  
     BEGIN  
-        -- Retornar un mensaje de error si el usuario no existe  
-        RAISERROR ('El rol no existe.', 16, 1);  
+        RAISERROR('Rol no encontrado o inactivo', 16, 1);  
         RETURN;  
     END  
-  
-    -- Devolver los menús ordenados con la columna is_checked  
+      
+    -- Obtener menús asignados al rol 
     SELECT   
         m.id_menu,  
         m.nombre,  
-  c.controlador,  
-  c.accion AS vista,  
-  m.icono,  
-  m.orden,  
-        CASE   
-            WHEN mr.fk_menu IS NOT NULL THEN 1  
-            ELSE 0  
-        END AS is_checked  
-    FROM MENU m  
-    LEFT JOIN MENU_ROL mr ON m.id_menu = mr.fk_menu AND mr.fk_rol = @IdRol  
- LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador  
- Where m.estado = 1  
+        c.controlador,  
+        c.accion AS vista,  
+        m.icono,  
+        m.orden  
+    FROM MENU_ROL mr  
+    INNER JOIN MENU m ON mr.fk_menu = m.id_menu  
+    LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador      
+    WHERE mr.fk_rol = @IdRol
+    AND mr.estado = 1  
+    AND m.estado = 1  
+    AND (c.tipo = 'Vista' OR c.tipo IS NULL) -- Solo vistas o menús padres  
+    AND (  
+        m.fk_controlador IS NULL   
+        OR   
+        EXISTS (  
+            SELECT 1 FROM PERMISOS p   
+            WHERE p.fk_rol = @IdRol
+            AND p.fk_controlador = m.fk_controlador  
+            AND p.estado = 1  
+        )  
+    )  
     ORDER BY m.orden;  
-END;  
+END
 GO
 
 CREATE OR ALTER PROCEDURE usp_VerificarPermiso
@@ -865,7 +873,7 @@ BEGIN
         RETURN
     END
 
-	-- Mostrar las 10 carpetas más recientes que estén en la raíz (dentro de la carpeta DEFAULT del usuario)    
+	-- Mostrar las 4 carpetas más recientes que estén en la raíz (dentro de la carpeta DEFAULT del usuario)    
 	SELECT TOP 4 * 
     FROM CARPETA c
     INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario

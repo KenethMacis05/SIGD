@@ -116,7 +116,7 @@ $("#obtenerRol").on("change", function () {
         success: function (response) {
             // Utilizar un Set para evitar duplicados
             let controladoresSet = new Set();
-
+            
             $.each(response.data, function (index, registro) {
                 if (!controladoresSet.has(registro.Controller.controlador)) {
                     controladoresSet.add(registro.Controller.controlador);
@@ -130,50 +130,92 @@ $("#obtenerRol").on("change", function () {
         }
     });
 
-    // Controladores no asignados
     jQuery.ajax({
-        url: listarPermisosNoAsignados,
+        url: config.listarPermisosNoAsignados,
         type: "GET",
         dataType: "json",
         data: { IdRol: IdRol },
         contentType: "application/json; charset=utf-8",
-        success: function (response) {            
-            if (response && response.data && Array.isArray(response.data)) {                
-                let controladoresSet = new Set();
+        success: function (response) {
+            $('#inputGroupSelectControladorNoAsignado').empty().append('<option selected disabled>Seleccionar...</option>');
+            const controladoresUnicos = new Set();
 
-                $.each(response.data, function (index, registro) {
-                    if (registro.Controller && registro.Controller.controlador) {
-                        controladoresSet.add(registro.Controller.controlador);
-                    }
-                });
-
-                const selectControladoresNoAsignados = $('#inputGroupSelectControladorNoAsignado');
-                selectControladoresNoAsignados.empty().append('<option value="Todos">Todos</option>');
-
-                controladoresSet.forEach(function (controlador) {
-                    selectControladoresNoAsignados.append(`<option value="${controlador}">${controlador}</option>`);
-                });
-            } else {
-                console.warn("Formato de datos no válido para controladores no asignados.", response);
-            }
+            // Iterar sobre los datos y agregar solo controladores únicos
+            $.each(response.data, function (index, rol) {
+                if (!controladoresUnicos.has(rol.controlador)) {
+                    controladoresUnicos.add(rol.controlador);
+                    $('#inputGroupSelectControladorNoAsignado').append(`<option value="${rol.controlador}">${rol.controlador}</option>`);
+                }
+            });
         },
-        complete: () => $("#dataTablePermisosNoAsignados tbody").LoadingOverlay("hide"),
-        error: () => { showAlert("Error", "Error al cargar los permisos no asignados", "error"); }
+        error: function (xhr) {
+            console.log(`Error al conectar con el servidor: ${xhr.statusText}`);
+        }
     });
 });
 
-// Manejar el cambio en el select de controladores
+// Seleccionar Todo
+$('#selectAll').on('click', function () {
+    const totalCheckboxes = $('.permisoCheckbox').length;
+    const checkedCheckboxes = $('.permisoCheckbox:checked').length;
+
+    if (checkedCheckboxes === totalCheckboxes) {
+        showAlert("¡Atención!", "Todos los elementos ya están seleccionados.", "info", true);
+        return;
+    }
+
+    $("#dataTablePermisosNoAsignados .tbody").LoadingOverlay("show");
+
+    setTimeout(() => {
+        $('.permisoCheckbox').prop('checked', true);
+        $("#dataTablePermisosNoAsignados .tbody").LoadingOverlay("hide");
+    }, 300);
+});
+
+// Deseleccionar Todo
+$('#deselectAll').on('click', function () {
+    const totalCheckboxes = $('.permisoCheckbox').length;
+    const checkedCheckboxes = $('.permisoCheckbox:checked').length;
+
+    if (checkedCheckboxes === 0) {
+        showAlert("¡Atención!", "Todos los elementos ya están desmarcados.", "info", true);
+        return;
+    }
+    $("#dataTablePermisosNoAsignados .tbody").LoadingOverlay("show");
+
+    setTimeout(() => {
+        $('.permisoCheckbox').prop('checked', false);
+        $("#dataTablePermisosNoAsignados .tbody").LoadingOverlay("hide");
+    }, 300);
+});
+
+// Filtro controladores asignados
 $("#inputGroupSelectControlador").on("change", function () {
     var controladorSeleccionado = $(this).val();    
     var IdRol = $('#obtenerRol').val();
 
     if (controladorSeleccionado === "Todos") {        
         carparPermisos(IdRol)
-        dataTable.column(1).search('').draw();               
+        dataTable.column(1).search('').draw();
     } else {
         // Mostrar registros filtrados por el controlador seleccionado
         carparPermisos(IdRol)
         dataTable.column(1).search(controladorSeleccionado).draw();        
+    }
+});
+
+// Filtro controladores no asiganados
+$("#inputGroupSelectControladorNoAsignado").on("change", function () {
+    const tipoSelecionado = $(this).val();
+    var IdRol = $('#obtenerRol').val();
+
+    if (tipoSelecionado === "Todos") {
+        cargarPermisosNoAsignados(IdRol)
+        dataTableNoAsignados.column(1).search('').draw();    
+    } else {
+        // Mostrar registros filtrados por el controlador seleccionado
+        cargarPermisosNoAsignados(IdRol)
+        dataTableNoAsignados.column(1).search(tipoSelecionado).draw();
     }
 });
 
@@ -328,7 +370,6 @@ const dataTableOptions = {
 
                     return `${icon} ${data}`;
                 } else {
-                    // Si no es ni API ni Vista, devolver el texto sin ícono
                     return data;
                 }
             }
@@ -359,5 +400,5 @@ const dataTableNoAsignadosOptions = {
 
 $(document).ready(function () {
     dataTable = $("#datatable").DataTable(dataTableOptions);
-    dataTableNoAsignados = $("#dataTablePermisosNoAsignados").DataTable(dataTableNoAsignadosOptions);
+    dataTableNoAsignados = $("#dataTablePermisosNoAsignados").DataTable(dataTableNoAsignadosOptions);   
 });

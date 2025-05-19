@@ -16,6 +16,9 @@ VALUES
     -- Vistas principales
     ('Home', 'Index', 'Dashboard principal', 'Vista'),
     ('Usuario', 'Index', 'Vista de gestión de usuarios', 'Vista'),
+    ('Menu', 'Index', 'Vista de menú', 'Vista'),
+    ('Rol', 'Index', 'Vista de rol', 'Vista'),
+    ('Permisos', 'Index', 'Vista de permisos', 'Vista'),
     ('Archivo', 'GestionArchivos', 'Gestor de archivos', 'Vista'),
     ('Archivo', 'CarpetasCompartidas', 'Carpetas compartidas', 'Vista'),
     ('Archivo', 'ArchivosCompartidos', 'Archivos compartidos', 'Vista'),
@@ -37,22 +40,18 @@ VALUES
     ('Archivo', 'SubirArchivo', 'Subir archivo al sistema', 'API'),    
     ('Planificacion', 'GenerarPlan', 'Generar planificación', 'API'),
 
-    -- MenuController
-    ('Menu', 'Index', 'Vista de menú', 'Vista'),
-    ('Menu', 'ObtenerMenuPorRol', 'Listar menú por rol', 'API'),
+    -- MenuController    
     ('Menu', 'ObtenerMenuNoAsignado', 'Listar menú no asignado', 'API'),
-    ('Menu', 'ListarMenu', 'Listar menús', 'API'),
-    ('Menu', 'GuardarMenu', 'Guardar/Actualizar menú', 'API'),
+    ('Menu', 'ListarMenusPorRol', 'Listar menús por rol', 'API'),
+    ('Menu', 'GuardarMenusPorRol', 'Guardar menús por rol', 'API'),
     ('Menu', 'EliminarMenu', 'Eliminar menú', 'API'),
 
-    -- RolController
-    ('Rol', 'Index', 'Vista de rol', 'Vista'),    
+    -- RolController    
     ('Rol', 'ListarRoles', 'Listar roles', 'API'),
     ('Rol', 'GuardarRol', 'Guardar/Actualizar rol', 'API'),
     ('Rol', 'EliminarRol', 'Eliminar rol', 'API'),    
 
-    -- PermisosController
-    ('Permisos', 'Index', 'Vista de permisos', 'Vista'),
+    -- PermisosController    
     ('Permisos', 'ObtenerPermisosPorRol', 'Listar permisos por rol', 'API'),
     ('Permisos', 'ObtenerPermisosNoAsignados', 'Listar permisos no asignados', 'API'),
     ('Permisos', 'AsignarPermisos', 'Asignar permiso a un rol', 'API'),
@@ -75,16 +74,16 @@ INSERT INTO MENU (nombre, fk_controlador, icono, orden)
 VALUES
     ('Dashboard', 1, 'fas fa-tachometer-alt', 1),
     ('Usuario', 2, 'fa fa-users', 2),
-    ('Menus', 18, 'fas fa-bars', 3),
-    ('Roles', 24, 'fas fa-user-shield', 4),
-    ('Permisos', 28, 'fas fa-key', 5),
-    ('Gestor de archivos', 3, 'fas fa-cloud', 6),
-    ('Carpetas compartidas', 4, 'fas fa-share-square', 7),
-    ('Archivos compartidos', 5, 'fas fa-share-square', 8),
-    ('Matriz de Integracion', 6, 'fas fa-table', 9),
-    ('Plan Didactico Semestral', 7, 'fas fa-bookmark', 10),
-    ('Plan de Clases Diario', 8, 'fas fa-boxes', 11),
-    ('Reportes', 9, 'far fa-file-pdf', 12);
+    ('Menus', 3, 'fas fa-bars', 3),
+    ('Roles', 4, 'fas fa-user-shield', 4),
+    ('Permisos', 5, 'fas fa-key', 5),
+    ('Gestor de archivos', 6, 'fas fa-cloud', 6),
+    ('Carpetas compartidas', 7, 'fas fa-share-square', 7),
+    ('Archivos compartidos', 8, 'fas fa-share-square', 8),
+    ('Matriz de Integracion', 9, 'fas fa-table', 9),
+    ('Plan Didactico Semestral', 10, 'fas fa-bookmark', 10),
+    ('Plan de Clases Diario', 11, 'fas fa-boxes', 11),
+    ('Reportes', 12, 'far fa-file-pdf', 12);
 GO
 
 --------------------------------------------------------------------------------------------------------------------
@@ -129,23 +128,23 @@ GO
 INSERT INTO PERMISOS (fk_rol, fk_controlador)
 VALUES
     ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 1), -- Home/Index    
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 3), -- Gestor de Archivos
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 4), -- Carpetas Compartidas
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 5), -- Archivos Compartidos
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 6), -- Matriz Integración
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 7), -- Plan Didáctico
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 8); -- Plan Clases
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 6), -- Gestor de Archivos
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 7), -- Carpetas Compartidas
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 8), -- Archivos Compartidos
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 9), -- Matriz Integración
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 10), -- Plan Didáctico
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 11); -- Plan Clases
 GO
 
 -- PROFESOR tiene acceso básico
 INSERT INTO PERMISOS (fk_rol, fk_controlador)
 VALUES
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 1), -- Home/Index
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 4), -- Carpetas Compartidas
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 5), -- Archivos Compartidos
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 6), -- Matriz Integración
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 7), -- Plan Didáctico
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 8); -- Plan Clases
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 7), -- Carpetas Compartidas
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 8), -- Archivos Compartidos
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 9), -- Matriz Integración
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Plan Didáctico
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11); -- Plan Clases
 GO
 
 --------------------------------------------------------------------------------------------------------------------

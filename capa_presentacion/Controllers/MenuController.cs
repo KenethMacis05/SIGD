@@ -20,53 +20,15 @@ namespace capa_presentacion.Controllers
 
         CN_Menu CN_Menu = new CN_Menu();
 
-        // Metodo para listar los menus
+        // Metodo para listar los menus de un rol
+        [AllowAnonymous]
         [HttpGet]
-        public JsonResult ListarMenu()
+        public JsonResult ListarMenusPorRol(int IdRol)
         {
             List<MENU> lst = new List<MENU>();
-            lst = CN_Menu.ListarMenuPorUsuario(1);
+            lst = CN_Menu.ListarMenusPorRol(IdRol);
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
-        }
-
-        [HttpGet]
-        public JsonResult ObtenerMenuPorRol(int idRol)
-        {
-            try
-            {
-                if (idRol <= 0)
-                {
-                    return Json(new { success = false, message = "El ID del rol debe ser mayor a 0." }, JsonRequestBehavior.AllowGet);
-                }
-
-                List<MENU> menus = CN_Menu.ObtenerMenusPorRol(idRol);
-
-                return Json(new { success = true, data = menus }, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { success = false, message = "Error al obtener menús: " + ex.Message }, JsonRequestBehavior.AllowGet);
-            }
-        }
-
-        // Metodo para Guardar los menus
-        [HttpPost]
-        public JsonResult GuardarMenu(MENU menu)
-        {
-            string mensaje = string.Empty;
-            int resultado = 0;
-            if (menu.id_menu == 0)
-            {
-                // Crear nuevo menu
-                resultado = CN_Menu.Registra(menu, out mensaje);
-            }
-            else
-            {
-                // Editar menu existente
-                resultado = CN_Menu.Editar(menu, out mensaje);
-            }
-            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         // Metodo para borrar menus

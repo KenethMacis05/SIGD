@@ -1,6 +1,8 @@
-﻿// Cargar roles en el selec
+﻿let datatableMenus;
+
+// Cargar roles en el selec
 jQuery.ajax({
-    url: listarRolesUrl,
+    url: config.listarRolesUrl,
     type: "GET",
     dataType: "json",
     contentType: "application/json; charset=utf-8",
@@ -13,173 +15,85 @@ jQuery.ajax({
     error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
 })
 
-var idRol = null;
-var menusSeleccionados = [];
-
-// Mostrar permisos del Rol
+// Mostrar menus del Rol
 $("#btnBuscarMenu").off("click").on("click", function () {
     idRol = $('#obtenerRolMenu').val();
     if (!idRol) {
         showAlert("¡Atención!", "Primero debe seleccionar un rol", "warning");
         return false;
-    }
-    
-    cargarMenusPorRol(idRol)
+    }    
+    carparMenus(idRol)
 });
 
-function renderizarDuallistbox(menus) {
-    const menuList = $('#menuList');
-    menuList.empty();
-    menus.forEach(menu => {
-        const isChecked = menu.is_checked ? "checked" : "";
-        const menuHTML = `
-            <li class="list-group-item d-flex justify-content-between align-items-center esp-link menu-item" data-id="${menu.id_menu}">
-                <div class='sb-nav-link-icon'>
-                    <input type="checkbox" class="form-check-input me-2 menu-checkbox" data-id="${menu.id_menu}" ${isChecked}>
-                    <i class="${menu.icono}"></i>                        
-                    <span>${menu.nombre}</span>
-                </div>
-                <span class="badge bg-primary">${menu.orden}</span>
-            </li>
-        `;
-
-        menuList.append(menuHTML);
-    });
-}
-
-// Cargar menús del rol
-function cargarMenusPorRol(idRol, lis) {
+function carparMenus(idRol) {
     $.ajax({
         url: config.listarMenusPorRolUrl,
-        type: 'GET',
-        data: { idRol: idRol },
-        beforeSend: () => $(".dual-listbox-container").LoadingOverlay("show"),
-        success: function (response) {
-            if (response.success) {
-                renderizarDuallistbox(response.data);
-            } else {                
-                showAlert("Error", response.message, "error")
-            }
+        type: "GET",
+        dataType: "json",
+        data: { IdRol: idRol },
+        contentType: "application/json; charset=utf-8",
+        beforeSend: () => $("#datatableMenus tbody").LoadingOverlay("show"),
+
+        success: function (data) {
+            datatableMenus.clear().rows.add(data.data).draw();
+            console.log(data.data)
         },
-        complete: () => $(".dual-listbox-container").LoadingOverlay("hide"),
+
+        complete: () => $("#datatableMenus tbody").LoadingOverlay("hide"),
         error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
     });
 }
 
-// Seleccionar Todo
-$('#selectAll').on('click', function () {
-    const totalCheckboxes = $('.menu-checkbox').length;
-    const checkedCheckboxes = $('.menu-checkbox:checked').length;
 
-    if (checkedCheckboxes === totalCheckboxes) {
-        showAlert("¡Atención!", "Todos los elementos ya están seleccionados.", "info");
-        return;
-    }
+const dataTableOptions = {
+    ...dataTableConfig,
+    columns: [
+        {
 
-    $(".dual-listbox-container").LoadingOverlay("show");
+            data: null,
+            title: "#",
+            render: function (data, type, row, meta) {
+                return meta.row + 1;
+            },
+            orderable: false
 
-    setTimeout(() => {
-        $('.menu-checkbox').prop('checked', true);
-        $(".dual-listbox-container").LoadingOverlay("hide");
-
-    }, 300);
-});
-
-// Deseleccionar Todo
-$('#deselectAll').on('click', function () {
-    const totalCheckboxes = $('.menu-checkbox').length;
-    const checkedCheckboxes = $('.menu-checkbox:checked').length;
-
-    if (checkedCheckboxes === 0) {
-        showAlert("¡Atención!", "Todos los elementos ya están desmarcados.", "info");
-        return;
-    }
-
-    $(".dual-listbox-container").LoadingOverlay("show");
-
-    setTimeout(() => {
-        $('.menu-checkbox').prop('checked', false);
-
-        $(".dual-listbox-container").LoadingOverlay("hide");
-
-    }, 300);
-});
-
-// Limpiar (Restablecer a estado original)
-$('#limpiar').on('click', function () {
-    $('.menu-checkbox').prop('checked', false);
-    cargarMenusPorRol(idRol);
-    console.log("Dual Listbox restablecido a su estado original.");
-});
-
-// Añadir funcionalidad de hover y clic
-$(document).on('mouseenter', '.menu-item', function () {
-    $(this).addClass('hovered');
-});
-
-$(document).on('mouseleave', '.menu-item', function () {
-    $(this).removeClass('hovered');
-});
-
-$(document).on('click', '.menu-item', function (e) {
-    if ($(e.target).is('.menu-checkbox')) {
-        return;
-    }
-
-    const checkbox = $(this).find('.menu-checkbox');
-    const isChecked = checkbox.prop('checked');
-    checkbox.prop('checked', !isChecked);
-});
-
-
-// EN DESAROLLO
-// Recopilar menús seleccionados
-function obtenerMenusSeleccionados() {
-    const seleccionados = [];
-    $('.menu-checkbox:checked').each(function () {
-        seleccionados.push({ id_menu: $(this).data('id') });
-    });
-    return seleccionados;
-}
-
-// Guardar menús en el backend
-function guardarMenus(idRol, menusSeleccionados) {
-    $.ajax({
-        url: config.guardarMenusPorRolUrl,
-        type: "POST",
-        dataType: "json",
-        contentType: "application/json; charset=utf-8",
-        data: JSON.stringify({ idRol: idRol, Menus: menusSeleccionados }),
-        beforeSend: () => $(".dual-listbox-container").LoadingOverlay("show"),
-        success: function (response) {
-            if (response.success) {
-                showAlert("¡Éxito!", "Los menús han sido actualizados correctamente.", "success");
-            } else {
-                showAlert("Error", `No se pudieron guardar los menús: ${response.message}`, "error");
+        },        
+        {
+            title: "Menu",
+            data: "nombre",
+            render: function (data, type, row) {
+                return `
+                    <div class='d-flex flex-row align-items-center esp-link'>
+                        <div class='sb-nav-link-icon me-1'>
+                             <i class='${row.icono}'></i>
+                         </div>
+                             ${data}
+                    </div>
+                `;
             }
         },
-        complete: () => $(".dual-listbox-container").LoadingOverlay("hide"),
-        error: function (xhr) {
-            showAlert("Error", `Error al guardar los menús: ${xhr.statusText}`, "error");
+        { data: "Controller.controlador", title: "Controlador" },
+        { data: "Controller.accion", title: "Acción" },
+        {
+            data: "orden",
+            title: "Orden",
+            render: function (valor) {
+                return `
+                    <div class='d-flex justify-content-center align-items-center'>
+                        <span class='badge text-bg-primary'>${valor}</span>
+                    </div>
+                `;
+            },
+        },
+        {
+            defaultContent:
+                '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
+            width: "90"
         }
-    });
-}
+    ],
+};
 
-// Botón para guardar los menús
-$('#guardarMenus').on('click', function () {
-    if (!idRol) {
-        showAlert("¡Atención!", "Primero debe seleccionar un rol.", "warning");
-        return;
-    }
-
-    // Obtener los menús seleccionados
-    menusSeleccionados = obtenerMenusSeleccionados();
-
-    if (menusSeleccionados.length === 0) {
-        showAlert("¡Atención!", "Debe seleccionar al menos un menú para guardar.", "warning");
-        return;
-    }
-
-    // Llamar a la función para guardar
-    guardarMenus(idRol, menusSeleccionados);
+$(document).ready(function () {
+    datatableMenus = $("#datatableMenus").DataTable(dataTableOptions);
 });

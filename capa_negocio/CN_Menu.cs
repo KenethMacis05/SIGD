@@ -35,26 +35,17 @@ namespace capa_negocio
             }
         }
 
-        public List<MENU> ObtenerMenusPorRol(int idRol)
+        public List<MENU> ListarMenusPorRol(int IdRol)
         {
             try
             {
-                if (idRol <= 0)
-                {
-                    throw new ArgumentException("El ID del rol debe ser un valor positivo.");
-                }
+                return CD_Menu.ObtenerMenusPorRol(IdRol);
 
-                return CD_Menu.ObtenerMenuPorRoles(idRol);
             }
             catch (Exception ex)
             {
-                throw new Exception("Error en la capa de negocio al obtener menús por rol: " + ex.Message);
+                throw new Exception($"Error al obtener menú: {ex.Message}");
             }
-        }
-
-        public int Registra(MENU menu, out string mensaje)
-        {
-            throw new NotImplementedException();
-        }
+        }        
     }
 }

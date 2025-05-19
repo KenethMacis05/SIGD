@@ -31,6 +31,7 @@ function actualizarBreadcrumbHTML() {
         }
     });
     document.getElementById("breadcrumb-paginador").innerHTML = html;
+    document.getElementById("breadcrumb-paginador2").innerHTML = html;
 }
 
 // Retroceder a una carpeta anterior
@@ -51,6 +52,14 @@ function navegarAInicio() {
     breadcrumbStack = [];
 
     document.getElementById("breadcrumb-paginador").innerHTML = `
+    <li class="breadcrumb-item">
+        <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
+            <i class="fas fa-home me-2"></i>Inicio
+        </a>
+    </li>
+    `;
+
+    document.getElementById("breadcrumb-paginador2").innerHTML = `
     <li class="breadcrumb-item">
         <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
             <i class="fas fa-home me-2"></i>Inicio
@@ -440,11 +449,13 @@ function handleTabClick(activeTabId) {
     if (activeTabId === "home") {
         // Cargar carpetas recientes
         cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-        cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");        
+        cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+        navegarAInicio()
     } else if (activeTabId === "archivos") {
         // Cargar todas las carpetas
         cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
-        cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");        
+        cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+        navegarAInicio()
     }
 }
 

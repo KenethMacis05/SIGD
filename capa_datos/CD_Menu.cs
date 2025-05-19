@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using capa_entidad;
+using Newtonsoft.Json;
 
 namespace capa_datos
 {
@@ -60,7 +61,7 @@ namespace capa_datos
             return lista;
         }
         
-        public List<MENU> ObtenerMenuPorRoles(int IdRol)
+        public List<MENU> ObtenerMenusPorRol(int IdRol)
         {
             List<MENU> lista = new List<MENU>();
 
@@ -68,7 +69,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_LeerMenusPorRol", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_LeerMenuPorRol", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("IdRol", IdRol);
 
@@ -83,7 +84,6 @@ namespace capa_datos
                                 nombre = dr["nombre"].ToString(),
                                 icono = dr["icono"].ToString(),
                                 orden = dr["orden"] != DBNull.Value ? Convert.ToInt32(dr["orden"]) : 0,
-                                is_checked = Convert.ToBoolean(dr["is_checked"])                                                                    
                             };
 
                             // Si tiene controlador asociado, cargar sus datos
@@ -104,10 +104,10 @@ namespace capa_datos
             catch (Exception ex)
             {
                 lista = new List<MENU>();
-                throw new Exception("Error al obtener menus del rol: " + ex.Message);
+                throw new Exception("Error al obtener menú del usuario: " + ex.Message);
             }
 
             return lista;
-        }
+        }              
     }
 }
