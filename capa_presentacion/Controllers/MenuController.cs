@@ -12,31 +12,69 @@ namespace capa_presentacion.Controllers
     [VerificarSession]
     public class MenuController : Controller
     {
+        private readonly CN_Menu objMenu = new CN_Menu();
+         
         // GET: Menu
         public ActionResult Index()
         {
             return View();
         }
 
-        CN_Menu CN_Menu = new CN_Menu();
-
-        // Metodo para listar los menus de un rol
-        [AllowAnonymous]
+        // Enpoint(GET): Listar menus por rol de usuario
         [HttpGet]
         public JsonResult ListarMenusPorRol(int IdRol)
         {
             List<MENU> lst = new List<MENU>();
-            lst = CN_Menu.ListarMenusPorRol(IdRol);
+            lst = objMenu.ListarMenusPorRol(IdRol);
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
-        // Metodo para borrar menus
+        // Enpoint(GET): Listar menus no asignados del rol de usuario        
+        [HttpGet]
+        public JsonResult ListarMenusNoAsignadosPorRol(int IdRol)
+        {
+            List<MENU> lst = new List<MENU>();
+            lst = objMenu.ListarMenusNoAsignadosPorRol(IdRol);
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Asignar menus a un rol de usuario
         [HttpPost]
-        public JsonResult EliminarMenu(int id_menu)
+        public JsonResult AsignarMenus(int IdRol, List<int> IdsMenus)
+        {
+            try
+            {                
+                var resultados = objMenu.AsignarMenus(IdRol, IdsMenus);
+
+                var data = resultados.Select(r => new {
+                    IdControlador = r.Key,
+                    Codigo = r.Value.Codigo,
+                    Mensaje = r.Value.Mensaje,
+                    EsExitoso = r.Value.Codigo > 0
+                }).ToList();
+
+                return Json(new
+                {
+                    success = true,
+                    data = data,
+                    totalExitosos = data.Count(d => d.EsExitoso),
+                    totalFallidos = data.Count(d => !d.EsExitoso)
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        // Enpoint(POST): Eliminar menú del rol de usuario
+        [HttpPost]
+        public JsonResult EliminarMenuDelRol(int id_menu)
         {
             string mensaje = string.Empty;
-            int resultado = CN_Menu.Eliminar(id_menu, out mensaje);
+            int resultado = objMenu.Eliminar(id_menu, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
     }

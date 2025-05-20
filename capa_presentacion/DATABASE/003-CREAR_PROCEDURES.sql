@@ -226,7 +226,8 @@ BEGIN
     END  
       
     -- Obtener menús asignados al rol 
-    SELECT   
+    SELECT
+        mr.id_menu_rol,
         m.id_menu,  
         m.nombre,  
         c.controlador,  
@@ -251,6 +252,32 @@ BEGIN
         )  
     )  
     ORDER BY m.orden;  
+END
+GO
+
+-- PROCEDIMIENTO PARA OBTENER MENUS NO ASIGNADOS AL ROL
+CREATE PROCEDURE usp_LeerMenusNoAsignadosPorRol
+    @IdRol INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        m.id_menu,  
+        m.nombre,  
+        c.controlador,  
+        c.accion AS vista,  
+        m.icono,  
+        m.orden   
+    FROM MENU m    
+    LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador    
+    WHERE m.estado = 1
+    AND NOT EXISTS (
+        SELECT 1 FROM MENU_ROL mr 
+        WHERE mr.fk_rol = @IdRol
+        AND mr.fk_menu = m.id_menu        
+    )    
+    ORDER BY m.orden DESC;
 END
 GO
 

@@ -41,15 +41,12 @@ namespace capa_presentacion.Filters
             }
             else
             {
-
                 if (sesionUsuario.reestablecer && !(controller is AccesoController))
                 {
                     // Redirigir si necesita restablecer contraseña
                     filterContext.Result = new RedirectResult("~/Acceso/Reestablecer");
                     return;
-
                 }
-
                 else
                 {
                     // Redirigir si ya está autenticado y trata de acceder a AccesoController
@@ -58,7 +55,6 @@ namespace capa_presentacion.Filters
                         filterContext.Result = new RedirectResult("~/Home/Index");
                         return;
                     }
-
                 }
             }
 
@@ -96,14 +92,16 @@ namespace capa_presentacion.Filters
                 if (resultadoPermiso == -1)
                 {
                     // El controlador o acción no existen en la base de datos
-                    controller.TempData["MensajeErrorPermisos"] = "El controlador o la acción no existen en la base de datos.";
+                    filterContext.Controller.TempData["MensajeErrorPermisos"] = "El controlador o la acción no existen en la base de datos.";
+                    filterContext.Controller.ViewBag.MensajeErrorPermisos = "El controlador o la acción no existen en la base de datos.";
                     filterContext.Result = new RedirectResult("~/Home/Index");
                     return;
                 }
                 else if (resultadoPermiso == 0)
                 {
                     // El usuario no tiene permisos para acceder
-                    controller.TempData["MensajeErrorPermisos"] = "Usted no tiene permisos para realizar esta acción.";
+                    filterContext.Controller.TempData["MensajeErrorPermisos"] = "Usted no tiene permisos para realizar esta acción.";
+                    filterContext.Controller.ViewBag.MensajeErrorPermisos = "Usted no tiene permisos para realizar esta acción.";
                     filterContext.Result = new RedirectResult("~/Home/Index");
                     return;
                 }

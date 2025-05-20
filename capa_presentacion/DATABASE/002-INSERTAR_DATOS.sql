@@ -10,62 +10,65 @@ VALUES
 GO
 --------------------------------------------------------------------------------------------------------------------
 
--- (2) REGISTROS EN TABLA CONTROLLER
 INSERT INTO CONTROLLER (controlador, accion, descripcion, tipo) 
 VALUES
     -- Vistas principales
     ('Home', 'Index', 'Dashboard principal', 'Vista'),
-    ('Usuario', 'Index', 'Vista de gestión de usuarios', 'Vista'),
-    ('Menu', 'Index', 'Vista de menú', 'Vista'),
-    ('Rol', 'Index', 'Vista de rol', 'Vista'),
-    ('Permisos', 'Index', 'Vista de permisos', 'Vista'),
-    ('Archivo', 'GestionArchivos', 'Gestor de archivos', 'Vista'),
+    ('Usuario', 'Index', 'Gestión de usuarios', 'Vista'),
+    ('Menu', 'Index', 'Gestión de menús', 'Vista'),
+    ('Rol', 'Index', 'Gestión de roles', 'Vista'),
+    ('Permisos', 'Index', 'Gestión de permisos', 'Vista'),
+    ('Archivo', 'GestionArchivos', 'Gestión de archivos', 'Vista'),
     ('Archivo', 'CarpetasCompartidas', 'Carpetas compartidas', 'Vista'),
     ('Archivo', 'ArchivosCompartidos', 'Archivos compartidos', 'Vista'),
-    ('Planificacion', 'Matriz_de_Integracion', 'Matriz de Integración', 'Vista'),
-    ('Planificacion', 'Plan_Didactico_Semestral', 'Plan Didáctico Semestral', 'Vista'),
-    ('Planificacion', 'Plan_de_Clases_Diario', 'Plan de Clases Diario', 'Vista'),
+    ('Planificacion', 'Matriz_de_Integracion', 'Matriz de integración', 'Vista'),
+    ('Planificacion', 'Plan_Didactico_Semestral', 'Plan didáctico semestral', 'Vista'),
+    ('Planificacion', 'Plan_de_Clases_Diario', 'Plan de clases diario', 'Vista'),
     ('Reportes', 'Index', 'Reportes del sistema', 'Vista'),
     
     -- Acciones API/AJAX
-    -- HomeController
-    ('Usuario', 'ListarUsuarios', 'Obtener listado de usuarios', 'API'),
-    ('Usuario', 'GuardarUsuario', 'Guardar/Editar usuario', 'API'),
+    -- UsuarioController
+    ('Usuario', 'ListarUsuarios', 'Listar usuarios', 'API'),
+    ('Usuario', 'GuardarUsuario', 'Crear o actualizar usuario', 'API'),
     ('Usuario', 'EliminarUsuario', 'Eliminar usuario', 'API'),
 
     -- ArchivoController
-    ('Archivo', 'ListarCarpetasRecientes', 'Listar carpetas recientes del usuario', 'API'),
-    ('Archivo', 'GuardarCarpeta', 'Guardar/Actualizar carpeta', 'API'),
+    ('Archivo', 'ListarCarpetasRecientes', 'Listar carpetas recientes', 'API'),
+    ('Archivo', 'GuardarCarpeta', 'Crear o actualizar carpeta', 'API'),
     ('Archivo', 'EliminarCarpeta', 'Eliminar carpeta', 'API'),
-    ('Archivo', 'SubirArchivo', 'Subir archivo al sistema', 'API'),    
-    ('Planificacion', 'GenerarPlan', 'Generar planificación', 'API'),
+    ('Archivo', 'SubirArchivo', 'Subir archivo', 'API'),    
+    ('Planificacion', 'GenerarPlan', 'Generar plan', 'API'),
 
     -- MenuController    
-    ('Menu', 'ObtenerMenuNoAsignado', 'Listar menú no asignado', 'API'),
-    ('Menu', 'ListarMenusPorRol', 'Listar menús por rol', 'API'),
-    ('Menu', 'GuardarMenusPorRol', 'Guardar menús por rol', 'API'),
+    ('Menu', 'ListarMenusNoAsignadosPorRol', 'Listar menús no asignados', 'API'),
+    ('Menu', 'ListarMenusPorRol', 'Listar menús asignados', 'API'),
+    ('Menu', 'ListarMenus', 'Listar todos los menús', 'API'),
+    ('Menu', 'AsignarMenus', 'Asignar menús a rol', 'API'),
+    ('Menu', 'GuardarMenu', 'Crear o actualizar menú', 'API'),
     ('Menu', 'EliminarMenu', 'Eliminar menú', 'API'),
+    ('Menu', 'EliminarMenuDelRol', 'Quitar menú de rol', 'API'),
 
     -- RolController    
     ('Rol', 'ListarRoles', 'Listar roles', 'API'),
-    ('Rol', 'GuardarRol', 'Guardar/Actualizar rol', 'API'),
+    ('Rol', 'GuardarRol', 'Crear o actualizar rol', 'API'),
     ('Rol', 'EliminarRol', 'Eliminar rol', 'API'),    
 
     -- PermisosController    
-    ('Permisos', 'ObtenerPermisosPorRol', 'Listar permisos por rol', 'API'),
+    ('Permisos', 'ObtenerPermisosPorRol', 'Listar permisos del rol', 'API'),
     ('Permisos', 'ObtenerPermisosNoAsignados', 'Listar permisos no asignados', 'API'),
-    ('Permisos', 'AsignarPermisos', 'Asignar permiso a un rol', 'API'),
-    ('Permisos', 'EliminarPermiso', 'Eliminar permiso de un rol', 'API'),
+    ('Permisos', 'AsignarPermisos', 'Asignar permisos a rol', 'API'),
+    ('Permisos', 'EliminarPermiso', 'Eliminar permiso', 'API'),
 
-    ('Archivo', 'ListarArchivosRecientes', 'Listar archivos recientes del usuario', 'API'),
-    ('Archivo', 'ListarCarpetas', 'Listar todas las carpetas', 'API'),
-    ('Archivo', 'ListarArchivos', 'Listar todos archivos de la carpeta raiz', 'API'),    
-    ('Archivo', 'EliminarArchivo', 'Eliminar arhivos', 'API'),
-    ('Archivo', 'EliminarDefinitivamente', 'Eliminar arhivos y carpetas definitivamente', 'API'),
-    ('Archivo', 'ListarPapelera', 'Listar las carpetas y archivos de la papelera', 'API'),
-    ('Archivo', 'VaciarPapelera', 'Vaciar las carpetas y archivos de la papelera', 'API'),
-    ('Archivo', 'ListarSubCarpetas', 'Listar sub carpetas', 'API'),
-    ('Archivo', 'ListarArchivosPorCarpeta', 'Listar los archivos por carpeta', 'API')
+    -- ArchivoController
+    ('Archivo', 'ListarArchivosRecientes', 'Listar archivos recientes', 'API'),
+    ('Archivo', 'ListarCarpetas', 'Listar carpetas', 'API'),
+    ('Archivo', 'ListarArchivos', 'Listar archivos raíz', 'API'),    
+    ('Archivo', 'EliminarArchivo', 'Eliminar archivos', 'API'),
+    ('Archivo', 'EliminarDefinitivamente', 'Eliminar definitivo', 'API'),
+    ('Archivo', 'ListarPapelera', 'Listar en papelera', 'API'),
+    ('Archivo', 'VaciarPapelera', 'Vaciar papelera', 'API'),
+    ('Archivo', 'ListarSubCarpetas', 'Listar subcarpetas', 'API'),
+    ('Archivo', 'ListarArchivosPorCarpeta', 'Listar archivos por carpeta', 'API')
 GO
 --------------------------------------------------------------------------------------------------------------------
 

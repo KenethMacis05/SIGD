@@ -89,8 +89,8 @@ function cargarPermisosNoAsignados(IdRol) {
                 });
                 dataTableNoAsignados.draw();
 
-            } else {
-                console.warn("Datos no válidos recibidos", data);
+            } else {                
+                showAlert("Error", `Datos no válidos recibidos: ${data}`, "error");
             }
         },
         complete: () => $("#dataTablePermisosNoAsignados tbody").LoadingOverlay("hide"),

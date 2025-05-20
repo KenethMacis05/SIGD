@@ -12,7 +12,7 @@ namespace capa_presentacion.Controllers
     [VerificarSession]
     public class PermisosController : Controller
     {
-        private readonly CN_Permisos CN_Permisos = new CN_Permisos();
+        private readonly CN_Permisos objPermisos = new CN_Permisos();
 
         // GET: Permisos
         public ActionResult Index()
@@ -20,31 +20,33 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
+        // Enpoint(GET): Listar permisos por rol de usuario
         [HttpGet]
         public JsonResult ObtenerPermisosPorRol(int IdRol)
         {
             List<PERMISOS> lst = new List<PERMISOS>();
-            lst = CN_Permisos.ListarPermisosPorRol(IdRol);
+            lst = objPermisos.ListarPermisosPorRol(IdRol);
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        // Enpoint(GET): Listar permisos no asignados por rol de usuario
         [HttpGet]
         public JsonResult ObtenerPermisosNoAsignados(int IdRol)
         {
             List<CONTROLLER> lst = new List<CONTROLLER>();
-            lst = CN_Permisos.ListarPermisosNoAsignados(IdRol);
+            lst = objPermisos.ListarPermisosNoAsignados(IdRol);
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        // Enpoint(POST): Asignar permisos a un rol de usuario
         [HttpPost]
         public JsonResult AsignarPermisos(int IdRol, List<int> IdsControladores)
         {
             try
-            {
-                var cnPermisos = new CN_Permisos();
-                var resultados = cnPermisos.AsignarPermisos(IdRol, IdsControladores);
+            {                
+                var resultados = objPermisos.AsignarPermisos(IdRol, IdsControladores);
 
                 var data = resultados.Select(r => new {
                     IdControlador = r.Key,
@@ -67,13 +69,12 @@ namespace capa_presentacion.Controllers
             }
         }
 
+        // Enpoint(POST): Eliminar permisos de un rol de usuario
         [HttpPost]
         public JsonResult EliminarPermiso(int id_permiso)
         {
             string mensaje = string.Empty;
-
-            int resultado = CN_Permisos.Eliminar(id_permiso, out mensaje);
-
+            int resultado = objPermisos.Eliminar(id_permiso, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
     }
