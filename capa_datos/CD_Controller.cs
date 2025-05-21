@@ -48,5 +48,45 @@ namespace capa_datos
 
             return lista;
         }
+
+        //Listar controllers
+        public List<CONTROLLER> Listar()
+        {
+            List<CONTROLLER> lst = new List<CONTROLLER>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_LeerControllers", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lst.Add(
+                                new CONTROLLER()
+                                {
+                                    id_controlador = Convert.ToInt32(dr["id_controlador"]),
+                                    controlador = dr["controlador"].ToString(),
+                                    accion = dr["accion"].ToString(),
+                                    descripcion = dr["descripcion"].ToString(),
+                                    tipo = dr["tipo"].ToString(),
+                                    estado = Convert.ToBoolean(dr["estado"]),
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los controladores: " + ex.Message);
+            }
+            return lst;
+        }
     }
 }

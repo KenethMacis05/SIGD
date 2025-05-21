@@ -16,6 +16,50 @@ jQuery.ajax({
     error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
 })
 
+// Cargar controladores y vistas en los select
+jQuery.ajax({
+    url: config.listarControladoresUrl,
+    type: "GET",
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+
+    success: function (response) {        
+        $('#controlador').empty().append('<option value="" disabled selected>Seleccionar...</option>');
+        $('#vista').empty().append('<option value="" disabled selected>Seleccionar...</option>').prop('disabled', true);
+
+        let controladoresSet = new Set();
+        let vistasMap = {};
+
+        $.each(response.data, function (index, registro) {
+            if (!controladoresSet.has(registro.controlador)) {
+                controladoresSet.add(registro.controlador);
+                $('#controlador').append(`<option value="${registro.controlador}">${registro.controlador}</option>`);
+            }
+            
+            if (registro.tipo === 'Vista') {
+                if (!vistasMap[registro.controlador]) {
+                    vistasMap[registro.controlador] = [];
+                }
+                vistasMap[registro.controlador].push({ id: registro.id_controlador, accion: registro.accion });
+            }
+        });
+
+        $('#controlador').on('change', function () {
+            const controladorSeleccionado = $(this).val();
+
+            $('#vista').empty().append('<option value="" disabled selected>Seleccionar...</option>').prop('disabled', false);
+
+            if (vistasMap[controladorSeleccionado]) {
+                $.each(vistasMap[controladorSeleccionado], function (index, vista) {
+                    $('#vista').append(`<option value="${vista.id}">${vista.accion}</option>`);
+                });
+            }
+        });
+    },
+
+    error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+});
+
 // Mostrar menus del Rol
 $("#btnBuscarMenu").off("click").on("click", function () {
     idRol = $('#obtenerRolMenu').val();
@@ -36,6 +80,30 @@ function abrirModal() {
 
     cargarMenusNoAsignados(IdRol);
     $("#modalMenus").modal("show");
+}
+
+//Abrir modal Create/Update
+function abrirModalCreate(json) {
+    $("#idMenu").val("0");
+    $("#nombre").val("");
+    $("#icono").val("");
+    $("#controlador").val("");
+    $("#vista").val("");
+    $("#orden").val("");    
+    $("#estado").prop("checked", true);
+
+    if (json !== null) {
+        $("#idMenu").val(json.id_menu);
+        $("#nombre").val(json.nombre);
+        $("#icono").val(json.icono);
+        if (json.fk_controlador) {
+            $("#controlador").val(json.fk_controlador);
+            $("#vista").val(json.fk_controlador);
+        }               
+        $("#orden").val(json.orden);
+        $("#estado").prop("checked", json.estado === true);
+    }
+    $("#createMenu").modal("show");
 }
 
 // Cargar menus del rol
@@ -139,8 +207,8 @@ $('#deselectAll').on('click', function () {
     }, 300);
 });
 
-// Guardar nuevos menus
-$('#btnGuardarMenus').click(function () {
+// Asignar nuevos menus
+$('#btnAsignarMenu').click(function () {
     var IdRol = $('#obtenerRolMenu').val();
     var menusSeleccionados = [];
 
@@ -192,11 +260,18 @@ $('#btnGuardarMenus').click(function () {
     });
 });
 
-//Boton eliminar usuario
+//Boton seleccionar menú para editar
+$("#datatableMenus tbody").on("click", '.btn-editar', function () {
+    filaSeleccionada = $(this).closest("tr");
+    const data = datatableMenus.row(filaSeleccionada).data();    
+    abrirModalCreate(data)
+});
+
+//Boton eliminar menu del rol
 $("#datatableMenus tbody").on("click", '.btn-eliminar', function () {
     const menuSeleccionado = $(this).closest("tr");
     const data = datatableMenus.row(menuSeleccionado).data();    
-    console.log(data)
+    
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
             showLoadingAlert("Eliminando menú", "Por favor espere...")

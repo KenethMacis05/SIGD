@@ -168,6 +168,22 @@ END
 GO
 --------------------------------------------------------------------------------------------------------------------
 
+-- (5) PROCEDIMIENTO ALMACENADO PARA OBTENER TODOS LOS CONTROLLERS
+CREATE PROCEDURE usp_LeerControllers
+AS
+BEGIN
+    SELECT 
+        id_controlador,
+        controlador,
+        accion,
+        descripcion,
+        tipo,
+        estado        
+    FROM CONTROLLER    
+	ORDER BY fecha_registro DESC
+END
+GO
+
 -- (3) PROCEDIMIENTO ALMACENADO PARA OBTENER LOS MENUS DE UN ROL DE UN USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerMenuPorUsuario
     @IdUsuario INT
@@ -212,46 +228,47 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE usp_LeerMenuPorRol
-    @IdRol INT  
-AS  
-BEGIN  
-    SET NOCOUNT ON;  
-      
-    -- Verificar si el rol existe
-    IF NOT EXISTS (SELECT 1 FROM ROL WHERE id_rol = @IdRol AND estado = 1)  
-    BEGIN  
-        RAISERROR('Rol no encontrado o inactivo', 16, 1);  
-        RETURN;  
-    END  
-      
-    -- Obtener menús asignados al rol 
-    SELECT
-        mr.id_menu_rol,
-        m.id_menu,  
-        m.nombre,  
-        c.controlador,  
-        c.accion AS vista,  
-        m.icono,  
-        m.orden  
-    FROM MENU_ROL mr  
-    INNER JOIN MENU m ON mr.fk_menu = m.id_menu  
-    LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador      
-    WHERE mr.fk_rol = @IdRol
-    AND mr.estado = 1  
-    AND m.estado = 1  
-    AND (c.tipo = 'Vista' OR c.tipo IS NULL) -- Solo vistas o menús padres  
-    AND (  
-        m.fk_controlador IS NULL   
-        OR   
-        EXISTS (  
-            SELECT 1 FROM PERMISOS p   
-            WHERE p.fk_rol = @IdRol
-            AND p.fk_controlador = m.fk_controlador  
-            AND p.estado = 1  
-        )  
-    )  
-    ORDER BY m.orden;  
+CREATE OR ALTER PROCEDURE usp_LeerMenuPorRol  
+    @IdRol INT    
+AS    
+BEGIN    
+    SET NOCOUNT ON;    
+        
+    -- Verificar si el rol existe  
+    IF NOT EXISTS (SELECT 1 FROM ROL WHERE id_rol = @IdRol AND estado = 1)    
+    BEGIN    
+        RAISERROR('Rol no encontrado o inactivo', 16, 1);    
+        RETURN;    
+    END    
+        
+    -- Obtener menús asignados al rol   
+    SELECT  
+        mr.id_menu_rol,  
+        m.id_menu,    
+        m.nombre,    
+        c.controlador,    
+        c.accion AS vista,    
+        m.icono,    
+        m.orden,
+		m.fk_controlador
+    FROM MENU_ROL mr    
+    INNER JOIN MENU m ON mr.fk_menu = m.id_menu    
+    LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador        
+    WHERE mr.fk_rol = @IdRol  
+    AND mr.estado = 1    
+    AND m.estado = 1    
+    AND (c.tipo = 'Vista' OR c.tipo IS NULL) -- Solo vistas o menús padres    
+    AND (    
+        m.fk_controlador IS NULL     
+        OR     
+        EXISTS (    
+            SELECT 1 FROM PERMISOS p     
+            WHERE p.fk_rol = @IdRol  
+            AND p.fk_controlador = m.fk_controlador    
+            AND p.estado = 1    
+        )    
+    )    
+    ORDER BY m.orden;
 END
 GO
 

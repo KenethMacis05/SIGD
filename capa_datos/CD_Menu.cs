@@ -82,6 +82,7 @@ namespace capa_datos
                             {
                                 id_menu_rol = Convert.ToInt32(dr["id_menu_rol"]),
                                 id_menu = Convert.ToInt32(dr["id_menu"]),
+                                fk_controlador = Convert.ToInt32(dr["fk_controlador"]),
                                 nombre = dr["nombre"].ToString(),
                                 icono = dr["icono"].ToString(),
                                 orden = dr["orden"] != DBNull.Value ? Convert.ToInt32(dr["orden"]) : 0,

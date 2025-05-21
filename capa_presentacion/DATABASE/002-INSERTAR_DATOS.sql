@@ -68,7 +68,19 @@ VALUES
     ('Archivo', 'ListarPapelera', 'Listar en papelera', 'API'),
     ('Archivo', 'VaciarPapelera', 'Vaciar papelera', 'API'),
     ('Archivo', 'ListarSubCarpetas', 'Listar subcarpetas', 'API'),
-    ('Archivo', 'ListarArchivosPorCarpeta', 'Listar archivos por carpeta', 'API')
+    ('Archivo', 'ListarArchivosPorCarpeta', 'Listar archivos por carpeta', 'API'),
+
+    ('Archivo', 'CompartirArchivo', 'Compartir archivo', 'API'),
+    ('Archivo', 'CompartirCarpeta', 'Compartir carpeta', 'API'),
+    ('Archivo', 'EliminarArchivoCompartido', 'Eliminar archivo compartido', 'API'),
+    ('Archivo', 'EliminarCarpetaCompartida', 'Eliminar carpeta compartida', 'API'),
+    ('Archivo', 'ListarArchivosCompartidos', 'Listar archivos compartidos', 'API'),
+    ('Archivo', 'ListarCarpetasCompartidas', 'Listar carpetas compartidas', 'API'),    
+
+    -- ControladorController
+    ('Controlador', 'listarControladores', 'Listar controladores', 'API'),
+    ('Controlador', 'guardarControlador', 'Crear o actualizar controlador', 'API'),
+    ('Controlador', 'eliminarControlador', 'Eliminar controlador', 'API')    
 GO
 --------------------------------------------------------------------------------------------------------------------
 

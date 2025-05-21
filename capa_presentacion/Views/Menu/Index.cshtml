@@ -7,21 +7,6 @@
 <!--Titulo-->
 <div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">@ViewBag.Title</h2></div>
 
-
-@if (ViewBag.MensajeErrorPermisos != null)
-{
-    <div class="alert alert-danger">
-        @ViewBag.MensajeErrorPermisos
-    </div>
-}
-
-@if (TempData["MensajeErrorPermisos"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["MensajeErrorPermisos"]
-    </div>
-}
-
 <!--Contenedor-->
 <div class="card">
     <div class="card-header pb-0 border-bottom-0">
@@ -54,7 +39,7 @@
                         <button type="button" class="btn btn-outline-primary" onclick="abrirModal()"><i class="fa fa-plus"></i> Agregar menu</button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-secondary" onclick="abrirModalCreate()"><i class="fa fa-plus"></i> Crear menu</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="abrirModalCreate(null)"><i class="fa fa-plus"></i> Crear menu</button>
                     </div>
                 </form>
 
@@ -125,8 +110,70 @@
                     <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
                         <i class="fas fa-times-circle me-2"></i>Cancelar
                     </button>
-                    <button type="button" style="background: #0072BB" id="btnGuardarPermisos" class="btn btn-success w-50">
-                        <i class="fas fa-save me-2"></i>Guardar Permisos
+                    <button type="button" style="background: #0072BB" id="btnAsignarMenu" class="btn btn-success w-50">
+                        <i class="fas fa-save me-2"></i>Asignar Menú
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade modal-lg" id="createMenu" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #0072BB">
+                <h5 class="modal-title" id="exampleModalLabel">Menú</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body g-2">
+
+                <input type="text" name="idMenu" id="idMenu" value="0">
+
+                <div class="row">
+                    <div class="col-lg-3 mb-3">
+                        <label class="form-label" for="nombre">Nombre</label>
+                        <input type="text" class="form-control" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="col-lg-3 mb-3">
+                        <label class="form-label" for="icono">Icono</label>
+                        <input type="text" class="form-control" id="icono" name="icono">
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <label class="form-label" for="controlador">Selecionar controlador</label>                        
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="controlador">Selecionar controlador:</label>
+                            <select class="form-select" id="controlador"></select>
+                        </div>                        
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <label class="form-label" for="vista">Selecionar vista</label>
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="vista">Selecionar vista:</label>
+                            <select class="form-select" id="vista"></select>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <label class="form-label" for="orden">Orden</label>
+                        <div class="input-group flex-nowrap">
+                            <span class="input-group-text"><i class="fa fa-user"></i></span>
+                            <input type="number" class="form-control" id="orden" name="orden" required>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="estado" checked required>
+                            <label class="form-check-label" for="estado">Estado Inactivo/Activo</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                        <i class="fas fa-times-circle me-2"></i>Cerrar
+                    </button>
+                    <button type="submit" style="background: #0072BB " onclick="Guardar()" class="btn btn-success w-50">
+                        <i class="fas fa-save me-2"></i>Guardar
                     </button>
                 </div>
             </div>
@@ -142,6 +189,7 @@
             listarMenusNoAsignadosPorRolUrl: '@Url.Action("ListarMenusNoAsignadosPorRol", "Menu")',
             guardarMenusPorRolUrl: '@Url.Action("GuardarMenusPorRol", "Menu")',
             eliminarMenuPorRolUrl: '@Url.Action("EliminarMenuDelRol", "Menu")',
+            listarControladoresUrl: '@Url.Action("listarControladores", "Controlador")',
         }
     </script>
     <script src="@Url.Content("~/Scripts/Views/Menu.js")" type="text/javascript"></script>
