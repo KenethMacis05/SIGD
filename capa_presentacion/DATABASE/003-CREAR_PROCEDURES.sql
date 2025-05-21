@@ -281,6 +281,21 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE usp_EliminarMenuDelRol
+    @IdMenuRol INT,
+    @Resultado BIT OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    
+    IF EXISTS (SELECT 1 FROM MENU_ROL WHERE id_menu_rol = @IdMenuRol)
+    BEGIN
+        DELETE FROM MENU_ROL WHERE id_menu_rol = @IdMenuRol
+        SET @Resultado = 1
+    END
+END
+GO
+
 CREATE OR ALTER PROCEDURE usp_VerificarPermiso
     @IdUsuario INT,
     @Controlador VARCHAR(60),

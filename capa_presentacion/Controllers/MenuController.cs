@@ -20,7 +20,7 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        // Enpoint(GET): Listar menus por rol de usuario
+        // Enpoint(GET): Listar menus por rol de usuario        
         [HttpGet]
         public JsonResult ListarMenusPorRol(int IdRol)
         {
@@ -29,7 +29,7 @@ namespace capa_presentacion.Controllers
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
-
+        
         // Enpoint(GET): Listar menus no asignados del rol de usuario        
         [HttpGet]
         public JsonResult ListarMenusNoAsignadosPorRol(int IdRol)
@@ -71,10 +71,10 @@ namespace capa_presentacion.Controllers
 
         // Enpoint(POST): Eliminar menú del rol de usuario
         [HttpPost]
-        public JsonResult EliminarMenuDelRol(int id_menu)
+        public JsonResult EliminarMenuDelRol(int IdMenuRol)
         {
             string mensaje = string.Empty;
-            int resultado = objMenu.Eliminar(id_menu, out mensaje);
+            int resultado = objMenu.EliminarMenuDelRol(IdMenuRol, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
     }

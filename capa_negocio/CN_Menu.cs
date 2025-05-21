@@ -10,7 +10,7 @@ namespace capa_negocio
 {
     public class CN_Menu
     {
-        private CD_Menu CD_Menu = new CD_Menu();     
+        private CD_Menu CD_Menu = new CD_Menu();
 
         public List<MENU> ListarMenuPorUsuario(int IdUsuario)
         {
@@ -67,7 +67,7 @@ namespace capa_negocio
                 {
                     int resultado = CD_Menu.AsignarMenusPorRol(IdRol, IdMenu);
                     string mensaje = ObtenerMensajeResultado(resultado);
-                    
+
                     bool esExitoso = resultado > 0 || resultado == -2;
 
                     resultados.Add(IdMenu, (esExitoso ? 1 : -1, mensaje));
@@ -93,7 +93,7 @@ namespace capa_negocio
             }
         }
 
-        public int Eliminar(int IdMenuRol, out string mensaje)
+        public int EliminarMenuDelRol(int IdMenuRol, out string mensaje)
         {
             bool eliminado = CD_Menu.EliminarMenuDelRol(IdMenuRol, out mensaje);
             return eliminado ? 1 : 0;

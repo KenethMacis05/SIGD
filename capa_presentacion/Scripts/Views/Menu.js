@@ -192,29 +192,29 @@ $('#btnGuardarMenus').click(function () {
     });
 });
 
-//Boton eliminar un menu
-$("#datatableMenusNoAsignados tbody").on("click", '.btn-eliminar', function () {
+//Boton eliminar usuario
+$("#datatableMenus tbody").on("click", '.btn-eliminar', function () {
     const menuSeleccionado = $(this).closest("tr");
-    const data = datatableMenusNoAsignados.row(menuSeleccionado).data();
-
+    const data = datatableMenus.row(menuSeleccionado).data();    
+    console.log(data)
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
             showLoadingAlert("Eliminando menú", "Por favor espere...")
 
             // Enviar petición AJAX
             $.ajax({
-                url: config.eliminarMenuUrl,
+                url: config.eliminarMenuPorRolUrl,
                 type: "POST",
-                data: JSON.stringify({ IdRol: data.id_menu_rol }),
+                data: JSON.stringify({ IdMenuRol: data.id_menu_rol }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
 
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        dataTable.row(permisoSeleccionado).remove().draw();
-                        showAlert("¡Eliminado!", response.Mensaje || "Permiso eliminado correctamente", "success")
-                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el permiso", "error") }
+                        datatableMenus.row(menuSeleccionado).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Menú eliminado correctamente", "success")
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el menú", "error") }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
             });
