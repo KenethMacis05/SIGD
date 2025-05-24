@@ -228,7 +228,7 @@ BEGIN
 END
 GO
 
-CREATE OR ALTER PROCEDURE usp_LeerMenuPorRol  
+CREATE OR ALTER PROCEDURE usp_LeerMenuPorRol
     @IdRol INT    
 AS    
 BEGIN    
@@ -272,29 +272,29 @@ BEGIN
 END
 GO
 
--- PROCEDIMIENTO PARA OBTENER MENUS NO ASIGNADOS AL ROL
-CREATE PROCEDURE usp_LeerMenusNoAsignadosPorRol
-    @IdRol INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    SELECT 
-        m.id_menu,  
-        m.nombre,  
-        c.controlador,  
-        c.accion AS vista,  
-        m.icono,  
-        m.orden   
-    FROM MENU m    
-    LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador    
-    WHERE m.estado = 1
-    AND NOT EXISTS (
-        SELECT 1 FROM MENU_ROL mr 
-        WHERE mr.fk_rol = @IdRol
-        AND mr.fk_menu = m.id_menu        
-    )    
-    ORDER BY m.orden DESC;
+-- PROCEDIMIENTO PARA OBTENER MENUS NO ASIGNADOS AL ROL  
+CREATE OR ALTER PROCEDURE usp_LeerMenusNoAsignadosPorRol  
+    @IdRol INT  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+      
+    SELECT   
+        m.id_menu,    
+        m.nombre,    
+        c.controlador,    
+        c.accion AS vista,    
+        m.icono,    
+        m.orden     
+    FROM MENU m      
+    LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador      
+    WHERE m.estado = 1  
+    AND NOT EXISTS (  
+        SELECT 1 FROM MENU_ROL mr   
+        WHERE mr.fk_rol = @IdRol  
+        AND mr.fk_menu = m.id_menu          
+    )      
+    ORDER BY m.orden ASC;  
 END
 GO
 
@@ -312,6 +312,59 @@ BEGIN
     END
 END
 GO
+
+-- PROCEDIMIENTO PARA ASIGNAR UN MENÚ A UN ROL
+CREATE OR ALTER PROCEDURE usp_AsignarMenus
+    @IdRol INT,
+    @IdMenu INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @Resultado INT = 0;
+    DECLARE @EstadoMenu BIT;
+    
+    -- 1. Verificar si el menú está activo
+    SELECT @EstadoMenu = estado 
+    FROM MENU
+    WHERE id_menu = @IdMenu;
+    
+    -- Si el menú no existe o está inactivo
+    IF @EstadoMenu IS NULL OR @EstadoMenu = 0
+    BEGIN
+        SELECT -1 AS Resultado; -- Código de error: Menú no existe o está inactivo
+        RETURN;
+    END
+    
+    -- 2. Verificar si el rol ya tiene este menú asignado
+    IF EXISTS (SELECT 1 FROM MENU_ROL
+              WHERE fk_rol = @IdRol AND fk_menu = @IdMenu)
+    BEGIN
+        SELECT -2 AS Resultado; -- Código de error: El rol ya tiene este menú
+        RETURN;
+    END
+
+    -- 3. Verificar si el rol ya tiene el permiso de la vista y si no lo tiene se le agrega
+    IF NOT EXISTS (
+        SELECT 1 FROM PERMISOS 
+        WHERE fk_rol = @IdRol 
+          AND fk_controlador = (SELECT fk_controlador FROM MENU WHERE id_menu = @IdMenu)
+    )
+    BEGIN
+        INSERT INTO PERMISOS (fk_rol, fk_controlador)
+        VALUES (@IdRol, (SELECT fk_controlador FROM MENU WHERE id_menu = @IdMenu));
+    END
+
+    -- 4. Si pasa las validaciones, insertar el nuevo menú
+    INSERT INTO MENU_ROL(fk_rol, fk_menu)
+    VALUES (@IdRol, @IdMenu);    	
+
+    SET @Resultado = SCOPE_IDENTITY();
+    
+    SELECT @Resultado AS Resultado;
+END
+GO
+
 
 CREATE OR ALTER PROCEDURE usp_VerificarPermiso
     @IdUsuario INT,
