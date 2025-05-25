@@ -94,7 +94,7 @@ namespace capa_presentacion.Controllers
                 string nuevaContraseñaHash = Encriptar.GetSHA256(nuevaPassword);
 
                 // Llamar al método de capa de datos
-                int resultado = CD_Usuarios.ReestablecerContrasena(
+                int resultado = CD_Usuarios.ActualizarContrasena(
                     Convert.ToInt32(Session["IdUsuario"]),
                     contrasenaActualHash,
                     nuevaContraseñaHash,

@@ -21,5 +21,6 @@ namespace capa_entidad
         public string descripcion { get; set; }
         public bool estado { get; set; }
         public bool reestablecer { get; set; }
+        public string DescripcionRol { get; set; }
     }
 }

@@ -86,7 +86,7 @@ CREATE TABLE USUARIOS (
     --contrasena VARBINARY(64) NOT NULL, -- Guardar el hash de la contraseña
 	contrasena VARCHAR(255) NOT NULL,
     correo VARCHAR(60) NOT NULL UNIQUE,
-    telefono int UNIQUE,
+    telefono INT UNIQUE,
     fk_rol INT NOT NULL,
     estado BIT DEFAULT 1,
     reestablecer BIT DEFAULT 1,

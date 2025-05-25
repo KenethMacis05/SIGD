@@ -60,7 +60,7 @@ $('#inputGroupSelectEstado').on('change', function () {
 //Abrir modal
 function abrirModal(json) {
     $("#idUsuario").val("0");
-    $("#usuario").val("").prop("disabled", false);
+    $("#usuario").val("").prop("disabled", true);
     $("#correo").val("");
     $("#telefono").val("");
     $("#contrasena").val("");
@@ -128,9 +128,10 @@ function Guardar() {
             if (Usuario.id_usuario == 0) {
                 if (data.Resultado != 0) {
                     Usuario.id_usuario = data.Resultado;
+                    Usuario.usuario = data.UsuarioGenerado;
                     dataTable.row.add(Usuario).draw();
                     dataTable.ajax.reload(null, false);
-                    showAlert("¡Éxito!", "Usuario creado correctamente", "success")
+                    Swal.fire({ icon: "success", title: "¡Éxito!", html: `Usuario creado correctamente. Usuario generado: <b>${data.UsuarioGenerado}</b>`});                    
                 } else { showAlert("Error", data.Mensaje || "No se pudo crear el usuario", "error") }
             }
             // Actualizar Usuario
@@ -174,6 +175,66 @@ $("#datatable tbody").on("click", '.btn-eliminar', function () {
             });
         }
     });
+});
+
+// Limpiar filtro
+function limpiarFiltro(texto) {
+    return texto
+        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9 ]/g, '')
+        .replace(/\s+/g, ' ')
+}
+
+$("#btnBuscar").click(function () {
+    const filtros = {
+        usuario: limpiarFiltro($("#filtroUsuario").val().trim()),
+        nombres: limpiarFiltro($("#filtroNombres").val().trim()),
+        apellidos: limpiarFiltro($("#filtroApellidos").val().trim())
+    };
+
+    if (!filtros.usuario && !filtros.nombres && !filtros.apellidos) {
+        showAlert("Advertencia", "Debe ingresar al menos un dato en algún filtro.", "warning", true);
+        return;
+    }
+
+    tablaReinicio.clear().draw();
+
+    $.ajax({
+        url: config.buscarUsuariosUrl,
+        type: "GET",
+        dataType: "json",
+        data: filtros,
+        beforeSend: () => $("#tablaReinicio tbody").LoadingOverlay("show"),
+        success: function (response) {
+            if (response && Array.isArray(response.data) && response.data.length > 0) {
+                tablaReinicio.rows.add(response.data).draw();
+                $("#contadorRegistros").text(response.data.length + " registros encontrados");
+            } else {
+                showAlert("Advertencia", "No se encontraron resultados", "warning", true);
+            }
+        },
+        complete: () => $("#tablaReinicio tbody").LoadingOverlay("hide"),
+        error: () => showAlert("Error", "Error al conectar con el servidor", "error")
+    });
+});
+
+$("#btnLimpiar").click(function () {
+    const usuario = $("#filtroUsuario").val().trim();
+    const nombres = $("#filtroNombres").val().trim();
+    const apellidos = $("#filtroApellidos").val().trim();
+
+    if (!usuario && !nombres && !apellidos) {
+        showAlert("Información", "Los filtros ya están limpios.", "info", true);
+        return;
+    }
+
+    $("#tablaReinicio tbody").LoadingOverlay("show");
+    $("#filtroUsuario, #filtroNombres, #filtroApellidos").val("");
+    tablaReinicio.clear().draw();
+    $("#contadorRegistros").text("0 registros encontrados");
+
+    setTimeout(function () {
+        $("#tablaReinicio tbody").LoadingOverlay("hide");
+    }, 1500);
 });
 
 const dataTableOptions = {
@@ -237,42 +298,6 @@ const dataTableOptions = {
     ]
 };
 
-$(document).ready(function () {
-    dataTable = $("#datatable").DataTable(dataTableOptions);
-    tablaReinicio = $("#tablaReinicio").DataTable(tablaReinicioOptions);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// EN DESARROLLO (TABLA DE USUARIOS PARA RESTABLECER CONTRASEÑA)
 const tablaReinicioOptions = {
     ...dataTableConfig,
     columns: [
@@ -317,11 +342,11 @@ const tablaReinicioOptions = {
         {
             data: "id_usuario",
             render: function (data) {
-                return `<div class="form-check d-flex justify-content-center">
-                            <input type="checkbox" class="form-check-input usuarioCheckbox" 
-                                   id="usuario_${data}" 
-                                   data-id="${data}">
-                        </div>`;
+                return `<div class="d-flex justify-content-center">
+                    <button type="button" class="btn btn-danger btn-sm btn-reinicar" title="Reiniciar contraseña">
+                        <i class="fa fa-redo"></i>
+                    </button>
+                </div>`;
             },
             orderable: false,
             width: "100px"
@@ -329,107 +354,62 @@ const tablaReinicioOptions = {
     ],
 };
 
-// EN DESARROLLO (BUSCAR USUARIOS PARA REINICIAR)
-$("#btnBuscar").click(function () {
-    const filtros = {
-        usuario: $("#filtroUsuario").val(),
-        nombres: $("#filtroNombres").val(),
-        apellidos: $("#filtroApellidos").val()
-    };
-
-    tablaReinicio.clear().draw();
-
-    $.ajax({
-        url: buscarUsuariosUrl,
-        type: "GET",
-        dataType: "json",
-        data: JSON.stringify(filtros),
-        contentType: "application/json; charset=utf-8",
-
-        beforeSend: () => $("#tablaReinicio .tbody").LoadingOverlay("show"),
-
-        success: function (response) {
-
-            if (response && response.data && Array.isArray(response.data)) {
-
-                tablaReinicio.rows.add(response.data).draw();
-
-                $("#contadorRegistros").text(response.data.length + " registros encontrados");
-            } else {
-                showAlert("Advertencia", "No se encontraron resultados", "warning");
-            }
-        },
-
-        complete: () => $("#tablaReinicio .tbody").LoadingOverlay("hide"),
-        error: () => showAlert("Error", "Error al conectar con el servidor", "error")
-    })
+$(document).ready(function () {
+    dataTable = $("#datatable").DataTable(dataTableOptions);
+    tablaReinicio = $("#tablaReinicio").DataTable(tablaReinicioOptions);
 });
 
-// EN DESARROLLO (LIMPIAR FILTROS)
-$("#btnLimpiar").click(function () {
-    $("#filtroUsuario, #filtroNombres, #filtroApellidos").val("");
-    tablaReinicio.clear().draw();
-    $("#contadorRegistros").text("0 registros encontrados");
-});
 
-// EN DESARROLLO (Función para actualizar estado del botón de reinicio)
-function actualizarBotonReinicio() {
-    const haySeleccionados = $('.usuarioCheckbox:checked').length > 0;
-    $('#btnReiniciar').prop('disabled', !haySeleccionados);
-}
 
-// EN DESARROLLO (Actualizar estado del botón de reinicio cuando cambia cualquier checkbox)
-$(document).on('change', '.usuarioCheckbox', function () {
-    actualizarBotonReinicio();
-});
 
-// EN DESARROLLO (Reiniciar contraseñas de usuarios seleccionados)
-$("#btnReiniciar").click(function () {
-    var usuariosSeleccionados = [];
 
-    $('#tablaReinicio tbody').find('.usuarioCheckbox:checked').each(function () {
-        usuariosSeleccionados.push($(this).data('id'));
-    });
 
-    if (usuariosSeleccionados.length === 0) {
-        showAlert("!Atención¡", "Debe seleccionar al menos un usuario", "warning", true);
-        return;
-    }
 
-    Swal.fire({
-        title: "¿Está seguro?",
-        text: "Se reiniciarán las contraseñas de los usuarios seleccionados",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, reiniciar",
-        cancelButtonText: "Cancelar",
-        confirmButtonColor: "#28a745"
-    }).then((result) => {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//Boton reiniciar contraseña usuario
+$("#tablaReinicio tbody").on("click", '.btn-reinicar', function () {
+    const usuarioseleccionado = $(this).closest("tr");
+    const data = tablaReinicio.row(usuarioseleccionado).data();
+    console.log(data)
+    confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
+            showLoadingAlert("Reiniciando contraseña", "Por favor espere...")
 
-            $("#btnReiniciar").LoadingOverlay("show");
-
+            // Enviar petición AJAX
             $.ajax({
-                url: reiniciarPasswordUrl,
+                url: config.restablecerContrasenaUrl,
                 type: "POST",
-                data: JSON.stringify({ idsUsuarios: usuariosSeleccionados }),
+                data: JSON.stringify({ idUsuario: data.id_usuario }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
-                success: function (response) {
-                    if (response.success) {
-                        showAlert("Éxito", response.message, "success");
 
-                        $("#btnBuscar").click();
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        showAlert("¡Reinicio!", response.Mensaje || "Usuario reiniciado correctamente", "success", false, true);
+                        $("#filtroUsuario, #filtroNombres, #filtroApellidos").val("");
+                        tablaReinicio.clear().draw();
+                        $("#contadorRegistros").text("0 registros encontrados");
                     } else {
-                        showAlert("Error", response.message, "error");
+                        showAlert("Error", response.Mensaje || "No se pudo reiniciar la contraseña del usuario", "error");
                     }
                 },
-                error: function () {
-                    showAlert("Error", "Error al conectar con el servidor", "error");
-                },
-                complete: function () {
-                    $("#btnReiniciar").LoadingOverlay("hide");
-                }
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
             });
         }
     });

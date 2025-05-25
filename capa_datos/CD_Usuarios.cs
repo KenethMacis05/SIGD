@@ -93,6 +93,63 @@ namespace capa_datos
             return null;
         }
 
+        // Buscar usuario
+        public List<USUARIOS> BuscarUsuarios(string usuario, string nombres, string apellidos, out string mensaje)
+        {
+            List<USUARIOS> lst = new List<USUARIOS>();
+            mensaje = string.Empty;
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_BuscarUsuarios", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetros de entrada
+                    cmd.Parameters.AddWithValue("Usuario", string.IsNullOrEmpty(usuario) ? (object)DBNull.Value : usuario);
+                    cmd.Parameters.AddWithValue("Nombres", string.IsNullOrEmpty(nombres) ? (object)DBNull.Value : nombres);
+                    cmd.Parameters.AddWithValue("Apellidos", string.IsNullOrEmpty(apellidos) ? (object)DBNull.Value : apellidos);
+
+                    // Parámetro de salida
+                    var paramMensaje = new SqlParameter("Mensaje", SqlDbType.NVarChar, 255)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(paramMensaje);
+
+                    conexion.Open();
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lst.Add(new USUARIOS
+                            {
+                                id_usuario = Convert.ToInt32(dr["id_usuario"]),
+                                usuario = dr["usuario"].ToString(),
+                                fk_rol = Convert.ToInt32(dr["fk_rol"]),
+                                pri_nombre = dr["pri_nombre"].ToString(),
+                                seg_nombre = dr["seg_nombre"].ToString(),
+                                pri_apellido = dr["pri_apellido"].ToString(),
+                                seg_apellido = dr["seg_apellido"].ToString(),
+                                correo = dr["correo"].ToString(),
+                                telefono = Convert.ToInt32(dr["telefono"]),
+                                estado = Convert.ToBoolean(dr["estado"]),
+                                DescripcionRol = dr["DescripcionRol"].ToString()
+                            });
+                        }
+                    }
+
+                    // Obtener mensaje de salida después de cerrar el reader
+                    mensaje = paramMensaje.Value?.ToString() ?? "";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los usuarios: " + ex.Message);
+            }
+            return lst;
+        }
+
         //Login usuario
         public USUARIOS LoginUsuario(string usuario, string contrasena, out string mensaje)
         {
@@ -146,26 +203,24 @@ namespace capa_datos
         }
 
         // Registrar usuario
-        public int RegistrarUsuario(USUARIOS usuario, out string mensaje)
+        public int RegistrarUsuario(USUARIOS usuario, out string mensaje, out string usuarioGenerado)
         {
             int idautogenerado = 0;
             mensaje = string.Empty;
+            usuarioGenerado = string.Empty;
 
             try
             {
-                // Crear conexión
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    // Consulta SQL con parámetros
                     SqlCommand cmd = new SqlCommand("usp_CrearUsuario", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // Agregar parámetros
+                    // Parámetros de entrada
                     cmd.Parameters.AddWithValue("PriNombre", usuario.pri_nombre);
-                    cmd.Parameters.AddWithValue("SegNombre", usuario.seg_nombre);
+                    cmd.Parameters.AddWithValue("SegNombre", string.IsNullOrEmpty(usuario.seg_nombre) ? (object)DBNull.Value : usuario.seg_nombre);
                     cmd.Parameters.AddWithValue("PriApellido", usuario.pri_apellido);
-                    cmd.Parameters.AddWithValue("SegApellido", usuario.seg_apellido);
-                    cmd.Parameters.AddWithValue("Usuario", usuario.usuario);
+                    cmd.Parameters.AddWithValue("SegApellido", string.IsNullOrEmpty(usuario.seg_apellido) ? (object)DBNull.Value : usuario.seg_apellido);
                     cmd.Parameters.AddWithValue("Clave", usuario.contrasena);
                     cmd.Parameters.AddWithValue("Correo", usuario.correo);
                     cmd.Parameters.AddWithValue("Telefono", usuario.telefono);
@@ -174,23 +229,22 @@ namespace capa_datos
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
-                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("UsuarioGenerado", SqlDbType.VarChar, 50).Direction = ParameterDirection.Output;
 
-                    // Abrir conexión
                     conexion.Open();
-
-                    // Ejecutar comando
                     cmd.ExecuteNonQuery();
 
-                    // Obtener valores de los parámetros de salida
                     idautogenerado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
                     mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                    usuarioGenerado = cmd.Parameters["UsuarioGenerado"].Value.ToString();
                 }
             }
             catch (Exception ex)
             {
                 idautogenerado = 0;
                 mensaje = "Error al registrar el usuario: " + ex.Message;
+                usuarioGenerado = "";
             }
 
             return idautogenerado;
@@ -245,8 +299,8 @@ namespace capa_datos
             return resultado;
         }
 
-        // Cambiar contraseña
-        public int ReestablecerContrasena(int idUsuario, string claveActual, string claveNueva, out string mensaje)
+        // Actualizar contraseña
+        public int ActualizarContrasena(int idUsuario, string claveActual, string claveNueva, out string mensaje)
         {
             int resultado = 0;
             mensaje = string.Empty;
@@ -254,7 +308,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_ReestablecerContrasena", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarContrasena", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.AddWithValue("IdUsuario", idUsuario);
@@ -280,6 +334,44 @@ namespace capa_datos
             {
                 resultado = 0;
                 mensaje = "Error al cambiar la contraseña: " + ex.Message;
+            }
+            return resultado;
+        }
+
+        // Reinicar contraseña del usuario
+        public bool RestablecerContrasenaPorUsuario(int idUsuario, string claveNueva, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_RestablecerContrasenaPorUsuario", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdUsuario", idUsuario);                    
+                    cmd.Parameters.AddWithValue("ClaveNueva", claveNueva);
+
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    resultado = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+
+                    if (resultado == true && string.IsNullOrEmpty(mensaje))
+                    {
+                        mensaje = "Contraseña reiniciada exitosamente";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al reiniciar la contraseña: " + ex.Message;
             }
             return resultado;
         }

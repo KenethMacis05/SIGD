@@ -1,5 +1,11 @@
 ﻿//Métodos Globales
 
+// Limpiar filtro
+function limpiarFiltro(texto) {
+    return texto
+        .replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ0-9 ]/g, '')
+        .replace(/\s+/g, ' ')
+}
 
 //Configuración de las dataTable
 const dataTableConfig = {
@@ -10,7 +16,7 @@ const dataTableConfig = {
         lengthMenu: "Mostrar _MENU_ registros por página",
         zeroRecords: "Ningún resgistro encontrado",
         info: "Mostrando de _START_ a _END_ de un total de _TOTAL_ registros",
-        infoEmpty: "Ningún rol encontrado",
+        infoEmpty: "Ningún registro encontrado",
         infoFiltered: "(filtrados desde _MAX_ registros totales)",
         search: "Buscar:",
         loadingRecords: "Cargando...",
@@ -70,12 +76,11 @@ const swalConfig = {
     }
 };
 
-
 //Mostrar Alerta
-function showAlert(title, text, icon, isToast = false) {
+function showAlert(title, message, icon, isToast = false, useHTML = false) {
     const config = {
         title,
-        text,
+        [useHTML ? 'html' : 'text']: message,
         icon,
         ...swalConfig,
         ...(isToast && {

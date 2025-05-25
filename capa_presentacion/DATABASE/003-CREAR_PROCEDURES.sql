@@ -24,12 +24,12 @@ IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_Actualizar
 DROP PROCEDURE usp_ActualizarUsuario
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ActualizarContrasena')
-DROP PROCEDURE usp_ActualizarContrasena
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_RestablecerContrasenaPorUsuario')
+DROP PROCEDURE usp_RestablecerContrasenaPorUsuario
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ReestablecerContrasena')
-DROP PROCEDURE usp_ReestablecerContrasena
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ActualizarContrasena')
+DROP PROCEDURE usp_ActualizarContrasena
 GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_EliminarUsuario')
@@ -567,91 +567,176 @@ BEGIN
 	ORDER BY u.id_usuario DESC
 END
 GO
+
+CREATE OR ALTER PROCEDURE usp_BuscarUsuarios
+    @Usuario NVARCHAR(50) = NULL,
+    @Nombres NVARCHAR(100) = NULL,
+    @Apellidos NVARCHAR(100) = NULL,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Solo verifica existencia si se da un usuario específico
+    IF (@Usuario IS NOT NULL AND @Usuario <> '')
+    BEGIN
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @Usuario)
+        BEGIN
+            SET @Mensaje = 'El usuario no existe';
+            RETURN;
+        END
+
+        IF EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @Usuario AND estado = 0)
+        BEGIN
+            SET @Mensaje = 'El usuario está inactivo';
+            RETURN;
+        END
+    END
+
+    SELECT
+        u.id_usuario,
+        u.usuario,
+        u.fk_rol,
+        u.pri_nombre,
+        u.seg_nombre,
+        u.pri_apellido,
+        u.seg_apellido,
+        u.correo,
+        u.telefono,
+        u.estado,
+        r.descripcion AS DescripcionRol
+    FROM
+        USUARIOS u
+        INNER JOIN ROL r ON r.id_rol = u.fk_rol
+    WHERE
+        (@Usuario IS NULL OR @Usuario = '' OR u.usuario LIKE '%' + @Usuario + '%')
+        AND ((@Nombres IS NULL OR @Nombres = '') OR 
+            (u.pri_nombre + ' ' + ISNULL(u.seg_nombre, '')) LIKE '%' + @Nombres + '%')
+        AND ((@Apellidos IS NULL OR @Apellidos = '') OR 
+            (u.pri_apellido + ' ' + ISNULL(u.seg_apellido, '')) LIKE '%' + @Apellidos + '%')
+    ORDER BY u.id_usuario DESC
+
+    SET @Mensaje = 'Búsqueda realizada exitosamente.';
+END
+GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- (6) PROCEDIMIENTO ALMACENADO PARA REGISTRAR UN NUEVO USUARIO
-CREATE PROCEDURE usp_CrearUsuario(
-    @PriNombre VARCHAR(60),
-    @SegNombre VARCHAR(60),
-    @PriApellido VARCHAR(60),
-    @SegApellido VARCHAR(60),
-    @Usuario VARCHAR(50),
-    @Clave VARCHAR(100),
-    @Correo VARCHAR(60),
-    @Telefono INT,
-    @FkRol INT,
-    @Estado BIT,    
-    @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
+CREATE OR ALTER PROCEDURE usp_CrearUsuario(
+    @PriNombre     VARCHAR(60),
+    @SegNombre     VARCHAR(60) = NULL,
+    @PriApellido   VARCHAR(60),
+    @SegApellido   VARCHAR(60) = NULL,
+    @Clave         VARCHAR(100),
+    @Correo        VARCHAR(60),
+    @Telefono      VARCHAR(20),
+    @FkRol         INT,
+    @Estado        BIT,    
+    @Resultado     INT OUTPUT,
+    @Mensaje       VARCHAR(255) OUTPUT,
+    @UsuarioGenerado VARCHAR(50) OUTPUT
 )
 AS
 BEGIN
-    SET @Resultado = 0
-    SET @Mensaje = ''
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    SET @UsuarioGenerado = '';
 
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Verificar si el nombre de usuario ya existe
-        IF EXISTS (SELECT * FROM USUARIOS WHERE usuario = @Usuario)
+        -- 1. Generar el nombre de usuario automáticamente
+        DECLARE @BaseUsuario VARCHAR(50);
+        DECLARE @UsuarioFinal VARCHAR(50);
+        DECLARE @Contador INT = 0;
+
+        -- Obtener la primera letra del primer nombre y el primer apellido en mayúsculas
+        SET @BaseUsuario = UPPER(LEFT(@PriNombre,1) + @PriApellido);
+
+        -- Remover espacios en blanco
+        SET @BaseUsuario = REPLACE(@BaseUsuario, ' ', '');
+
+        SET @UsuarioFinal = @BaseUsuario;
+
+        -- Si el usuario ya existe, agregar un número incremental
+        WHILE EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @UsuarioFinal)
         BEGIN
-            SET @Mensaje = 'El nombre de usuario ya está en uso'
-            RETURN
+            SET @Contador = @Contador + 1;
+            SET @UsuarioFinal = @BaseUsuario + CAST(@Contador AS VARCHAR(5));
         END
 
-        -- Verificar si el correo electrónico ya existe
-        IF EXISTS (SELECT * FROM USUARIOS WHERE correo = @Correo)
+        -- 2. Verificar si el correo electrónico ya existe
+        IF EXISTS (SELECT 1 FROM USUARIOS WHERE correo = @Correo)
         BEGIN
-            SET @Mensaje = 'El correo electrónico ya está registrado'
-            RETURN
+            SET @Mensaje = 'El correo electrónico ya está registrado';
+            ROLLBACK TRANSACTION;
+            RETURN;
         END
 
-	       -- Verificar si el numero de telefono ya existe
-	       IF EXISTS (SELECT * FROM USUARIOS WHERE telefono = @Telefono)
+        -- 3. Verificar si el número de teléfono ya existe
+        IF EXISTS (SELECT 1 FROM USUARIOS WHERE telefono = @Telefono)
         BEGIN
-            SET @Mensaje = 'El numero de telefono ya está registrado'
-            RETURN
+            SET @Mensaje = 'El número de teléfono ya está registrado';
+            ROLLBACK TRANSACTION;
+            RETURN;
         END
 
-        -- Insertar el nuevo usuario
+        -- 4. Insertar el nuevo usuario (segundo nombre y segundo apellido pueden ser nulos)
         INSERT INTO USUARIOS (pri_nombre, seg_nombre, pri_apellido, seg_apellido, usuario, contrasena, correo, telefono, fk_rol, estado)
-        VALUES (@PriNombre, @SegNombre, @PriApellido, @SegApellido, @Usuario, CONVERT(VARBINARY(64), @Clave), @Correo, @Telefono, @FkRol, @Estado)
+        VALUES (
+            @PriNombre,
+            NULLIF(@SegNombre, ''),
+            @PriApellido,
+            NULLIF(@SegApellido, ''),
+            @UsuarioFinal,
+            CONVERT(VARBINARY(64), @Clave),
+            @Correo,
+            @Telefono,
+            @FkRol,
+            @Estado
+        );
 
-        SET @Resultado = SCOPE_IDENTITY();        
+        SET @Resultado = SCOPE_IDENTITY();
 
         -- Insertar la carpeta DEFAULT_
-        DECLARE @CarpetaRaiz VARCHAR(255) = CONCAT('DEFAULT_', @Usuario);
+        DECLARE @CarpetaRaiz VARCHAR(255) = CONCAT('DEFAULT_', @UsuarioFinal);
         DECLARE @IdCarpetaRaiz INT;
-        
+
         INSERT INTO CARPETA (nombre, fk_id_usuario)
-        VALUES (@CarpetaRaiz, @Resultado)
+        VALUES (@CarpetaRaiz, @Resultado);
 
         -- Validar si la carpeta DEFAULT_ existe
         SELECT @IdCarpetaRaiz = id_carpeta 
         FROM CARPETA 
-        WHERE nombre = @CarpetaRaiz;
-        
+        WHERE nombre = @CarpetaRaiz AND fk_id_usuario = @Resultado;
+
         IF @IdCarpetaRaiz IS NULL
         BEGIN
-            RAISERROR('La carpeta DEFAULT_ no existe', 16, 1)
-            RETURN
+            ROLLBACK TRANSACTION;
+            SET @Mensaje = 'La carpeta DEFAULT_ no existe';
+            SET @Resultado = -1;
+            RETURN;
         END
 
         -- Insertar carpetas por defecto dentro de la carpeta DEFAULT_
         INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre)
-        VALUES ('Fotos', @Resultado, @IdCarpetaRaiz),
-               ('Documentos', @Resultado, @IdCarpetaRaiz),
-               ('Videos', @Resultado, @IdCarpetaRaiz),
-               ('Música', @Resultado, @IdCarpetaRaiz);
+        VALUES 
+            ('Fotos', @Resultado, @IdCarpetaRaiz),
+            ('Documentos', @Resultado, @IdCarpetaRaiz),
+            ('Videos', @Resultado, @IdCarpetaRaiz),
+            ('Música', @Resultado, @IdCarpetaRaiz);
 
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'Usuario registrado exitosamente'
-   END TRY
+        SET @Mensaje = 'Usuario registrado exitosamente. Usuario: ' + @UsuarioFinal;
+        SET @UsuarioGenerado = @UsuarioFinal;
+    END TRY
     BEGIN CATCH
-        ROLLBACK TRANSACTION;
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         SET @Resultado = -1;
         SET @Mensaje = ERROR_MESSAGE();
+        SET @UsuarioGenerado = '';
     END CATCH
 END
 GO
@@ -725,13 +810,12 @@ END
 GO
 --------------------------------------------------------------------------------------------------------------------
 
--- (8) PROCEDIMIENTO ALMACENADO PARA MODIFICAR LA CONTRASEÑA DE UN USUARIO
-CREATE PROCEDURE usp_ActualizarContrasena
+-- (8) PROCEDIMIENTO ALMACENADO PARA RESTABLECER LA CONTRASEÑA DE UN USUARIO
+CREATE PROCEDURE usp_RestablecerContrasenaPorUsuario
     @IdUsuario INT,    
-    @ClaveActual VARCHAR(100),
-    @ClaveNueva VARCHAR(100),
-    
-    @Resultado INT OUTPUT,
+    @ClaveNueva VARCHAR(255),
+
+	@Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
 BEGIN
@@ -745,25 +829,18 @@ BEGIN
         RETURN
     END
 
-    -- Verificar si la contraseña actual es correcta
-    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario AND contrasena = CONVERT(VARBINARY(64), @ClaveActual))
-    BEGIN
-        SET @Mensaje = 'La contraseña actual es incorrecta'
-        RETURN
-    END
-
     -- Actualizar la contraseña
     UPDATE USUARIOS
-    SET contrasena = CONVERT(VARBINARY(64), @ClaveNueva)
+    SET contrasena = CONVERT(VARBINARY(64), @ClaveNueva), reestablecer = 1
     WHERE id_usuario = @IdUsuario
 
     SET @Resultado = 1
-    SET @Mensaje = 'Usuario actualizado exitosamente'
+    SET @Mensaje = 'Contraseña reiniciada exitosamente'
 END
 GO
 
 -- (8) PROCEDIMIENTO ALMACENADO PARA REESTABLECER LA CONTRASEÑA DE UN USUARIO AL INICIAR SESIÓN POR PRIMERA VEZ
-CREATE PROCEDURE usp_ReestablecerContrasena
+CREATE OR ALTER PROCEDURE usp_ActualizarContrasena
     @IdUsuario INT,    
     @ClaveActual VARCHAR(100),
     @ClaveNueva VARCHAR(100),
@@ -791,9 +868,7 @@ BEGIN
         END
        
         UPDATE USUARIOS
-        SET 
-            contrasena = @ClaveNueva,
-            reestablecer = 0
+        SET contrasena = CONVERT(VARBINARY(64), @ClaveNueva), reestablecer = 0
         WHERE id_usuario = @IdUsuario
 
          -- Verificar si realmente se actualizó el registro
