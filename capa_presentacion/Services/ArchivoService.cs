@@ -8,26 +8,28 @@ using System.Web;
 namespace capa_presentacion.Services
 {
     public class ArchivoService
-    {        
-        public bool CrearCarpeta(string carpeta, out string mensaje)
+    {
+        public bool CrearCarpeta(string carpeta, out string mensaje, string ruta = null)
         {
             try
             {
-                // Leer la ruta base desde el archivo Web.config
-                string rutaGuardar = ConfigurationManager.AppSettings["ServidorArchivos"];
-                if (string.IsNullOrEmpty(rutaGuardar))
+                // Leer la ruta base desde Web.config (si no se pasa una ruta)
+                string rutaBase = !string.IsNullOrEmpty(ruta)
+                    ? ruta
+                    : ConfigurationManager.AppSettings["ServidorArchivos"];
+
+                if (string.IsNullOrEmpty(rutaBase))
                 {
                     mensaje = "La configuración del servidor de archivos no está definida.";
                     return false;
                 }
 
-                // Mapear la ruta relativa a una ruta física absoluta
-                string rutaFisica = HttpContext.Current.Server.MapPath(rutaGuardar);
+                // Mapear la ruta
+                string rutaFisica = HttpContext.Current.Server.MapPath(rutaBase);
 
-                // Combinar la ruta física con el nombre de la carpeta
+                // Combinar con el nombre de la carpeta
                 string rutaCarpeta = Path.Combine(rutaFisica, carpeta);
 
-                // Verificar si la carpeta ya existe
                 if (!Directory.Exists(rutaCarpeta))
                 {
                     Directory.CreateDirectory(rutaCarpeta);

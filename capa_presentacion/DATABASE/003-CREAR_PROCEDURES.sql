@@ -701,10 +701,11 @@ BEGIN
 
         -- Insertar la carpeta DEFAULT_
         DECLARE @CarpetaRaiz VARCHAR(255) = CONCAT('DEFAULT_', @UsuarioFinal);
+		DECLARE @Ruta VARCHAR(255) = CONCAT('~\ARCHIVOS\', @CarpetaRaiz);
         DECLARE @IdCarpetaRaiz INT;
 
-        INSERT INTO CARPETA (nombre, fk_id_usuario)
-        VALUES (@CarpetaRaiz, @Resultado);
+        INSERT INTO CARPETA (nombre, fk_id_usuario, ruta)
+        VALUES (@CarpetaRaiz, @Resultado, @Ruta);
 
         -- Validar si la carpeta DEFAULT_ existe
         SELECT @IdCarpetaRaiz = id_carpeta 
@@ -720,12 +721,12 @@ BEGIN
         END
 
         -- Insertar carpetas por defecto dentro de la carpeta DEFAULT_
-        INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre)
+        INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre, ruta)
         VALUES 
-            ('Fotos', @Resultado, @IdCarpetaRaiz),
-            ('Documentos', @Resultado, @IdCarpetaRaiz),
-            ('Videos', @Resultado, @IdCarpetaRaiz),
-            ('Música', @Resultado, @IdCarpetaRaiz);
+            ('Fotos', @Resultado, @IdCarpetaRaiz, CONCAT(@Ruta, '\Fotos')),
+            ('Documentos', @Resultado, @IdCarpetaRaiz, CONCAT(@Ruta, '\Documentos')),
+            ('Videos', @Resultado, @IdCarpetaRaiz, CONCAT(@Ruta, '\Videos')),
+            ('Música', @Resultado, @IdCarpetaRaiz, CONCAT(@Ruta, '\Música'))
 
         COMMIT TRANSACTION;
 
@@ -1028,6 +1029,34 @@ END
 GO
 
 --------------------------------------------------------------------------------------------------------------------
+CREATE OR ALTER PROCEDURE usp_ObtenerRutaCarpeta
+    @IdCarpeta INT,
+    @Resultado VARCHAR(255) OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = '';
+    SET @Mensaje = '';
+
+    IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
+    BEGIN
+        SET @Mensaje = 'La carpeta no existe.';
+        RETURN;
+    END
+
+    SELECT @Resultado = ruta FROM CARPETA WHERE id_carpeta = @IdCarpeta;
+
+    IF @Resultado IS NULL OR LTRIM(RTRIM(@Resultado)) = ''
+    BEGIN
+        SET @Mensaje = 'La carpeta existe pero no tiene ruta definida.';
+    END
+    ELSE
+    BEGIN
+        SET @Mensaje = 'Ruta obtenida correctamente.';
+    END
+END
+GO
 
 -- (1) PROCEDIMIENTO ALMACENADO PARA OBTENER CARPETAS RECIENTES DEL USUARIO
 CREATE PROCEDURE usp_LeerCarpetaRecientes
@@ -1921,7 +1950,9 @@ BEGIN
         c.nombre,
         c.fecha_eliminacion,
         c.estado,
-        c.carpeta_padre
+        c.carpeta_padre,
+        c.fk_id_usuario,
+        c.ruta
     FROM CARPETA c
     WHERE c.fk_id_usuario = @IdUsuario 
       AND c.estado = 0 -- Mostrar solo carpetas eliminadas

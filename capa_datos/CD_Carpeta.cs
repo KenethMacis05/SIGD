@@ -43,6 +43,7 @@ namespace capa_datos
                                 {
                                     id_carpeta = Convert.ToInt32(dr["id_carpeta"]),
                                     nombre = dr["nombre"].ToString(),
+                                    ruta = dr["ruta"].ToString(),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
                                     estado = Convert.ToBoolean(dr["estado"]),
                                     fk_id_usuario = Convert.ToInt32(dr["fk_id_usuario"]),
@@ -96,6 +97,7 @@ namespace capa_datos
                                 {
                                     id_carpeta = Convert.ToInt32(dr["id_carpeta"]),
                                     nombre = dr["nombre"].ToString(),
+                                    ruta = dr["ruta"].ToString(),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
                                     estado = Convert.ToBoolean(dr["estado"]),
                                     fk_id_usuario = Convert.ToInt32(dr["fk_id_usuario"]),
@@ -149,6 +151,7 @@ namespace capa_datos
                                 {
                                     id_carpeta = Convert.ToInt32(dr["id_carpeta"]),
                                     nombre = dr["nombre"].ToString(),
+                                    ruta = dr["ruta"].ToString(),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
                                     estado = Convert.ToBoolean(dr["estado"]),
                                     fk_id_usuario = Convert.ToInt32(dr["fk_id_usuario"]),
@@ -202,9 +205,10 @@ namespace capa_datos
                                 {
                                     id_carpeta = Convert.ToInt32(dr["id_carpeta"]),
                                     nombre = dr["nombre"].ToString(),
+                                    ruta = dr["ruta"].ToString(),
                                     fecha_eliminacion = Convert.ToDateTime(dr["fecha_eliminacion"]),
                                     estado = Convert.ToBoolean(dr["estado"]),
-                                    fk_id_usuario = id_usuario, // Este valor ya está confirmado para este usuario
+                                    fk_id_usuario = Convert.ToInt32(dr["fk_id_usuario"]),
                                     carpeta_padre = dr["carpeta_padre"] == DBNull.Value ? (int?)null : Convert.ToInt32(dr["carpeta_padre"])
                                 }
                             );
@@ -220,6 +224,41 @@ namespace capa_datos
                 throw new Exception("Error al listar las carpetas eliminadas: " + ex.Message);
             }
             return listaCarpetaEliminada;
+        }
+
+        public bool ObtenerRutaCarpetaPorId(int idCarpeta, out string ruta, out string mensaje)
+        {
+            ruta = string.Empty;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection con = new SqlConnection(Conexion.conexion))
+                using (SqlCommand cmd = new SqlCommand("usp_ObtenerRutaCarpeta", con))
+                {
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("IdCarpeta", idCarpeta);
+
+                    // Parámetros de salida
+                    SqlParameter paramRuta = new SqlParameter("Resultado", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
+                    SqlParameter paramMensaje = new SqlParameter("Mensaje", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
+                    cmd.Parameters.Add(paramRuta);
+                    cmd.Parameters.Add(paramMensaje);
+
+                    con.Open();
+                    cmd.ExecuteNonQuery();
+
+                    ruta = paramRuta.Value?.ToString();
+                    mensaje = paramMensaje.Value?.ToString();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mensaje = $"Error al consultar la ruta: {ex.Message}";
+                ruta = string.Empty;
+                return false;
+            }
         }
 
         public int CrearCarpeta(CARPETA carpeta, out string mensaje)

@@ -62,9 +62,18 @@ namespace capa_presentacion.Controllers
 
                 if (resultado != 0 && !string.IsNullOrEmpty(usuarioGenerado))
                 {
-                    // Crear carpeta para el usuario generado
                     ArchivoService archivoService = new ArchivoService();
-                    carpetaCreada = archivoService.CrearCarpeta("DEFAULT_" + usuarioGenerado, out mensajeCarpeta);
+                    string carpetaRaiz = "DEFAULT_" + usuarioGenerado;
+                    string rutaBaseUsuario = $@"~\ARCHIVOS\{carpetaRaiz}";
+
+                    // Crear carpeta raíz del usuario
+                    carpetaCreada = archivoService.CrearCarpeta(carpetaRaiz, out mensajeCarpeta);
+
+                    // Crear subcarpetas dentro de la carpeta raíz del usuario
+                    carpetaCreada = archivoService.CrearCarpeta("Fotos", out mensajeCarpeta, rutaBaseUsuario);
+                    carpetaCreada = archivoService.CrearCarpeta("Documentos", out mensajeCarpeta, rutaBaseUsuario);
+                    carpetaCreada = archivoService.CrearCarpeta("Videos", out mensajeCarpeta, rutaBaseUsuario);
+                    carpetaCreada = archivoService.CrearCarpeta("Música", out mensajeCarpeta, rutaBaseUsuario);
                 }
             }
             else

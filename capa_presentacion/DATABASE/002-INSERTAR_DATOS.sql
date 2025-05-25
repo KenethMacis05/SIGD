@@ -201,14 +201,14 @@ GO
 --------------------------------------------------------------------------------------------------------------------    
 
 -- (1) REGISTROS EN TABLA CARPETA
-INSERT INTO CARPETA (nombre, fk_id_usuario) 
-    VALUES ('DEFAULT_KENY', 1), ('DEFAULT_ADMIN', 2)           
+INSERT INTO CARPETA (nombre, fk_id_usuario, ruta) 
+    VALUES ('DEFAULT_KENY', 1, '~\ARCHIVOS\DEFAULT_KENY'), ('DEFAULT_ADMIN', 2, '~\ARCHIVOS\DEFAULT_ADMIN'), ('DEFAULT_INTEGRADOR', 3, '~\ARCHIVOS\DEFAULT_INTEGRADOR'), ('DEFAULT_PROFESOR', 4, '~\ARCHIVOS\DEFAULT_PROFESOR')
 GO
 
-INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre)
+INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre, ruta)
 VALUES
-('Fotos', 1, 1), ('Documentos', 1, 1), ('Videos', 1, 1), ('Música', 1, 1),
-('Fotos', 2, 2), ('Documentos', 2, 2), ('Videos', 2, 2), ('Música', 2, 2)
+('Fotos', 1, 1, '~\ARCHIVOS\DEFAULT_KENY\Fotos'), ('Documentos', 1, 1, '~\ARCHIVOS\DEFAULT_KENY\Documentos'), ('Videos', 1, 1, '~\ARCHIVOS\DEFAULT_KENY\Videos'), ('Música', 1, 1, '~\ARCHIVOS\DEFAULT_KENY\Música'),
+('Fotos', 2, 2, '~\ARCHIVOS\DEFAULT_ADMIN\Fotos'), ('Documentos', 2, 2, '~\ARCHIVOS\DEFAULT_ADMIN\Documentos'), ('Videos', 2, 2, '~\ARCHIVOS\DEFAULT_ADMIN\Videos'), ('Música', 2, 2, '~\ARCHIVOS\DEFAULT_ADMIN\Música')
 
 -- (2) REGISTROS EN TABLA ARCHIVO
 INSERT INTO ARCHIVO (nombre, size, tipo, fk_id_carpeta) 
