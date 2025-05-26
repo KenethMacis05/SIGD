@@ -1207,6 +1207,9 @@ BEGIN
     SET @Resultado = 0;
     SET @Mensaje = '';
 
+    DECLARE @RutaPadre VARCHAR(500);
+    DECLARE @RutaFinal VARCHAR(600);
+
     BEGIN TRY
         -- Verificar si el usuario existe
         IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario AND estado = 1)
@@ -1218,7 +1221,7 @@ BEGIN
         -- Si @CarpetaPadre es NULL, buscar la carpeta raíz predeterminada (DEFAULT_NOMBREUSUARIO)
         IF @CarpetaPadre IS NULL
         BEGIN
-            SELECT @CarpetaPadre = id_carpeta
+            SELECT @CarpetaPadre = id_carpeta, @RutaPadre = ruta
             FROM CARPETA c
             INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
             WHERE c.nombre = CONCAT('DEFAULT_', u.usuario)
@@ -1232,12 +1235,19 @@ BEGIN
                 RETURN;
             END
         END
-
-        -- Verificar si la carpeta padre existe
-        IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @CarpetaPadre AND estado = 1)
+        ELSE
         BEGIN
-            SET @Mensaje = 'La carpeta padre especificada no existe o está inactiva';
-            RETURN;
+            -- Si se pasa CarpetaPadre, obtener la ruta de la carpeta padre
+            SELECT @RutaPadre = ruta
+            FROM CARPETA
+            WHERE id_carpeta = @CarpetaPadre
+              AND estado = 1;
+
+            IF @RutaPadre IS NULL
+            BEGIN
+                SET @Mensaje = 'La carpeta padre especificada no existe o está inactiva';
+                RETURN;
+            END
         END
 
         -- Verificar si ya existe una carpeta con ese nombre en la misma ubicación
@@ -1254,9 +1264,15 @@ BEGIN
             RETURN;
         END
 
+        -- Construir la ruta final
+        IF RIGHT(@RutaPadre, 1) = '\' OR RIGHT(@RutaPadre, 1) = '/'
+            SET @RutaFinal = @RutaPadre + @Nombre;
+        ELSE
+            SET @RutaFinal = @RutaPadre + '\' + @Nombre;
+
         -- Insertar la nueva carpeta
-        INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre) 
-        VALUES (@Nombre, @IdUsuario, @CarpetaPadre);
+        INSERT INTO CARPETA (nombre, fk_id_usuario, carpeta_padre, ruta) 
+        VALUES (@Nombre, @IdUsuario, @CarpetaPadre, @RutaFinal);
 
         SET @Resultado = SCOPE_IDENTITY();
         SET @Mensaje = 'Carpeta creada exitosamente';

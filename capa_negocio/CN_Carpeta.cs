@@ -96,5 +96,10 @@ namespace capa_negocio
                 return 0;
             }
         }
+
+        public bool ObtenerRutaCarpetaPorId(int idCarpeta, out string ruta, out string mensaje)
+        {
+            return CD_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out ruta, out mensaje);
+        }
     }
 }

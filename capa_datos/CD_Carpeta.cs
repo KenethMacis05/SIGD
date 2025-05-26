@@ -233,23 +233,22 @@ namespace capa_datos
 
             try
             {
-                using (SqlConnection con = new SqlConnection(Conexion.conexion))
-                using (SqlCommand cmd = new SqlCommand("usp_ObtenerRutaCarpeta", con))
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerRutaCarpeta", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("IdCarpeta", idCarpeta);
+                    cmd.Parameters.AddWithValue("@IdCarpeta", idCarpeta);
 
                     // Parámetros de salida
-                    SqlParameter paramRuta = new SqlParameter("Resultado", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
-                    SqlParameter paramMensaje = new SqlParameter("Mensaje", SqlDbType.VarChar, 255) { Direction = ParameterDirection.Output };
-                    cmd.Parameters.Add(paramRuta);
-                    cmd.Parameters.Add(paramMensaje);
+                    cmd.Parameters.Add("@Resultado", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("@Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
 
-                    con.Open();
+                    // Abrir conexión
+                    conexion.Open();
                     cmd.ExecuteNonQuery();
 
-                    ruta = paramRuta.Value?.ToString();
-                    mensaje = paramMensaje.Value?.ToString();
+                    ruta = cmd.Parameters["@Resultado"].Value?.ToString();
+                    mensaje = cmd.Parameters["@Mensaje"].Value?.ToString();
                 }
                 return true;
             }

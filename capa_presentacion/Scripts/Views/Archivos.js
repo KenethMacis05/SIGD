@@ -665,64 +665,6 @@ function restablecerCarpeta(idCarpeta) {
     });
 }
 
-function eliminarArchivo(idArchivo) {
-    $.ajax({
-        url: '/Archivo/EliminarArchivo',
-        type: 'POST',
-        data: { id: idArchivo },
-        success: function (response) {
-            if (response.resultado === 1) {
-                alert('Archivo eliminado definitivamente.');
-                $('#miDataTable').DataTable().ajax.reload();
-            } else {
-                alert(response.mensaje);
-            }
-        }
-    });
-}
-
-function eliminarCarpeta(idCarpeta) {
-    $.ajax({
-        url: '/Carpeta/EliminarCarpeta',
-        type: 'POST',
-        data: { id: idCarpeta },
-        success: function (response) {
-            if (response.resultado === 1) {
-                alert('Carpeta eliminada definitivamente.');
-                $('#miDataTable').DataTable().ajax.reload();
-            } else {
-                alert(response.mensaje);
-            }
-        }
-    });
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Compartir carpeta
 $(document).on('click', '.btn-compartir', function (e) {
@@ -789,9 +731,14 @@ function compartirCarpeta() {
 $(document).on('click', '.btn-descargar', function (e) {
     e.preventDefault();
     const idCarpeta = $(this).data('carpeta-id');
-    console.log(idCarpeta);
-    // Lógica para descargar (puedes hacer una redirección o AJAX)
-    /*window.location.href = '@Url.Action("DescargarCarpeta", "Archivo")' + '?id=' + idCarpeta;*/
+    window.location.href = '/Archivo/DescargarCarpeta?idCarpeta=' + idCarpeta;
+});
+
+// Descargar archivo
+$(document).on('click', '.btn-descargarArchivo', function (e) {
+    e.preventDefault();
+    const idArchivo = $(this).data('archivo-id');
+    window.location.href = '/Archivo/DescargarArchivo?idArchivo=' + idArchivo;
 });
 
 

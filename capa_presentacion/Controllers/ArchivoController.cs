@@ -1,4 +1,5 @@
-﻿using capa_entidad;
+﻿using capa_datos;
+using capa_entidad;
 using capa_negocio;
 using capa_presentacion.Filters;
 using capa_presentacion.Services;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -18,6 +20,7 @@ namespace capa_presentacion.Controllers
     {
         CN_Carpeta CN_Carpeta = new CN_Carpeta();
         CN_Archivo CN_Archivo = new CN_Archivo();
+        ArchivoService archivoService = new ArchivoService();
 
         #region Carpetas
         // GET: Archivo
@@ -81,8 +84,7 @@ namespace capa_presentacion.Controllers
         [HttpPost]
         public JsonResult GuardarCarpeta(CARPETA carpeta)
         {
-            carpeta.fk_id_usuario = (int)Session["IdUsuario"];
-
+            carpeta.fk_id_usuario = (int)Session["IdUsuario"];            
             string mensaje = string.Empty;
             int resultado = 0;
 
@@ -95,6 +97,23 @@ namespace capa_presentacion.Controllers
             {
                 // Crear nueva carpeta
                 resultado = CN_Carpeta.Crear(carpeta, out mensaje);
+                if (resultado > 0)
+                {
+                    string mensajeCarpeta = string.Empty;
+                    string mensajeRuta = string.Empty;
+                    string rutaReal = string.Empty;
+
+                    bool rutaObtenida = CN_Carpeta.ObtenerRutaCarpetaPorId(resultado, out rutaReal, out mensajeRuta);
+
+                    if (rutaObtenida && !string.IsNullOrEmpty(rutaReal))
+                    {
+                        bool carpetaCreada = archivoService.CrearCarpeta("", out mensajeCarpeta, rutaReal);
+                    }
+                    else
+                    {
+                        mensaje = "Error al obtener la ruta física: " + mensajeRuta;
+                    }
+                }
             }
             else
             {
@@ -103,6 +122,48 @@ namespace capa_presentacion.Controllers
             }
 
             return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult DescargarCarpeta(int idCarpeta)
+        {
+            string rutaCarpeta, mensaje;
+            CN_Carpeta cnCarpeta = new CN_Carpeta();
+
+            // 1. Obtener la ruta lógica de la carpeta desde la capa de negocio
+            if (!cnCarpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensaje) || string.IsNullOrEmpty(rutaCarpeta))
+                return Content("No se pudo encontrar la carpeta: " + mensaje);
+
+            // 2. Construir la ruta física en el servidor
+            string rutaFisicaCarpeta = Server.MapPath(rutaCarpeta);
+
+            if (!Directory.Exists(rutaFisicaCarpeta))
+                return Content("La carpeta no existe en el servidor.");
+
+            // 3. Crear archivo ZIP temporalmente
+            string nombreZip = Path.GetFileName(rutaFisicaCarpeta) + ".zip";
+            string tempZipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".zip");
+
+            try
+            {
+                ZipFile.CreateFromDirectory(rutaFisicaCarpeta, tempZipPath);
+
+                byte[] bytesArchivo = System.IO.File.ReadAllBytes(tempZipPath);
+
+                // Borra el archivo temporal después de leerlo
+                System.IO.File.Delete(tempZipPath);
+
+                return File(bytesArchivo, "application/zip", nombreZip);
+            }
+            catch (Exception ex)
+            {
+                // Borra el ZIP si existió pero falló la descarga
+                if (System.IO.File.Exists(tempZipPath))
+                    System.IO.File.Delete(tempZipPath);
+
+                return Content("Ocurrió un error al comprimir la carpeta: " + ex.Message);
+            }
         }
 
         // Controlador para Eliminar una carpeta
@@ -226,163 +287,21 @@ namespace capa_presentacion.Controllers
         [HttpPost]
         public JsonResult SubirArchivo(HttpPostedFileBase ARCHIVO, string CARPETAJSON)
         {
-            // Validar parámetros iniciales
             if (ARCHIVO == null || string.IsNullOrEmpty(CARPETAJSON))
-            {
-                return Json(new { Respuesta = false, Mensaje = "No se seleccionó ningún archivo o carpeta." }, JsonRequestBehavior.AllowGet);
-            }
+                return Json(new { Respuesta = false, Mensaje = "No se seleccionó ningún archivo o carpeta." });
 
-            string mensaje = string.Empty;
-
-            // Deserializar el objeto carpeta desde el JSON recibido
             CARPETA carpeta = JsonConvert.DeserializeObject<CARPETA>(CARPETAJSON);
-            if (carpeta == null)
-            {
-                return Json(new { Respuesta = false, Mensaje = "La información de la carpeta no es válida." }, JsonRequestBehavior.AllowGet);
-            }
+            int idCarpeta = carpeta.id_carpeta;
 
-            // Validar el tipo de archivo
-            string extension = Path.GetExtension(ARCHIVO.FileName);
-            if (!ValidarTipoArchivo(extension, out mensaje))
-            {
-                return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-            }
-
-            try
-            {
-                // Preparar datos del archivo
-                ARCHIVO archivo = PrepararArchivo(ARCHIVO, carpeta);
-
-                // Validar tamaño del archivo
-                if (!ValidarTamañoArchivo(ARCHIVO, out mensaje))
-                {
-                    return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-                }
-
-                // Asegurarse de que las carpetas necesarias existan
-                CrearCarpetasSiNoExisten(archivo);
-
-                // Guardar el archivo físicamente
-                GuardarArchivoFisico(ARCHIVO, archivo);
-
-                // Guardar los datos del archivo en la base de datos
-                if (!GuardarArchivoEnBaseDeDatos(archivo, out mensaje))
-                {
-                    return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-                }
-
-                return Json(new { Respuesta = true, Mensaje = "Archivo subido correctamente." }, JsonRequestBehavior.AllowGet);
-            }
-            catch (Exception ex)
-            {
-                return Json(new { Respuesta = false, Mensaje = "Ocurrió un error al guardar el archivo: " + ex.Message }, JsonRequestBehavior.AllowGet);
-            }
-        }
-
-        // Método para preparar los datos del archivo
-        private ARCHIVO PrepararArchivo(HttpPostedFileBase archivoSubido, CARPETA carpeta)
-        {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            string rutaArchivos = ConfigurationManager.AppSettings["ServidorArchivos"];
-            string carpetaDefault = $"DEFAULT_{usuario.usuario}";
+            if (usuario == null)
+                return Json(new { Respuesta = false, Mensaje = "Sesión expirada, vuelva a iniciar sesión." });
 
-            return new ARCHIVO
-            {
-                nombre = Path.GetFileName(archivoSubido.FileName),
-                tipo = Path.GetExtension(archivoSubido.FileName),
-                size = archivoSubido.ContentLength,
-                ruta = Path.Combine(rutaArchivos, carpetaDefault, Path.GetFileName(archivoSubido.FileName)),
-                id_usuario = usuario.id_usuario,
-                id_carpeta = carpeta.id_carpeta == 0 ? (int?)null : carpeta.id_carpeta
-            };
-        }
+            ArchivoService archivoService = new ArchivoService();
+            string mensaje;            
+            bool ok = archivoService.SubirArchivoConCarpeta(ARCHIVO, idCarpeta, usuario.id_usuario, out mensaje);
 
-        // Método para validar el tamaño del archivo
-        private bool ValidarTamañoArchivo(HttpPostedFileBase archivoSubido, out string mensaje)
-        {
-            mensaje = string.Empty;
-
-            if (archivoSubido.ContentLength > 10 * 1024 * 1024) // 10 MB
-            {
-                mensaje = "El archivo no debe superar los 10 MB.";
-                return false;
-            }
-
-            return true;
-        }
-
-        // Método para validar el tipo de archivo
-        private bool ValidarTipoArchivo(string extensionArchivo, out string mensaje)
-        {
-            mensaje = string.Empty;
-            string tiposPermitidos = ConfigurationManager.AppSettings["TiposArchivosPermitidos"];
-
-            if (string.IsNullOrEmpty(tiposPermitidos))
-            {
-                mensaje = "No se han configurado tipos de archivos permitidos.";
-                return false;
-            }
-            
-            List<string> listaTiposPermitidos = tiposPermitidos.Split(',').Select(t => t.Trim().ToLower()).ToList();
-
-            if (!listaTiposPermitidos.Contains(extensionArchivo.ToLower()))
-            {
-                mensaje = $"El tipo de archivo '{extensionArchivo}' no está permitido.";
-                return false;
-            }
-
-            return true;
-        }
-
-        // Método para crear carpetas necesarias si no existen
-        private void CrearCarpetasSiNoExisten(ARCHIVO archivo)
-        {
-            string rutaFisica = Server.MapPath(ConfigurationManager.AppSettings["ServidorArchivos"]);
-            string carpetaDefault = Path.Combine(rutaFisica, $"DEFAULT_{((USUARIOS)Session["UsuarioAutenticado"]).usuario}");
-
-            if (!Directory.Exists(rutaFisica))
-            {
-                Directory.CreateDirectory(rutaFisica);
-            }
-
-            if (!Directory.Exists(carpetaDefault))
-            {
-                ArchivoService archivoService = new ArchivoService();
-                string mensajeCarpeta;
-                archivoService.CrearCarpeta(carpetaDefault, out mensajeCarpeta);
-            }
-        }
-
-        // Método para guardar el archivo físicamente
-        private void GuardarArchivoFisico(HttpPostedFileBase archivoSubido, ARCHIVO archivo)
-        {
-            string rutaFisicaCompleta = Server.MapPath(archivo.ruta);
-            archivoSubido.SaveAs(rutaFisicaCompleta);
-        }
-
-        // Método para guardar los datos del archivo en la base de datos
-        private bool GuardarArchivoEnBaseDeDatos(ARCHIVO archivo, out string mensaje)
-        {
-            mensaje = string.Empty;
-
-            try
-            {
-                int resultado = CN_Archivo.SubirArchivo(archivo, out mensaje);
-                if (resultado == 0)
-                {
-                    mensaje = "El archivo no se pudo guardar en la base de datos.";
-                    return false;
-                }
-                else
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {                
-                mensaje = "Error al guardar en la base de datos: " + ex.Message;
-                return false;
-            }
+            return Json(new { Respuesta = ok, Mensaje = mensaje });
         }
 
         // Controlador para Eliminar una carpeta

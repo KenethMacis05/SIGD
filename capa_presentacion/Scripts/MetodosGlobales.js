@@ -327,7 +327,11 @@ function generarHtmlArchivo(archivo) {
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#"><i class="fas fa-share me-2"></i>Compartir</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-download me-2"></i>Descargar</a></li>
+                            <li>
+                                <a class="dropdown-item btn-descargarArchivo" href="#" data-archivo-id="${archivo.id_archivo}">
+                                    <i class="fas fa-download me-2"></i>Descargar
+                                </a>
+                            </li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
                             <li><a class="dropdown-item btn-eliminarArchivo" href="#"
                             data-archivo-id="${archivo.id_archivo}">
