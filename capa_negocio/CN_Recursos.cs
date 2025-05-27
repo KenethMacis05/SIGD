@@ -46,7 +46,7 @@ namespace capa_negocio
             {
                 MailMessage mail = new MailMessage();
                 mail.To.Add(correo);
-                mail.From = new MailAddress("kenethmacis92@gmail.com"); 
+                mail.From = new MailAddress("kenethmacis92@gmail.com");
                 mail.Subject = asunto;
                 mail.Body = mensaje;
                 mail.IsBodyHtml = true;
@@ -66,6 +66,23 @@ namespace capa_negocio
                 resultado = false;
             }
             return resultado;
+        }
+
+        public string ConvertBase64(string ruta, out bool conversion)
+        {
+            string textoBase64 = string.Empty;
+            conversion = true;
+
+            try
+            {
+                byte[] bytes = File.ReadAllBytes(ruta);
+                textoBase64 = Convert.ToBase64String(bytes);
+            }
+            catch (Exception)
+            {
+                conversion = false;
+            }
+            return textoBase64;
         }
     }
 }

@@ -263,6 +263,9 @@
     </div>
 </div>
 
+<!-- Contenedor LightGallery (puede estar oculto) -->
+<div id="lightgallery" style="display:none;" hidden></div>
+
 @section scripts{
     <script type="text/javascript">
         const config = {
@@ -280,7 +283,7 @@
             eliminarDefinitivamenteUrl: '@Url.Action("EliminarDefinitivamente", "Archivo")',
             listarSubCarpetasUrl: '@Url.Action("ListarSubCarpetas", "Archivo")',
             listarArchivosPorCarpetaUrl: '@Url.Action("ListarArchivosPorCarpeta", "Archivo")'
-        };        
+        };
 
         // Efectos hover para carpetas
         $(document).on('mouseenter', '.file-manager-group', function () {
@@ -298,8 +301,7 @@
         }).on('mouseleave', '.file-manager-recent-item', function () {
             $(this).find('.fa-file-alt').addClass('d-none');
             $(this).find('.fa-file').removeClass('d-none');
-        });
-
+        });        
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
 }

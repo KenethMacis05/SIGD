@@ -1058,6 +1058,35 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE usp_ObtenerRutaArchivo
+    @IdArchivo INT,
+    @Resultado VARCHAR(255) OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = '';
+    SET @Mensaje = '';
+
+    IF NOT EXISTS (SELECT 1 FROM ARCHIVO WHERE id_archivo = @IdArchivo)
+    BEGIN
+        SET @Mensaje = 'El archivo no existe.';
+        RETURN;
+    END
+
+    SELECT @Resultado = ruta FROM ARCHIVO WHERE id_archivo = @IdArchivo;
+
+    IF @Resultado IS NULL OR LTRIM(RTRIM(@Resultado)) = ''
+    BEGIN
+        SET @Mensaje = 'El archivo existe pero no tiene ruta definida.';
+    END
+    ELSE
+    BEGIN
+        SET @Mensaje = 'Ruta obtenida correctamente.';
+    END
+END
+GO
+
 -- (1) PROCEDIMIENTO ALMACENADO PARA OBTENER CARPETAS RECIENTES DEL USUARIO
 CREATE PROCEDURE usp_LeerCarpetaRecientes
     @IdUsuario INT,

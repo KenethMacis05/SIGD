@@ -318,7 +318,7 @@ function generarHtmlArchivo(archivo) {
                 <div class="d-flex align-items-center gap-3">
                     <i class="fas ${icono} fa-lg ${color} fa-2x"></i>
                     <div class="flex-fill">                                        
-                        <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block">${archivo.nombre}</a>
+                        <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block" data-archivo-id="${archivo.id_archivo}" data-archivo-nombre="${archivo.nombre}" data-archivo-tipo="${archivo.tipo}">${archivo.nombre}</a>
                         <small class="text-muted">${archivo.size}kb - ${formatASPNetDate(archivo.fecha_subida)}</small>
                     </div>
                     <div class="dropdown">
@@ -342,4 +342,58 @@ function generarHtmlArchivo(archivo) {
             </div>
         </div>
     </div>`;
+}
+
+
+// Visualizar imagenes y videos en LightGallery
+let lightGalleryInstance = null;
+
+function abrirEnLightGallery(items, indexToOpen = 0) {
+    $('#lightgallery').empty();
+
+    items.forEach(item => {
+        if (item.type === 'imagen') {
+            $('#lightgallery').append(`
+                <a href="${item.src}" data-lg-size="1600-1067" data-sub-html="${item.subHtml || ''}">
+                    <img class="img-fluid" src="${item.src}" alt="preview"/>
+                </a>
+            `);
+        } else if (item.type === 'video') {
+            $('#lightgallery').append(`
+                <a 
+                    data-lg-size="1280-720"
+                    data-video='{"source": [{"src":"${item.src}","type":"${item.mime}"}], "attributes": {"preload": false, "controls": true}}'
+                    data-sub-html="${item.subHtml || ''}"
+                    href="">
+                    <img class="img-fluid" src="${item.poster || 'https://dummyimage.com/320x180/000/fff&text=Video'}" alt="preview"/>
+                </a>
+            `);
+        }
+    });
+
+    if (lightGalleryInstance) {
+        lightGalleryInstance.destroy(true);
+        lightGalleryInstance = null;
+    }
+
+    lightGalleryInstance = lightGallery(document.getElementById('lightgallery'), {
+        plugins: [
+            lgZoom,
+            lgThumbnail,
+            lgFullscreen,
+            lgRotate,
+            lgShare,
+            lgPager,
+            lgAutoplay,
+            lgComment,
+            lgHash,
+            lgVideo
+        ],
+        speed: 400,
+        download: true,
+        actualSize: true,
+        licenseKey: '0000-0000-000-0000'
+    });
+
+    lightGalleryInstance.openGallery(indexToOpen);
 }

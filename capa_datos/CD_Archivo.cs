@@ -48,7 +48,7 @@ namespace capa_datos
                                     fecha_subida = dr["fecha_subida"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_subida"]) : DateTime.MinValue
                                 }
                             );
-                        }                     
+                        }
                     }
 
                     resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
@@ -61,7 +61,7 @@ namespace capa_datos
             }
             return listaArchivo;
         }
-        
+
         public List<ARCHIVO> ListarArchivos(int id_usuario, out int resultado, out string mensaje)
         {
             List<ARCHIVO> listaArchivo = new List<ARCHIVO>();
@@ -102,7 +102,7 @@ namespace capa_datos
                                     fecha_subida = dr["fecha_subida"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_subida"]) : DateTime.MinValue
                                 }
                             );
-                        }                     
+                        }
                     }
 
                     resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
@@ -156,7 +156,7 @@ namespace capa_datos
                                     fecha_subida = dr["fecha_subida"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_subida"]) : DateTime.MinValue
                                 }
                             );
-                        }                     
+                        }
                     }
 
                     resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
@@ -169,7 +169,7 @@ namespace capa_datos
             }
             return listaArchivo;
         }
-        
+
         public List<ARCHIVO> ListarArchivosEliminados(int id_usuario, out int resultado, out string mensaje)
         {
             List<ARCHIVO> listaArchivoEliminado = new List<ARCHIVO>();
@@ -225,6 +225,40 @@ namespace capa_datos
             return listaArchivoEliminado;
         }
 
+        public bool ObtenerRutaArchivoPorId(int idArchivo, out string ruta, out string mensaje)
+        {
+            ruta = string.Empty;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerRutaArchivo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@IdArchivo", idArchivo);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("@Resultado", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("@Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    ruta = cmd.Parameters["@Resultado"].Value?.ToString();
+                    mensaje = cmd.Parameters["@Mensaje"].Value?.ToString();
+                }
+                return true;
+            }
+            catch (Exception ex)
+            {
+                mensaje = $"Error al consultar la ruta: {ex.Message}";
+                ruta = string.Empty;
+                return false;
+            }
+        }
+
         public int SubirArchivo(ARCHIVO archivo, out string mensaje)
         {
             int idAutogeneradoCarpeta = 0;
@@ -246,14 +280,14 @@ namespace capa_datos
 
                     // Manejar Carpeta como NULL si no está especificado
                     if (archivo.id_carpeta.HasValue)
-                    {                        
+                    {
                         cmd.Parameters.AddWithValue("Carpeta", archivo.id_carpeta.Value);
                     }
                     else
                     {
                         cmd.Parameters.AddWithValue("Carpeta", DBNull.Value);
                     }
-                    
+
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
@@ -314,7 +348,7 @@ namespace capa_datos
             }
             return resultado;
         }
-        
+
         public bool EliminarArchivoDefinitivamente(int id_archivo, out string mensaje)
         {
             bool resultado = false;

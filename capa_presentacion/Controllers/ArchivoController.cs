@@ -12,6 +12,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Services.Description;
 
 namespace capa_presentacion.Controllers
 {
@@ -20,6 +21,7 @@ namespace capa_presentacion.Controllers
     {
         CN_Carpeta CN_Carpeta = new CN_Carpeta();
         CN_Archivo CN_Archivo = new CN_Archivo();
+        CN_Recursos CN_Recurso = new CN_Recursos();
         ArchivoService archivoService = new ArchivoService();
 
         #region Carpetas
@@ -129,10 +131,9 @@ namespace capa_presentacion.Controllers
         public ActionResult DescargarCarpeta(int idCarpeta)
         {
             string rutaCarpeta, mensaje;
-            CN_Carpeta cnCarpeta = new CN_Carpeta();
 
             // 1. Obtener la ruta lógica de la carpeta desde la capa de negocio
-            if (!cnCarpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensaje) || string.IsNullOrEmpty(rutaCarpeta))
+            if (!CN_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensaje) || string.IsNullOrEmpty(rutaCarpeta))
                 return Content("No se pudo encontrar la carpeta: " + mensaje);
 
             // 2. Construir la ruta física en el servidor
@@ -298,10 +299,123 @@ namespace capa_presentacion.Controllers
                 return Json(new { Respuesta = false, Mensaje = "Sesión expirada, vuelva a iniciar sesión." });
 
             ArchivoService archivoService = new ArchivoService();
-            string mensaje;            
+            string mensaje;    
             bool ok = archivoService.SubirArchivoConCarpeta(ARCHIVO, idCarpeta, usuario.id_usuario, out mensaje);
 
             return Json(new { Respuesta = ok, Mensaje = mensaje });
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult DescargarArchivo(int idArchivo)
+        {
+            string rutaArchivo, mensaje;
+
+            // 1. Obtener la ruta lógica del archivo desde la capa de negocio
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return Content("No se pudo encontrar el archivo: " + mensaje);
+
+            // 2. Construir la ruta física en el servidor
+            string rutaFisicaArchivo = Server.MapPath(rutaArchivo);
+
+            if (!System.IO.File.Exists(rutaFisicaArchivo))
+                return Content("El archivo no existe en el servidor.");
+
+            try
+            {
+                // 3. Leer el archivo y devolverlo
+                byte[] bytesArchivo = System.IO.File.ReadAllBytes(rutaFisicaArchivo);
+                string nombreArchivo = Path.GetFileName(rutaFisicaArchivo);
+
+                // Opcional: Detectar el tipo MIME
+                string mimeType = MimeMapping.GetMimeMapping(nombreArchivo);
+
+                return File(bytesArchivo, mimeType, nombreArchivo);
+            }
+            catch (Exception ex)
+            {
+                return Content("Ocurrió un error al descargar el archivo: " + ex.Message);
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public JsonResult VisualizarArchivo(int idArchivo, string extension)
+        {
+            extension = extension?.ToLower();
+            string[] imagenes = { ".jpg", ".jpeg", ".png", ".gif" };
+            string[] videos = { ".mp4", ".webm", ".ogg" };
+
+            if (imagenes.Contains(extension))
+            {
+                return VisualizarImagen(idArchivo, extension);
+            }
+            else if (videos.Contains(extension))
+            {
+                return VisualizarVideo(idArchivo, extension);
+            }
+            else
+            {
+                return Json(new { Respuesta = false, Mensaje = "Tipo de archivo no soportado." }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        // Método auxiliar para imágenes
+        private JsonResult VisualizarImagen(int idArchivo, string extension)
+        {
+            bool conversion;
+            string rutaArchivo, mensaje;
+
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar la imagen: " + mensaje }, JsonRequestBehavior.AllowGet);
+
+            string rutaFisicaArchivo = Server.MapPath(rutaArchivo);
+            if (!System.IO.File.Exists(rutaFisicaArchivo))
+                return Json(new { Respuesta = false, Mensaje = "La imagen no existe en el servidor." }, JsonRequestBehavior.AllowGet);
+
+            string base64 = CN_Recurso.ConvertBase64(rutaFisicaArchivo, out conversion);
+            string mime = extension == ".png" ? "image/png" : extension == ".gif" ? "image/gif" : "image/jpeg";
+
+            if (!conversion)
+                return Json(new { Respuesta = false, Mensaje = "No se pudo convertir la imagen a base64." }, JsonRequestBehavior.AllowGet);
+
+            return Json(new
+            {
+                Respuesta = true,
+                TipoArchivo = "imagen",
+                TextoBase64 = base64,
+                Mime = mime
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Método auxiliar para videos
+        private JsonResult VisualizarVideo(int idArchivo, string extension)
+        {
+            string rutaArchivo, mensaje;
+
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar el video: " + mensaje }, JsonRequestBehavior.AllowGet);
+
+            if (rutaArchivo.StartsWith("~"))
+                rutaArchivo = rutaArchivo.Substring(1);
+
+            rutaArchivo = rutaArchivo.Replace("\\", "/");
+
+            if (!rutaArchivo.StartsWith("/"))
+                rutaArchivo = "/" + rutaArchivo;
+
+            string rutaFisicaArchivo = Server.MapPath(rutaArchivo);
+            if (!System.IO.File.Exists(rutaFisicaArchivo))
+                return Json(new { Respuesta = false, Mensaje = "El video no existe en el servidor." }, JsonRequestBehavior.AllowGet);
+
+            string mime = extension == ".mp4" ? "video/mp4" : extension == ".webm" ? "video/webm" : "video/ogg";
+            return Json(new
+            {
+                Respuesta = true,
+                TipoArchivo = "video",
+                Ruta = rutaArchivo,
+                Mime = mime
+            }, JsonRequestBehavior.AllowGet);
         }
 
         // Controlador para Eliminar una carpeta

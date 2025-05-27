@@ -58,57 +58,105 @@ namespace capa_presentacion.Services
         {
             mensaje = string.Empty;
             string rutaCarpeta, mensajeRuta;
+            string nombreArchivo = Path.GetFileName(archivoSubido.FileName);
+            string extension = Path.GetExtension(archivoSubido.FileName);
 
             // 1. Validar tipo y tamaño
-            string extension = Path.GetExtension(archivoSubido.FileName);
             if (!ValidarTipoArchivo(extension, out mensaje))
                 return false;
             if (!ValidarTamañoArchivo(archivoSubido, out mensaje))
                 return false;
 
-            // 2. Obtener ruta real de la carpeta destino
-            CN_Carpeta cnCarpeta = new CN_Carpeta();
-            if (!cnCarpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensajeRuta))
+            // 2. Determinar la carpeta destino
+            if (idCarpeta == 0)
             {
-                mensaje = "No se pudo obtener la ruta de la carpeta destino. " + mensajeRuta;
-                return false;
+                // Obtener usuario de sesión
+                USUARIOS usuario = (USUARIOS)HttpContext.Current.Session["UsuarioAutenticado"];
+                if (usuario == null)
+                {
+                    mensaje = "Sesión expirada, vuelva a iniciar sesión.";
+                    return false;
+                }
+
+                // Carpeta lógica raíz del usuario
+                string carpetaDefault = $"DEFAULT_{usuario.usuario}";
+                rutaCarpeta = Path.Combine(carpetaDefault); // Relativa a la raíz de archivos
+
+                // Crear la carpeta física si no existe
+                string rutaBase = ConfigurationManager.AppSettings["ServidorArchivos"];
+                string rutaFisicaCarpeta = Path.Combine(HttpContext.Current.Server.MapPath(rutaBase), carpetaDefault);
+                if (!Directory.Exists(rutaFisicaCarpeta))
+                    Directory.CreateDirectory(rutaFisicaCarpeta);
+
+                // Guardar archivo físicamente
+                string rutaArchivoFisica = Path.Combine(rutaFisicaCarpeta, nombreArchivo);
+                archivoSubido.SaveAs(rutaArchivoFisica);
+
+                // Guardar en la BD: pasar null como id_carpeta para que el SP lo resuelva
+                ARCHIVO archivo = new ARCHIVO
+                {
+                    nombre = nombreArchivo,
+                    tipo = extension,
+                    size = archivoSubido.ContentLength,
+                    ruta = Path.Combine(rutaBase, rutaCarpeta, nombreArchivo),
+                    id_usuario = idUsuario,
+                    id_carpeta = null // El SP resuelve la carpeta raíz del usuario
+                };
+
+                int resultado = CN_Archivo.SubirArchivo(archivo, out mensaje);
+                if (resultado == 0)
+                {
+                    mensaje = "El archivo no se pudo guardar en la base de datos.";
+                    return false;
+                }
+
+                mensaje = "Archivo subido correctamente.";
+                return true;
             }
-
-            // 3. Mapear ruta física y crear carpetas si no existen
-            string rutaBase = ConfigurationManager.AppSettings["ServidorArchivos"];
-            string rutaFisica = HttpContext.Current.Server.MapPath(rutaCarpeta);
-
-            if (!Directory.Exists(rutaFisica))
-                Directory.CreateDirectory(rutaFisica);
-
-            // 4. Guardar archivo físicamente
-            string nombreArchivo = Path.GetFileName(archivoSubido.FileName);
-            string rutaArchivoFisica = Path.Combine(rutaFisica, nombreArchivo);
-            archivoSubido.SaveAs(rutaArchivoFisica);
-
-            // 5. Guardar en base de datos
-            ARCHIVO archivo = new ARCHIVO
+            else
             {
-                nombre = nombreArchivo,
-                tipo = extension,
-                size = archivoSubido.ContentLength,
-                ruta = Path.Combine(rutaCarpeta, nombreArchivo),
-                id_usuario = idUsuario,
-                id_carpeta = idCarpeta
-            };
+                // 2. Obtener ruta real de la carpeta destino
+                CN_Carpeta cnCarpeta = new CN_Carpeta();
+                if (!cnCarpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensajeRuta))
+                {
+                    mensaje = "No se pudo obtener la ruta de la carpeta destino. " + mensajeRuta;
+                    return false;
+                }
 
-            int resultado = CN_Archivo.SubirArchivo(archivo, out mensaje);
-            if (resultado == 0)
-            {
-                mensaje = "El archivo no se pudo guardar en la base de datos.";
-                return false;
+                // 3. Mapear ruta física y crear carpetas si no existen
+                string rutaBase = ConfigurationManager.AppSettings["ServidorArchivos"];
+                string rutaFisica = HttpContext.Current.Server.MapPath(rutaCarpeta);
+
+                if (!Directory.Exists(rutaFisica))
+                    Directory.CreateDirectory(rutaFisica);
+
+                // 4. Guardar archivo físicamente
+                string rutaArchivoFisica = Path.Combine(rutaFisica, nombreArchivo);
+                archivoSubido.SaveAs(rutaArchivoFisica);
+
+                // 5. Guardar en base de datos
+                ARCHIVO archivo = new ARCHIVO
+                {
+                    nombre = nombreArchivo,
+                    tipo = extension,
+                    size = archivoSubido.ContentLength,
+                    ruta = Path.Combine(rutaCarpeta, nombreArchivo),
+                    id_usuario = idUsuario,
+                    id_carpeta = idCarpeta
+                };
+
+                int resultado = CN_Archivo.SubirArchivo(archivo, out mensaje);
+                if (resultado == 0)
+                {
+                    mensaje = "El archivo no se pudo guardar en la base de datos.";
+                    return false;
+                }
+
+                mensaje = "Archivo subido correctamente.";
+                return true;
             }
-
-            mensaje = "Archivo subido correctamente.";
-            return true;
         }
 
-        // Métodos auxiliares: Puedes llevar los que ya tienes aquí o dejarlos estáticos
         private bool ValidarTamañoArchivo(HttpPostedFileBase archivoSubido, out string mensaje)
         {
             mensaje = string.Empty;

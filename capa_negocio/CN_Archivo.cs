@@ -16,12 +16,12 @@ namespace capa_negocio
         {
             return CD_Archivo.ListarArchivosRecientes(id_usuario, out resultado, out mensaje);
         }
-        
+
         public List<ARCHIVO> ListarArchivos(int id_usuario, out int resultado, out string mensaje)
         {
             return CD_Archivo.ListarArchivos(id_usuario, out resultado, out mensaje);
         }
-        
+
         public List<ARCHIVO> ListarArchivosPorCarpeta(int idCarpeta, out int resultado, out string mensaje)
         {
             if (idCarpeta == 0)
@@ -33,7 +33,7 @@ namespace capa_negocio
 
             return CD_Archivo.ListarArchivosPorCarpeta(idCarpeta, out resultado, out mensaje);
         }
-        
+
         public List<ARCHIVO> ListarArchivosElimandos(int id_usuario, out int resultado, out string mensaje)
         {
             return CD_Archivo.ListarArchivosEliminados(id_usuario, out resultado, out mensaje);
@@ -55,11 +55,16 @@ namespace capa_negocio
             bool eliminado = CD_Archivo.EliminarArchivo(id_archivo, out mensaje);
             return eliminado ? 1 : 0;
         }
-        
+
         public int EliminarDefinitivamente(int id_archivo, out string mensaje)
         {
             bool eliminado = CD_Archivo.EliminarArchivoDefinitivamente(id_archivo, out mensaje);
             return eliminado ? 1 : 0;
+        }
+
+        public bool ObtenerRutaArchivoPorId(int idArchivo, out string ruta, out string mensaje)
+        {
+            return CD_Archivo.ObtenerRutaArchivoPorId(idArchivo, out ruta, out mensaje);
         }
     }
 }
