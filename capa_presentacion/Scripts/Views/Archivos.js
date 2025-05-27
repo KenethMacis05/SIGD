@@ -605,7 +605,7 @@ $("#datatableArchivoEliminados tbody").on("click", '.btn-eliminarDifinitivamente
     });
 });
 
-// Visualizar imagen y video con LightGallery
+// Visualizar imagen y video con LightGallery y documetos con PDF.js y Office Online Viewer
 $(document).on('click', '.file-manager-recent-item-title', function (e) {
     e.preventDefault();
 
@@ -626,6 +626,7 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
                         src: 'data:' + resp.Mime + ';base64,' + resp.TextoBase64,
                         subHtml: nombreArchivo
                     });
+                    abrirEnLightGallery(items);
                 } else if (resp.TipoArchivo === 'video') {
                     items.push({
                         type: 'video',
@@ -634,10 +635,13 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
                         subHtml: nombreArchivo,
                         poster: 'https://dummyimage.com/320x180/000/fff&text=Video'
                     });
-                } else {
+                    abrirEnLightGallery(items);
+                } else if (resp.TipoArchivo === 'documento') {
+                    mostrarDocumento(resp.Ruta, tipoArchivo, nombreArchivo);
+                }else {
                     return;
                 }
-                abrirEnLightGallery(items);
+                
             } else {
                 showAlert("Error", resp.Mensaje || 'No se pudo visualizar el archivo.', "error");
             }
@@ -648,6 +652,30 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
     });
 });
 
+function mostrarDocumento(ruta, extension, nombreArchivo) {
+    extension = extension.toLowerCase();
+
+    if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {        
+        const enlace = document.createElement('a');
+        enlace.href = ruta;
+        enlace.download = nombreArchivo;
+        document.body.appendChild(enlace);
+        enlace.click();
+        document.body.removeChild(enlace);
+        return;
+    }
+
+    let visorHTML = '';
+    if (extension === '.pdf') {
+        visorHTML = `<iframe src="${ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
+    } else if (extension === '.txt') {
+        visorHTML = `<iframe src="${ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
+    } else {
+        visorHTML = `<a href="${ruta}" download="${nombreArchivo}">Descargar documento</a>`;
+    }
+    $('#contenedorDocumento').html(visorHTML);
+    $('#modalDocumento').modal('show');
+}
 
 // Inicialización
 $(document).ready(function () {

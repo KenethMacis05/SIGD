@@ -345,19 +345,16 @@ namespace capa_presentacion.Controllers
             extension = extension?.ToLower();
             string[] imagenes = { ".jpg", ".jpeg", ".png", ".gif" };
             string[] videos = { ".mp4", ".webm", ".ogg" };
+            string[] docs = { ".pdf", ".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".txt" };
 
             if (imagenes.Contains(extension))
-            {
                 return VisualizarImagen(idArchivo, extension);
-            }
             else if (videos.Contains(extension))
-            {
                 return VisualizarVideo(idArchivo, extension);
-            }
+            else if (docs.Contains(extension))
+                return VisualizarDocumento(idArchivo, extension);
             else
-            {
                 return Json(new { Respuesta = false, Mensaje = "Tipo de archivo no soportado." }, JsonRequestBehavior.AllowGet);
-            }
         }
 
         // Método auxiliar para imágenes
@@ -413,6 +410,44 @@ namespace capa_presentacion.Controllers
             {
                 Respuesta = true,
                 TipoArchivo = "video",
+                Ruta = rutaArchivo,
+                Mime = mime
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Método auxiliar para documentos
+        private JsonResult VisualizarDocumento(int idArchivo, string extension)
+        {
+            string rutaArchivo, mensaje;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar el documento: " + mensaje }, JsonRequestBehavior.AllowGet);
+
+            // Corrige la ruta igual que antes
+            if (rutaArchivo.StartsWith("~"))
+                rutaArchivo = rutaArchivo.Substring(1);
+            rutaArchivo = rutaArchivo.Replace("\\", "/");
+            if (!rutaArchivo.StartsWith("/"))
+                rutaArchivo = "/" + rutaArchivo;
+
+            // Mime básico (puedes mejorarlo)
+            string mime;
+            if (extension == ".pdf")
+                mime = "application/pdf";
+            else if (extension == ".docx" || extension == ".doc")
+                mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            else if (extension == ".xlsx" || extension == ".xls")
+                mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            else if (extension == ".pptx" || extension == ".ppt")
+                mime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            else if (extension == ".txt")
+                mime = "text/plain";
+            else
+                mime = "application/octet-stream";
+
+            return Json(new
+            {
+                Respuesta = true,
+                TipoArchivo = "documento",
                 Ruta = rutaArchivo,
                 Mime = mime
             }, JsonRequestBehavior.AllowGet);
