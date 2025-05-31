@@ -22,9 +22,7 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        //########################################################################//
-
-        // Metodo para listar los usuarios
+        // Enpoint(GET): Listar los usuarios
         [HttpGet]
         public JsonResult ListarUsuarios()
         {
@@ -33,7 +31,8 @@ namespace capa_presentacion.Controllers
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
-        
+
+        // Enpoint(GET): Buscar un usuario
         [HttpGet]
         public JsonResult BuscarUsuarios(string usuario, string nombres, string apellidos)
         {
@@ -43,10 +42,7 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        //########################################################################//
-
-        // Metodo para Guardar los usuarios
-        [ValidateAntiForgeryToken]
+        // Enpoint(POST): Guardar o editar un usuario
         [HttpPost]
         public JsonResult GuardarUsuario(USUARIOS usuario)
         {
@@ -55,11 +51,6 @@ namespace capa_presentacion.Controllers
             string mensajeCarpeta = string.Empty;
             bool carpetaCreada = false;
             string usuarioGenerado = string.Empty;
-
-            if (!ModelState.IsValid)
-            {
-                return Json(new { Resultado = 0, Mensaje = "Datos inválidos." });
-            }
 
             if (usuario.id_usuario == 0)
             {
@@ -97,9 +88,8 @@ namespace capa_presentacion.Controllers
                 MensajeCarpeta = mensajeCarpeta
             }, JsonRequestBehavior.AllowGet);
         }
-        //########################################################################//
 
-        // Metodo para borrar usuarios
+        // Enpoint(POST): Eliminar un usuario
         [HttpPost]
         public JsonResult EliminarUsuario(int id_usuario)
         {
@@ -110,8 +100,7 @@ namespace capa_presentacion.Controllers
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        [AllowAnonymous]
-        // Enpoint para reiniciar la contraseña de un usuario
+        // Enpoint(POST) Restablecer contraseña de un usuario
         [HttpPost]
         public JsonResult RestablecerContrasena(int idUsuario)
         {

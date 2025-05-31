@@ -127,55 +127,57 @@
                 <h5 class="modal-title" id="exampleModalLabel">Menú</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body g-2">
+            <div class="modal-body g-2">                
+                <form id="menuForm" autocomplete="off">
 
-                <input type="text" name="idMenu" id="idMenu" value="0">
+                    <input type="hidden" name="idMenu" id="idMenu" value="0" autocomplete="off">
 
-                <div class="row">
-                    <div class="col-lg-3 mb-3">
-                        <label class="form-label" for="nombre">Nombre</label>
-                        <input type="text" class="form-control" id="nombre" name="nombre" required>
-                    </div>
-                    <div class="col-lg-3 mb-3">
-                        <label class="form-label" for="icono">Icono</label>
-                        <input type="text" class="form-control" id="icono" name="icono">
-                    </div>
-                    <div class="col-lg-6 mb-3">
-                        <label class="form-label" for="controlador">Selecionar controlador</label>                        
-                        <div class="input-group mb-3">
-                            <label class="input-group-text" for="controlador">Selecionar controlador:</label>
-                            <select class="form-select" id="controlador"></select>
-                        </div>                        
-                    </div>
-                    <div class="col-lg-6 mb-3">
-                        <label class="form-label" for="vista">Selecionar vista</label>
-                        <div class="input-group mb-3">
-                            <label class="input-group-text" for="vista">Selecionar vista:</label>
-                            <select class="form-select" id="vista"></select>
+                    <div class="row">
+                        <div class="col-lg-3 mb-3">
+                            <label class="form-label" for="nombre">Nombre</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" required autocomplete="off">
+                        </div>
+                        <div class="col-lg-3 mb-3">
+                            <label class="form-label" for="icono">Icono</label>
+                            <input type="text" class="form-control" id="icono" name="icono" autocomplete="off">
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label" for="controlador">Selecionar controlador</label>
+                            <div class="input-group mb-3">
+                                <label class="input-group-text" for="controlador">Selecionar controlador:</label>
+                                <select class="form-select" id="controlador" autocomplete="off"></select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label" for="vista">Selecionar vista</label>
+                            <div class="input-group mb-3">
+                                <label class="input-group-text" for="vista">Selecionar vista:</label>
+                                <select class="form-select" id="vista" autocomplete="off"></select>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <label class="form-label" for="orden">Orden</label>
+                            <div class="input-group flex-nowrap">
+                                <span class="input-group-text"><i class="fa fa-user"></i></span>
+                                <input type="number" class="form-control" id="orden" name="orden" required autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="estado" checked required autocomplete="off">
+                                <label class="form-check-label" for="estado">Estado Inactivo/Activo</label>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-lg-6 mb-3">
-                        <label class="form-label" for="orden">Orden</label>
-                        <div class="input-group flex-nowrap">
-                            <span class="input-group-text"><i class="fa fa-user"></i></span>
-                            <input type="number" class="form-control" id="orden" name="orden" required>
-                        </div>
+                    <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                        <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                            <i class="fas fa-times-circle me-2"></i>Cerrar
+                        </button>
+                        <button type="submit" style="background: #0072BB " onclick="Guardar()" class="btn btn-success w-50">
+                            <i class="fas fa-save me-2"></i>Guardar
+                        </button>
                     </div>
-                    <div class="col-lg-6 mb-3">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="estado" checked required>
-                            <label class="form-check-label" for="estado">Estado Inactivo/Activo</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                        <i class="fas fa-times-circle me-2"></i>Cerrar
-                    </button>
-                    <button type="submit" style="background: #0072BB " onclick="Guardar()" class="btn btn-success w-50">
-                        <i class="fas fa-save me-2"></i>Guardar
-                    </button>
-                </div>
+                </form>
             </div>
         </div>
     </div>

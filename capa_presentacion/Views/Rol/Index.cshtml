@@ -55,11 +55,12 @@
                             </div>
                             <div class="modal-body g-2">
 
-                                <input type="text" name="idRol" id="idRol" value="0">
+                                <input type="hidden" name="idRol" id="idRol" value="0">
+
                                 <div class="row">
                                     <div class="col-lg-12 mb-3">
                                         <label class="form-label" for="descripcion">Descripción</label>
-                                        <input type="text" class="form-control" id="descripcion" name="descripcion" required>
+                                        <input type="text" class="form-control" id="descripcion" name="descripcion" required autocomplete="off" style="text-transform:uppercase;" oninput="this.value = this.value.toUpperCase();">
                                     </div>
                                     <div class="col-lg-6 mb-3">
                                         <div class="form-check form-switch">
@@ -68,8 +69,6 @@
                                         </div>
                                     </div>
                                 </div>
-
-
 
                                 <div class="modal-footer pe-0 ps-0 flex-nowrap ">
                                     <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">

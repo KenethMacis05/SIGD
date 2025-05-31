@@ -27,8 +27,8 @@ $("#datatable tbody").on("click", '.btn-editar', function () {
 
 function Guardar() {
     var Rol = {
-        id_rol: $("#idRol").val(),
-        descripcion: $("#descripcion").val(),
+        id_rol: $("#idRol").val().trim(),
+        descripcion: $("#descripcion").val().trim(),
         estado: $("#estado").prop("checked")
     };
 

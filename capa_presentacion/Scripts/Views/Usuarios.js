@@ -97,19 +97,17 @@ $("#datatable tbody").on("click", '.btn-editar', function () {
 function Guardar() {
 
     var Usuario = {
-        id_usuario: $("#idUsuario").val(),
-        pri_nombre: $("#priNombre").val(),
-        seg_nombre: $("#segNombre").val(),
-        pri_apellido: $("#priApellido").val(),
-        seg_apellido: $("#segApellido").val(),
-        usuario: $("#usuario").val(),        
-        correo: $("#correo").val(),
-        telefono: $("#telefono").val(),
-        fk_rol: $("#obtenerRol").val(),
+        id_usuario: $("#idUsuario").val().trim(),
+        pri_nombre: $("#priNombre").val().trim(),
+        seg_nombre: $("#segNombre").val().trim(),
+        pri_apellido: $("#priApellido").val().trim(),
+        seg_apellido: $("#segApellido").val().trim(),
+        usuario: $("#usuario").val().trim(),
+        correo: $("#correo").val().trim(),
+        telefono: $("#telefono").val().trim(),
+        fk_rol: $("#obtenerRol").val().trim(),
         estado: $("#estado").prop("checked")
     };
-
-    var token = $('input[name="__RequestVerificationToken"]').val();
 
     showLoadingAlert("Procesando", "Guardando datos del usuario...");
 
@@ -118,10 +116,7 @@ function Guardar() {
         type: "POST",
         data: JSON.stringify({ usuario: Usuario }),
         dataType: "json",
-        contentType: "application/json; charset=utf-8",
-        headers: {
-            'RequestVerificationToken': token
-        },
+        contentType: "application/json; charset=utf-8",        
         success: function (data) {
             Swal.close();
             $("#createUser").modal("hide");
@@ -133,7 +128,7 @@ function Guardar() {
                     Usuario.usuario = data.UsuarioGenerado;
                     dataTable.row.add(Usuario).draw();
                     dataTable.ajax.reload(null, false);
-                    Swal.fire({ icon: "success", title: "¡Éxito!", html: `Usuario creado correctamente. Usuario generado: <b>${data.UsuarioGenerado}</b>`});                    
+                    Swal.fire({ icon: "success", title: "¡Éxito!", html: `Usuario creado correctamente. Usuario generado: <b>${data.UsuarioGenerado}</b>`});
                 } else { showAlert("Error", data.Mensaje || "No se pudo crear el usuario", "error") }
             }
             // Actualizar Usuario

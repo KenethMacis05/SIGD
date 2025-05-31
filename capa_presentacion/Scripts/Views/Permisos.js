@@ -301,7 +301,8 @@ $('#btnGuardarPermisos').click(function () {
                         exitosos > 0 ? "info" : "warning"
                     );
                 } else {
-                    showAlert("¡Éxito!", `Todos los permisos (${exitosos}) fueron procesados correctamente`, "success");
+
+                    ("¡Éxito!", `Todos los permisos (${exitosos}) fueron procesados correctamente`, "success");
                 }
 
                 $('#modalPermisos').modal('hide');
