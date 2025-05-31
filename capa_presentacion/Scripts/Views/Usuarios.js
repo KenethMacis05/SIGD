@@ -62,8 +62,7 @@ function abrirModal(json) {
     $("#idUsuario").val("0");
     $("#usuario").val("").prop("disabled", true);
     $("#correo").val("");
-    $("#telefono").val("");
-    $("#contrasena").val("");
+    $("#telefono").val("");    
     $("#priNombre").val("");
     $("#segNombre").val("");
     $("#priApellido").val("");
@@ -75,8 +74,7 @@ function abrirModal(json) {
         $("#idUsuario").val(json.id_usuario);
         $("#usuario").val(json.usuario).prop("disabled", true);
         $("#correo").val(json.correo);
-        $("#telefono").val(json.telefono);
-        $("#contrasena").val(json.contrasena);
+        $("#telefono").val(json.telefono);        
         $("#priNombre").val(json.pri_nombre);
         $("#segNombre").val(json.seg_nombre);
         $("#priApellido").val(json.pri_apellido);
@@ -104,13 +102,14 @@ function Guardar() {
         seg_nombre: $("#segNombre").val(),
         pri_apellido: $("#priApellido").val(),
         seg_apellido: $("#segApellido").val(),
-        usuario: $("#usuario").val(),
-        contrasena: $("#contrasena").val(),
+        usuario: $("#usuario").val(),        
         correo: $("#correo").val(),
         telefono: $("#telefono").val(),
         fk_rol: $("#obtenerRol").val(),
         estado: $("#estado").prop("checked")
     };
+
+    var token = $('input[name="__RequestVerificationToken"]').val();
 
     showLoadingAlert("Procesando", "Guardando datos del usuario...");
 
@@ -120,6 +119,9 @@ function Guardar() {
         data: JSON.stringify({ usuario: Usuario }),
         dataType: "json",
         contentType: "application/json; charset=utf-8",
+        headers: {
+            'RequestVerificationToken': token
+        },
         success: function (data) {
             Swal.close();
             $("#createUser").modal("hide");

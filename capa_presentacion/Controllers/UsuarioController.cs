@@ -46,6 +46,7 @@ namespace capa_presentacion.Controllers
         //########################################################################//
 
         // Metodo para Guardar los usuarios
+        [ValidateAntiForgeryToken]
         [HttpPost]
         public JsonResult GuardarUsuario(USUARIOS usuario)
         {
@@ -54,6 +55,11 @@ namespace capa_presentacion.Controllers
             string mensajeCarpeta = string.Empty;
             bool carpetaCreada = false;
             string usuarioGenerado = string.Empty;
+
+            if (!ModelState.IsValid)
+            {
+                return Json(new { Resultado = 0, Mensaje = "Datos inválidos." });
+            }
 
             if (usuario.id_usuario == 0)
             {

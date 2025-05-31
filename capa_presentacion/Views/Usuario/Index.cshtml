@@ -89,69 +89,74 @@
                             <div class="modal-header text-light" style="background-color: #0072BB">
                                 <h5 class="modal-title" id="exampleModalLabel">Usuario</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
+                            </div>                            
                             <div class="modal-body g-2">
+                                <form id="userForm" autocomplete="off">
+                                    @Html.AntiForgeryToken()
 
-                                <input type="text" name="idUsuario" id="idUsuario" value="0">
-                                <div class="row">
-                                    <div class="col-lg-3 mb-3">
-                                        <label class="form-label" for="priNombre">Primer nombre</label>
-                                        <input type="text" class="form-control" id="priNombre" name="priNombre" required>
-                                    </div>
-                                    <div class="col-lg-3 mb-3">
-                                        <label class="form-label" for="segNombre">Segundo nombre</label>
-                                        <input type="text" class="form-control" id="segNombre" name="segNombre">
-                                    </div>
-                                    <div class="col-lg-3 mb-3">
-                                        <label class="form-label" for="priApellido">Primer apellido</label>
-                                        <input type="text" class="form-control" id="priApellido" name="priApellido" required>
-                                    </div>
-                                    <div class="col-lg-3 mb-3">
-                                        <label class="form-label" for="segApellido">Segundo apellido</label>
-                                        <input type="text" class="form-control" id="segApellido" name="segApellido">
-                                    </div>
-                                    <div class="col-lg-6 mb-3">
-                                        <label class="form-label" for="usuario">Usuario</label>
-                                        <div class="input-group flex-nowrap">
-                                            <span class="input-group-text"><i class="fa fa-user"></i></span>
-                                            <input type="text" class="form-control" id="usuario" name="usuario" placeholder="Usuario generado automáticamente" disabled>
+                                    <input type="hidden" name="idUsuario" id="idUsuario" value="0" autocomplete="off">
+
+                                    <div class="row">
+                                        <div class="col-lg-3 mb-3">
+                                            <label class="form-label" for="priNombre">Primer nombre</label>
+                                            <input type="text" class="form-control" id="priNombre" name="priNombre" required autocomplete="off">
+                                        </div>
+                                        <div class="col-lg-3 mb-3">
+                                            <label class="form-label" for="segNombre">Segundo nombre</label>
+                                            <input type="text" class="form-control" id="segNombre" name="segNombre" autocomplete="off">
+                                        </div>
+                                        <div class="col-lg-3 mb-3">
+                                            <label class="form-label" for="priApellido">Primer apellido</label>
+                                            <input type="text" class="form-control" id="priApellido" name="priApellido" required autocomplete="off">
+                                        </div>
+                                        <div class="col-lg-3 mb-3">
+                                            <label class="form-label" for="segApellido">Segundo apellido</label>
+                                            <input type="text" class="form-control" id="segApellido" name="segApellido" autocomplete="off">
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="form-label" for="usuario">Usuario</label>
+                                            <div class="input-group flex-nowrap">
+                                                <span class="input-group-text"><i class="fa fa-user"></i></span>
+                                                <input type="text" class="form-control" id="usuario" name="usuario" placeholder="Usuario generado automáticamente" disabled autocomplete="off">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="form-label" for="correo">Correo</label>
+                                            <div class="input-group mb-3">
+                                                <input type="email" class="form-control" id="correo" name="correo" aria-describedby="correo" required autocomplete="off">
+                                                <span class="input-group-text" id="correo">gmail.com</span>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="form-label" for="telefono">Telefono</label>
+                                            <div class="input-group mb-3">
+                                                <span class="input-group-text"><i class="fa fa-phone"></i></span>
+                                                <input type="text" class="form-control" id="telefono" name="telefono" maxlength="8" pattern="\d{8}" title="Debe ingresar exactamente 8 números" required autocomplete="off">
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <label class="form-label" for="telefono">Selecionar rol</label>
+                                            <div class="input-group mb-3">
+                                                <label class="input-group-text" for="obtenerRol"><i class="fas fa-user-shield"></i></label>
+                                                <select class="form-select" id="obtenerRol"></select>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-6 mb-3">
+                                            <div class="form-check form-switch">
+                                                <input class="form-check-input" type="checkbox" id="estado" checked required>
+                                                <label class="form-check-label" for="estado">Estado Inactivo/Activo</label>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="col-lg-6 mb-3">
-                                        <label class="form-label" for="correo">Correo</label>
-                                        <div class="input-group mb-3">
-                                            <input type="email" class="form-control" id="correo" name="correo" aria-describedby="correo" required>
-                                            <span class="input-group-text" id="correo">gmail.com</span>
-                                        </div>
+                                    <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                                        <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                                            <i class="fas fa-times-circle me-2"></i>Cerrar
+                                        </button>
+                                        <button type="submit" style="background: #0072BB " onclick="Guardar()" class="btn btn-success w-50">
+                                            <i class="fas fa-save me-2"></i>Guardar
+                                        </button>
                                     </div>
-                                    <div class="col-lg-6 mb-3">
-                                        <label class="form-label" for="telefono">Telefono</label>
-                                        <div class="input-group mb-3">
-                                            <span class="input-group-text"><i class="fa fa-phone"></i></span>
-                                            <input type="text" class="form-control" id="telefono" name="telefono" maxlength="8" pattern="\d{8}" title="Debe ingresar exactamente 8 números" required>                                        </div>
-                                    </div>
-                                    <div class="col-lg-6 mb-3">
-                                        <label class="form-label" for="telefono">Selecionar rol</label>
-                                        <div class="input-group mb-3">
-                                            <label class="input-group-text" for="obtenerRol"><i class="fas fa-user-shield"></i></label>
-                                            <select class="form-select" id="obtenerRol"></select>
-                                        </div>
-                                    </div>
-                                    <div class="col-lg-6 mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" id="estado" checked required>
-                                            <label class="form-check-label" for="estado">Estado Inactivo/Activo</label>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                                        <i class="fas fa-times-circle me-2"></i>Cerrar
-                                    </button>
-                                    <button type="submit" style="background: #0072BB " onclick="Guardar()" class="btn btn-success w-50">
-                                        <i class="fas fa-save me-2"></i>Guardar
-                                    </button>
-                                </div>
+                                </form>
                             </div>
                         </div>
                     </div>
