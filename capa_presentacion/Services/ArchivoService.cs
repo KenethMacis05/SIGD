@@ -6,13 +6,28 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Web;
+using System.Web.Hosting;
 
 namespace capa_presentacion.Services
 {
+    public class ArchivoVisualizacionResult
+    {
+        public bool Respuesta { get; set; }
+        public string Mensaje { get; set; }
+        public string TipoArchivo { get; set; }
+        public string TextoBase64 { get; set; }
+        public string Ruta { get; set; }
+        public string Mime { get; set; }
+    }
+
+
     public class ArchivoService
     {
         CN_Archivo CN_Archivo = new CN_Archivo();
+        CN_Carpeta CN_Carpeta = new CN_Carpeta();
+        CN_Recursos CN_Recurso = new CN_Recursos();
 
+        /// <summary> Crea una carpeta en el servidor de archivos.</summary>
         public bool CrearCarpeta(string carpeta, out string mensaje, string ruta = null)
         {
             try
@@ -53,7 +68,7 @@ namespace capa_presentacion.Services
             }
         }
 
-
+        /// <summary> Subir un archivo a una carpeta específica o a la carpeta raíz del usuario.</summary>
         public bool SubirArchivoConCarpeta(HttpPostedFileBase archivoSubido, int idCarpeta, int idUsuario, out string mensaje)
         {
             mensaje = string.Empty;
@@ -115,9 +130,8 @@ namespace capa_presentacion.Services
             }
             else
             {
-                // 2. Obtener ruta real de la carpeta destino
-                CN_Carpeta cnCarpeta = new CN_Carpeta();
-                if (!cnCarpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensajeRuta))
+                // 2. Obtener ruta real de la carpeta destino                
+                if (!CN_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensajeRuta))
                 {
                     mensaje = "No se pudo obtener la ruta de la carpeta destino. " + mensajeRuta;
                     return false;
@@ -157,6 +171,7 @@ namespace capa_presentacion.Services
             }
         }
 
+        /// <summary> Validar el tamaño del archivo a subir.</summary>
         private bool ValidarTamañoArchivo(HttpPostedFileBase archivoSubido, out string mensaje)
         {
             mensaje = string.Empty;
@@ -168,6 +183,7 @@ namespace capa_presentacion.Services
             return true;
         }
 
+        /// <summary> Validar el tipo de archivo según la configuración.</summary>
         private bool ValidarTipoArchivo(string extensionArchivo, out string mensaje)
         {
             mensaje = string.Empty;
@@ -184,6 +200,132 @@ namespace capa_presentacion.Services
                 return false;
             }
             return true;
+        }
+
+        /// <summary> Visualizar un imagen.</summary>
+        public ArchivoVisualizacionResult VisualizarImagen(int idArchivo, string extension)
+        {
+            bool conversion;
+            string rutaArchivo, mensaje;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo encontrar la imagen: " + mensaje };
+
+            string rutaFisicaArchivo = HostingEnvironment.MapPath(rutaArchivo);
+            if (!File.Exists(rutaFisicaArchivo))
+                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "La imagen no existe en el servidor." };
+
+            string base64 = CN_Recurso.ConvertBase64(rutaFisicaArchivo, out conversion);
+            string mime = extension == ".png" ? "image/png" : extension == ".gif" ? "image/gif" : "image/jpeg";
+
+            if (!conversion)
+                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo convertir la imagen a base64." };
+
+            return new ArchivoVisualizacionResult
+            {
+                Respuesta = true,
+                TipoArchivo = "imagen",
+                TextoBase64 = base64,
+                Mime = mime
+            };
+        }
+
+        /// <summary> Visualizar un video.</summary>
+        public ArchivoVisualizacionResult VisualizarVideo(int idArchivo, string extension)
+        {
+            string rutaArchivo, mensaje;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo encontrar el video: " + mensaje };
+
+            if (rutaArchivo.StartsWith("~"))
+                rutaArchivo = rutaArchivo.Substring(1);
+            rutaArchivo = rutaArchivo.Replace("\\", "/");
+            if (!rutaArchivo.StartsWith("/"))
+                rutaArchivo = "/" + rutaArchivo;
+
+            string rutaFisicaArchivo = HostingEnvironment.MapPath(rutaArchivo);
+            if (!File.Exists(rutaFisicaArchivo))
+                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "El video no existe en el servidor." };
+
+            string mime = extension == ".mp4" ? "video/mp4" : extension == ".webm" ? "video/webm" : "video/ogg";
+            return new ArchivoVisualizacionResult
+            {
+                Respuesta = true,
+                TipoArchivo = "video",
+                Ruta = rutaArchivo,
+                Mime = mime
+            };
+        }
+
+        /// <summary> Visualizar un documento.</summary>
+        public ArchivoVisualizacionResult VisualizarDocumento(int idArchivo, string extension)
+        {
+            string rutaArchivo, mensaje;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo encontrar el documento: " + mensaje };
+
+            if (rutaArchivo.StartsWith("~"))
+                rutaArchivo = rutaArchivo.Substring(1);
+            rutaArchivo = rutaArchivo.Replace("\\", "/");
+            if (!rutaArchivo.StartsWith("/"))
+                rutaArchivo = "/" + rutaArchivo;
+
+            string mime;
+            if (extension == ".pdf")
+                mime = "application/pdf";
+            else if (extension == ".docx" || extension == ".doc")
+                mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            else if (extension == ".xlsx" || extension == ".xls")
+                mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            else if (extension == ".pptx" || extension == ".ppt")
+                mime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+            else if (extension == ".txt")
+                mime = "text/plain";
+            else
+                mime = "application/octet-stream";
+
+            return new ArchivoVisualizacionResult
+            {
+                Respuesta = true,
+                TipoArchivo = "documento",
+                Ruta = rutaArchivo,
+                Mime = mime
+            };
+        }
+
+        /// <summary> Visualizar un audio.</summary>
+        public ArchivoVisualizacionResult VisualizarAudio(int idArchivo, string extension)
+        {
+            string rutaArchivo, mensaje;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo encontrar el audio: " + mensaje };
+
+            if (rutaArchivo.StartsWith("~"))
+                rutaArchivo = rutaArchivo.Substring(1);
+            rutaArchivo = rutaArchivo.Replace("\\", "/");
+            if (!rutaArchivo.StartsWith("/"))
+                rutaArchivo = "/" + rutaArchivo;
+
+            string mime;
+            if (extension == ".mp3")
+                mime = "audio/mpeg";
+            else if (extension == ".wav")
+                mime = "audio/wav";
+            else if (extension == ".ogg")
+                mime = "audio/ogg";
+            else if (extension == ".aac")
+                mime = "audio/aac";
+            else if (extension == ".flac")
+                mime = "audio/flac";
+            else
+                mime = "audio/mpeg";
+
+            return new ArchivoVisualizacionResult
+            {
+                Respuesta = true,
+                TipoArchivo = "audio",
+                Ruta = rutaArchivo,
+                Mime = mime
+            };
         }
     }
 }

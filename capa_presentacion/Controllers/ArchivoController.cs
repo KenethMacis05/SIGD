@@ -21,7 +21,6 @@ namespace capa_presentacion.Controllers
     {
         CN_Carpeta CN_Carpeta = new CN_Carpeta();
         CN_Archivo CN_Archivo = new CN_Archivo();
-        CN_Recursos CN_Recurso = new CN_Recursos();
         ArchivoService archivoService = new ArchivoService();
 
         #region Carpetas
@@ -31,7 +30,7 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        // Controlador para Listar carpetas recientes
+        // Enpoint(GET): Listar carpetas recientes        
         [HttpGet]
         public JsonResult ListarCarpetasRecientes()
         {
@@ -45,7 +44,7 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        // Controlador para Listar todas las carpetas
+        // Enpoint(GET): Listar todas las carpetas del usuario autenticado
         [HttpGet]
         public JsonResult ListarCarpetas()
         {
@@ -58,8 +57,8 @@ namespace capa_presentacion.Controllers
 
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
-
-        // Controlador para Listar todas las subcarpetas
+        
+        // Enpoint(POST): Listar carpetas por ID de carpeta padre
         [HttpPost]
         public JsonResult ListarSubCarpetas(int idCarpeta)
         {            
@@ -81,8 +80,8 @@ namespace capa_presentacion.Controllers
                 return Json(new { data = new List<CARPETA>(), resultado = -1, mensaje = "Error interno: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
-
-        // Controlador para Crear o Editar carpetas        
+        
+        // Enpoint(POST): Crear o Editar carpeta
         [HttpPost]
         public JsonResult GuardarCarpeta(CARPETA carpeta)
         {
@@ -125,49 +124,8 @@ namespace capa_presentacion.Controllers
 
             return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
-
-        [AllowAnonymous]
-        [HttpGet]
-        public ActionResult DescargarCarpeta(int idCarpeta)
-        {
-            string rutaCarpeta, mensaje;
-
-            // 1. Obtener la ruta lógica de la carpeta desde la capa de negocio
-            if (!CN_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensaje) || string.IsNullOrEmpty(rutaCarpeta))
-                return Content("No se pudo encontrar la carpeta: " + mensaje);
-
-            // 2. Construir la ruta física en el servidor
-            string rutaFisicaCarpeta = Server.MapPath(rutaCarpeta);
-
-            if (!Directory.Exists(rutaFisicaCarpeta))
-                return Content("La carpeta no existe en el servidor.");
-
-            // 3. Crear archivo ZIP temporalmente
-            string nombreZip = Path.GetFileName(rutaFisicaCarpeta) + ".zip";
-            string tempZipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".zip");
-
-            try
-            {
-                ZipFile.CreateFromDirectory(rutaFisicaCarpeta, tempZipPath);
-
-                byte[] bytesArchivo = System.IO.File.ReadAllBytes(tempZipPath);
-
-                // Borra el archivo temporal después de leerlo
-                System.IO.File.Delete(tempZipPath);
-
-                return File(bytesArchivo, "application/zip", nombreZip);
-            }
-            catch (Exception ex)
-            {
-                // Borra el ZIP si existió pero falló la descarga
-                if (System.IO.File.Exists(tempZipPath))
-                    System.IO.File.Delete(tempZipPath);
-
-                return Content("Ocurrió un error al comprimir la carpeta: " + ex.Message);
-            }
-        }
-
-        // Controlador para Eliminar una carpeta
+        
+        // Epoint(POST): Eliminar una carpeta
         [HttpPost]
         public JsonResult EliminarCarpeta(int id_carpeta)
         {
@@ -178,7 +136,8 @@ namespace capa_presentacion.Controllers
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        // Controlador para Eliminar Difinitivamente una carpeta o archivo
+        // Epoint(POST): Eliminar una carpeta o archivo de forma definitiva
+        [HttpPost]
         public JsonResult EliminarDefinitivamente(int id_eliminar, string tipo_registro)
         {
             string mensaje = string.Empty;
@@ -223,7 +182,7 @@ namespace capa_presentacion.Controllers
 
         #region Archivos      
 
-        // Controlador para listar archivos recientes
+        // Endpoint(GET): para listar archivos recientes del usuario autenticado
         [HttpGet]
         public JsonResult ListarArchivosRecientes()
         {
@@ -244,7 +203,7 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Controlador para listar todos los archivos
+        // Endpoint(GET): para listar todos los archivos del usuario autenticado
         [HttpGet]
         public JsonResult ListarArchivos()
         {
@@ -264,7 +223,8 @@ namespace capa_presentacion.Controllers
                 return Json(new { resultado = 0, mensaje = "Error al obtener los archivos recientes: " + ex.Message, data = new List<ARCHIVO>() }, JsonRequestBehavior.AllowGet);
             }
         }
-        
+
+        // Endpoint(GET): para listar archivos por carpeta
         [HttpGet]
         public JsonResult ListarArchivosPorCarpeta(int idCarpeta)
         {
@@ -284,7 +244,7 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Controlador para Subir archivos
+        // Endpoint(POST): para subir un archivo a una carpeta específica
         [HttpPost]
         public JsonResult SubirArchivo(HttpPostedFileBase ARCHIVO, string CARPETAJSON)
         {
@@ -305,194 +265,7 @@ namespace capa_presentacion.Controllers
             return Json(new { Respuesta = ok, Mensaje = mensaje });
         }
 
-        [AllowAnonymous]
-        [HttpGet]
-        public ActionResult DescargarArchivo(int idArchivo)
-        {
-            string rutaArchivo, mensaje;
-
-            // 1. Obtener la ruta lógica del archivo desde la capa de negocio
-            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
-                return Content("No se pudo encontrar el archivo: " + mensaje);
-
-            // 2. Construir la ruta física en el servidor
-            string rutaFisicaArchivo = Server.MapPath(rutaArchivo);
-
-            if (!System.IO.File.Exists(rutaFisicaArchivo))
-                return Content("El archivo no existe en el servidor.");
-
-            try
-            {
-                // 3. Leer el archivo y devolverlo
-                byte[] bytesArchivo = System.IO.File.ReadAllBytes(rutaFisicaArchivo);
-                string nombreArchivo = Path.GetFileName(rutaFisicaArchivo);
-
-                // Opcional: Detectar el tipo MIME
-                string mimeType = MimeMapping.GetMimeMapping(nombreArchivo);
-
-                return File(bytesArchivo, mimeType, nombreArchivo);
-            }
-            catch (Exception ex)
-            {
-                return Content("Ocurrió un error al descargar el archivo: " + ex.Message);
-            }
-        }
-
-        [AllowAnonymous]
-        [HttpPost]
-        public JsonResult VisualizarArchivo(int idArchivo, string extension)
-        {
-            extension = extension?.ToLower();
-            string[] imagenes = { ".jpg", ".jpeg", ".png", ".gif" };
-            string[] videos = { ".mp4", ".webm", ".ogg" };
-            string[] docs = { ".pdf", ".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".txt" };
-            string[] audios = { ".mp3", ".wav", ".ogg", ".aac", ".flac" };
-
-            if (imagenes.Contains(extension))
-                return VisualizarImagen(idArchivo, extension);
-            else if (videos.Contains(extension))
-                return VisualizarVideo(idArchivo, extension);
-            else if (docs.Contains(extension))
-                return VisualizarDocumento(idArchivo, extension);
-            else if (audios.Contains(extension))
-                return VisualizarAudio(idArchivo, extension);
-            else
-                return Json(new { Respuesta = false, Mensaje = "Tipo de archivo no soportado." }, JsonRequestBehavior.AllowGet);
-        }
-
-        // Método auxiliar para imágenes
-        private JsonResult VisualizarImagen(int idArchivo, string extension)
-        {
-            bool conversion;
-            string rutaArchivo, mensaje;
-
-            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
-                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar la imagen: " + mensaje }, JsonRequestBehavior.AllowGet);
-
-            string rutaFisicaArchivo = Server.MapPath(rutaArchivo);
-            if (!System.IO.File.Exists(rutaFisicaArchivo))
-                return Json(new { Respuesta = false, Mensaje = "La imagen no existe en el servidor." }, JsonRequestBehavior.AllowGet);
-
-            string base64 = CN_Recurso.ConvertBase64(rutaFisicaArchivo, out conversion);
-            string mime = extension == ".png" ? "image/png" : extension == ".gif" ? "image/gif" : "image/jpeg";
-
-            if (!conversion)
-                return Json(new { Respuesta = false, Mensaje = "No se pudo convertir la imagen a base64." }, JsonRequestBehavior.AllowGet);
-
-            return Json(new
-            {
-                Respuesta = true,
-                TipoArchivo = "imagen",
-                TextoBase64 = base64,
-                Mime = mime
-            }, JsonRequestBehavior.AllowGet);
-        }
-
-        // Método auxiliar para videos
-        private JsonResult VisualizarVideo(int idArchivo, string extension)
-        {
-            string rutaArchivo, mensaje;
-
-            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
-                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar el video: " + mensaje }, JsonRequestBehavior.AllowGet);
-
-            if (rutaArchivo.StartsWith("~"))
-                rutaArchivo = rutaArchivo.Substring(1);
-
-            rutaArchivo = rutaArchivo.Replace("\\", "/");
-
-            if (!rutaArchivo.StartsWith("/"))
-                rutaArchivo = "/" + rutaArchivo;
-
-            string rutaFisicaArchivo = Server.MapPath(rutaArchivo);
-            if (!System.IO.File.Exists(rutaFisicaArchivo))
-                return Json(new { Respuesta = false, Mensaje = "El video no existe en el servidor." }, JsonRequestBehavior.AllowGet);
-
-            string mime = extension == ".mp4" ? "video/mp4" : extension == ".webm" ? "video/webm" : "video/ogg";
-            return Json(new
-            {
-                Respuesta = true,
-                TipoArchivo = "video",
-                Ruta = rutaArchivo,
-                Mime = mime
-            }, JsonRequestBehavior.AllowGet);
-        }
-
-        // Método auxiliar para documentos
-        private JsonResult VisualizarDocumento(int idArchivo, string extension)
-        {
-            string rutaArchivo, mensaje;
-            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
-                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar el documento: " + mensaje }, JsonRequestBehavior.AllowGet);
-
-            // Corrige la ruta igual que antes
-            if (rutaArchivo.StartsWith("~"))
-                rutaArchivo = rutaArchivo.Substring(1);
-            rutaArchivo = rutaArchivo.Replace("\\", "/");
-            if (!rutaArchivo.StartsWith("/"))
-                rutaArchivo = "/" + rutaArchivo;
-
-            // Mime básico (puedes mejorarlo)
-            string mime;
-            if (extension == ".pdf")
-                mime = "application/pdf";
-            else if (extension == ".docx" || extension == ".doc")
-                mime = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-            else if (extension == ".xlsx" || extension == ".xls")
-                mime = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-            else if (extension == ".pptx" || extension == ".ppt")
-                mime = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-            else if (extension == ".txt")
-                mime = "text/plain";
-            else
-                mime = "application/octet-stream";
-
-            return Json(new
-            {
-                Respuesta = true,
-                TipoArchivo = "documento",
-                Ruta = rutaArchivo,
-                Mime = mime
-            }, JsonRequestBehavior.AllowGet);
-        }
-
-        // Método auxiliar para audios
-        private JsonResult VisualizarAudio(int idArchivo, string extension)
-        {
-            string rutaArchivo, mensaje;
-            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
-                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar el audio: " + mensaje }, JsonRequestBehavior.AllowGet);
-
-            if (rutaArchivo.StartsWith("~"))
-                rutaArchivo = rutaArchivo.Substring(1);
-            rutaArchivo = rutaArchivo.Replace("\\", "/");
-            if (!rutaArchivo.StartsWith("/"))
-                rutaArchivo = "/" + rutaArchivo;
-
-            string mime;
-            if (extension == ".mp3")
-                mime = "audio/mpeg";
-            else if (extension == ".wav")
-                mime = "audio/wav";
-            else if (extension == ".ogg")
-                mime = "audio/ogg";
-            else if (extension == ".aac")
-                mime = "audio/aac";
-            else if (extension == ".flac")
-                mime = "audio/flac";
-            else
-                mime = "audio/mpeg";
-
-            return Json(new
-            {
-                Respuesta = true,
-                TipoArchivo = "audio",
-                Ruta = rutaArchivo,
-                Mime = mime
-            }, JsonRequestBehavior.AllowGet);
-        }
-
-        // Controlador para Eliminar una carpeta
+        // Endpoint(POST): para eliminar un archivo
         [HttpPost]
         public JsonResult EliminarArchivo(int id_archivo)
         {
@@ -503,8 +276,20 @@ namespace capa_presentacion.Controllers
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
         #endregion
+        
+        #region ArchivosCompartidos
 
-        // Controlador para Listar la papelera
+        // Vista a la vista de Archivos Compartidos
+        public ActionResult ArchivosCompartidos()
+        {
+            return View();
+        }
+
+        #endregion
+
+        #region Papelera
+
+        // Endpoint(GET): para listar archivos y carpetas eliminados del usuario autenticado (Papelera)
         [HttpGet]
         public JsonResult ListarPapelera()
         {
@@ -544,24 +329,122 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Controlador para Vaciar la papelera
+        // Endpoint(POST): para vaciar la papelera del usuario autenticado
         [HttpPost]
         public JsonResult VaciarPapelera()
         {
-            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];            
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
             string mensaje;
 
-            int resultado = CN_Carpeta.VaciarPapelera(usuario.id_usuario ,out mensaje);
+            int resultado = CN_Carpeta.VaciarPapelera(usuario.id_usuario, out mensaje);
             return Json(new { Respuesta = (resultado == 1), EsPapeleraVacia = resultado == -1, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-        }
-        #region ArchivosCompartidos
-
-        // Vista a la vista de Archivos Compartidos
-        public ActionResult ArchivosCompartidos()
-        {
-            return View();
         }
 
         #endregion        
+
+        // Controlador para Descargar una carpeta como ZIP
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult DescargarCarpeta(int idCarpeta)
+        {
+            string rutaCarpeta, mensaje;
+
+            // 1. Obtener la ruta lógica de la carpeta desde la capa de negocio
+            if (!CN_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensaje) || string.IsNullOrEmpty(rutaCarpeta))
+                return Content("No se pudo encontrar la carpeta: " + mensaje);
+
+            // 2. Construir la ruta física en el servidor
+            string rutaFisicaCarpeta = Server.MapPath(rutaCarpeta);
+
+            if (!Directory.Exists(rutaFisicaCarpeta))
+                return Content("La carpeta no existe en el servidor.");
+
+            // 3. Crear archivo ZIP temporalmente
+            string nombreZip = Path.GetFileName(rutaFisicaCarpeta) + ".zip";
+            string tempZipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".zip");
+
+            try
+            {
+                ZipFile.CreateFromDirectory(rutaFisicaCarpeta, tempZipPath);
+
+                byte[] bytesArchivo = System.IO.File.ReadAllBytes(tempZipPath);
+
+                // Borra el archivo temporal después de leerlo
+                System.IO.File.Delete(tempZipPath);
+
+                return File(bytesArchivo, "application/zip", nombreZip);
+            }
+            catch (Exception ex)
+            {
+                // Borra el ZIP si existió pero falló la descarga
+                if (System.IO.File.Exists(tempZipPath))
+                    System.IO.File.Delete(tempZipPath);
+
+                return Content("Ocurrió un error al comprimir la carpeta: " + ex.Message);
+            }
+        }
+
+        // Controlador para Descargar un archivo
+        [AllowAnonymous]
+        [HttpGet]
+        public ActionResult DescargarArchivo(int idArchivo)
+        {
+            string rutaArchivo, mensaje;
+
+            // 1. Obtener la ruta lógica del archivo desde la capa de negocio
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return Content("No se pudo encontrar el archivo: " + mensaje);
+
+            // 2. Construir la ruta física en el servidor
+            string rutaFisicaArchivo = Server.MapPath(rutaArchivo);
+
+            if (!System.IO.File.Exists(rutaFisicaArchivo))
+                return Content("El archivo no existe en el servidor.");
+
+            try
+            {
+                // 3. Leer el archivo y devolverlo
+                byte[] bytesArchivo = System.IO.File.ReadAllBytes(rutaFisicaArchivo);
+                string nombreArchivo = Path.GetFileName(rutaFisicaArchivo);
+
+                // Opcional: Detectar el tipo MIME
+                string mimeType = MimeMapping.GetMimeMapping(nombreArchivo);
+
+                return File(bytesArchivo, mimeType, nombreArchivo);
+            }
+            catch (Exception ex)
+            {
+                return Content("Ocurrió un error al descargar el archivo: " + ex.Message);
+            }
+        }
+
+        // Controlador para visualizar un archivo según su tipo (imagen, video, documento, audio)
+        [AllowAnonymous]
+        [HttpPost]
+        public JsonResult VisualizarArchivo(int idArchivo, string extension)
+        {
+            extension = extension?.ToLower();
+            string[] imagenes = { ".jpg", ".jpeg", ".png", ".gif" };
+            string[] videos = { ".mp4", ".webm", ".ogg" };
+            string[] docs = { ".pdf", ".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".txt" };
+            string[] audios = { ".mp3", ".wav", ".ogg", ".aac", ".flac" };
+
+            var archivoService = new ArchivoService();
+            ArchivoVisualizacionResult result;
+
+            if (imagenes.Contains(extension))
+                result = archivoService.VisualizarImagen(idArchivo, extension);
+            else if (videos.Contains(extension))
+                result = archivoService.VisualizarVideo(idArchivo, extension);
+            else if (docs.Contains(extension))
+                result = archivoService.VisualizarDocumento(idArchivo, extension);
+            else if (audios.Contains(extension))
+                result = archivoService.VisualizarAudio(idArchivo, extension);
+            else
+                result = new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "Tipo de archivo no soportado." };
+
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
     }
 }

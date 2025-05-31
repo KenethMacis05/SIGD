@@ -698,7 +698,7 @@ function abrirOnlyOfficeEditor(nombreArchivo, rutaArchivo, extensionArchivo) {
     else if (['.xls', '.xlsx', '.ods', '.csv'].includes(extensionArchivo)) documentType = 'cell';
     else if (['.ppt', '.pptx', '.odp'].includes(extensionArchivo)) documentType = 'slide';
 
-    // Clave única para este archivo. Puedes usar el idArchivo si tienes uno.
+    // Clave única para este archivo.
     let uniqueKey = nombreArchivo + '-' + Date.now();
 
     // Limpia el contenedor
@@ -716,12 +716,12 @@ function abrirOnlyOfficeEditor(nombreArchivo, rutaArchivo, extensionArchivo) {
             "title": nombreArchivo,
             "url": rutaArchivo,
             "permissions": {
-                "edit": false // Cambia a true si quieres permitir edición
+                "edit": true // Cambia a true si quieres permitir edición, false si solo quieres ver
             }
         },
         "editorConfig": {
             "lang": "es",
-            "mode": "view", // "edit" para editar
+            "mode": "edit", // "edit" para editar, "view"" para solo ver  
         }
     });
 }

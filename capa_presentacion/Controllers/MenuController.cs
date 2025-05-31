@@ -20,8 +20,7 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        // Enpoint(GET): Listar menus por rol de usuario
-        [AllowAnonymous]
+        // Enpoint(GET): Listar menus por rol de usuario        
         [HttpGet]
         public JsonResult ListarMenusPorRol(int IdRol)
         {
