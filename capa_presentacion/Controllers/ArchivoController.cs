@@ -346,6 +346,7 @@ namespace capa_presentacion.Controllers
             string[] imagenes = { ".jpg", ".jpeg", ".png", ".gif" };
             string[] videos = { ".mp4", ".webm", ".ogg" };
             string[] docs = { ".pdf", ".docx", ".doc", ".xlsx", ".xls", ".pptx", ".ppt", ".txt" };
+            string[] audios = { ".mp3", ".wav", ".ogg", ".aac", ".flac" };
 
             if (imagenes.Contains(extension))
                 return VisualizarImagen(idArchivo, extension);
@@ -353,6 +354,8 @@ namespace capa_presentacion.Controllers
                 return VisualizarVideo(idArchivo, extension);
             else if (docs.Contains(extension))
                 return VisualizarDocumento(idArchivo, extension);
+            else if (audios.Contains(extension))
+                return VisualizarAudio(idArchivo, extension);
             else
                 return Json(new { Respuesta = false, Mensaje = "Tipo de archivo no soportado." }, JsonRequestBehavior.AllowGet);
         }
@@ -448,6 +451,42 @@ namespace capa_presentacion.Controllers
             {
                 Respuesta = true,
                 TipoArchivo = "documento",
+                Ruta = rutaArchivo,
+                Mime = mime
+            }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Método auxiliar para audios
+        private JsonResult VisualizarAudio(int idArchivo, string extension)
+        {
+            string rutaArchivo, mensaje;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
+                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar el audio: " + mensaje }, JsonRequestBehavior.AllowGet);
+
+            if (rutaArchivo.StartsWith("~"))
+                rutaArchivo = rutaArchivo.Substring(1);
+            rutaArchivo = rutaArchivo.Replace("\\", "/");
+            if (!rutaArchivo.StartsWith("/"))
+                rutaArchivo = "/" + rutaArchivo;
+
+            string mime;
+            if (extension == ".mp3")
+                mime = "audio/mpeg";
+            else if (extension == ".wav")
+                mime = "audio/wav";
+            else if (extension == ".ogg")
+                mime = "audio/ogg";
+            else if (extension == ".aac")
+                mime = "audio/aac";
+            else if (extension == ".flac")
+                mime = "audio/flac";
+            else
+                mime = "audio/mpeg";
+
+            return Json(new
+            {
+                Respuesta = true,
+                TipoArchivo = "audio",
                 Ruta = rutaArchivo,
                 Mime = mime
             }, JsonRequestBehavior.AllowGet);

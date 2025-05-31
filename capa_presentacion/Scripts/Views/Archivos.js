@@ -605,7 +605,7 @@ $("#datatableArchivoEliminados tbody").on("click", '.btn-eliminarDifinitivamente
     });
 });
 
-// Visualizar imagen y video con LightGallery y documetos con PDF.js y Office Online Viewer
+// Visualizar imagen y video con LightGallery y documetos con PDF.js y OnlyOffice
 $(document).on('click', '.file-manager-recent-item-title', function (e) {
     e.preventDefault();
 
@@ -638,6 +638,14 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
                     abrirEnLightGallery(items);
                 } else if (resp.TipoArchivo === 'documento') {
                     mostrarDocumento(resp.Ruta, tipoArchivo, nombreArchivo);
+                } else if (resp.TipoArchivo === 'audio') {
+                    items.push({
+                        type: 'audio',
+                        src: resp.Ruta,
+                        mime: resp.Mime,
+                        subHtml: nombreArchivo
+                    });
+                    abrirEnLightGallery(items);
                 }else {
                     return;
                 }
@@ -655,26 +663,67 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
 function mostrarDocumento(ruta, extension, nombreArchivo) {
     extension = extension.toLowerCase();
 
-    if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {        
-        const enlace = document.createElement('a');
-        enlace.href = ruta;
-        enlace.download = nombreArchivo;
-        document.body.appendChild(enlace);
-        enlace.click();
-        document.body.removeChild(enlace);
-        return;
+    if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
+        //const enlace = document.createElement('a');
+        //enlace.href = ruta;
+        //enlace.download = nombreArchivo;
+        //document.body.appendChild(enlace);
+        //enlace.click();
+        //document.body.removeChild(enlace);
+        //return;
+        const rutaFisica = "http://192.168.1.200" + ruta;
+        console.log(rutaFisica);
+        $('#onlyofficeModal').modal('show');
+        abrirOnlyOfficeEditor(nombreArchivo, rutaFisica, extension);
     }
 
     let visorHTML = '';
     if (extension === '.pdf') {
         visorHTML = `<iframe src="${ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
+        $('#contenedorDocumento').html(visorHTML);
+        $('#modalDocumento').modal('show');
     } else if (extension === '.txt') {
         visorHTML = `<iframe src="${ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
+        $('#contenedorDocumento').html(visorHTML);
+        $('#modalDocumento').modal('show');
     } else {
         visorHTML = `<a href="${ruta}" download="${nombreArchivo}">Descargar documento</a>`;
     }
-    $('#contenedorDocumento').html(visorHTML);
-    $('#modalDocumento').modal('show');
+}
+
+function abrirOnlyOfficeEditor(nombreArchivo, rutaArchivo, extensionArchivo) {
+    // Determina el tipo de documento
+    let documentType = 'word';
+    if (['.doc', '.docx', '.odt', '.rtf'].includes(extensionArchivo)) documentType = 'word';
+    else if (['.xls', '.xlsx', '.ods', '.csv'].includes(extensionArchivo)) documentType = 'cell';
+    else if (['.ppt', '.pptx', '.odp'].includes(extensionArchivo)) documentType = 'slide';
+
+    // Clave única para este archivo. Puedes usar el idArchivo si tienes uno.
+    let uniqueKey = nombreArchivo + '-' + Date.now();
+
+    // Limpia el contenedor
+    document.getElementById('onlyoffice-editor').innerHTML = "";
+
+    // Inicializa el editor
+    var docEditor = new DocsAPI.DocEditor("onlyoffice-editor", {
+        "width": "100%",
+        "height": "100%",
+        "type": "desktop",
+        "documentType": documentType,
+        "document": {
+            "fileType": extensionArchivo.replace('.', ''),
+            "key": uniqueKey,
+            "title": nombreArchivo,
+            "url": rutaArchivo,
+            "permissions": {
+                "edit": false // Cambia a true si quieres permitir edición
+            }
+        },
+        "editorConfig": {
+            "lang": "es",
+            "mode": "view", // "edit" para editar
+        }
+    });
 }
 
 // Inicialización
