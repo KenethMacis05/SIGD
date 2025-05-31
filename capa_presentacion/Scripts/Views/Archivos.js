@@ -605,7 +605,9 @@ $("#datatableArchivoEliminados tbody").on("click", '.btn-eliminarDifinitivamente
     });
 });
 
-// Visualizar imagen y video con LightGallery y documetos con PDF.js y OnlyOffice
+// Visualización de archivos en File Manager con LightGallery, PDF.js y OnlyOffice con JWT (configuración generada en backend)
+
+// Al hacer clic en un archivo de la lista
 $(document).on('click', '.file-manager-recent-item-title', function (e) {
     e.preventDefault();
 
@@ -637,7 +639,7 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
                     });
                     abrirEnLightGallery(items);
                 } else if (resp.TipoArchivo === 'documento') {
-                    mostrarDocumento(resp.Ruta, tipoArchivo, nombreArchivo);
+                    mostrarDocumento(resp, tipoArchivo, nombreArchivo);
                 } else if (resp.TipoArchivo === 'audio') {
                     items.push({
                         type: 'audio',
@@ -646,10 +648,9 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
                         subHtml: nombreArchivo
                     });
                     abrirEnLightGallery(items);
-                }else {
+                } else {
                     return;
                 }
-                
             } else {
                 showAlert("Error", resp.Mensaje || 'No se pudo visualizar el archivo.', "error");
             }
@@ -660,70 +661,32 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
     });
 });
 
-function mostrarDocumento(ruta, extension, nombreArchivo) {
+// Visualización de documentos (Office, PDF, TXT, otros)
+function mostrarDocumento(resp, extension, nombreArchivo) {
     extension = extension.toLowerCase();
 
+    // Documentos de Office: utiliza OnlyOffice con la configuración generada por backend (incluye JWT)
     if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
-        //const enlace = document.createElement('a');
-        //enlace.href = ruta;
-        //enlace.download = nombreArchivo;
-        //document.body.appendChild(enlace);
-        //enlace.click();
-        //document.body.removeChild(enlace);
-        //return;
-        const rutaFisica = "http://192.168.1.200" + ruta;
-        console.log(rutaFisica);
         $('#onlyofficeModal').modal('show');
-        abrirOnlyOfficeEditor(nombreArchivo, rutaFisica, extension);
+        document.getElementById('onlyoffice-editor').innerHTML = "";
+        var docEditor = new DocsAPI.DocEditor("onlyoffice-editor", resp.ConfigOnlyOffice);
+        return;
     }
 
+    // PDF y TXT en visor integrado
     let visorHTML = '';
     if (extension === '.pdf') {
-        visorHTML = `<iframe src="${ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
+        visorHTML = `<iframe src="${resp.Ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
         $('#contenedorDocumento').html(visorHTML);
         $('#modalDocumento').modal('show');
     } else if (extension === '.txt') {
-        visorHTML = `<iframe src="${ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
+        visorHTML = `<iframe src="${resp.Ruta}" style="width:100%;height:80vh;border:none;"></iframe>`;
         $('#contenedorDocumento').html(visorHTML);
         $('#modalDocumento').modal('show');
     } else {
-        visorHTML = `<a href="${ruta}" download="${nombreArchivo}">Descargar documento</a>`;
+        // Otros: solo descarga
+        visorHTML = `<a href="${resp.Ruta}" download="${nombreArchivo}">Descargar documento</a>`;
     }
-}
-
-function abrirOnlyOfficeEditor(nombreArchivo, rutaArchivo, extensionArchivo) {
-    // Determina el tipo de documento
-    let documentType = 'word';
-    if (['.doc', '.docx', '.odt', '.rtf'].includes(extensionArchivo)) documentType = 'word';
-    else if (['.xls', '.xlsx', '.ods', '.csv'].includes(extensionArchivo)) documentType = 'cell';
-    else if (['.ppt', '.pptx', '.odp'].includes(extensionArchivo)) documentType = 'slide';
-
-    // Clave única para este archivo.
-    let uniqueKey = nombreArchivo + '-' + Date.now();
-
-    // Limpia el contenedor
-    document.getElementById('onlyoffice-editor').innerHTML = "";
-
-    // Inicializa el editor
-    var docEditor = new DocsAPI.DocEditor("onlyoffice-editor", {
-        "width": "100%",
-        "height": "100%",
-        "type": "desktop",
-        "documentType": documentType,
-        "document": {
-            "fileType": extensionArchivo.replace('.', ''),
-            "key": uniqueKey,
-            "title": nombreArchivo,
-            "url": rutaArchivo,
-            "permissions": {
-                "edit": true // Cambia a true si quieres permitir edición, false si solo quieres ver
-            }
-        },
-        "editorConfig": {
-            "lang": "es",
-            "mode": "edit", // "edit" para editar, "view"" para solo ver  
-        }
-    });
 }
 
 // Inicialización

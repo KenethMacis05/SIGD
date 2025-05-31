@@ -1,10 +1,12 @@
 ﻿using capa_entidad;
 using capa_negocio;
+using capa_presentacion.webtoken;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Web;
 using System.Web.Hosting;
 
@@ -18,6 +20,7 @@ namespace capa_presentacion.Services
         public string TextoBase64 { get; set; }
         public string Ruta { get; set; }
         public string Mime { get; set; }
+        public object ConfigOnlyOffice { get; set; }
     }
 
 
@@ -256,7 +259,7 @@ namespace capa_presentacion.Services
             };
         }
 
-        /// <summary> Visualizar un documento.</summary>
+        /// <summary> Visualizar un documento Office. </summary>
         public ArchivoVisualizacionResult VisualizarDocumento(int idArchivo, string extension)
         {
             string rutaArchivo, mensaje;
@@ -283,12 +286,63 @@ namespace capa_presentacion.Services
             else
                 mime = "application/octet-stream";
 
+            // Configuración OnlyOffice y JWT
+            string nombreArchivo = System.IO.Path.GetFileName(rutaArchivo);
+            string extensionArchivo = extension;
+            string documentType = "word";
+            if (new[] { ".xls", ".xlsx" }.Contains(extensionArchivo)) documentType = "cell";
+            else if (new[] { ".ppt", ".pptx" }.Contains(extensionArchivo)) documentType = "slide";
+            string uniqueKey = nombreArchivo + "-" + DateTime.Now.Ticks;
+            string baseUrl = "http://192.168.1.200"; // Cambia a tu IP si es necesario
+            string onlyofficeUrl = baseUrl + rutaArchivo;
+
+            var payload = new Dictionary<string, object>
+            {
+                { "document", new {
+                    fileType = extensionArchivo.Replace(".", ""),
+                    key = uniqueKey,
+                    title = nombreArchivo,
+                    url = onlyofficeUrl,
+                    permissions = new { edit = true }
+                }},
+                { "editorConfig", new {
+                    lang = "es",
+                    mode = "edit"
+                }}
+            };
+
+            var generador = new GenerarOnlyOfficeToken();
+            string token = generador.GenerarTokenOnlyOffice(payload);
+
+            var onlyofficeConfig = new
+            {
+                width = "100%",
+                height = "100%",
+                type = "desktop",
+                documentType = documentType,
+                document = new
+                {
+                    fileType = extensionArchivo.Replace(".", ""),
+                    key = uniqueKey,
+                    title = nombreArchivo,
+                    url = onlyofficeUrl,
+                    permissions = new { edit = true }
+                },
+                editorConfig = new
+                {
+                    lang = "es",
+                    mode = "edit"
+                },
+                token = token
+            };
+
             return new ArchivoVisualizacionResult
             {
                 Respuesta = true,
                 TipoArchivo = "documento",
                 Ruta = rutaArchivo,
-                Mime = mime
+                Mime = mime,
+                ConfigOnlyOffice = onlyofficeConfig
             };
         }
 

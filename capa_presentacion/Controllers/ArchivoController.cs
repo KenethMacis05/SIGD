@@ -418,7 +418,7 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Controlador para visualizar un archivo según su tipo (imagen, video, documento, audio)
+        // Controlador para visualizar un archivo (imagen, video, documento, audio)
         [AllowAnonymous]
         [HttpPost]
         public JsonResult VisualizarArchivo(int idArchivo, string extension)
