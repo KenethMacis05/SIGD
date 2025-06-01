@@ -63,6 +63,15 @@ namespace capa_presentacion.Filters
             {
                 sesionUsuario = sesionUsuario ?? new USUARIOS(); // Si es null, crea uno nuevo
                 controller.ViewBag.NombreUsuario = $"{sesionUsuario.pri_nombre} {sesionUsuario.pri_apellido}";
+
+                controller.ViewBag.UsuarioAut = sesionUsuario.usuario;
+                controller.ViewBag.PriNombreAut = sesionUsuario.pri_nombre;
+                controller.ViewBag.SegNombreAut = sesionUsuario.seg_nombre;
+                controller.ViewBag.PriApellidoAut = sesionUsuario.pri_apellido;
+                controller.ViewBag.SegApellidoAut = sesionUsuario.seg_apellido;                
+                controller.ViewBag.CorreoAut = sesionUsuario.correo;
+                controller.ViewBag.TelefonoAut = sesionUsuario.telefono;
+
                 controller.ViewBag.RolUsuario = sesionUsuario.descripcion;
                 controller.ViewBag.idUsuario = sesionUsuario.id_usuario;
             }

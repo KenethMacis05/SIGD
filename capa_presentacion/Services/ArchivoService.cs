@@ -331,8 +331,10 @@ namespace capa_presentacion.Services
                 editorConfig = new
                 {
                     lang = "es",
-                    mode = "edit"
+                    mode = "edit",
+                    callbackUrl = "http://192.168.1.200/Archivo/OnlyOfficeCallback?idArchivo=" + idArchivo
                 },
+
                 token = token
             };
 

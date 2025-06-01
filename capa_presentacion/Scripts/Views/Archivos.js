@@ -661,6 +661,8 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
     });
 });
 
+var docEditor = null; // Declarar en un scope accesible
+
 // Visualización de documentos (Office, PDF, TXT, otros)
 function mostrarDocumento(resp, extension, nombreArchivo) {
     extension = extension.toLowerCase();
@@ -669,7 +671,8 @@ function mostrarDocumento(resp, extension, nombreArchivo) {
     if (['.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx'].includes(extension)) {
         $('#onlyofficeModal').modal('show');
         document.getElementById('onlyoffice-editor').innerHTML = "";
-        var docEditor = new DocsAPI.DocEditor("onlyoffice-editor", resp.ConfigOnlyOffice);
+        if (docEditor) { docEditor.destroyEditor(); docEditor = null; }
+        docEditor = new DocsAPI.DocEditor("onlyoffice-editor", resp.ConfigOnlyOffice);
         return;
     }
 
@@ -689,13 +692,21 @@ function mostrarDocumento(resp, extension, nombreArchivo) {
     }
 }
 
+// Al cerrar el modal onlyOffice, destruir el editor para liberar recursos
+$('#onlyofficeModal').on('hidden.bs.modal', function () {
+    if (docEditor) {
+        docEditor.destroyEditor();   
+        docEditor = null;
+    }
+    document.getElementById('onlyoffice-editor').innerHTML = "";
+});
+
 // Inicialización
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
 });
-
 
 
 

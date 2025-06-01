@@ -25,6 +25,7 @@ VALUES
     ('Planificacion', 'Plan_Didactico_Semestral', 'Plan didáctico semestral', 'Vista'),
     ('Planificacion', 'Plan_de_Clases_Diario', 'Plan de clases diario', 'Vista'),
     ('Reportes', 'Index', 'Reportes del sistema', 'Vista'),
+    ('Usuario', 'Configuraciones', 'Configuración del usuario', 'Vista'),
     
     -- Acciones API/AJAX
     -- UsuarioController

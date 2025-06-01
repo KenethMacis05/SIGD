@@ -446,5 +446,44 @@ namespace capa_presentacion.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpPost]
+        [AllowAnonymous]
+        public ActionResult OnlyOfficeCallback(int idArchivo)
+        {
+            try
+            {
+                string jsonBody;
+                using (var reader = new StreamReader(Request.InputStream))
+                    jsonBody = reader.ReadToEnd();
+
+                dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonBody);
+                int status = data.status ?? 0;
+
+                if ((status == 2 || status == 6) && data.url != null)
+                {
+                    string downloadUrl = data.url.ToString();
+
+                    string rutaArchivo, mensaje;
+                    if (CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) && !string.IsNullOrEmpty(rutaArchivo))
+                    {
+                        string pathFisico = Server.MapPath(rutaArchivo); // Ruta física correcta
+
+                        using (var wc = new System.Net.WebClient())
+                        {
+                            wc.DownloadFile(downloadUrl, pathFisico);
+                        }
+                    }
+                }
+
+                return Json(new { error = 0 }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                System.IO.File.AppendAllText(Server.MapPath("~/App_Data/onlyoffice_callback_errors.log"),
+                    DateTime.Now.ToString("u") + " - " + ex.ToString() + Environment.NewLine);
+                
+                return Json(new { error = 1 }, JsonRequestBehavior.AllowGet);
+            }
+        }
     }
 }

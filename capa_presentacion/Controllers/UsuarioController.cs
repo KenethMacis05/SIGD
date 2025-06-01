@@ -22,6 +22,12 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
+        // GET: Configuraciones de usuario
+        public ActionResult Configuraciones()
+        {
+            return View();
+        }
+
         // Enpoint(GET): Listar los usuarios
         [HttpGet]
         public JsonResult ListarUsuarios()
