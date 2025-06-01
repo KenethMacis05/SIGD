@@ -295,6 +295,7 @@ namespace capa_presentacion.Services
             string uniqueKey = nombreArchivo + "-" + DateTime.Now.Ticks;
             string baseUrl = "http://192.168.1.200"; // Cambia a tu IP si es necesario
             string onlyofficeUrl = baseUrl + rutaArchivo;
+            string callbackUrl = baseUrl + "/Archivo/OnlyOfficeCallback?idArchivo=" + idArchivo;
 
             var payload = new Dictionary<string, object>
             {
@@ -307,7 +308,8 @@ namespace capa_presentacion.Services
                 }},
                 { "editorConfig", new {
                     lang = "es",
-                    mode = "edit"
+                    mode = "edit",
+                    callbackUrl = callbackUrl
                 }}
             };
 
@@ -332,7 +334,7 @@ namespace capa_presentacion.Services
                 {
                     lang = "es",
                     mode = "edit",
-                    callbackUrl = "http://192.168.1.200/Archivo/OnlyOfficeCallback?idArchivo=" + idArchivo
+                    callbackUrl = callbackUrl
                 },
 
                 token = token
