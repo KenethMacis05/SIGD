@@ -297,7 +297,8 @@ namespace capa_presentacion.Services
             if (new[] { ".xls", ".xlsx" }.Contains(extensionArchivo)) documentType = "cell";
             else if (new[] { ".ppt", ".pptx" }.Contains(extensionArchivo)) documentType = "slide";
 
-            string uniqueKey = Uri.EscapeDataString(nombreArchivo) + "-" + DateTime.Now.Ticks;
+            string nombreSinEspacios = nombreArchivo.Replace(" ", "_");
+            string uniqueKey = nombreSinEspacios + "-" + DateTime.Now.Ticks;
             string baseUrl = "http://192.168.1.200"; // Cambia a tu IP si es necesario
 
             // Usar la ruta codificada para la URL
