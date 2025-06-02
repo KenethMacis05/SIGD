@@ -446,115 +446,66 @@ namespace capa_presentacion.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        // Modelo para el callback JSON
-        public class OnlyOfficeCallbackModel
-        {
-            public int status { get; set; }
-            public string url { get; set; }
-        }
-
-
+        // Enpoint(POST): Resivir el Callback enviado por OnlyOffice
         [AllowAnonymous]
-        // Endpoint para texto plano (el que actualmente funciona)
         [HttpPost]
         public ActionResult OnlyOfficeCallback(int idArchivo)
         {
             string logPath = Server.MapPath("~/App_Data/onlyoffice_callback_debug.log");
             string errorPath = Server.MapPath("~/App_Data/onlyoffice_callback_errors.log");
-            string contentType = Request.ContentType;
-            string body = null;
 
             try
             {
-                // Leer el body manualmente para text/plain
-                using (var reader = new StreamReader(Request.InputStream))
-                    body = reader.ReadToEnd();
+                // Leer el JSON directamente
+                Request.InputStream.Position = 0;
+                string jsonBody = new StreamReader(Request.InputStream).ReadToEnd();
+                dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(jsonBody);
 
-                System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - ---- NUEVO REQUEST (TEXTO PLANO) ----\nContent-Type: {contentType}\nBody recibido:\n{body}\n");
+                // Log detallado
+                System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - ---- NUEVO REQUEST ----\n");
+                System.IO.File.AppendAllText(logPath, $"Content-Type: {Request.ContentType}\n");
+                System.IO.File.AppendAllText(logPath, $"JSON recibido:\n{jsonBody}\n");
 
-                if (string.IsNullOrWhiteSpace(body))
-                {
-                    System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - Body vacío.\n");
-                    return Json(new { error = 5, mensaje = "Body vacío" }, JsonRequestBehavior.AllowGet);
-                }
-
-                dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(body);
+                // Extraer valores del JSON
                 int status = data?.status ?? 0;
                 string url = data?.url?.ToString();
 
-                return ProcessCallback(idArchivo, status, url, logPath, errorPath);
-            }
-            catch (Exception ex)
-            {
-                System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - Error general: {ex}\n");
-                return Json(new { error = 1, mensaje = "Error interno" }, JsonRequestBehavior.AllowGet);
-            }
-        }
-
-        // Endpoint específico para JSON
-        [AllowAnonymous]
-        [HttpPost]
-        public ActionResult OnlyOfficeJSONCallback(int idArchivo, OnlyOfficeCallbackModel model)
-        {
-            string logPath = Server.MapPath("~/App_Data/onlyoffice_callback_debug.log");
-            string errorPath = Server.MapPath("~/App_Data/onlyoffice_callback_errors.log");
-
-            try
-            {
-                System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - ---- NUEVO REQUEST (JSON) ----\nContent-Type: {Request.ContentType}\nDatos recibidos:\nStatus: {model?.status}, URL: {model?.url}\n");
-
-                if (model == null)
+                if ((status == 2 || status == 6) && !string.IsNullOrEmpty(url))
                 {
-                    System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - Modelo nulo (JSON mal formado).\n");
-                    return Json(new { error = 5, mensaje = "Datos inválidos" }, JsonRequestBehavior.AllowGet);
-                }
-
-                return ProcessCallback(idArchivo, model.status, model.url, logPath, errorPath);
-            }
-            catch (Exception ex)
-            {
-                System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - Error general: {ex}\n");
-                return Json(new { error = 1, mensaje = "Error interno" }, JsonRequestBehavior.AllowGet);
-            }
-        }
-
-        // Método común para procesar el callback
-        private ActionResult ProcessCallback(int idArchivo, int status, string url, string logPath, string errorPath)
-        {
-            if ((status == 2 || status == 6) && !string.IsNullOrEmpty(url))
-            {
-                string rutaArchivo, mensaje;
-                if (CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) && !string.IsNullOrEmpty(rutaArchivo))
-                {
-                    string pathFisico = Server.MapPath(rutaArchivo);
-                    System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - idArchivo: {idArchivo}, rutaArchivo: {rutaArchivo}, pathFisico: {pathFisico}, downloadUrl: {url}\n");
-
-                    try
+                    string rutaArchivo, mensaje;
+                    if (CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) && !string.IsNullOrEmpty(rutaArchivo))
                     {
+                        string pathFisico = Server.MapPath(rutaArchivo);
+
+                        System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - Procesando:\n");
+                        System.IO.File.AppendAllText(logPath, $"ID Archivo: {idArchivo}\n");
+                        System.IO.File.AppendAllText(logPath, $"Ruta destino: {pathFisico}\n");
+
+                        // Descargar archivo
                         using (var wc = new System.Net.WebClient())
                         {
                             wc.DownloadFile(url, pathFisico);
-                            System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - Archivo descargado correctamente en {pathFisico}\n");
+                            System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - Archivo guardado exitosamente\n");
                         }
                     }
-                    catch (Exception wex)
+                    else
                     {
-                        System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - Error descargando archivo: {wex}\n");
-                        return Json(new { error = 3, mensaje = "Error descargando archivo" }, JsonRequestBehavior.AllowGet);
+                        System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - Archivo no encontrado (ID: {idArchivo})\n");
+                        return Json(new { error = 4, mensaje = "Archivo no encontrado" });
                     }
                 }
                 else
                 {
-                    System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - No se encontró ruta para idArchivo: {idArchivo}.\n");
-                    return Json(new { error = 4, mensaje = "Archivo no encontrado" }, JsonRequestBehavior.AllowGet);
+                    System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - No requiere acción (Status: {status}, URL: {url ?? "null"})\n");
                 }
-            }
-            else
-            {
-                System.IO.File.AppendAllText(logPath, $"{DateTime.Now:u} - No se descarga archivo. status: {status}, url: {url}\n");
-            }
 
-            return Json(new { error = 0 }, JsonRequestBehavior.AllowGet);
+                return Json(new { error = 0 });
+            }
+            catch (Exception ex)
+            {
+                System.IO.File.AppendAllText(errorPath, $"{DateTime.Now:u} - ERROR: {ex}\n");
+                return Json(new { error = 1, mensaje = "Error al conectarse con el servidor" });
+            }
         }
     }
 }
