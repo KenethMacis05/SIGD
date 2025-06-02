@@ -266,11 +266,15 @@ namespace capa_presentacion.Services
             if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
                 return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo encontrar el documento: " + mensaje };
 
+            // Normalizar la ruta del archivo
             if (rutaArchivo.StartsWith("~"))
                 rutaArchivo = rutaArchivo.Substring(1);
             rutaArchivo = rutaArchivo.Replace("\\", "/");
             if (!rutaArchivo.StartsWith("/"))
                 rutaArchivo = "/" + rutaArchivo;
+
+            // Codificar la URL para manejar espacios y caracteres especiales
+            string rutaArchivoCodificada = Uri.EscapeUriString(rutaArchivo);
 
             string mime;
             if (extension == ".pdf")
@@ -292,9 +296,12 @@ namespace capa_presentacion.Services
             string documentType = "word";
             if (new[] { ".xls", ".xlsx" }.Contains(extensionArchivo)) documentType = "cell";
             else if (new[] { ".ppt", ".pptx" }.Contains(extensionArchivo)) documentType = "slide";
-            string uniqueKey = nombreArchivo + "-" + DateTime.Now.Ticks;
+
+            string uniqueKey = Uri.EscapeDataString(nombreArchivo) + "-" + DateTime.Now.Ticks;
             string baseUrl = "http://192.168.1.200"; // Cambia a tu IP si es necesario
-            string onlyofficeUrl = baseUrl + rutaArchivo;
+
+            // Usar la ruta codificada para la URL
+            string onlyofficeUrl = baseUrl + rutaArchivoCodificada;
             string callbackUrl = baseUrl + "/Archivo/OnlyOfficeCallback?idArchivo=" + idArchivo;
 
             var payload = new Dictionary<string, object>
@@ -309,7 +316,11 @@ namespace capa_presentacion.Services
                 { "editorConfig", new {
                     lang = "es",
                     mode = "edit",
-                    callbackUrl = callbackUrl
+                    callbackUrl = callbackUrl,
+                    customization = new {
+                        autosave = true,
+                        forcesave = true
+                    }
                 }}
             };
 
@@ -334,9 +345,13 @@ namespace capa_presentacion.Services
                 {
                     lang = "es",
                     mode = "edit",
-                    callbackUrl = callbackUrl
+                    callbackUrl = callbackUrl,
+                    customization = new
+                    {
+                        autosave = true,
+                        forcesave = true
+                    }
                 },
-
                 token = token
             };
 
