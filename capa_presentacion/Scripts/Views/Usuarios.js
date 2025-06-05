@@ -2,7 +2,6 @@
 const listarRolesUrl = config.listarRolesUrl;
 const guardarUsuariosUrl = config.guardarUsuariosUrl;
 const eliminarUsuariosUrl = config.eliminarUsuariosUrl;
-const reiniciarPasswordUrl = config.reiniciarPasswordUrl;
 const buscarUsuariosUrl = config.buscarUsuariosUrl;
 let dataTable;
 let tablaReinicio;
@@ -234,6 +233,39 @@ $("#btnLimpiar").click(function () {
     }, 1500);
 });
 
+//Boton reiniciar contraseña usuario
+$("#tablaReinicio tbody").on("click", '.btn-reinicar', function () {
+    const usuarioseleccionado = $(this).closest("tr");
+    const data = tablaReinicio.row(usuarioseleccionado).data();
+    confirmarEliminacion().then((result) => {
+        if (result.isConfirmed) {
+            showLoadingAlert("Reiniciando contraseña", "Por favor espere...")
+
+            // Enviar petición AJAX
+            $.ajax({
+                url: config.reiniciarContrasenaUrl,
+                type: "POST",
+                data: JSON.stringify({ idUsuario: data.id_usuario }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        showAlert("¡Reinicio!", response.Mensaje || "Usuario reiniciado correctamente", "success", false, true);
+                        $("#filtroUsuario, #filtroNombres, #filtroApellidos").val("");
+                        tablaReinicio.clear().draw();
+                        $("#contadorRegistros").text("0 registros encontrados");
+                    } else {
+                        showAlert("Error", response.Mensaje || "No se pudo reiniciar la contraseña del usuario", "error");
+                    }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+            });
+        }
+    });
+});
+
 const dataTableOptions = {
     ...dataTableConfig,    
     ajax: {
@@ -354,60 +386,4 @@ const tablaReinicioOptions = {
 $(document).ready(function () {
     dataTable = $("#datatable").DataTable(dataTableOptions);
     tablaReinicio = $("#tablaReinicio").DataTable(tablaReinicioOptions);
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Boton reiniciar contraseña usuario
-$("#tablaReinicio tbody").on("click", '.btn-reinicar', function () {
-    const usuarioseleccionado = $(this).closest("tr");
-    const data = tablaReinicio.row(usuarioseleccionado).data();
-    console.log(data)
-    confirmarEliminacion().then((result) => {
-        if (result.isConfirmed) {
-            showLoadingAlert("Reiniciando contraseña", "Por favor espere...")
-
-            // Enviar petición AJAX
-            $.ajax({
-                url: config.restablecerContrasenaUrl,
-                type: "POST",
-                data: JSON.stringify({ idUsuario: data.id_usuario }),
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-
-                success: function (response) {
-                    Swal.close();
-                    if (response.Respuesta) {
-                        showAlert("¡Reinicio!", response.Mensaje || "Usuario reiniciado correctamente", "success", false, true);
-                        $("#filtroUsuario, #filtroNombres, #filtroApellidos").val("");
-                        tablaReinicio.clear().draw();
-                        $("#contadorRegistros").text("0 registros encontrados");
-                    } else {
-                        showAlert("Error", response.Mensaje || "No se pudo reiniciar la contraseña del usuario", "error");
-                    }
-                },
-                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
-            });
-        }
-    });
 });

@@ -71,6 +71,9 @@ namespace capa_presentacion.Filters
                 controller.ViewBag.SegApellidoAut = sesionUsuario.seg_apellido;                
                 controller.ViewBag.CorreoAut = sesionUsuario.correo;
                 controller.ViewBag.TelefonoAut = sesionUsuario.telefono;
+                controller.ViewBag.EstadoAut = sesionUsuario.estado;
+                controller.ViewBag.RolAut = sesionUsuario.fk_rol;
+                controller.ViewBag.PerfilAut = sesionUsuario.perfil;
 
                 controller.ViewBag.RolUsuario = sesionUsuario.descripcion;
                 controller.ViewBag.idUsuario = sesionUsuario.id_usuario;

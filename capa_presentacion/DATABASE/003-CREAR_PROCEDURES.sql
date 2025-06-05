@@ -24,8 +24,8 @@ IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_Actualizar
 DROP PROCEDURE usp_ActualizarUsuario
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_RestablecerContrasenaPorUsuario')
-DROP PROCEDURE usp_RestablecerContrasenaPorUsuario
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ReiniciarContrasena')
+DROP PROCEDURE usp_ReiniciarContrasena
 GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ActualizarContrasena')
@@ -555,6 +555,7 @@ BEGIN
         u.pri_apellido,
         u.seg_apellido,
         u.usuario,
+        u.perfil,
         u.correo,
         u.telefono,
         u.fk_rol,
@@ -596,6 +597,7 @@ BEGIN
     SELECT
         u.id_usuario,
         u.usuario,
+        u.perfil,
         u.fk_rol,
         u.pri_nombre,
         u.seg_nombre,
@@ -812,7 +814,7 @@ GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- (8) PROCEDIMIENTO ALMACENADO PARA RESTABLECER LA CONTRASEÑA DE UN USUARIO
-CREATE PROCEDURE usp_RestablecerContrasenaPorUsuario
+CREATE PROCEDURE usp_ReiniciarContrasena
     @IdUsuario INT,    
     @ClaveNueva VARCHAR(255),
 
@@ -2148,5 +2150,25 @@ BEGIN
     WHERE estado = 0
     AND fecha_eliminacion IS NOT NULL
     AND DATEDIFF(DAY, fecha_eliminacion, GETDATE()) > 30;
+END
+GO
+
+USE SISTEMA_DE_GESTION_DIDACTICA;
+GRANT EXECUTE TO [IIS APPPOOL\sigd];
+GO
+
+CREATE PROCEDURE sp_ActualizarFotoUsuario
+    @IdUsuario INT,
+    @Perfil NVARCHAR(MAX)
+AS
+BEGIN
+    UPDATE USUARIOS
+    SET perfil = @Perfil
+    WHERE id_usuario = @IdUsuario
+    
+    IF @@ROWCOUNT > 0
+        RETURN 1
+    ELSE
+        RETURN 0
 END
 GO

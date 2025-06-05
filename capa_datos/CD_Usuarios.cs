@@ -39,6 +39,7 @@ namespace capa_datos
                                     seg_apellido = dr["seg_apellido"].ToString(),
                                     usuario = dr["usuario"].ToString(),
                                     correo = dr["correo"].ToString(),
+                                    perfil = dr["perfil"].ToString(),
                                     telefono = Convert.ToInt32(dr["telefono"]),
                                     fk_rol = Convert.ToInt32(dr["fk_rol"]),
                                     estado = Convert.ToBoolean(dr["estado"]),
@@ -60,7 +61,7 @@ namespace capa_datos
         {
             using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
             {
-                string query = "SELECT u.id_usuario, u.pri_nombre, u.seg_nombre, u.pri_apellido, u.seg_apellido, u.usuario, u.correo, u.telefono, u.fk_rol, r.descripcion, u.estado, u.reestablecer FROM USUARIOS u INNER JOIN ROL r ON r.id_rol = u.fk_rol WHERE id_usuario = @idUsuario";
+                string query = "SELECT u.id_usuario, u.pri_nombre, u.seg_nombre, u.pri_apellido, u.seg_apellido, u.usuario, u.perfil, u.correo, u.telefono, u.fk_rol, r.descripcion, u.estado, u.reestablecer FROM USUARIOS u INNER JOIN ROL r ON r.id_rol = u.fk_rol WHERE id_usuario = @idUsuario";
 
                 SqlCommand cmd = new SqlCommand(query, conexion);
                 cmd.CommandType = CommandType.Text;
@@ -81,6 +82,7 @@ namespace capa_datos
                             seg_apellido = dr["seg_apellido"].ToString(),
                             usuario = dr["usuario"].ToString(),
                             correo = dr["correo"].ToString(),
+                            perfil = dr["perfil"].ToString(),
                             telefono = Convert.ToInt32(dr["telefono"]),
                             fk_rol = Convert.ToInt32(dr["fk_rol"]),
                             descripcion = dr["descripcion"].ToString(),
@@ -126,6 +128,7 @@ namespace capa_datos
                             {
                                 id_usuario = Convert.ToInt32(dr["id_usuario"]),
                                 usuario = dr["usuario"].ToString(),
+                                perfil = dr["perfil"].ToString(),
                                 fk_rol = Convert.ToInt32(dr["fk_rol"]),
                                 pri_nombre = dr["pri_nombre"].ToString(),
                                 seg_nombre = dr["seg_nombre"].ToString(),
@@ -339,7 +342,7 @@ namespace capa_datos
         }
 
         // Reinicar contraseña del usuario
-        public bool RestablecerContrasenaPorUsuario(int idUsuario, string claveNueva, out string mensaje)
+        public bool ReiniciarContrasena(int idUsuario, string claveNueva, out string mensaje)
         {
             bool resultado = false;
             mensaje = string.Empty;
@@ -347,7 +350,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_RestablecerContrasenaPorUsuario", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_ReiniciarContrasena", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     cmd.Parameters.AddWithValue("IdUsuario", idUsuario);                    
@@ -376,6 +379,36 @@ namespace capa_datos
             return resultado;
         }
 
+        // Actualizar foto de usuario
+        public static bool ActualizarFotoUsuario(int idUsuario, string fotoBase64, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+
+                    SqlCommand cmd = new SqlCommand("sp_ActualizarFotoUsuario", conexion);
+                    cmd.Parameters.AddWithValue("IdUsuario", idUsuario);
+                    cmd.Parameters.AddWithValue("Perfil", fotoBase64);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    conexion.Open();
+                    int resultado = cmd.ExecuteNonQuery();
+                    conexion.Close();
+
+                    mensaje = resultado > 0 ? "Foto actualizada correctamente" : "No se pudo actualizar la foto";
+                    return resultado > 0;
+                }
+            }
+            catch (Exception ex)
+            {
+                mensaje = ex.Message;
+                return false;
+            }            
+        }
+
         // Eliminar usuario
         public bool EliminarUsuario(int id_usuario, out string mensaje)
         {
@@ -383,24 +416,18 @@ namespace capa_datos
             mensaje = string.Empty;
             try
             {
-                // Crear conexión
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    // Consulta SQL con parámetros
                     SqlCommand cmd = new SqlCommand("usp_EliminarUsuario", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // Agregar parámetro de entrada
                     cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
 
-                    // Agregar parámetro de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
 
-                    // Abrir conexión
                     conexion.Open();
                     cmd.ExecuteNonQuery();
 
-                    // Obtener valores de los parámetros de salida
                     resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
                     mensaje = resultado ? "Usuario eliminado correctamente" : "El usuario no existe";
                 }

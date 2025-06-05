@@ -108,6 +108,19 @@ function confirmarEliminacion(titulo = "¿Estás seguro?", texto = "¡Esta acci�
     });
 }
 
+function confirmarAccion(titulo = "¿Estás seguro?", texto = "¡Esta acción no se puede deshacer!") {
+    return Swal.fire({
+        ...swalConfig,
+        title: titulo,
+        text: texto,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, actualizar",
+        cancelButtonText: "Cancelar",
+        reverseButtons: true
+    });
+}
+
 function showLoadingAlert(titulo = "Eliminando", mensaje = "Por favor espere...") {
     return Swal.fire({
         title: titulo,

@@ -587,6 +587,7 @@
     <Content Include="Scripts\Views\Menu.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\Roles.js" />
+    <Content Include="Scripts\Views\UserConfig.js" />
     <Content Include="Scripts\Views\Usuarios.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

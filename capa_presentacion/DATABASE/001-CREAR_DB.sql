@@ -83,6 +83,7 @@ CREATE TABLE USUARIOS (
     pri_apellido VARCHAR(60) NOT NULL,
     seg_apellido VARCHAR(60),
     usuario VARCHAR(50) NOT NULL UNIQUE,
+	perfil NVARCHAR(MAX) DEFAULT NULL,
     --contrasena VARBINARY(64) NOT NULL, -- Guardar el hash de la contraseña
 	contrasena VARCHAR(255) NOT NULL,
     correo VARCHAR(60) NOT NULL UNIQUE,

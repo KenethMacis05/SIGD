@@ -44,18 +44,42 @@
                     <h1 class="fs-3 m-0">Sistema Integrado de Gestión Didáctica - <span style="color: #FBB907" class="fw-bold">SIGD</span></h1>
                 </div>
                 <nav class="sb-topnav navbar navbar-expand navbar-dark table-cabezera" style="position: relative;">
+                    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!">
+                        <i class="fas fa-bars text-white"></i>
+                    </button>
 
-                    <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0" id="sidebarToggle" href="#!"><i class="fas fa-bars text-white"></i></button>
-
-                    <!-- Navbar-->
                     <ul class="navbar-nav d-md-inline-block ms-auto me-0 me-md-3 my-2 my-md-0">
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw text-white"></i></a>
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <span class="text-white d-none d-lg-inline fw-bold me-3 fs-6">@ViewBag.PriNombreAut @ViewBag.PriApellidoAut</span>
+                                <div class="position-relative me-2" style="width: 40px; height: 40px;">
+                                    <img src="@(string.IsNullOrEmpty(ViewBag.PerfilAut) ?
+                                           "https://ssl.gstatic.com/accounts/ui/avatar_2x.png" :
+                                           $"data:image/jpeg;base64,{ViewBag.PerfilAut}")"
+                                         class="rounded-circle border border-2 border-white"
+                                         alt="avatar"
+                                         style="width: 100%; height: 100%; object-fit: cover;">
+                                </div>
+                            </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="@Url.Action("Configuraciones", "Usuario")">Ajustes</a></li>
+                                <!-- Encabezado con foto grande -->
+                                <li class="dropdown-header text-center py-3">
+                                    <div class="mx-auto mb-2" style="width: 150px; height: 150px;">
+                                        <img src="@(string.IsNullOrEmpty(ViewBag.PerfilAut) ?
+                                               "https://ssl.gstatic.com/accounts/ui/avatar_2x.png" :
+                                               $"data:image/jpeg;base64,{ViewBag.PerfilAut}")"
+                                             class="rounded-circle border border-3 border-white w-100 h-100"
+                                             alt="avatar grande"
+                                             style="object-fit: cover;">
+                                    </div>
+                                    <div class="fw-bold">@ViewBag.PriNombreAut @ViewBag.PriApellidoAut</div>
+                                    <div class="small text-muted">@ViewBag.CorreoAut</div>
+                                </li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li><a class="dropdown-item loading-overlay" href="@Url.Action("Configuraciones", "Usuario")">Ajustes</a></li>
                                 <li><a class="dropdown-item" href="#!">Registro de actividad</a></li>
                                 <li><hr class="dropdown-divider" /></li>
-                                <li><a class="dropdown-item" href="@Url.Action("CerrarSesion", "Home")">Cerrar sesión</a></li>
+                                <li><a class="dropdown-item loading-overlay" href="@Url.Action("CerrarSesion", "Home")">Cerrar sesión</a></li>
                             </ul>
                         </li>
                     </ul>

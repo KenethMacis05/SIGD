@@ -41,7 +41,9 @@
                                     stroke-dashoffset="502.6" />
                         </svg>
                         <img id="avatarImg"
-                             src="@(ViewBag.FotoUrl ?? "https://ssl.gstatic.com/accounts/ui/avatar_2x.png")"
+                             src="@(string.IsNullOrEmpty(ViewBag.PerfilAut) ?
+                              "https://ssl.gstatic.com/accounts/ui/avatar_2x.png" :
+                              $"data:image/jpeg;base64,{ViewBag.PerfilAut}")"
                              class="rounded-circle"
                              alt="avatar"
                              style="width: 225px; height: 225px; object-fit: cover; position: absolute; top: 12px; left: 12px; z-index: 2; background: #fff;">
@@ -89,9 +91,14 @@
                     </div>
                     <div class="card-body">
                         <div class="tab-content" id="myTabContent">
+
+                            @*Actualizar los datos del usuario autenticado*@
                             <!--Contenedor 1-->
                             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                                <form id="configUserForm" autocomplete="off">
+                                <form id="configUserForm" method="post" autocomplete="off">
+                                    
+                                    <input type="hidden" id="obtenerRol" name="obtenerRol" value="@ViewBag.RolAut" />
+
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label for="priNombre" class="form-label">Primer nombre</label>
@@ -129,7 +136,7 @@
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-end">
-                                        <button type="submit" class="btn text-white" style="background: #0072BB">
+                                        <button type="submit" class="btn text-white" style="background: #0072BB" onclick="ActualizarDatos()">
                                             <i class="fas fa-save me-1"></i> Guardar Cambios
                                         </button>
                                     </div>
@@ -137,34 +144,34 @@
                             </div>
                             <!--Contenedor 2-->
                             <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">
+
+                                @*Actualizar contraseña*@
                                 <form id="resetPasswordForm" autocomplete="off" novalidate>
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <label for="email" class="form-label">Correo electrónico</label>
-                                            <input type="email" class="form-control" id="email" placeholder="Ingrese su correo electrónico" required autocomplete="off">
-                                            <div class="invalid-feedback">Por favor, ingresa tu correo electrónico.</div>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <label for="current-password" class="form-label">Contraseña actual</label>
-                                            <input type="password" class="form-control" id="current-password" placeholder="Ingrese su contraseña actual" required autocomplete="off">
+                                            <label for="claveActual" class="form-label">Contraseña actual</label>
+                                            <input type="password" class="form-control" id="claveActual" placeholder="Ingrese su contraseña actual" required autocomplete="off">
                                             <div class="invalid-feedback">Por favor, ingresa tu contraseña actual.</div>
                                         </div>
                                     </div>
                                     <div class="row mb-3">
                                         <div class="col-md-6">
-                                            <label for="new-password" class="form-label">Nueva contraseña</label>
-                                            <input type="password" class="form-control" id="new-password" placeholder="Ingrese nueva contraseña" required autocomplete="off">
+                                            <label for="nuevaClave" class="form-label">Nueva contraseña</label>
+                                            <input type="password" class="form-control" id="nuevaClave" placeholder="Ingrese nueva contraseña" required autocomplete="off">
                                             <div class="invalid-feedback">Por favor, ingresa una nueva contraseña.</div>
+
+                                            <div class="password-strength mb-2"></div>
+                                            <small class="form-text text-muted">Mínimo 8 caracteres con al menos una mayúscula, minúscula y número</small>
                                         </div>
                                         <div class="col-md-6">
-                                            <label for="confirm-password" class="form-label">Confirmar nueva contraseña</label>
-                                            <input type="password" class="form-control" id="confirm-password" placeholder="Confirme su nueva contraseña" required autocomplete="off">
+                                            <label for="claveConfir" class="form-label">Confirmar nueva contraseña</label>
+                                            <input type="password" class="form-control" id="claveConfir" placeholder="Confirme su nueva contraseña" required autocomplete="off">
                                             <div class="invalid-feedback">Por favor, confirma tu nueva contraseña.</div>
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-end">
-                                        <button type="button" class="btn text-white" style="background: #0072BB" id="btnReiniciar">
-                                            <i class="fas fa-save me-1"></i> Reiniciar contraseña
+                                        <button type="button" class="btn text-white" style="background: #0072BB" id="btnActualizarContrasena">
+                                            <i class="fas fa-save me-1"></i> Actualizar contraseña
                                         </button>
                                     </div>
                                 </form>
@@ -176,86 +183,15 @@
         </div>
     </div>
 </div>
- 
+
 @section Scripts {
     <script>
-        // Validación personalizada para todos los inputs requeridos
-        document.getElementById('btnReiniciar').onclick = function (e) {
-            let form = document.getElementById('resetPasswordForm');
-            let isValid = true;
-
-            // Buscar todos los inputs requeridos dentro del formulario
-            let requiredInputs = form.querySelectorAll('input[required]');
-
-            requiredInputs.forEach(function (input) {
-                input.classList.remove('is-invalid');
-                if (input.value.trim() === "") {
-                    input.classList.add('is-invalid');
-                    isValid = false;
-                }
-            });
-
-            // Validar que las contraseñas coincidan
-            let newPassword = form.querySelector('#new-password');
-            let confirmPassword = form.querySelector('#confirm-password');
-            if (newPassword.value && confirmPassword.value && newPassword.value !== confirmPassword.value) {
-                confirmPassword.classList.add('is-invalid');
-                confirmPassword.nextElementSibling.textContent = "Las contraseñas no coinciden.";
-                isValid = false;
-            } else if (confirmPassword.value) {
-                confirmPassword.nextElementSibling.textContent = "Por favor, confirma tu nueva contraseña.";
-            }
-
-            if (isValid) {
-                ActualizarPassword();
-            }            
+        var config = {
+            actualizarContrasenaUrl: '@Url.Action("ActualizarContrasena", "Usuario")',
+            actualizarFotoPerfilUrl: '@Url.Action("ActualizarFoto", "Usuario")',
+            actualizarDatosUsuarioAutUrl: '@Url.Action("ActualizarDatosUsuarioAut", "Usuario")',
         };
-
-        // Quitar borde rojo al corregir
-        document.querySelectorAll('#resetPasswordForm input[required]').forEach(function (input) {
-            input.addEventListener('input', function () {
-                if (this.value.trim() !== "") this.classList.remove('is-invalid');
-            });
-        });
-
-        function ActualizarPassword() {
-            console.log("Hola");
-            // Tu lógica para reiniciar la contraseña aquí
-        }
-
-        // Guarda la URL original al cargar la página
-        let originalAvatarUrl = document.getElementById('avatarImg').src;
-
-        // Si la imagen se cambia, muestra el botón guardar y activa la X
-        function previewFoto(event) {
-            const input = event.target;
-            const saveBtn = document.getElementById('saveFotoBtn');
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    document.getElementById('avatarImg').src = e.target.result;
-                    saveBtn.disabled = false;
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        // Limpiar el filtro: restaurar imagen original y resetear input
-        function clearFoto() {
-            document.getElementById('avatarImg').src = originalAvatarUrl;
-            document.getElementById('fotoPerfil').value = "";
-            document.getElementById('saveFotoBtn').disabled = true;
-        }
-
-        // Guardar la foto (implementa aquí tu lógica AJAX para guardar en servidor)
-        function saveFoto() {
-            // Ejemplo: obtén la imagen en base64
-            let imgSrc = document.getElementById('avatarImg').src;
-            // Aquí deberías hacer un POST con AJAX con la imagen
-            alert('Foto guardada (simulado). Aquí deberías enviar la imagen al servidor.');
-            document.getElementById('saveFotoBtn').disabled = true;
-            // Si guardas exitosamente, podrías actualizar originalAvatarUrl:
-            originalAvatarUrl = imgSrc;
-        }
     </script>
+    <script src="@Url.Content("~/Scripts/Views/UserConfig.js")" type="text/javascript"></script>
+
 }

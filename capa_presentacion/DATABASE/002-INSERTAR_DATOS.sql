@@ -33,7 +33,10 @@ VALUES
     ('Usuario', 'GuardarUsuario', 'Crear o actualizar usuario', 'API'),
     ('Usuario', 'EliminarUsuario', 'Eliminar usuario', 'API'),
     ('Usuario', 'BuscarUsuarios', 'Buscar usuario por nombres, apellido y usuario', 'API'),
-    ('Usuario', 'RestablecerContrasena', 'Restablecer contraseña de un usuario', 'API'),    
+    ('Usuario', 'ReiniciarContrasena', 'Reinicar contraseña de un usuario', 'API'),    
+    ('Usuario', 'ActualizarContrasena', 'Actualizar contraseña', 'API'),
+    ('Usuario', 'ActualizarDatosUsuarioAut', 'Actualizar los datos del usuario autenticado', 'API'),
+    ('Usuario', 'ActualizarFoto', 'Actualizar la foto de perfil', 'API'),
 
     -- ArchivoController
     ('Archivo', 'ListarCarpetasRecientes', 'Listar carpetas recientes', 'API'),
