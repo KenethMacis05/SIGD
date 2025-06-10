@@ -348,24 +348,46 @@ namespace capa_presentacion.Controllers
         public ActionResult DescargarCarpeta(int idCarpeta)
         {
             string rutaCarpeta, mensaje;
+            string nombreZip;
+            string rutaFisicaCarpeta;
 
-            // 1. Obtener la ruta lógica de la carpeta desde la capa de negocio
-            if (!CN_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensaje) || string.IsNullOrEmpty(rutaCarpeta))
-                return Content("No se pudo encontrar la carpeta: " + mensaje);
+            // Caso especial para idCarpeta = 0 (carpeta DEFAULT del usuario)
+            if (idCarpeta == 0)
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null)
+                    return Content("No se pudo identificar al usuario. Sesión no disponible.");
 
-            // 2. Construir la ruta física en el servidor
-            string rutaFisicaCarpeta = Server.MapPath(rutaCarpeta);
+                // Obtener la ruta base de archivos desde web.config
+                string rutaBaseArchivos = ConfigurationManager.AppSettings["ServidorArchivos"];
+                if (string.IsNullOrEmpty(rutaBaseArchivos))
+                    return Content("Configuración del servidor de archivos no encontrada.");
+
+                // Construir la ruta física correcta
+                rutaCarpeta = $"DEFAULT_{usuario.usuario}";
+                rutaFisicaCarpeta = Path.Combine(Server.MapPath(rutaBaseArchivos), rutaCarpeta);
+                nombreZip = $"{usuario.usuario}.zip";
+            }
+            else
+            {
+                // 1. Obtener la ruta lógica de la carpeta desde la capa de negocio
+                if (!CN_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out rutaCarpeta, out mensaje) || string.IsNullOrEmpty(rutaCarpeta))
+                    return Content("No se pudo encontrar la carpeta: " + mensaje);
+
+                // 2. Construir la ruta física en el servidor
+                rutaFisicaCarpeta = Server.MapPath(rutaCarpeta);
+                nombreZip = Path.GetFileName(rutaFisicaCarpeta) + ".zip";
+            }
 
             if (!Directory.Exists(rutaFisicaCarpeta))
                 return Content("La carpeta no existe en el servidor.");
 
             // 3. Crear archivo ZIP temporalmente
-            string nombreZip = Path.GetFileName(rutaFisicaCarpeta) + ".zip";
             string tempZipPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".zip");
 
             try
             {
-                ZipFile.CreateFromDirectory(rutaFisicaCarpeta, tempZipPath);
+                ZipFile.CreateFromDirectory(rutaFisicaCarpeta, tempZipPath, CompressionLevel.Fastest, false);
 
                 byte[] bytesArchivo = System.IO.File.ReadAllBytes(tempZipPath);
 

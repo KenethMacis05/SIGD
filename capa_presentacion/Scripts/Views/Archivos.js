@@ -548,6 +548,13 @@ $(document).on('click', '.btn-descargar', function (e) {
     window.location.href = '/Archivo/DescargarCarpeta?idCarpeta=' + idCarpeta;
 });
 
+// Decargar carpeta con el boton
+function descargar() {
+    var idCarpeta = carpetaActualId || "0";
+    console.log(idCarpeta);
+    window.location.href = '/Archivo/DescargarCarpeta?idCarpeta=' + idCarpeta;
+}
+
 // Descargar archivo
 $(document).on('click', '.btn-descargarArchivo', function (e) {
     e.preventDefault();
