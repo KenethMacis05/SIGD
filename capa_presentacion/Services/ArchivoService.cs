@@ -208,26 +208,27 @@ namespace capa_presentacion.Services
         /// <summary> Visualizar un imagen.</summary>
         public ArchivoVisualizacionResult VisualizarImagen(int idArchivo, string extension)
         {
-            bool conversion;
             string rutaArchivo, mensaje;
             if (!CN_Archivo.ObtenerRutaArchivoPorId(idArchivo, out rutaArchivo, out mensaje) || string.IsNullOrEmpty(rutaArchivo))
                 return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo encontrar la imagen: " + mensaje };
+
+            if (rutaArchivo.StartsWith("~"))
+                rutaArchivo = rutaArchivo.Substring(1);
+            rutaArchivo = rutaArchivo.Replace("\\", "/");
+            if (!rutaArchivo.StartsWith("/"))
+                rutaArchivo = "/" + rutaArchivo;
 
             string rutaFisicaArchivo = HostingEnvironment.MapPath(rutaArchivo);
             if (!File.Exists(rutaFisicaArchivo))
                 return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "La imagen no existe en el servidor." };
 
-            string base64 = CN_Recurso.ConvertBase64(rutaFisicaArchivo, out conversion);
             string mime = extension == ".png" ? "image/png" : extension == ".gif" ? "image/gif" : "image/jpeg";
-
-            if (!conversion)
-                return new ArchivoVisualizacionResult { Respuesta = false, Mensaje = "No se pudo convertir la imagen a base64." };
 
             return new ArchivoVisualizacionResult
             {
                 Respuesta = true,
                 TipoArchivo = "imagen",
-                TextoBase64 = base64,
+                Ruta = rutaArchivo,
                 Mime = mime
             };
         }

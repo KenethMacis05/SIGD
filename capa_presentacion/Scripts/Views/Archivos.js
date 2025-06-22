@@ -632,7 +632,8 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
                 if (resp.TipoArchivo === 'imagen') {
                     items.push({
                         type: 'imagen',
-                        src: 'data:' + resp.Mime + ';base64,' + resp.TextoBase64,
+                        src: resp.Ruta,
+                        mime: resp.Mime,
                         subHtml: nombreArchivo
                     });
                     abrirEnLightGallery(items);

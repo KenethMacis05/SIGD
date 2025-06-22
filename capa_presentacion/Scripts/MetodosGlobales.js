@@ -267,6 +267,19 @@ function obtenerIconoYColor(tipoArchivo) {
     return { icono, color };
 }
 
+// Formatear tamaño del archivo
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    let kb = bytes / 1024;
+    if (kb < 1024) return `${kb.toFixed(2)} KB`;
+    let mb = kb / 1024;
+    if (mb < 1024) return `${mb.toFixed(2)} MB`;
+    let gb = mb / 1024;
+    if (gb < 1024) return `${gb.toFixed(2)} GB`;
+    let tb = gb / 1024;
+    return `${tb.toFixed(2)} TB`;
+}
+
 // Colores reutilizables
 const COLORS = ['primary', 'warning', 'danger', 'success', 'info', 'secondary'];
 
@@ -332,7 +345,7 @@ function generarHtmlArchivo(archivo) {
                     <i class="fas ${icono} fa-lg ${color} fa-2x"></i>
                     <div class="flex-fill">                                        
                         <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block" data-archivo-id="${archivo.id_archivo}" data-archivo-nombre="${archivo.nombre}" data-archivo-tipo="${archivo.tipo}">${archivo.nombre}</a>
-                        <small class="text-muted">${archivo.size}kb - ${formatASPNetDate(archivo.fecha_subida)}</small>
+                        <small class="text-muted">${formatFileSize(archivo.size)} - ${formatASPNetDate(archivo.fecha_subida)}</small>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
