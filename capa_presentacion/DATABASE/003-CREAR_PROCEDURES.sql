@@ -1316,53 +1316,96 @@ END
 GO
 --------------------------------------------------------------------------------------------------------------------
 
--- (3) PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UNA CARPETA
-CREATE PROCEDURE usp_ActualizarCarpeta
-    @IdCarpeta INT,
-    @Nombre VARCHAR(60),
-    @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SET @Resultado = 0;
-    SET @Mensaje = '';
+-- (3) PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UNA CARPETA  
+CREATE OR ALTER PROCEDURE usp_ActualizarCarpeta  
+    @IdCarpeta INT,  
+    @Nombre VARCHAR(60),  
+    @Resultado INT OUTPUT,  
+    @Mensaje VARCHAR(255) OUTPUT  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+    SET @Resultado = 0;  
+    SET @Mensaje = '';  
 
-    -- Verificar si la carpeta existe
-    IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)
-    BEGIN
-        SET @Mensaje = 'La carpeta no existe'
-        RETURN
-    END
+    -- Verificar si la carpeta existe  
+    IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta)  
+    BEGIN  
+        SET @Mensaje = 'La carpeta no existe'  
+        RETURN  
+    END  
 
-    -- Obtener el ID del usuario propietario de esta carpeta
-    DECLARE @IdUsuario INT;
-    SELECT @IdUsuario = fk_id_usuario FROM CARPETA WHERE id_carpeta = @IdCarpeta;
+    -- Obtener el ID del usuario propietario de esta carpeta  
+    DECLARE @IdUsuario INT;  
+    SELECT @IdUsuario = fk_id_usuario FROM CARPETA WHERE id_carpeta = @IdCarpeta;  
 
-    -- Verificar si ya existe otra carpeta con ese nombre para el mismo usuario (excluyendo la actual)
-    IF EXISTS (
-        SELECT 1 
-        FROM CARPETA 
-        WHERE nombre = @Nombre 
-        AND fk_id_usuario = @IdUsuario 
-        AND id_carpeta != @IdCarpeta
-		AND estado = 1
-    )
-    BEGIN
-        SET @Mensaje = 'Ya existe una carpeta con ese nombre para este usuario'
-        RETURN
-    END	
+    -- Verificar si ya existe otra carpeta con ese nombre para el mismo usuario (excluyendo la actual)  
+    IF EXISTS (  
+        SELECT 1   
+        FROM CARPETA   
+        WHERE nombre = @Nombre   
+        AND fk_id_usuario = @IdUsuario   
+        AND id_carpeta != @IdCarpeta  
+        AND estado = 1  
+    )  
+    BEGIN  
+        SET @Mensaje = 'Ya existe una carpeta con ese nombre para este usuario'  
+        RETURN  
+    END   
 
-    -- Actualizar el nombre de la carpeta
-    UPDATE CARPETA
-    SET nombre = @Nombre
+    -- Obtener la ruta actual y la ruta nueva de la carpeta
+    DECLARE @RutaActual VARCHAR(255), @RutaPadre VARCHAR(255), @RutaNueva VARCHAR(255);
+    DECLARE @CarpetaPadre INT, @NombreAntiguo VARCHAR(60);
+
+    SELECT @RutaActual = ruta, @CarpetaPadre = carpeta_padre, @NombreAntiguo = nombre FROM CARPETA WHERE id_carpeta = @IdCarpeta;
+
+    -- Obtener la ruta del padre (o base si es raíz)
+    IF @CarpetaPadre IS NULL
+        SET @RutaPadre = LEFT(@RutaActual, LEN(@RutaActual) - LEN(@NombreAntiguo));
+    ELSE
+        SELECT @RutaPadre = ruta + '\' FROM CARPETA WHERE id_carpeta = @CarpetaPadre;
+
+    SET @RutaNueva = @RutaPadre + @Nombre;
+
+    -- Actualizar nombre y ruta de la carpeta actual
+    UPDATE CARPETA  
+    SET nombre = @Nombre, ruta = @RutaNueva
     WHERE id_carpeta = @IdCarpeta;
 
-    SET @Resultado = 1;
-    SET @Mensaje = 'Carpeta actualizada exitosamente'
+    -- Actualizar rutas de todas las carpetas hijas recursivamente
+    ;WITH Hijas AS (
+        SELECT id_carpeta, ruta, carpeta_padre
+        FROM CARPETA
+        WHERE carpeta_padre = @IdCarpeta
+        UNION ALL
+        SELECT c.id_carpeta, c.ruta, c.carpeta_padre
+        FROM CARPETA c
+        INNER JOIN Hijas h ON c.carpeta_padre = h.id_carpeta
+    )
+    UPDATE c
+    SET ruta = REPLACE(c.ruta, @RutaActual, @RutaNueva)
+    FROM CARPETA c
+    INNER JOIN Hijas h ON c.id_carpeta = h.id_carpeta;
+
+    -- Actualizar ruta de los archivos que pertenecen a esta carpeta y a TODAS las hijas (recursivo)
+    ;WITH TodasCarpetas AS (
+        SELECT id_carpeta, ruta
+        FROM CARPETA
+        WHERE id_carpeta = @IdCarpeta
+        UNION ALL
+        SELECT c.id_carpeta, c.ruta
+        FROM CARPETA c
+        INNER JOIN TodasCarpetas tc ON c.carpeta_padre = tc.id_carpeta
+    )
+    UPDATE a
+    SET a.ruta = REPLACE(a.ruta, @RutaActual, @RutaNueva)
+    FROM ARCHIVO a
+    INNER JOIN TodasCarpetas tc ON a.fk_id_carpeta = tc.id_carpeta;
+
+    SET @Resultado = 1;  
+    SET @Mensaje = 'Carpeta actualizada exitosamente';  
 END
 GO
-
 
 -- (4) PROCEDIMIENTO ALMACENADO PARA ELIMINAR UNA CARPETA
 CREATE PROCEDURE usp_EliminarCarpeta

@@ -118,8 +118,49 @@ namespace capa_presentacion.Controllers
             }
             else
             {
-                // Editar carpeta existente
-                resultado = CN_Carpeta.Editar(carpeta, out mensaje);
+                // 1. Obtener datos originales antes de modificar nada en la BD
+                string rutaAntigua, mensajeRutaAntigua;
+                bool rutaAntiguaObtenida = CN_Carpeta.ObtenerRutaCarpetaPorId(carpeta.id_carpeta, out rutaAntigua, out mensajeRutaAntigua);                
+
+                if (rutaAntiguaObtenida)
+                {
+                    try
+                    {                           
+                        resultado = CN_Carpeta.Editar(carpeta, out mensaje);
+                        if (resultado > 0)
+                        {
+                            // 2. Construir la ruta nueva (con el nuevo nombre)
+                            string rutaNueva, mensajeRutaNueva;
+                            bool rutaNuevaObtenida = CN_Carpeta.ObtenerRutaCarpetaPorId(carpeta.id_carpeta, out rutaNueva, out mensajeRutaNueva);
+
+                            // Convertir rutas lógicas a rutas físicas absolutas
+                            string rutaAntiguaFisica = Server.MapPath(rutaAntigua);
+                            string rutaNuevaFisica = Server.MapPath(rutaNueva);
+
+                            // Validar existencia de la carpeta origen
+                            if (Directory.Exists(rutaAntiguaFisica))
+                            {
+                                Directory.Move(rutaAntiguaFisica, rutaNuevaFisica);
+                            }
+                            else
+                            {
+                                mensaje = "La carpeta de origen no existe físicamente.";
+                                resultado = 0;
+                            }
+                        }
+                            
+                    }
+                    catch (Exception ex)
+                    {
+                        mensaje = "Error al renombrar la carpeta física: " + ex.Message;
+                        resultado = 0;
+                    }
+                }
+                else
+                {
+                    mensaje = "No se pudo obtener la ruta física de la carpeta o no existe la carpeta original.";
+                    resultado = 0;
+                }
             }
 
             return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
