@@ -50,6 +50,12 @@ namespace capa_negocio
             return CD_Archivo.SubirArchivo(archivo, out mensaje);
         }
 
+        public bool RenombrarArchivo(int idArchivo, string nuevoNombre, out string mensaje)
+        {
+            mensaje = string.Empty;
+            return CD_Archivo.RenombrarArchivo(idArchivo, nuevoNombre, out mensaje);
+        }
+
         public int Eliminar(int id_archivo, out string mensaje)
         {
             bool eliminado = CD_Archivo.EliminarArchivo(id_archivo, out mensaje);

@@ -313,6 +313,58 @@ namespace capa_presentacion.Controllers
             return Json(new { Respuesta = true, Detalles = resultados });
         }
 
+        [AllowAnonymous]
+        [HttpPost]
+        public JsonResult RenombrarArchivo(ARCHIVO archivo)
+        {
+            string mensaje = string.Empty;
+
+            if (archivo.id_carpeta == 0)
+            {
+                archivo.id_carpeta = null;
+            }
+
+            // 1. Obtener la ruta antigua antes de modificar nada en la BD
+            string rutaArchivoAntigua;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(archivo.id_archivo, out rutaArchivoAntigua, out mensaje))
+                return Json(new { Respuesta = false, Mensaje = "No se pudo encontrar el archivo: " + mensaje }, JsonRequestBehavior.AllowGet);
+
+            // 2. Renombrar en la BD (llama la lógica de negocio que a su vez llama la capa_datos)
+            bool exito = CN_Archivo.RenombrarArchivo(archivo.id_archivo, archivo.nombre, out mensaje);
+
+            if (!exito)
+            {
+                return Json(new { Resultado = 0, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+
+            // 3. Si en la BD fue exitoso, obtener la ruta nueva
+            string rutaArchivoNueva;
+            if (!CN_Archivo.ObtenerRutaArchivoPorId(archivo.id_archivo, out rutaArchivoNueva, out mensaje))
+                return Json(new { Respuesta = false, Mensaje = "Error al obtener la nueva ruta: " + mensaje }, JsonRequestBehavior.AllowGet);
+
+            try
+            {
+                // 4. Renombrar físicamente el archivo
+                string rutaFisicaAntigua = Server.MapPath(rutaArchivoAntigua.Replace("~", ""));
+                string rutaFisicaNueva = Server.MapPath(rutaArchivoNueva.Replace("~", ""));
+
+                if (System.IO.File.Exists(rutaFisicaAntigua))
+                {
+                    System.IO.File.Move(rutaFisicaAntigua, rutaFisicaNueva);
+                }
+                else
+                {
+                    return Json(new { Resultado = 0, Mensaje = "El archivo físico no existe en el servidor." }, JsonRequestBehavior.AllowGet);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Resultado = 0, Mensaje = "Error al renombrar el archivo físico: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+
+            return Json(new { Resultado = 1, Mensaje = "Archivo renombrado correctamente." }, JsonRequestBehavior.AllowGet);
+        }
+
         // Endpoint(POST): para eliminar un archivo
         [HttpPost]
         public JsonResult EliminarArchivo(int id_archivo)

@@ -1855,37 +1855,62 @@ GO
 -----------------------------------------------------------------------------------------------------------------
 
 -- (10) PROCEDIMIENTO ALMACENADO PARA RENOMBRAR ARCHIVO
-CREATE PROCEDURE usp_EditarArchivo
-    @IdArchivo INT,
-    @Nombre VARCHAR(60),
-    @Carpeta VARCHAR(255),
-
-    @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
+CREATE OR ALTER PROCEDURE usp_RenombrarArchivo
+    @id_archivo INT,
+    @nuevo_nombre VARCHAR(60),
+    @mensaje VARCHAR(60) OUTPUT,
+    @resultado INT OUTPUT
 AS
 BEGIN
-    SET @Resultado = 0
-    SET @Mensaje = ''
+    SET NOCOUNT ON;
 
-    -- Verificar si el archivo existe
-    IF NOT EXISTS (SELECT 1 FROM ARCHIVO WHERE id_archivo = @IdArchivo)
+    -- Validación: ¿Existe el archivo?
+    IF NOT EXISTS (SELECT 1 FROM ARCHIVO WHERE id_archivo = @id_archivo)
     BEGIN
-        SET @Mensaje = 'El archivo no existe'
-        RETURN
+        SET @mensaje = 'El archivo no existe';
+        SET @resultado = 0;
+        RETURN;
     END
 
-    -- Verificar si el nombre del archivo ya existe en la carpeta (excluyendo al archivo actual)
-    IF EXISTS (SELECT 1 FROM ARCHIVO WHERE nombre = @Nombre AND id_archivo != @IdArchivo AND fk_id_carpeta != @Carpeta)
+    DECLARE @fk_id_carpeta INT, @ruta_actual VARCHAR(255), @ruta_nueva VARCHAR(255), @pos INT, @directorio VARCHAR(255);
+
+    -- Obtener carpeta actual y ruta actual
+    SELECT @fk_id_carpeta = fk_id_carpeta, @ruta_actual = ruta FROM ARCHIVO WHERE id_archivo = @id_archivo;
+
+    -- Validación: ¿Ya existe un archivo con ese nombre en la misma carpeta? (excluyendo el actual)
+    IF EXISTS (
+        SELECT 1 FROM ARCHIVO 
+        WHERE fk_id_carpeta = @fk_id_carpeta 
+          AND nombre = @nuevo_nombre 
+          AND id_archivo <> @id_archivo
+    )
     BEGIN
-        SET @Mensaje = 'El nombre del archivo ya está en uso en la carpeta actual'
-        RETURN
+        SET @mensaje = 'Ya existe un archivo con ese nombre en la carpeta actual';
+        SET @resultado = 0;
+        RETURN;
     END
 
-    -- Renombrar archivo
-    UPDATE ARCHIVO SET nombre = @Nombre WHERE id_archivo = @IdArchivo
+    -- Encontrar la última barra invertida (para separar directorio y nombre)
+    SET @pos = LEN(@ruta_actual) - CHARINDEX('\', REVERSE(@ruta_actual)) + 1;
 
-    SET @Resultado = 1
-    SET @Mensaje = 'Archivo renombrado exitosamente'
+    IF @pos > 1
+        SET @directorio = LEFT(@ruta_actual, @pos - 1);
+    ELSE
+        SET @directorio = '';
+
+    IF @directorio = ''
+        SET @ruta_nueva = @nuevo_nombre;
+    ELSE
+        SET @ruta_nueva = @directorio + '\' + @nuevo_nombre;
+
+    -- Actualizar nombre y ruta
+    UPDATE ARCHIVO
+    SET nombre = @nuevo_nombre,
+        ruta = @ruta_nueva
+    WHERE id_archivo = @id_archivo;
+
+    SET @mensaje = 'El archivo fue renombrado exitosamente.';
+    SET @resultado = 1;
 END
 GO
 

@@ -359,9 +359,12 @@ function generarHtmlArchivo(archivo) {
                                 </a>
                             </li>
                             <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
-                            <li><a class="dropdown-item btn-eliminarArchivo" href="#"
-                            data-archivo-id="${archivo.id_archivo}">
-                            <i class="fas fa-trash me-2"></i>Eliminar</a></li>
+                            <li>
+                                <a class="dropdown-item btn-editarArchivo" href="#" data-archivo-id="${archivo.id_archivo}" data-carpetapadre-id="${archivo.id_carpeta}" data-archivo-nombre="${archivo.nombre}">
+                                    <i class="fas fa-edit me-2"></i>Renombrar
+                                </a>
+                            </li>
+                            <li><a class="dropdown-item btn-eliminarArchivo" href="#" data-archivo-id="${archivo.id_archivo}"><i class="fas fa-trash me-2"></i>Eliminar</a></li>
                         </ul>
                     </div>
                 </div>

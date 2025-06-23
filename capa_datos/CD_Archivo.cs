@@ -349,6 +349,49 @@ namespace capa_datos
             return resultado;
         }
 
+        public bool RenombrarArchivo(int idArchivo, string nuevoNombre, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_RenombrarArchivo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("id_archivo", idArchivo);
+                    cmd.Parameters.AddWithValue("nuevo_nombre", nuevoNombre);
+
+                    // Parámetros de salida
+                    SqlParameter paramMensaje = new SqlParameter("mensaje", SqlDbType.VarChar, 60)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(paramMensaje);
+
+                    SqlParameter paramResultado = new SqlParameter("resultado", SqlDbType.Int)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(paramResultado);
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    mensaje = cmd.Parameters["mensaje"].Value?.ToString();
+                    resultado = Convert.ToInt32(cmd.Parameters["resultado"].Value) == 1;
+                }
+            }
+            catch (Exception ex)
+            {
+                mensaje = "Error al renombrar el archivo: " + ex.Message;
+                resultado = false;
+            }
+            return resultado;
+        }
+
         public bool EliminarArchivoDefinitivamente(int id_archivo, out string mensaje)
         {
             bool resultado = false;

@@ -104,6 +104,39 @@ function abrirModalCarpeta(json) {
     $("#createCarpeta").modal("show");
 }
 
+function abrirModalRenombrarArchivo(json) {
+    $("#idArchivo").val("0");
+    $("#nombreArchivo").val("");
+    $("#carpetaPadreArchivo").val("");
+    $("#tipoArchivo").val("");
+
+    if (json !== null) {
+        $("#idArchivo").val(json.id_archivo);
+        $("#carpetaPadreArchivo").val(json.id_carpeta);
+
+        let nombre = json.nombre;
+        let lastDot = nombre.lastIndexOf(".");
+        let nombreBase = lastDot !== -1 ? nombre.substring(0, lastDot) : nombre;
+        let extension = lastDot !== -1 ? nombre.substring(lastDot) : "";
+
+        $("#nombreArchivo").val(nombreBase);
+        $("#tipoArchivo").val(extension);
+    }
+
+    $("#renombrarArchivo").modal("show");
+}
+
+// Seleccionar los datos del archivo para editar
+$(document).on('click', '.btn-editarArchivo', function (e) {
+    e.preventDefault();
+    const data = {
+        id_archivo: $(this).data('archivo-id'),
+        nombre: $(this).data('archivo-nombre'),
+        id_carpeta: $(this).data('carpetapadre-id'),
+    };
+    abrirModalRenombrarArchivo(data);
+});
+
 // Seleccionar los datos de la carpeta para editar
 $(document).on('click', '.btn-editar', function (e) {
     e.preventDefault();
@@ -196,6 +229,55 @@ function GuardarCarpeta() {
     });
 }
 
+// Renombrar archivo
+function RenombrarArchivo() {
+
+    var nombreBase = $("#nombreArchivo").val().trim();
+    var extension = $("#tipoArchivo").val();
+    var nuevoNombre = nombreBase + extension;
+
+    var Archivo = {
+        id_archivo: $("#idArchivo").val(),
+        nombre: nuevoNombre,
+        id_carpeta: $("#carpetaPadreArchivo").val(),
+    };
+
+    if (!nombreBase) {
+        Swal.fire("Campo obligatorio", "El nombre del archivo no puede estar vacío", "warning");
+        return;
+    }
+
+    showLoadingAlert("Procesando", "Actualizando nombre del archivo...");
+
+    jQuery.ajax({
+        url: config.renombrarArchivoUrl,
+        type: "POST",
+        data: JSON.stringify(Archivo),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            Swal.close();
+            $("#renombrarArchivo").modal("hide");
+            if (data.Resultado || data.Respuesta) {
+                
+                showAlert("¡Éxito!", "Archivo renombrado correctamente", "success", true);
+                
+                if (carpetaActualId == null) {
+                    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+                    cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+                } else {
+                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes");
+                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
+                }
+            }
+            else {
+                showAlert("Error", "No se pudo actualizar el archivo", "error", true);
+            }
+        },
+        error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+    });
+}
+
 // Subir Archivos
 function SubirArchivos() {
     var archivos = myDropzone.getAcceptedFiles();
@@ -209,13 +291,28 @@ function SubirArchivos() {
         return;
     }
 
+    // Validar longitud de nombre de archivos
+    var archivosInvalidos = archivos.filter(function (archivo) {
+        // Si tiene nombre renombrado, valida ese nombre, si no, el nombre original
+        var nombre = archivo.newName || archivo.name;
+        return nombre.length > 60;
+    });
+    if (archivosInvalidos.length > 0) {
+        var nombres = archivosInvalidos.map(function (a) { return a.newName || a.name; }).join("<br>");
+        Swal.fire(
+            "Nombre demasiado largo",
+            "Los siguientes archivos tienen nombres demasiado largos (más de 60 caracteres):<br><b>" + nombres + "</b>",
+            "warning"
+        );
+        return;
+    }
+
     // Preparar el objeto FormData
     var request = new FormData();
     request.append("CARPETAJSON", JSON.stringify(Carpeta));
 
     // Agregar todos los archivos al FormData
     for (var i = 0; i < archivos.length; i++) {
-        // Si el archivo fue renombrado, crea un nuevo File con ese nombre
         if (archivos[i].newName && archivos[i].newName !== archivos[i].name) {
             const renamedFile = new File([archivos[i]], archivos[i].newName, { type: archivos[i].type });
             request.append("ARCHIVO", renamedFile);
