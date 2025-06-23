@@ -694,6 +694,10 @@ const dataTableOptions = {
             }
         },
         {
+            data: "ruta",
+            title: "Ruta del archivo"
+        },
+        {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-restablecer"><i class="fa fa-upload"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminarDifinitivamente"><i class="fa fa-trash"></i></button>',
@@ -730,7 +734,6 @@ $(document).on('click', '.btn-descargar', function (e) {
 // Decargar carpeta con el boton
 function descargar() {
     var idCarpeta = carpetaActualId || "0";
-    console.log(idCarpeta);
     window.location.href = '/Archivo/DescargarCarpeta?idCarpeta=' + idCarpeta;
 }
 

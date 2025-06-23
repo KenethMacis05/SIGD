@@ -183,23 +183,57 @@ namespace capa_presentacion.Controllers
         {
             string mensaje = string.Empty;
             int resultado = 0;
+            bool exitoFisico = true;
+            string mensajeFisico = "";
 
             // Validar parámetros
             if (id_eliminar <= 0 || string.IsNullOrEmpty(tipo_registro) || (tipo_registro != "Carpeta" && tipo_registro != "Archivo"))
             {
                 return Json(new { Respuesta = false, Mensaje = "Parámetros inválidos." }, JsonRequestBehavior.AllowGet);
             }
-
-            if (tipo_registro == "Carpeta")
-            {             
-                resultado = CN_Carpeta.EliminarDefinitivamente(id_eliminar, out mensaje);
-            }
-            else
+            
+            try
             {
-                resultado = CN_Archivo.EliminarDefinitivamente(id_eliminar, out mensaje);
+                if (tipo_registro == "Carpeta")
+                {
+                    string rutaCarpeta, mensajeRuta;
+                    if (CN_Carpeta.ObtenerRutaCarpetaPorId(id_eliminar, out rutaCarpeta, out mensajeRuta))
+                    {
+                        string rutaFisica = Server.MapPath(rutaCarpeta.Replace("~", ""));
+                        if (System.IO.Directory.Exists(rutaFisica))
+                        {
+                            System.IO.Directory.Delete(rutaFisica, true);
+                        }
+
+                        resultado = CN_Carpeta.EliminarDefinitivamente(id_eliminar, out mensaje);
+                        if (resultado != 1)
+                            return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+                else
+                {
+                    string rutaArchivo, mensajeRuta;
+                    if (CN_Archivo.ObtenerRutaArchivoPorId(id_eliminar, out rutaArchivo, out mensajeRuta))
+                    {
+                        string rutaFisica = Server.MapPath(rutaArchivo.Replace("~", ""));
+                        if (System.IO.File.Exists(rutaFisica))
+                        {
+                            System.IO.File.Delete(rutaFisica);
+                        }
+
+                        resultado = CN_Archivo.EliminarDefinitivamente(id_eliminar, out mensaje);
+                        if (resultado != 1)
+                            return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                exitoFisico = false;
+                mensajeFisico = "Ocurrió un error al eliminar en disco: " + ex.Message;
             }
 
-            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            return Json(new { Respuesta = true, Mensaje = exitoFisico ? mensaje : (mensaje + " | " + mensajeFisico) }, JsonRequestBehavior.AllowGet);
         }
         #endregion
 
