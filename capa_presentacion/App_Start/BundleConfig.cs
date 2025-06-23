@@ -27,7 +27,6 @@ namespace capa_presentacion
                       "~/Scripts/Duallistbox/dual-listbox.min.js",
                       "~/Scripts/Dropzone/dropzone.min.js",
                       
-
                       "~/Scripts/sweetalert2.min.js"));
 
             bundles.Add(new StyleBundle("~/Content/css").Include(

@@ -123,8 +123,7 @@ namespace capa_presentacion.Services
 
                 int resultado = CN_Archivo.SubirArchivo(archivo, out mensaje);
                 if (resultado == 0)
-                {
-                    mensaje = "El archivo no se pudo guardar en la base de datos.";
+                {                                     
                     return false;
                 }
 
@@ -164,7 +163,7 @@ namespace capa_presentacion.Services
 
                 int resultado = CN_Archivo.SubirArchivo(archivo, out mensaje);
                 if (resultado == 0)
-                {
+                {                    
                     mensaje = "El archivo no se pudo guardar en la base de datos.";
                     return false;
                 }

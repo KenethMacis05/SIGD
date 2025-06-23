@@ -1,0 +1,221 @@
+﻿.custom-dropzone {
+    border: 1px dotted #d36f6f;
+    border-radius: 4px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: #fff;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    margin-bottom: 1rem;
+    transition: all 0.25s;
+}
+
+.custom-dropzone.dz-drag-hover {
+    border-color: #0072bb;
+    background: #f0f7ff;
+    min-height: 140px;
+    height: 140px;
+    box-shadow: 0 0 0 4px #0072bb22;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+}
+
+.custom-dropzone.dz-drag-hover .dz-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    justify-content: center;
+}
+
+.custom-dropzone.dz-drag-hover .dz-text,
+.custom-dropzone.dz-drag-hover .dz-browse {
+    display: none !important;
+}
+
+.custom-dropzone.dz-drag-hover .fa-upload {
+    font-size: 3.5rem;
+    color: #0072bb !important;
+    animation: upload-bounce 0.7s infinite alternate;
+}
+
+@keyframes upload-bounce {
+    0% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-8px);
+    }
+}
+
+.dz-preview.dz-removing {
+    animation: fadeOutRight 0.5s forwards;
+}
+
+@keyframes fadeOutRight {
+    to {
+        opacity: 0;
+        transform: translateX(70px) scale(0.95);
+        height: 0 !important;
+        margin-bottom: 0 !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+}
+
+.custom-dropzone .dz-message {
+    display: flex;
+    align-items: center;
+    font-size: 1.1rem;
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.custom-dropzone .fa-upload {
+    font-size: 1.25rem;
+    margin-right: 6px;
+    color: #3a3a3a;
+}
+
+.custom-dropzone .dz-browse {
+    color: #0072bb;
+    cursor: pointer;
+    font-weight: bold;
+    margin-left: 4px;
+    text-decoration: underline;
+}
+
+.dz-preview-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.dz-preview-list .dz-preview {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border: 1px solid #e3eaf0;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    min-height: 54px;
+    box-shadow: none;
+    transition: background 0.2s;
+}
+
+.dz-preview .dz-icon-area {
+    display: flex;
+    font-size: 1.5rem;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+}
+
+.dz-preview .dz-file-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.dz-preview .dz-filename {
+    font-size: 1rem;
+    color: #363636;
+    margin-bottom: 2px;
+    word-break: break-all;
+}
+
+.dz-preview .dz-size {
+    font-size: 0.93rem;
+    color: #8b8b8b;
+}
+
+.dz-preview .dz-remove, .dz-preview .dz-cancel {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin-left: 12px;
+    outline: none;
+    transition: color 0.15s;
+}
+
+.dz-preview .dz-remove:hover, .dz-preview .dz-cancel:hover {
+    color: #d36f6f;
+}
+
+.dz-preview .dz-progress {
+    width: 18px;
+    height: 18px;
+    margin-right: 14px;
+}
+
+.dz-preview .dz-progress .spinner-border {
+    width: 18px;
+    height: 18px;
+    border-width: 2px;
+}
+
+.dz-preview {
+    background: #fff;
+    border: 1px solid #e3eaf0;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    padding: 10px 14px;
+    min-height: 54px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.dz-preview-list .dz-preview:hover {
+    background: #f5fafd;
+    border-color: #0072bb;    
+    z-index: 3;
+}
+
+.dz-file-details {
+    flex-grow: 1;
+}
+
+.dz-filename-area {
+    display: flex;
+    align-items: center;
+}
+
+.dz-filename-input {
+    height: 28px;
+    font-size: 0.95rem;
+    padding: 0 6px;
+}
+
+.dz-edit {
+    color: #6c757d;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem
+}
+
+.dz-edit:hover i {
+    color: #0072bb;
+}
+
+.dz-remove {
+    color: #dc3545 !important;
+    background: none;
+    border: none;
+}
+
+.dz-remove:hover i {
+    color: #a71d2a;
+}

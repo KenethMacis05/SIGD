@@ -287,9 +287,9 @@ namespace capa_presentacion.Controllers
 
         // Endpoint(POST): para subir un archivo a una carpeta específica
         [HttpPost]
-        public JsonResult SubirArchivo(HttpPostedFileBase ARCHIVO, string CARPETAJSON)
+        public JsonResult SubirArchivo(string CARPETAJSON)
         {
-            if (ARCHIVO == null || string.IsNullOrEmpty(CARPETAJSON))
+            if (Request.Files.Count == 0 || string.IsNullOrEmpty(CARPETAJSON))
                 return Json(new { Respuesta = false, Mensaje = "No se seleccionó ningún archivo o carpeta." });
 
             CARPETA carpeta = JsonConvert.DeserializeObject<CARPETA>(CARPETAJSON);
@@ -300,10 +300,17 @@ namespace capa_presentacion.Controllers
                 return Json(new { Respuesta = false, Mensaje = "Sesión expirada, vuelva a iniciar sesión." });
 
             ArchivoService archivoService = new ArchivoService();
-            string mensaje;    
-            bool ok = archivoService.SubirArchivoConCarpeta(ARCHIVO, idCarpeta, usuario.id_usuario, out mensaje);
+            var resultados = new List<object>();
+            for (int i = 0; i < Request.Files.Count; i++)
+            {
+                var archivo = Request.Files[i];
+                string mensaje;
+                bool ok = archivoService.SubirArchivoConCarpeta(archivo, idCarpeta, usuario.id_usuario, out mensaje);
+                resultados.Add(new { Nombre = archivo.FileName, Respuesta = ok, Mensaje = mensaje });
+            }
 
-            return Json(new { Respuesta = ok, Mensaje = mensaje });
+            // Puedes devolver detalles por archivo o un resumen
+            return Json(new { Respuesta = true, Detalles = resultados });
         }
 
         // Endpoint(POST): para eliminar un archivo

@@ -196,15 +196,15 @@ function GuardarCarpeta() {
     });
 }
 
-// Subir archivo
-function SubirArchivo() {
-    var ArchivoSelecionado = $("#file")[0].files[0];
+// Subir Archivos
+function SubirArchivos() {
+    var archivos = myDropzone.getAcceptedFiles();
     var Carpeta = {
         id_carpeta: $("#idCarpeta2").val() || null,
     };
 
-    // Validar que se haya seleccionado un archivo
-    if (!ArchivoSelecionado) {
+    // Validar que se haya seleccionado al menos un archivo
+    if (!archivos || archivos.length === 0) {
         Swal.fire("Campo obligatorio", "No ingresó ningún archivo para subir", "warning");
         return;
     }
@@ -212,9 +212,19 @@ function SubirArchivo() {
     // Preparar el objeto FormData
     var request = new FormData();
     request.append("CARPETAJSON", JSON.stringify(Carpeta));
-    request.append("ARCHIVO", ArchivoSelecionado);
 
-    showLoadingAlert("Procesando", "Subiendo archivo...");
+    // Agregar todos los archivos al FormData
+    for (var i = 0; i < archivos.length; i++) {
+        // Si el archivo fue renombrado, crea un nuevo File con ese nombre
+        if (archivos[i].newName && archivos[i].newName !== archivos[i].name) {
+            const renamedFile = new File([archivos[i]], archivos[i].newName, { type: archivos[i].type });
+            request.append("ARCHIVO", renamedFile);
+        } else {
+            request.append("ARCHIVO", archivos[i]);
+        }
+    }
+
+    showLoadingAlert("Procesando", "Subiendo archivos...");
 
     jQuery.ajax({
         url: config.subirArchivoUrl,
@@ -225,17 +235,47 @@ function SubirArchivo() {
         success: function (data) {
             Swal.close();
             $("#subirArchivo").modal("hide");
-            if (data.Respuesta) {
-                Swal.fire("Éxito", data.Mensaje, "success");
-                if (carpetaActualId == null) {
-                    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-                    cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-                } else {
-                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes");
-                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
+            myDropzone.removeAllFiles();
+
+            if (data.Detalles) {
+                let resumen = "";
+                let hayError = false;
+                let hayExito = false;
+
+                data.Detalles.forEach(function (item) {
+                    resumen += `<b>${item.Nombre}:</b> ${item.Mensaje}<br>`;
+                    if (item.Exito === true || item.Respuesta === true) {
+                        hayExito = true;
+                    } else {
+                        hayError = true;
+                    }
+                });
+
+                let icono = "info";
+                let titulo = "Carga finalizada";
+                if (hayError && hayExito) {
+                    icono = "warning";
+                    titulo = "Carga parcial";
+                } else if (hayError) {
+                    icono = "error";
+                    titulo = "Error en la carga";
+                } else if (hayExito) {
+                    icono = "success";
+                    titulo = "Carga exitosa";
                 }
+
+                showAlert(titulo, resumen, icono, false, true);
+
+            } else if (data.Mensaje) {
+                Swal.fire(data.Respuesta ? "Éxito" : "Error", data.Mensaje, data.Respuesta ? "success" : "error");
+            }
+
+            if (carpetaActualId == null) {
+                cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+                cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
             } else {
-                Swal.fire("Error", data.Mensaje, "error");
+                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes");
+                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
             }
         },
         error: (xhr) => {
@@ -457,6 +497,48 @@ function handleTabClick(activeTabId) {
         navegarAInicio()
     }
 }
+
+// Efectos hover para carpetas
+$(document).on('mouseenter', '.file-manager-group', function () {
+    $(this).find('.fa-folder').addClass('d-none');
+    $(this).find('.fa-folder-open').removeClass('d-none');
+}).on('mouseleave', '.file-manager-group', function () {
+    $(this).find('.fa-folder-open').addClass('d-none');
+    $(this).find('.fa-folder').removeClass('d-none');
+});
+
+// Efectos hover para archivos
+$(document).on('mouseenter', '.file-manager-recent-item', function () {
+    $(this).find('.fa-file').addClass('d-none');
+    $(this).find('.fa-file-alt').removeClass('d-none');
+}).on('mouseleave', '.file-manager-recent-item', function () {
+    $(this).find('.fa-file-alt').addClass('d-none');
+    $(this).find('.fa-file').removeClass('d-none');
+});
+
+// Pantalla completa para visualizar archivos en los modals
+$(document).on('click', '#btnFullScreenDocumento', function () {
+    const modalContent = document.querySelector('#modalDocumento .modal-content');
+    if (!document.fullscreenElement) {
+        modalContent.requestFullscreen();
+    } else {
+        document.exitFullscreen();
+    }
+});
+
+document.addEventListener('fullscreenchange', function () {
+    const btn = document.getElementById('btnFullScreenDocumento');
+    const icon = btn.querySelector('i');
+    if (document.fullscreenElement) {
+        icon.classList.remove('fa-expand');
+        icon.classList.add('fa-compress');
+        btn.title = 'Salir de pantalla completa';
+    } else {
+        icon.classList.remove('fa-compress');
+        icon.classList.add('fa-expand');
+        btn.title = 'Pantalla completa';
+    }
+});
 
 const dataTableOptions = {
     ...dataTableConfig,
@@ -712,12 +794,154 @@ $('#onlyofficeModal').on('hidden.bs.modal', function () {
 });
 
 // Inicialización
+Dropzone.autoDiscover = false;
+let myDropzone = null;
+
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
+
+    myDropzone = new Dropzone("#custom-dropzone", {
+        url: "#",
+        autoProcessQueue: false,
+        maxFilesize: 20,
+        uploadMultiple: true,
+        parallelUploads: 10,
+        addRemoveLinks: false,
+        previewsContainer: "#dropzone-preview-list",
+        clickable: ".dz-browse",
+        dictDefaultMessage: "",
+        acceptedFiles: ".jpg,.jpeg,.png,.gif,.bmp,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.mp3,.wav,.ogg,.mp4,.avi,.mov,.mkv,.zip,.rar,.7z,.tar,.gz",
+        previewTemplate: `
+            <li class="dz-preview d-flex align-items-center">
+              <div class="dz-icon-area me-2"></div>
+              <div class="dz-file-details flex-grow-1">
+                <div class="dz-filename-area d-flex align-items-center">
+                  <span class="dz-filename"></span>
+                  <input type="text" class="dz-filename-input form-control form-control-sm ms-2" style="display:none; max-width: 220px;">
+                </div>
+                <div class="dz-size"></div>
+              </div>
+              <button type="button" class="dz-edit btn btn-link p-0 ms-2" title="Editar nombre">
+                <i class="fa fa-pencil-alt text-secondary"></i>
+              </button>
+              <button class="dz-remove btn btn-link text-danger ms-2" title="Eliminar archivo" type="button">
+                <i class="fa fa-trash"></i>
+              </button>
+            </li>
+        `
+    });
+
+    // Evento al agregar archivo
+    myDropzone.on("addedfile", function (file) {
+        var ext = '.' + file.name.split('.').pop().toLowerCase();
+        var iconoColor = obtenerIconoYColor(ext);
+
+        // Ícono
+        file.previewElement.querySelector('.dz-icon-area').innerHTML =
+            `<i class="fa ${iconoColor.icono} ${iconoColor.color}"></i>`;
+
+        // Nombre y tamaño
+        const filenameElem = file.previewElement.querySelector('.dz-filename');
+        const filenameInput = file.previewElement.querySelector('.dz-filename-input');
+        filenameElem.textContent = file.name;
+        file.previewElement.querySelector('.dz-size').textContent = humanFileSize(file.size);
+
+        // Editar nombre
+        const editBtn = file.previewElement.querySelector('.dz-edit');
+        editBtn.onclick = function (e) {
+            e.preventDefault();
+            filenameElem.style.display = 'none';
+            editBtn.style.display = 'none';
+            filenameInput.style.display = '';
+            filenameInput.value = file.name;
+            filenameInput.focus();
+            filenameInput.select();
+        };
+
+        filenameInput.onblur = function () {
+            updateFileName();
+        };
+        filenameInput.onkeydown = function (e) {
+            if (e.key === 'Enter') {
+                filenameInput.blur();
+            } else if (e.key === 'Escape') {
+                filenameInput.value = file.name;
+                filenameInput.blur();
+            }
+        };
+
+        function updateFileName() {
+            let nuevoNombre = filenameInput.value.trim();
+            if (nuevoNombre && nuevoNombre !== file.name) {
+                const ext = '.' + file.name.split('.').pop();
+                if (!nuevoNombre.endsWith(ext)) nuevoNombre += ext;
+                filenameElem.textContent = nuevoNombre;
+                file.newName = nuevoNombre;
+            }
+            filenameElem.style.display = '';
+            editBtn.style.display = '';
+            filenameInput.style.display = 'none';
+        }
+
+        // Eliminar archivo
+        file.previewElement.querySelector('.dz-remove').onclick = function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            file.previewElement.classList.add('dz-removing');
+            setTimeout(function () {
+                myDropzone.removeFile(file);
+            }, 500);
+        };
+
+        updateTotalSize();
+    });
+
+    // Evento al quitar archivo
+    myDropzone.on("removedfile", function (file) {
+        updateTotalSize();
+    });
+
+    // Spinner mientras se suben los archivos
+    myDropzone.on("sending", function (file) {
+        const iconArea = file.previewElement.querySelector('.dz-icon-area');
+        iconArea.innerHTML = '<span class="dz-progress"><span class="spinner-border spinner-border-sm"></span></span>';
+    });
+
+    // Limpia archivos y resetea contador al cerrar el modal
+    $('#subirArchivo').on('hidden.bs.modal', function () {
+        if (myDropzone) myDropzone.removeAllFiles(true);
+        resetTotalSize();
+    });
+
+    $('#subirArchivo').on('shown.bs.modal', function () {
+        updateTotalSize();
+    });
 });
 
+// Función para calcular y mostrar el tamaño total a subir
+function updateTotalSize() {
+    let archivos = myDropzone ? myDropzone.getAcceptedFiles() : [];
+    let totalBytes = archivos.reduce((acc, file) => acc + file.size, 0);
+    document.getElementById('total-size').textContent = 'Tamaño total: ' + humanFileSize(totalBytes);
+}
+
+// Función para resetear el contador a cero
+function resetTotalSize() {
+    document.getElementById('total-size').textContent = 'Tamaño total: 0 B';
+}
+
+// Tamaño legible
+function humanFileSize(bytes) {
+    if (!bytes) return "0 B";
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = 0;
+    while (bytes >= 1024 && i < units.length - 1) {
+        bytes /= 1024; i++;
+    }
+    return bytes.toFixed(2) + ' ' + units[i];
+}
 
 
 
