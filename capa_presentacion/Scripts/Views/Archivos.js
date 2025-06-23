@@ -1043,7 +1043,33 @@ function humanFileSize(bytes) {
     return bytes.toFixed(2) + ' ' + units[i];
 }
 
+// Mostrar el input de búsqueda
+$('#btnMostrarBusqueda').on('click', function () {
+    let cont = $(this).closest('.busqueda-animada-container');
+    cont.addClass('active');
+    setTimeout(() => {
+        $('#inputBusquedaArchivos').focus();
+    }, 200);
+});
 
+// También cerrar si pierdes el foco
+$('#inputBusquedaArchivos').on('blur', function () {
+    setTimeout(() => { // pequeño delay por si clickean el botón cerrar
+        if (!$(this).is(':focus')) {
+            $('.busqueda-animada-container').removeClass('active');
+            $(this).val('');
+        }
+    }, 120);
+});
+
+// Enter para buscar
+$('#inputBusquedaArchivos').on('keydown', function (e) {
+    if (e.key === 'Enter') {
+        // Aquí tu función de búsqueda...
+        // buscarArchivos($(this).val());
+        // $('.busqueda-animada-container').removeClass('active');
+    }
+});
 
 
 

@@ -325,6 +325,7 @@
     <Content Include="Content\Dropzone\dropzone.min.css" />
     <Content Include="Content\Duallistbox\dual-listbox.css" />
     <Content Include="Content\EstilosComponentes\styleDropzone.css" />
+    <Content Include="Content\EstilosComponentes\styleInputSearch.css" />
     <Content Include="Content\estilosLauyaut.css" />
     <Content Include="Content\DataTables\images\details_close.png" />
     <Content Include="Content\DataTables\images\details_open.png" />

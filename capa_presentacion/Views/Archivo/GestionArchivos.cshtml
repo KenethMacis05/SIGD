@@ -4,6 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleDropzone.css")" />
+<link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleInputSearch.css")" />
 
 <!--Contenedor-->
 <div class="card shadow-sm mt-3">
@@ -35,14 +36,20 @@
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="mb-0">Archivos recientes</h2>
-                    <div>
-                        <button type="button" class="btn btn-secondary" onclick="abrirModalCarpeta(null)">
+                    <div class="d-flex align-items-center">
+                        <div class="busqueda-animada-container">
+                            <button id="btnMostrarBusqueda" title="Buscar">
+                                <i class="fas fa-search"></i>
+                            </button>
+                            <input id="inputBusquedaArchivos" type="text" class="form-control" placeholder="Buscar archivos..." autocomplete="off" />
+                        </div>
+                        <button type="button" class="btn btn-secondary ms-2" onclick="abrirModalCarpeta(null)">
                             <i class="fa fa-folder me-2"></i>Crear Carpeta
                         </button>
-                        <button type="button" class="btn btn-primary" onclick="abrirModalSubirArchivo(null)">
+                        <button type="button" class="btn btn-primary ms-2" onclick="abrirModalSubirArchivo(null)">
                             <i class="fas fa-upload me-2"></i>Subir Archivo
                         </button>
-                        <button type="button" class="btn btn-outline-primary" onclick="descargar()">
+                        <button type="button" class="btn btn-outline-primary ms-2" onclick="descargar()">
                             <i class="fas fa-download me-2"></i>Descargar
                         </button>
                     </div>

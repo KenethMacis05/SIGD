@@ -1,0 +1,57 @@
+﻿/* Contenedor para controlar posición y transición */
+.busqueda-animada-container {
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* El input inicialmente oculto y colapsado */
+#inputBusquedaArchivos {
+    width: 0;
+    opacity: 0;
+    transition: width 0.4s cubic-bezier(.4,0,.2,1), opacity 0.3s;
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+    border-radius: 25px;
+    padding-left: 35px;
+}
+
+/* Cuando está activo, se expande */
+.busqueda-animada-container.active #inputBusquedaArchivos {
+    width: 30vw;
+    max-width: 500px;
+    opacity: 1;
+    background: #fff;
+    border: 1px solid #ccc;
+    padding: 8px 40px 8px 35px;
+    box-shadow: 0 2px 8px #0002;
+}
+
+/* Lupa estilo botón circular */
+#btnMostrarBusqueda {
+    background: #fff;
+    border: none;
+    border-radius: 50%;
+    color: #0072BB;
+    width: 36px;
+    height: 36px;
+    font-size: 1.3rem;
+    transition: background 0.2s;
+    margin-left: 8px;
+    box-shadow: 0 1px 4px #0001;
+    cursor: pointer;
+    position: relative;
+    z-index: 20;
+}
+
+    #btnMostrarBusqueda:focus {
+        outline: none;
+        background: #e7e7e7;
+    }
+
+.busqueda-animada-container.active #cerrarBusqueda {
+    display: block;
+}
