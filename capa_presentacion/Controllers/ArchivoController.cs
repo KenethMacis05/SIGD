@@ -663,5 +663,64 @@ namespace capa_presentacion.Controllers
                 return Json(new { error = 1, mensaje = "Error al conectarse con el servidor" });
             }
         }
+
+        [AllowAnonymous]
+        [HttpPost]
+        public JsonResult Buscar(string nombre)
+        {
+            int resultadoArchivos = 0;
+            int resultadoCarpetas = 0;
+            string mensajeArchivos = string.Empty;
+            string mensajeCarpetas = string.Empty;
+            List<CARPETA> lstCarpetas = new List<CARPETA>();
+            List<ARCHIVO> lstArchivos = new List<ARCHIVO>();
+
+            try
+            {
+                //USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                //if (usuario == null)
+                //{
+                //    return Json(new
+                //    {
+                //        dataCarpetas = lstCarpetas,
+                //        dataArchivos = lstArchivos,
+                //        resultadoArchivos = 0,
+                //        resultadoCarpetas = 0,
+                //        mensaje = "Usuario no autenticado."
+                //    }, JsonRequestBehavior.AllowGet);
+                //}
+
+                nombre = nombre?.Trim() ?? string.Empty;
+
+                // Buscar carpetas
+                lstCarpetas = CN_Carpeta.BuscarCarpetas(nombre, 1, out resultadoCarpetas, out mensajeCarpetas);
+
+                // Buscar archivos
+                lstArchivos = CN_Archivo.BuscarArchivos(nombre, 1, out resultadoArchivos, out mensajeArchivos);
+
+                // El mensaje puede ser el del resultado más relevante, o concatenados
+                string mensaje = string.Join(" | ", new[] { mensajeArchivos, mensajeCarpetas }.Where(s => !string.IsNullOrEmpty(s)));
+
+                return Json(new
+                {
+                    dataCarpetas = lstCarpetas,
+                    dataArchivos = lstArchivos,
+                    resultadoArchivos = resultadoArchivos,
+                    resultadoCarpetas = resultadoCarpetas,
+                    mensaje
+                }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new
+                {
+                    dataCarpetas = lstCarpetas,
+                    dataArchivos = lstArchivos,
+                    resultadoArchivos = 0,
+                    resultadoCarpetas = 0,
+                    mensaje = "Error al buscar archivos o carpetas: " + ex.Message
+                }, JsonRequestBehavior.AllowGet);
+            }
+        }
     }
 }

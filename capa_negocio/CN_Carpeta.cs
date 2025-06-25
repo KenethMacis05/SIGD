@@ -21,6 +21,15 @@ namespace capa_negocio
         {
             return CD_Carpeta.ListarCarpetas(id_usuario, out resultado, out mensaje);
         }
+
+        public List<CARPETA> BuscarCarpetas(string nombre, int id_usuario, out int resultado, out string mensaje)
+        {
+            if (string.IsNullOrEmpty(nombre))
+            {
+                mensaje = "Por favor, ingrese el nombre del archivo";
+            }
+            return CD_Carpeta.ListarCarpetas(id_usuario, out resultado, out mensaje);
+        }
         
         public List<CARPETA> ListarSubCarpetas(int carpeta_padre, out int resultado, out string mensaje)
         {

@@ -71,6 +71,9 @@
                     <div class="row g-3" id="contenedor-carpetas-recientes">
                         <!-- Las carpetas se cargarán aquí dinámicamente -->
                     </div>
+                    <div class="row g-3 d-none" id="contenedor-carpetas-encontrados">
+                        <!-- Las carpetas se cargarán aquí dinámicamente -->
+                    </div>
                 </div>
 
                 <hr>
@@ -353,6 +356,73 @@
             listarArchivosPorCarpetaUrl: '@Url.Action("ListarArchivosPorCarpeta", "Archivo")',
             renombrarArchivoUrl: '@Url.Action("RenombrarArchivo", "Archivo")'
         };
+
+        $('#inputBusquedaArchivos').on('keydown', function (e) {
+            if (e.key === 'Enter') {
+                buscarArchivosAjax($(this).val());
+            }
+        });
+
+        // Función AJAX para buscar
+        function buscarArchivosAjax(nombre) {
+            nombre = nombre.trim();
+            if (nombre === "") {
+                // Si la búsqueda está vacía, mostrar recientes y ocultar encontrados
+                $("#contenedor-carpetas-encontrados").addClass('d-none');
+                $("#contenedor-carpetas-recientes").removeClass('d-none');
+                return;
+            }
+            $.ajax({
+                url: '/Archivo/Buscar',
+                type: 'POST',
+                data: { nombre: nombre },
+                success: function (resultados) {
+                    if (resultados.resultado) {
+                        mostrarArchivos(resultados.data);
+                    } else {
+                        showAlert("Atención", resultados.mensaje || "No se encontraron archivos o carpetas.", "warning");
+                        mostrarArchivos([]);
+                    }
+                },
+                error: function (xhr) {
+                    showAlert("Error", "No se pudo realizar la búsqueda: " + xhr.statusText, "error");
+                }
+            });
+        }
+
+        // Renderiza archivos y carpetas en búsqueda
+        function mostrarArchivos(lista) {
+            const contenedor = $("#contenedor-carpetas-encontrados");
+            contenedor.empty();
+            if (!lista || !lista.length) {
+                contenedor.append('<div class="alert alert-info">No se encontraron archivos o carpetas.</div>');
+            }
+            else {
+                let html = '';
+                let carpetaIndex = 0;
+                lista.forEach(function (item) {
+                    if (item.tipo === "Carpeta" || item.id_carpeta) {
+                        html += generarHtmlCarpeta(item, carpetaIndex++);
+                    } else {
+                        html += generarHtmlArchivo(item);
+                    }
+                });
+                contenedor.html(html);
+            }
+            // Mostrar el contenedor de resultados y ocultar recientes
+            contenedor.removeClass('d-none');
+            $("#contenedor-carpetas-recientes").addClass('d-none');
+            $("#contenedor-archivos-recientes").addClass('d-none');
+        }
+
+        // Opcional: Si quieres que al limpiar el input, se restauren los recientes automáticamente:
+        $('#inputBusquedaArchivos').on('input', function () {
+            if ($(this).val().trim() === "") {
+                $("#contenedor-carpetas-encontrados").addClass('d-none');
+                $("#contenedor-carpetas-recientes").removeClass('d-none');
+                $("#contenedor-archivos-recientes").removeClass('d-none');
+            }
+        });
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
 }

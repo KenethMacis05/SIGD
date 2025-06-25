@@ -2221,8 +2221,117 @@ BEGIN
 END
 GO
 
-USE SISTEMA_DE_GESTION_DIDACTICA;
-GRANT EXECUTE TO [IIS APPPOOL\sigd];
+-- PROCEDIMIENTO PARA BUSCAR CARPETAS DEL USUARIO
+CREATE OR ALTER PROCEDURE usp_BuscarCarpetasUsuario
+    @Nombre VARCHAR(255),
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si el usuario tiene carpetas creadas (excluyendo la DEFAULT)
+    IF NOT EXISTS (
+        SELECT 1
+        FROM CARPETA c
+        INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
+        WHERE fk_id_usuario = @IdUsuario
+          AND nombre <> CONCAT('DEFAULT_', u.usuario)
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario aún no ha creado carpetas'
+        RETURN
+    END
+
+    -- Buscar carpetas (insensible a mayúsculas, minúsculas y acentos)
+    SELECT c.*
+    FROM CARPETA c
+    INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
+    WHERE fk_id_usuario = @IdUsuario
+      AND c.estado = 1
+      AND c.nombre COLLATE Latin1_General_CI_AI LIKE '%' + @Nombre + '%' COLLATE Latin1_General_CI_AI
+      AND c.nombre NOT LIKE 'DEFAULT_%'
+    ORDER BY c.fecha_registro DESC
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Carpetas cargadas correctamente'
+END
+GO
+
+-- PROCEDIMIENTO PARA BUSCAR ARCHIVOS DEL USUARIO (por nombre base sin extensión)
+CREATE OR ALTER PROCEDURE usp_BuscarArchivosUsuario
+    @Nombre VARCHAR(255),
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si el usuario tiene archivos subidos
+    IF NOT EXISTS (
+        SELECT 1
+        FROM ARCHIVO a
+        INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+        WHERE c.fk_id_usuario = @IdUsuario
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no tiene archivos subidos'
+        RETURN
+    END
+
+    -- Buscar archivos por nombre sin extensión e insensible a acentos/mayúsculas
+    SELECT
+        a.id_archivo,
+        a.nombre AS nombre_archivo,
+        a.ruta,
+        a.size,
+        a.tipo,
+        a.fecha_subida,
+        a.estado,
+        a.fk_id_carpeta,
+        c.nombre AS nombre_carpeta
+    FROM ARCHIVO a
+    INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+    WHERE c.fk_id_usuario = @IdUsuario
+      AND c.estado = 1
+      AND a.estado = 1
+      AND (
+           -- Buscar por el nombre base (sin extensión)
+           LEFT(a.nombre, LEN(a.nombre) - 
+                CASE 
+                    WHEN CHARINDEX('.', REVERSE(a.nombre)) = 0 THEN 0 
+                    ELSE CHARINDEX('.', REVERSE(a.nombre)) 
+                END
+           ) COLLATE Latin1_General_CI_AI LIKE '%' + @Nombre + '%' COLLATE Latin1_General_CI_AI
+           OR
+           -- También buscar por nombre completo
+           a.nombre COLLATE Latin1_General_CI_AI LIKE '%' + @Nombre + '%' COLLATE Latin1_General_CI_AI
+      )
+    ORDER BY a.fecha_subida DESC
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Archivos cargados correctamente'
+END
 GO
 
 CREATE PROCEDURE sp_ActualizarFotoUsuario
@@ -2240,3 +2349,7 @@ BEGIN
         RETURN 0
 END
 GO
+
+--USE SISTEMA_DE_GESTION_DIDACTICA;
+--GRANT EXECUTE TO [IIS APPPOOL\sigd];
+--GO

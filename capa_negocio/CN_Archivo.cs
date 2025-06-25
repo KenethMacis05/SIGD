@@ -22,6 +22,15 @@ namespace capa_negocio
             return CD_Archivo.ListarArchivos(id_usuario, out resultado, out mensaje);
         }
 
+        public List<ARCHIVO> BuscarArchivos(string nombre, int id_usuario, out int resultado, out string mensaje)
+        {
+            if (string.IsNullOrEmpty(nombre))
+            {
+                mensaje = "Por favor, ingrese el nombre del archivo";
+            }
+            return CD_Archivo.BuscarArchivos(nombre, id_usuario, out resultado, out mensaje);
+        }
+
         public List<ARCHIVO> ListarArchivosPorCarpeta(int idCarpeta, out int resultado, out string mensaje)
         {
             if (idCarpeta == 0)
@@ -38,6 +47,7 @@ namespace capa_negocio
         {
             return CD_Archivo.ListarArchivosEliminados(id_usuario, out resultado, out mensaje);
         }
+
 
         public int SubirArchivo(ARCHIVO archivo, out string mensaje)
         {

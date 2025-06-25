@@ -119,6 +119,61 @@ namespace capa_datos
             return listaCarpeta;
         }
 
+        public List<CARPETA> BuscarCarpetas(string nombre, int id_usuario, out int resultado, out string mensaje)
+        {
+            List<CARPETA> listaCarpeta = new List<CARPETA>();
+            resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_LeerCarpeta", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parametros de entrada
+                    cmd.Parameters.AddWithValue("Nombre", nombre);
+                    cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            listaCarpeta.Add(
+                                new CARPETA
+                                {
+                                    id_carpeta = Convert.ToInt32(dr["id_carpeta"]),
+                                    nombre = dr["nombre"].ToString(),
+                                    ruta = dr["ruta"].ToString(),
+                                    fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
+                                    estado = Convert.ToBoolean(dr["estado"]),
+                                    fk_id_usuario = Convert.ToInt32(dr["fk_id_usuario"]),
+                                    carpeta_padre = Convert.ToInt32(dr["carpeta_padre"])
+                                }
+                            );
+                        }
+                    }
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar las carpetas: " + ex.Message);
+            }
+            return listaCarpeta;
+        }
+
         // Listar carpetas hijas
         public List<CARPETA> ListarSubCarpetas(int carpeta_padre, out int resultado, out string mensaje)
         {
