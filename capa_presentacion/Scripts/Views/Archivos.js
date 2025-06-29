@@ -32,6 +32,7 @@ function actualizarBreadcrumbHTML() {
     });
     document.getElementById("breadcrumb-paginador").innerHTML = html;
     document.getElementById("breadcrumb-paginador2").innerHTML = html;
+    document.getElementById("breadcrumb-paginador3").innerHTML = html;
 }
 
 // Retroceder a una carpeta anterior
@@ -43,34 +44,54 @@ function retroceder(index) {
     actualizarBreadcrumbHTML();
     cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-recientes");
     cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-todos");
+    cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-encontradas");
     cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-recientes");
     cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-todos");
+    cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-encontrados");
 }
 
 // Navegar al inicio del paginador
 function navegarAInicio() {
+    // Limpiar el stack del breadcrumb y carpeta actual
     breadcrumbStack = [];
+    carpetaActualId = null;
 
-    document.getElementById("breadcrumb-paginador").innerHTML = `
-    <li class="breadcrumb-item">
-        <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
-            <i class="fas fa-home me-2"></i>Inicio
-        </a>
-    </li>
+    // HTML del ítem de inicio
+    const homeHtml = `
+        <li class="breadcrumb-item">
+            <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
+                <i class="fas fa-home me-2"></i>Inicio
+            </a>
+        </li>
     `;
 
-    document.getElementById("breadcrumb-paginador2").innerHTML = `
-    <li class="breadcrumb-item">
-        <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
-            <i class="fas fa-home me-2"></i>Inicio
-        </a>
-    </li>
-    `;
-    carpetaActualId = null
+    // Actualizar los tres breadcrumbs
+    document.getElementById("breadcrumb-paginador").innerHTML = homeHtml;
+    document.getElementById("breadcrumb-paginador2").innerHTML = homeHtml;
+    document.getElementById("breadcrumb-paginador3").innerHTML = homeHtml;
+
+    // Detectar si estamos en el tab de búsqueda y hay búsqueda activa
+    const inputBuscar = $('#buscar input[type="text"]');
+    if (
+        $('#buscar').hasClass('active') && // tab buscar activo
+        inputBuscar.length &&
+        inputBuscar.val().trim() !== "" &&
+        ultimoValorBuscado !== ""
+    ) {
+        // Restaurar los resultados originales de búsqueda
+        renderCarpetas(resultadosBusquedaCarpetas, "contenedor-carpetas-encontradas");
+        renderArchivos(resultadosBusquedaArchivos, "contenedor-archivos-encontrados");
+        return;
+    }
+
+    // Recargar el contenido inicial en cada sección (modo normal)
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+    // Limpiar los contenedores de encontrados
+    renderCarpetas([], "contenedor-carpetas-encontradas");
+    renderArchivos([], "contenedor-archivos-encontrados");
 }
 
 // Navegar a las sub carpetas
@@ -87,6 +108,7 @@ $(document).on('click', '.file-manager-group-title', function (e) {
     cargarSubCarpetas(idCarpetaPadre, contenedorId);
     cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes")
     cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos")
+    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-encontrados")
 });
 
 // Abrir el modal para crear o editar una carpeta
@@ -586,12 +608,17 @@ function handleTabClick(activeTabId) {
         // Cargar carpetas recientes
         cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
         cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-        navegarAInicio()
+        navegarAInicio();
+        limpiarArchivos();
     } else if (activeTabId === "archivos") {
         // Cargar todas las carpetas
         cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
         cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-        navegarAInicio()
+        navegarAInicio();
+        limpiarArchivos();
+    } else if (activeTabId === "buscar") {
+        navegarAInicio();
+        limpiarArchivos();
     }
 }
 
@@ -1043,38 +1070,108 @@ function humanFileSize(bytes) {
     return bytes.toFixed(2) + ' ' + units[i];
 }
 
-// Mostrar el input de búsqueda
-$('#btnMostrarBusqueda').on('click', function () {
-    let cont = $(this).closest('.busqueda-animada-container');
-    cont.addClass('active');
-    setTimeout(() => {
-        $('#inputBusquedaArchivos').focus();
-    }, 200);
-});
+// Guarda el valor del input de búsqueda
+let ultimoValorBuscado = "";
+let resultadosBusquedaCarpetas = [];
+let resultadosBusquedaArchivos = [];
 
-// También cerrar si pierdes el foco
-$('#inputBusquedaArchivos').on('blur', function () {
-    setTimeout(() => { // pequeño delay por si clickean el botón cerrar
-        if (!$(this).is(':focus')) {
-            $('.busqueda-animada-container').removeClass('active');
-            $(this).val('');
-        }
-    }, 120);
-});
+// Función para renderizar carpetas
+function renderCarpetas(carpetas, contenedorId) {
+    const contenedor = $(`#${contenedorId}`);
+    contenedor.empty();
+    if (!carpetas || !carpetas.length) {
+        contenedor.html(`<div class="alert alert-light">No se encontraron carpetas.`);
+    } else {
+        let html = '';
+        $.each(carpetas, function (index, carpeta) {
+            html += generarHtmlCarpeta(carpeta, index);
+        });
+        contenedor.html(html);
+    }
+}
 
-// Enter para buscar
-$('#inputBusquedaArchivos').on('keydown', function (e) {
+// Función para renderizar archivos
+function renderArchivos(archivos, contenedorId) {
+    const contenedor = $(`#${contenedorId}`);
+    contenedor.empty();
+    if (!archivos || !archivos.length) {
+        contenedor.html(`<div class="alert alert-light">No se encontraron archivos.`);
+    } else {
+        let html = '';
+        $.each(archivos, function (index, archivo) {
+            html += generarHtmlArchivo(archivo, index);
+        });
+        contenedor.html(html);
+    }
+}
+
+// Función principal para buscar archivos/carpetas
+function buscarArchivos() {
+    // Obtiene el valor del input de búsqueda dentro del tab BUSCAR
+    const inputBuscar = $('#buscar input[type="text"]');
+    const nombre = inputBuscar.val().trim();
+
+    // Muestra el mensaje de inicio si está vacío
+    if (nombre === "") {
+        $("#contenedor-carpetas-encontradas, #contenedor-archivos-encontrados").empty();
+        $(".btn-danger").addClass('d-none'); // Oculta el botón limpiar
+        return;
+    }
+    $("#buscarInicio").hide();
+
+    // Muestra el botón limpiar
+    $("#limpiarArchivos").removeClass('d-none');
+    $("#buscarArchivos").addClass('d-none');
+
+    // Guarda el valor buscado
+    ultimoValorBuscado = nombre;
+
+    $.ajax({
+        url: config.buscarArchivos,
+        type: 'POST',
+        data: { nombre: nombre },
+        beforeSend: function () {
+            $("#contenedor-carpetas-encontradas").LoadingOverlay("show");
+            $("#contenedor-archivos-encontrados").LoadingOverlay("show");
+        },
+        success: function (response) {
+            resultadosBusquedaCarpetas = response.dataCarpetas || [];
+            resultadosBusquedaArchivos = response.dataArchivos || [];
+            renderCarpetas(response.dataCarpetas, "contenedor-carpetas-encontradas");
+            renderArchivos(response.dataArchivos, "contenedor-archivos-encontrados");
+        },
+        error: function (xhr) {
+            showAlert("Error", "No se pudo realizar la búsqueda: " + xhr.statusText, "error");
+        },
+        complete: function () {
+            $("#contenedor-carpetas-encontradas").LoadingOverlay("hide");
+            $("#contenedor-archivos-encontrados").LoadingOverlay("hide");
+        },
+    });
+}
+
+// Permite buscar con Enter en el input del tab Buscar
+$('#buscar input[type="text"]').on('keydown', function (e) {
     if (e.key === 'Enter') {
-        // Aquí tu función de búsqueda...
-        // buscarArchivos($(this).val());
-        // $('.busqueda-animada-container').removeClass('active');
+        buscarArchivos();
     }
 });
 
-
-
-
-
+// Limpia resultados y reinicia el estado del tab BUSCAR
+function limpiarArchivos() {
+    $('#buscar input[type="text"]').val('');
+    $("#contenedor-carpetas-encontradas, #contenedor-archivos-encontrados").empty();
+    $("#limpiarArchivos").addClass('d-none');
+    $("#buscarArchivos").removeClass('d-none');
+    $("#contenedor-carpetas-encontradas").LoadingOverlay("show");
+    $("#contenedor-archivos-encontrados").LoadingOverlay("show");
+    ultimoValorBuscado = "";
+    setTimeout(() => {
+        $("#contenedor-carpetas-encontradas").LoadingOverlay("hide");
+        $("#contenedor-archivos-encontrados").LoadingOverlay("hide");
+        $("#buscarInicio").show();
+    }, 300);
+}
 
 
 

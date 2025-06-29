@@ -129,7 +129,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_LeerCarpeta", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_BuscarCarpetasUsuario", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     // Parametros de entrada

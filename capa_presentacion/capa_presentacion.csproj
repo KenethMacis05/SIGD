@@ -143,6 +143,7 @@
     <Compile Include="webtoken\GenerarOnlyOfficeToken.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Assets\img\buscar_archivo.png" />
     <Content Include="Assets\img\carpeta_vacia.png" />
     <Content Include="Assets\img\facebook.png" />
     <Content Include="Assets\img\Fondo-de-pantalla-web.jpg" />

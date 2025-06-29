@@ -677,26 +677,26 @@ namespace capa_presentacion.Controllers
 
             try
             {
-                //USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-                //if (usuario == null)
-                //{
-                //    return Json(new
-                //    {
-                //        dataCarpetas = lstCarpetas,
-                //        dataArchivos = lstArchivos,
-                //        resultadoArchivos = 0,
-                //        resultadoCarpetas = 0,
-                //        mensaje = "Usuario no autenticado."
-                //    }, JsonRequestBehavior.AllowGet);
-                //}
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null)
+                {
+                    return Json(new
+                    {
+                        dataCarpetas = lstCarpetas,
+                        dataArchivos = lstArchivos,
+                        resultadoArchivos = 0,
+                        resultadoCarpetas = 0,
+                        mensaje = "Usuario no autenticado."
+                    }, JsonRequestBehavior.AllowGet);
+                }
 
                 nombre = nombre?.Trim() ?? string.Empty;
 
                 // Buscar carpetas
-                lstCarpetas = CN_Carpeta.BuscarCarpetas(nombre, 1, out resultadoCarpetas, out mensajeCarpetas);
+                lstCarpetas = CN_Carpeta.BuscarCarpetas(nombre, usuario.id_usuario, out resultadoCarpetas, out mensajeCarpetas);
 
                 // Buscar archivos
-                lstArchivos = CN_Archivo.BuscarArchivos(nombre, 1, out resultadoArchivos, out mensajeArchivos);
+                lstArchivos = CN_Archivo.BuscarArchivos(nombre, usuario.id_usuario, out resultadoArchivos, out mensajeArchivos);
 
                 // El mensaje puede ser el del resultado más relevante, o concatenados
                 string mensaje = string.Join(" | ", new[] { mensajeArchivos, mensajeCarpetas }.Where(s => !string.IsNullOrEmpty(s)));
