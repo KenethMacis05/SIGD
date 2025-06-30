@@ -96,7 +96,7 @@ namespace capa_datos
         }
 
         // Buscar usuario
-        public List<USUARIOS> BuscarUsuarios(string usuario, string nombres, string apellidos, out string mensaje)
+        public List<USUARIOS> BuscarUsuarios(string usuario, string nombres, string apellidos, string correo, out string mensaje)
         {
             List<USUARIOS> lst = new List<USUARIOS>();
             mensaje = string.Empty;
@@ -111,6 +111,7 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("Usuario", string.IsNullOrEmpty(usuario) ? (object)DBNull.Value : usuario);
                     cmd.Parameters.AddWithValue("Nombres", string.IsNullOrEmpty(nombres) ? (object)DBNull.Value : nombres);
                     cmd.Parameters.AddWithValue("Apellidos", string.IsNullOrEmpty(apellidos) ? (object)DBNull.Value : apellidos);
+                    cmd.Parameters.AddWithValue("Correo", string.IsNullOrEmpty(correo) ? (object)DBNull.Value : correo);
 
                     // Parámetro de salida
                     var paramMensaje = new SqlParameter("Mensaje", SqlDbType.NVarChar, 255)
@@ -141,8 +142,6 @@ namespace capa_datos
                             });
                         }
                     }
-
-                    // Obtener mensaje de salida después de cerrar el reader
                     mensaje = paramMensaje.Value?.ToString() ?? "";
                 }
             }

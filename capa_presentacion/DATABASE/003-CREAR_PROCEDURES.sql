@@ -573,6 +573,7 @@ CREATE OR ALTER PROCEDURE usp_BuscarUsuarios
     @Usuario NVARCHAR(50) = NULL,
     @Nombres NVARCHAR(100) = NULL,
     @Apellidos NVARCHAR(100) = NULL,
+    @Correo NVARCHAR(100) = NULL,
     @Mensaje NVARCHAR(255) OUTPUT
 AS
 BEGIN
@@ -616,6 +617,7 @@ BEGIN
             (u.pri_nombre + ' ' + ISNULL(u.seg_nombre, '')) LIKE '%' + @Nombres + '%')
         AND ((@Apellidos IS NULL OR @Apellidos = '') OR 
             (u.pri_apellido + ' ' + ISNULL(u.seg_apellido, '')) LIKE '%' + @Apellidos + '%')
+        AND (@Correo IS NULL OR @Correo = '' OR u.correo LIKE '%' + @Correo + '%')
     ORDER BY u.id_usuario DESC
 
     SET @Mensaje = 'Búsqueda realizada exitosamente.';
@@ -2350,6 +2352,81 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE usp_CompartirCarpeta
+    @IdCarpeta INT,
+    @IdUsuarioPropietario INT,
+    @CorreoDestino VARCHAR(60),
+    @Permisos VARCHAR(20),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(500) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @IdUsuarioDestino INT = NULL;
+    DECLARE @ExisteCompartido BIT = 0;
+    
+    -- Verificar si el usuario destino existe
+    SELECT @IdUsuarioDestino = id_usuario 
+    FROM USUARIOS 
+    WHERE correo = @CorreoDestino;
+    
+    -- Verificar si ya está compartido
+    IF EXISTS (
+        SELECT 1 FROM COMPARTIDOS 
+        WHERE fk_id_carpeta = @IdCarpeta 
+        AND correo_destino = @CorreoDestino
+        AND estado = 1
+    )
+    BEGIN
+        SET @ExisteCompartido = 1;
+    END
+    
+    -- Validaciones
+    IF NOT EXISTS (SELECT 1 FROM CARPETA WHERE id_carpeta = @IdCarpeta AND estado = 1)
+    BEGIN
+        SET @Resultado = 0;
+        SET @Mensaje = 'La carpeta no existe o ha sido eliminada';
+        RETURN;
+    END
+    
+    IF @ExisteCompartido = 1
+    BEGIN
+        SET @Resultado = 0;
+        SET @Mensaje = 'La carpeta ya está compartida con este usuario';
+        RETURN;
+    END
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Insertar el registro de compartido
+        INSERT INTO COMPARTIDOS (
+            correo_destino,
+            permisos,
+            fk_id_carpeta,
+            fk_id_usuario_propietario,
+            fk_id_usuario_destino
+        ) VALUES (
+            @CorreoDestino,
+            @Permisos,
+            @IdCarpeta,
+            @IdUsuarioPropietario,
+            @IdUsuarioDestino
+        );
+        
+        SET @Resultado = 1;
+        SET @Mensaje = 'Carpeta compartida exitosamente';
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al compartir la carpeta: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
 --USE SISTEMA_DE_GESTION_DIDACTICA;
 --GRANT EXECUTE TO [IIS APPPOOL\sigd];
 --GO

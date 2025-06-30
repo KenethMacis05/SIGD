@@ -130,21 +130,26 @@ CREATE TABLE ARCHIVO (
 )
 GO
 
--- (3) TABLA ARCHIVO/CARPETAS COMPARTIDAS
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DETALLEARCHIVO')
-CREATE TABLE DETALLEARCHIVO (
-	id_detalle_archivo INT PRIMARY KEY IDENTITY(1,1),	
-	correo VARCHAR(60) NOT NULL,
-	estado BIT DEFAULT 1,
-	fecha_compartida DATETIME DEFAULT GETDATE(),
-	fk_id_archivo INT NOT NULL,
-	fk_id_carpeta INT NOT NULL,
-	fk_id_usuario INT NOT NULL,
-	CONSTRAINT FK_DETALLEARCHIVO_ARCHIVO FOREIGN KEY (fk_id_archivo) REFERENCES ARCHIVO(id_archivo) ON DELETE CASCADE,
-	CONSTRAINT FK_DETALLEARCHIVO_CARPETA FOREIGN KEY (fk_id_carpeta) REFERENCES CARPETA(id_carpeta),
-	CONSTRAINT FK_DETALLEARCHIVO_USUARIO FOREIGN KEY (fk_id_usuario) REFERENCES USUARIOS(id_usuario)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'COMPARTIDOS')
+CREATE TABLE COMPARTIDOS (
+    id_compartido INT PRIMARY KEY IDENTITY(1,1),
+    correo_destino VARCHAR(60) NOT NULL,
+    permisos VARCHAR(20) NOT NULL CHECK (permisos IN ('lectura', 'edicion')),
+    estado BIT DEFAULT 1,
+    fecha_compartido DATETIME DEFAULT GETDATE(),
+    fk_id_archivo INT NULL,
+    fk_id_carpeta INT NULL,
+    fk_id_usuario_propietario INT NOT NULL,
+    fk_id_usuario_destino INT NOT NULL,
+    CONSTRAINT FK_COMPARTIDOS_ARCHIVO FOREIGN KEY (fk_id_archivo) REFERENCES ARCHIVO(id_archivo) ON DELETE CASCADE,
+    CONSTRAINT FK_COMPARTIDOS_CARPETA FOREIGN KEY (fk_id_carpeta) REFERENCES CARPETA(id_carpeta),
+    CONSTRAINT FK_COMPARTIDOS_USUARIO_PROPIETARIO FOREIGN KEY (fk_id_usuario_propietario) REFERENCES USUARIOS(id_usuario),
+    CONSTRAINT FK_COMPARTIDOS_USUARIO_DESTINO FOREIGN KEY (fk_id_usuario_destino) REFERENCES USUARIOS(id_usuario),
+    CONSTRAINT CHK_COMPARTIDOS_ARCHIVO_O_CARPETA CHECK (
+        (fk_id_archivo IS NOT NULL AND fk_id_carpeta IS NULL) OR 
+        (fk_id_archivo IS NULL AND fk_id_carpeta IS NOT NULL)
+    )
 )
-GO
 -----------------------------------------------------TABLAS PARA LA PLANIFICACION-----------------------------------------------------
 
 -- (1) Tabla Asignatura

@@ -516,5 +516,42 @@ namespace capa_datos
 
             return resultado;
         }
+
+        public bool CompartirCarpeta(int idCarpeta, int idUsuarioPropietario, string correoDestino, string permisos, out string mensaje)
+        {
+            bool respuesta = false;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_CompartirCarpeta", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdCarpeta", idCarpeta);
+                    cmd.Parameters.AddWithValue("IdUsuarioPropietario", idUsuarioPropietario);
+                    cmd.Parameters.AddWithValue("CorreoDestino", correoDestino);
+                    cmd.Parameters.AddWithValue("Permisos", permisos);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    respuesta = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta = false;
+                mensaje = "Error en la capa de datos: " + ex.Message;
+            }
+
+            return respuesta;
+        }
     }
 }

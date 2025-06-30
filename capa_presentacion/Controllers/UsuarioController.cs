@@ -43,10 +43,10 @@ namespace capa_presentacion.Controllers
 
         // Enpoint(GET): Buscar un usuario
         [HttpGet]
-        public JsonResult BuscarUsuarios(string usuario, string nombres, string apellidos)
+        public JsonResult BuscarUsuarios(string usuario, string nombres, string apellidos, string correo)
         {
             string mensaje = string.Empty;
-            List<USUARIOS> lst = CN_Usuario.BuscarUsuarios(usuario, nombres, apellidos, out mensaje);
+            List<USUARIOS> lst = CN_Usuario.BuscarUsuarios(usuario, nombres, apellidos, correo, out mensaje);
 
             return Json(new { data = lst, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }

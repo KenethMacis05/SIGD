@@ -110,5 +110,22 @@ namespace capa_negocio
         {
             return CD_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out ruta, out mensaje);
         }
+
+        public bool CompartirCarpeta(int idCarpeta, int idUsuarioPropietario, string correoDestino, string permisos, out string mensaje)
+        {
+            if (string.IsNullOrEmpty(correoDestino))
+            {
+                mensaje = "Debe especificar un correo electrónico válido para compartir la carpeta.";
+                return false;
+            }
+
+            if (permisos != "lectura" && permisos != "edicion")
+            {
+                mensaje = "Permisos no válidos";
+                return false;
+            }
+
+            return CD_Carpeta.CompartirCarpeta(idCarpeta, idUsuarioPropietario, correoDestino, permisos, out mensaje);
+        }
     }
 }

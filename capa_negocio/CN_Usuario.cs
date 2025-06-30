@@ -20,17 +20,17 @@ namespace capa_negocio
             return CD_Usuarios.Listar();
         }
 
-        public List<USUARIOS> BuscarUsuarios(string usuario, string nombres, string apellidos, out string mensaje)
+        public List<USUARIOS> BuscarUsuarios(string usuario, string nombres, string apellidos, string correo, out string mensaje)
         {
             mensaje = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(usuario) && string.IsNullOrWhiteSpace(nombres) && string.IsNullOrWhiteSpace(apellidos))
+            if (string.IsNullOrWhiteSpace(usuario) && string.IsNullOrWhiteSpace(nombres) && string.IsNullOrWhiteSpace(apellidos) && string.IsNullOrWhiteSpace(correo))
             {
                 mensaje = "Por favor, complete al menos un campo de búsqueda.";
                 return new List<USUARIOS>();
             }
 
-            return CD_Usuarios.BuscarUsuarios(usuario, nombres, apellidos, out mensaje);
+            return CD_Usuarios.BuscarUsuarios(usuario, nombres, apellidos, correo, out mensaje);
         }
 
         public static bool ActualizarFotoUsuario(int idUsuario, string fotoBase64, out string mensaje)

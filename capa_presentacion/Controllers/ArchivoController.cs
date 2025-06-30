@@ -240,18 +240,50 @@ namespace capa_presentacion.Controllers
         #region CarpetasCompartidas
 
         // Vista a la vista de Carpetas Compartidas
+        [HttpGet]
         public ActionResult CarpetasCompartidas()
         {
             return View();
         }
 
+        [HttpPost]
+        public JsonResult CompartirCarpeta(int id_carpeta, string correo, string permisos)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null)
+                {
+                    return Json(new
+                    {
+                        Resultado = 0,
+                        Mensaje = "La sesión ha expirado. Por favor, inicie sesión nuevamente para continuar."
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                var idUsuario = usuario.id_usuario;
+
+                bool compartidoExitosamente = CN_Carpeta.CompartirCarpeta(id_carpeta, idUsuario, correo, permisos, out mensaje);
+
+                resultado = compartidoExitosamente ? 1 : 0;
+            }
+            catch (Exception ex)
+            {
+                mensaje = $"Error en el sistema al intentar compartir la carpeta. Detalles técnicos: {ex.Message}";
+                System.Diagnostics.Trace.TraceError($"Error compartiendo carpeta: {ex.ToString()}");
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         // Controlador para Listar las carpetas compartidas
 
-        // Controlador para Guardar carpetas compartidas
 
         // Controlador para Borrar carpetas compartidas
 
-        // Controlador para Listar carpetas recientes                
 
         #endregion
 
