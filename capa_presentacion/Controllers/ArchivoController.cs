@@ -250,7 +250,7 @@ namespace capa_presentacion.Controllers
         public JsonResult CompartirCarpeta(int id_carpeta, string correo, string permisos)
         {
             string mensaje = string.Empty;
-            int resultado = 0;
+            bool respuesta = false;
 
             try
             {
@@ -259,16 +259,14 @@ namespace capa_presentacion.Controllers
                 {
                     return Json(new
                     {
-                        Resultado = 0,
-                        Mensaje = "La sesión ha expirado. Por favor, inicie sesión nuevamente para continuar."
+                        respuesta = false,
+                        mensaje = "La sesión ha expirado. Por favor, inicie sesión nuevamente para continuar."
                     }, JsonRequestBehavior.AllowGet);
                 }
 
                 var idUsuario = usuario.id_usuario;
 
-                bool compartidoExitosamente = CN_Carpeta.CompartirCarpeta(id_carpeta, idUsuario, correo, permisos, out mensaje);
-
-                resultado = compartidoExitosamente ? 1 : 0;
+                respuesta = CN_Carpeta.CompartirCarpeta(id_carpeta, idUsuario, correo, permisos, out mensaje);
             }
             catch (Exception ex)
             {
@@ -276,7 +274,7 @@ namespace capa_presentacion.Controllers
                 System.Diagnostics.Trace.TraceError($"Error compartiendo carpeta: {ex.ToString()}");
             }
 
-            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            return Json(new { Respuesta = respuesta, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         // Controlador para Listar las carpetas compartidas

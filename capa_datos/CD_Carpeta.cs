@@ -553,5 +553,86 @@ namespace capa_datos
 
             return respuesta;
         }
+
+        public List<CARPETACOMPARTIDA> ObtenerCarpetasCompartidasPorMi(int idUsuarioPropietario)
+        {
+            List<CARPETACOMPARTIDA> lista = new List<CARPETACOMPARTIDA>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerCarpetasCompartidasPorMi", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("IdUsuarioPropietario", idUsuarioPropietario);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new CARPETACOMPARTIDA
+                            {
+                                IdCarpeta = Convert.ToInt32(dr["id_carpeta"]),
+                                NombreCarpeta = dr["nombre_carpeta"].ToString(),
+                                Ruta = dr["ruta"].ToString(),
+                                FechaRegistro = Convert.ToDateTime(dr["fecha_registro"]),
+                                CorreoDestinatario = dr["correo_destino"].ToString(),
+                                NombreDestinatario = dr["nombre_destinatario"].ToString(),
+                                Permisos = dr["permisos"].ToString(),
+                                FechaCompartido = Convert.ToDateTime(dr["fecha_compartido"])
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener carpetas compartidas: " + ex.Message);
+            }
+
+            return lista;
+        }
+
+        public List<CARPETACOMPARTIDA> ObtenerCarpetasCompartidasConmigo(string correoUsuario)
+        {
+            List<CARPETACOMPARTIDA> lista = new List<CARPETACOMPARTIDA>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerCarpetasCompartidasConmigo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("CorreoUsuarioDestino", correoUsuario);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new CARPETACOMPARTIDA
+                            {
+                                IdCarpeta = Convert.ToInt32(dr["id_carpeta"]),
+                                NombreCarpeta = dr["nombre_carpeta"].ToString(),
+                                Ruta = dr["ruta"].ToString(),
+                                FechaRegistro = Convert.ToDateTime(dr["fecha_registro"]),
+                                NombrePropietario = dr["nombre_propietario"].ToString(),
+                                Permisos = dr["permisos"].ToString(),
+                                FechaCompartido = Convert.ToDateTime(dr["fecha_compartido"])
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener carpetas compartidas conmigo: " + ex.Message);
+            }
+
+            return lista;
+        }
     }
 }

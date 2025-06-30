@@ -1292,10 +1292,10 @@ function compartirCarpeta() {
     let promises = correos.map(correo => {
         return new Promise((resolve, reject) => {
             $.ajax({
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
                 url: config.compartirCarpetaUrl,
                 type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
                 data: JSON.stringify({
                     id_carpeta: idCarpeta,
                     correo: correo,
@@ -1314,23 +1314,19 @@ function compartirCarpeta() {
     Promise.all(promises)
         .then(results => {
             Swal.close();
-            const errores = results.filter(r => !r.Respuesta);
+
+            // Filtrar solo las respuestas fallidas
+            const errores = results.filter(r => r.Respuesta === false);
 
             if (errores.length > 0) {
                 const mensajes = errores.map(e => e.Mensaje).join('\n');
-                showAlert("Advertencia", `Algunas carpetas no se compartieron correctamente:\n${mensajes}`, "warning");
+                showAlert("Advertencia", `Algunos usuarios no recibieron la carpeta:\n${mensajes}`, "warning", true);
             } else {
-                showAlert("¡Éxito!", "Carpeta compartida con todos los usuarios seleccionados", "success");
+                showAlert("¡Éxito!", "Carpeta compartida con todos los usuarios seleccionados", "success", true);
             }
 
             $('#modalCompartir').modal('hide');
             $('#correosCompartir').val(null).trigger('change');
         })
-        .catch(error => {
-            Swal.close();
-            showAlert("Error", `Error al conectar con el servidor: ${error.statusText}`, "error");
-        });
-
-
-    $("#modalCompartir").modal("hide");
+        .catch(error => { Swal.close(); showAlert("Error", `Error al conectar con el servidor: ${error.statusText}`, "error"); });
 }

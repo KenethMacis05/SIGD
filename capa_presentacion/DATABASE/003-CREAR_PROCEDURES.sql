@@ -2427,6 +2427,66 @@ BEGIN
     END CATCH
 END
 GO
+
+CREATE OR ALTER PROCEDURE usp_ObtenerCarpetasCompartidasPorMi
+    @IdUsuarioPropietario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        c.id_carpeta,
+        c.nombre AS nombre_carpeta,
+        c.ruta,
+        c.fecha_registro,
+        co.correo_destino,
+        u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,
+        co.permisos,
+        co.fecha_compartido
+    FROM 
+        COMPARTIDOS co
+    INNER JOIN 
+        CARPETA c ON co.fk_id_carpeta = c.id_carpeta
+    LEFT JOIN
+        USUARIOS u ON co.fk_id_usuario_destino = u.id_usuario
+    WHERE 
+        co.fk_id_usuario_propietario = @IdUsuarioPropietario
+        AND co.estado = 1
+        AND c.estado = 1
+    ORDER BY 
+        co.fecha_compartido DESC;
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_ObtenerCarpetasCompartidasConmigo
+    @CorreoUsuarioDestino VARCHAR(60)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        c.id_carpeta,
+        c.nombre AS nombre_carpeta,
+        c.ruta,
+        c.fecha_registro,
+        u.pri_nombre + ' ' + u.pri_apellido AS nombre_propietario,
+        co.permisos,
+        co.fecha_compartido
+    FROM 
+        COMPARTIDOS co
+    INNER JOIN 
+        CARPETA c ON co.fk_id_carpeta = c.id_carpeta
+    INNER JOIN
+        USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
+    WHERE 
+        (co.correo_destino = @CorreoUsuarioDestino OR 
+         co.fk_id_usuario_destino = (SELECT id_usuario FROM USUARIOS WHERE correo = @CorreoUsuarioDestino))
+        AND co.estado = 1
+        AND c.estado = 1
+    ORDER BY 
+        co.fecha_compartido DESC;
+END
+GO
 --USE SISTEMA_DE_GESTION_DIDACTICA;
 --GRANT EXECUTE TO [IIS APPPOOL\sigd];
 --GO
