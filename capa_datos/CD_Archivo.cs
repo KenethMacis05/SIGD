@@ -448,7 +448,7 @@ namespace capa_datos
             return resultado;
         }
 
-        public bool EliminarArchivoDefinitivamente(int id_archivo, out string mensaje)
+        public bool EliminarArchivoDefinitivamente(int id_archivo, int id_usuario, out string mensaje)
         {
             bool resultado = false;
             mensaje = string.Empty;
@@ -463,9 +463,11 @@ namespace capa_datos
 
                     // Agregar parámetro de entrada
                     cmd.Parameters.AddWithValue("IdArchivo", id_archivo);
+                    cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
 
                     // Agregar parámetro de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("@Mensaje", SqlDbType.NVarChar, 500).Direction = ParameterDirection.Output;
 
                     // Abrir conexión
                     conexion.Open();
@@ -473,7 +475,8 @@ namespace capa_datos
 
                     // Obtener valores de los parámetros de salida
                     resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
-                    mensaje = resultado ? "Archivo eliminado correctamente" : "El archivo no existe";
+                    mensaje = cmd.Parameters["@Mensaje"].Value.ToString();
+
                 }
             }
             catch (Exception ex)

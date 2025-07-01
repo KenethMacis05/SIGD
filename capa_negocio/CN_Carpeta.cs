@@ -41,6 +41,11 @@ namespace capa_negocio
             return CD_Carpeta.ListarCarpetasEliminadasPorUsuario(id_usuario, out resultado, out mensaje);
         }
 
+        public List<CARPETACOMPARTIDA> ObtenerCarpetasCompartidasPorMi(int idUsuario)
+        {
+            return CD_Carpeta.ObtenerCarpetasCompartidasPorMi(idUsuario);
+        }
+
         public int Crear(CARPETA carpeta, out string mensaje)
         {
             mensaje = string.Empty;
@@ -111,13 +116,13 @@ namespace capa_negocio
             return CD_Carpeta.ObtenerRutaCarpetaPorId(idCarpeta, out ruta, out mensaje);
         }
 
-        public bool CompartirCarpeta(int idCarpeta, int idUsuarioPropietario, string correoDestino, string permisos, out string mensaje)
+        public bool CompartirCarpeta(int idCarpeta, int idUsuarioPropietario, int idUsuarioDestino, string permisos, out string mensaje)
         {
-            if (string.IsNullOrEmpty(correoDestino))
-            {
-                mensaje = "Debe especificar un correo electrónico válido para compartir la carpeta.";
-                return false;
-            }
+            //if (string.IsNullOrEmpty(correoDestino))
+            //{
+            //    mensaje = "Debe especificar un correo electrónico válido para compartir la carpeta.";
+            //    return false;
+            //}
 
             if (permisos != "lectura" && permisos != "edicion")
             {
@@ -125,7 +130,7 @@ namespace capa_negocio
                 return false;
             }
 
-            return CD_Carpeta.CompartirCarpeta(idCarpeta, idUsuarioPropietario, correoDestino, permisos, out mensaje);
+            return CD_Carpeta.CompartirCarpeta(idCarpeta, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
         }
     }
 }

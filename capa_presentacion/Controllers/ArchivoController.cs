@@ -220,8 +220,9 @@ namespace capa_presentacion.Controllers
                         {
                             System.IO.File.Delete(rutaFisica);
                         }
+                        USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
 
-                        resultado = CN_Archivo.EliminarDefinitivamente(id_eliminar, out mensaje);
+                        resultado = CN_Archivo.EliminarDefinitivamente(id_eliminar, usuario.id_usuario, out mensaje);
                         if (resultado != 1)
                             return Json(new { Respuesta = false, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
                     }
@@ -247,7 +248,7 @@ namespace capa_presentacion.Controllers
         }
 
         [HttpPost]
-        public JsonResult CompartirCarpeta(int id_carpeta, string correo, string permisos)
+        public JsonResult CompartirCarpeta(int idCarpeta, int idUsuarioDestino, string permisos)
         {
             string mensaje = string.Empty;
             bool respuesta = false;
@@ -264,9 +265,9 @@ namespace capa_presentacion.Controllers
                     }, JsonRequestBehavior.AllowGet);
                 }
 
-                var idUsuario = usuario.id_usuario;
+                var idUsuarioPropietario = usuario.id_usuario;
 
-                respuesta = CN_Carpeta.CompartirCarpeta(id_carpeta, idUsuario, correo, permisos, out mensaje);
+                respuesta = CN_Carpeta.CompartirCarpeta(idCarpeta, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
             }
             catch (Exception ex)
             {
@@ -277,8 +278,29 @@ namespace capa_presentacion.Controllers
             return Json(new { Respuesta = respuesta, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        // Controlador para Listar las carpetas compartidas
+        // Enpoint(Get): Listar las carpetas compartidas
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult ListarCarpetasCompartidas()
+        {
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null)
+                {
+                    return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+                }
 
+                List<CARPETACOMPARTIDA> lst = new List<CARPETACOMPARTIDA>();
+                lst = CN_Carpeta.ObtenerCarpetasCompartidasPorMi(usuario.id_usuario);
+
+                return Json(new { success = true, data = lst }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
 
         // Controlador para Borrar carpetas compartidas
 

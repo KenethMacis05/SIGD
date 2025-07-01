@@ -72,9 +72,9 @@ namespace capa_negocio
             return eliminado ? 1 : 0;
         }
 
-        public int EliminarDefinitivamente(int id_archivo, out string mensaje)
+        public int EliminarDefinitivamente(int id_archivo, int id_usuario, out string mensaje)
         {
-            bool eliminado = CD_Archivo.EliminarArchivoDefinitivamente(id_archivo, out mensaje);
+            bool eliminado = CD_Archivo.EliminarArchivoDefinitivamente(id_archivo, id_usuario, out mensaje);
             return eliminado ? 1 : 0;
         }
 

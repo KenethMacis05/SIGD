@@ -1,6 +1,7 @@
 ﻿let breadcrumbStack = [];
 let carpetaActualId = null;
 let dataTable;
+let dataTableCompartidos;
 
 // Agregar una nueva entrada al breadcrumbStack
 function agregarBreadcrumb(nombreCarpeta, idCarpeta) {
@@ -437,6 +438,7 @@ $(document).on('click', '.btn-eliminar', function (e) {
                         limpiarArchivos()
 
                         $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
+                        $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la carpeta", "error"); }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
@@ -475,6 +477,7 @@ $(document).on('click', '.btn-eliminarArchivo', function (e) {
                             cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos")
                         }
                         $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
+                        $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
 
                         // Limpiar los contenedores de encontrados
                         limpiarArchivos()
@@ -936,6 +939,7 @@ $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
+    dataTableCompartidos = $("#datatableArchivoCompartidos").DataTable(dataTableOptionsComparitos)
 
     myDropzone = new Dropzone("#custom-dropzone", {
         url: "#",
@@ -1181,7 +1185,189 @@ function limpiarArchivos() {
     }, 300);
 }
 
+// Leer carpetas compartidas por mi
+const dataTableOptionsComparitos = {
+    ...dataTableConfig,
 
+    ajax: {
+        url: config.listarCarpetasComparidasUrl,
+        type: "GET",
+        dataType: "json"
+    },
+
+    columns: [
+        {
+            data: null,
+            title: "#",
+            render: function (data, type, row, meta) {
+                return meta.row + 1;
+            },
+            orderable: false,
+            width: "5"
+        },
+        {
+            data: "NombreCarpeta", title: "Carpeta",
+            render: function (data, type, row) {
+                return `<i class="fa fa-folder fa-2x text-warning"></i> ${data}`;
+            }
+        },
+        { data: "Ruta", title: "Ruta" },
+        {
+            data: "FechaCompartido", title: "Fecha compartida",
+            render: function (data) {
+                return data ? formatASPNetDate(data) : "N/A";
+            }
+        },
+        {
+            data: "NombreDestinatario",
+            title: "Usuario",
+            render: function (data, type, row) {
+                return `
+                    <div class="d-flex flex-column">
+                        <span>${data}</span>
+                        <small class="text-muted">
+                            <i class="fas fa-envelope fa-xs me-1"></i>
+                            ${row.CorreoDestinatario}
+                        </small>
+                    </div>
+                `;
+            }
+        },
+        {
+            data: "Permisos", title: "Permisos",
+            render: function (valor) {
+                let iconHtml = '';
+                let text = '';
+                let badgeClass = '';
+
+                if (valor === "lectura") {
+                    iconHtml = '<i class="fa fa-eye"></i>';
+                    text = 'LECTURA';
+                    badgeClass = 'text-bg-info';
+                } else if (valor === "edicion") {
+                    iconHtml = '<i class="fa fa-edit"></i>';
+                    text = 'EDICIÓN';
+                    badgeClass = 'text-bg-warning';
+                } 
+                return `<div class="d-flex justify-content-center align-items-center fs-5">
+                            <span class="badge ${badgeClass} text-white">${iconHtml} ${text}</span>
+                        </div>`;
+            },
+            width: "90"
+        },
+        {
+            defaultContent:
+                '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-dejarDeCompartir"><i class="fa fa-ban"></i></button>',
+            width: "90"
+        },
+    ]
+};
+
+// Listar usuarios en el select2 con paginación y excluyendo al usuario actual
+$.ajax({
+    url: config.listarUsuariosUrl,
+    type: "GET",
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+    success: function (response) {
+        $('#correosCompartir').empty();
+
+        $.each(response.data, function (index, usuario) {
+            $('#correosCompartir').append(
+                `<option value="${usuario.id_usuario}">
+                    ${usuario.pri_nombre} ${usuario.pri_apellido} (${usuario.correo})
+                </option>`);
+        });
+
+        $('#correosCompartir').select2({
+            placeholder: 'Selecciona uno o más usuarios',
+            width: '100%',
+            theme: "classic",
+            minimumResultsForSearch: 5,
+            dropdownParent: $('#modalCompartir'),
+            language: {
+                noResults: function () {
+                    return "No se encontraron resultados";
+                },
+                searching: function () {
+                    return "Buscando...";
+                }
+            },
+            
+            minimumInputLength: 0,
+        });
+    },
+    error: (xhr) => {
+        showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+    }
+});
+
+// Abrir modal compartir carpeta
+$(document).on('click', '.btn-compartir', function (e) {
+    e.preventDefault();
+    const idCarpeta = $(this).data('carpeta-id');
+
+    $("#idCarpetaCompartir").val(idCarpeta);
+    $("#modalCompartir").modal("show");
+});
+
+// Función para compartir carpeta
+function compartirCarpeta() {
+    const idCarpeta = $('#idCarpetaCompartir').val();
+    const idUsuariosDestinos = $('#correosCompartir').val();
+    const permisos = $('#permisosCompartir').val();
+
+    if (!idUsuariosDestinos || idUsuariosDestinos.length === 0) {
+        showAlert("Error", "Debes seleccionar al menos un usuario", "error");
+        return;
+    }
+
+    showLoadingAlert("Compartiendo", "Procesando solicitud...");
+
+    // Compartir con cada usuario seleccionado
+    let promises = idUsuariosDestinos.map(idUsuarioDestino => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: config.compartirCarpetaUrl,
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idCarpeta: idCarpeta,
+                    idUsuarioDestino: idUsuarioDestino,
+                    permisos: permisos
+                }),
+                success: function (data) {
+                    resolve(data);
+                },
+                error: function (xhr) {
+                    reject(xhr);
+                }
+            });
+        });
+    });
+
+    Promise.all(promises)
+        .then(results => {
+            Swal.close();
+
+            // Filtrar solo las respuestas fallidas
+            const errores = results.filter(r => r.Respuesta === false);
+
+            if (errores.length > 0) {
+                const mensajes = errores.map(e => e.Mensaje).join('\n');
+                showAlert("Advertencia", `Algunos usuarios no recibieron la carpeta:\n${mensajes}`, "warning");
+            } else {
+                showAlert("¡Éxito!", "Carpeta compartida con todos los usuarios seleccionados", "success", true);
+                $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
+            }
+
+            $('#modalCompartir').modal('hide');
+            $('#correosCompartir').val(null).trigger('change');
+        })
+        .catch(error => { Swal.close(); showAlert("Error", `Error al conectar con el servidor: ${error.statusText}`, "error"); });
+}
 
 
 
@@ -1234,99 +1420,4 @@ function restablecerCarpeta(idCarpeta) {
             }
         }
     });
-}
-
-
-
-
-// Listar usuarios en el select2
-$.ajax({
-    url: config.listarUsuariosUrl,
-    type: "GET",
-    dataType: "json",
-    contentType: "application/json; charset=utf-8",
-
-    success: function (response) {
-        $('#correosCompartir').empty();
-        $.each(response.data, function (index, usuario) {
-            $('#correosCompartir').append(
-                `<option value="${usuario.correo}">
-                    ${usuario.pri_nombre} ${usuario.pri_apellido} (${usuario.correo})
-                </option>`);
-        });
-        $('#correosCompartir').select2({
-            placeholder: 'Selecciona uno o más usuarios',
-            width: '100%',
-            theme: "classic",
-            minimumResultsForSearch: -1,
-            dropdownParent: $('#modalCompartir')
-        });
-    },
-
-    error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
-});
-
-// Compartir carpeta
-$(document).on('click', '.btn-compartir', function (e) {
-    e.preventDefault();
-    const idCarpeta = $(this).data('carpeta-id');
-
-    $("#idCarpetaCompartir").val(idCarpeta);
-    $("#modalCompartir").modal("show");
-});
-
-// Función para compartir carpeta
-function compartirCarpeta() {
-    const idCarpeta = $('#idCarpetaCompartir').val();
-    const correos = $('#correosCompartir').val();
-    const permisos = $('#permisosCompartir').val();
-
-    if (!correos || correos.length === 0) {
-        showAlert("Error", "Debes seleccionar al menos un usuario", "error");
-        return;
-    }
-
-    showLoadingAlert("Compartiendo", "Procesando solicitud...");
-
-    // Compartir con cada usuario seleccionado
-    let promises = correos.map(correo => {
-        return new Promise((resolve, reject) => {
-            $.ajax({
-                url: config.compartirCarpetaUrl,
-                type: "POST",
-                dataType: "json",
-                contentType: "application/json; charset=utf-8",
-                data: JSON.stringify({
-                    id_carpeta: idCarpeta,
-                    correo: correo,
-                    permisos: permisos
-                }),
-                success: function (data) {
-                    resolve(data);
-                },
-                error: function (xhr) {
-                    reject(xhr);
-                }
-            });
-        });
-    });
-
-    Promise.all(promises)
-        .then(results => {
-            Swal.close();
-
-            // Filtrar solo las respuestas fallidas
-            const errores = results.filter(r => r.Respuesta === false);
-
-            if (errores.length > 0) {
-                const mensajes = errores.map(e => e.Mensaje).join('\n');
-                showAlert("Advertencia", `Algunos usuarios no recibieron la carpeta:\n${mensajes}`, "warning", true);
-            } else {
-                showAlert("¡Éxito!", "Carpeta compartida con todos los usuarios seleccionados", "success", true);
-            }
-
-            $('#modalCompartir').modal('hide');
-            $('#correosCompartir').val(null).trigger('change');
-        })
-        .catch(error => { Swal.close(); showAlert("Error", `Error al conectar con el servidor: ${error.statusText}`, "error"); });
 }

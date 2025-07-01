@@ -517,7 +517,7 @@ namespace capa_datos
             return resultado;
         }
 
-        public bool CompartirCarpeta(int idCarpeta, int idUsuarioPropietario, string correoDestino, string permisos, out string mensaje)
+        public bool CompartirCarpeta(int idCarpeta, int idUsuarioPropietario, int idUsuarioDestino, string permisos, out string mensaje)
         {
             bool respuesta = false;
             mensaje = string.Empty;
@@ -531,7 +531,7 @@ namespace capa_datos
 
                     cmd.Parameters.AddWithValue("IdCarpeta", idCarpeta);
                     cmd.Parameters.AddWithValue("IdUsuarioPropietario", idUsuarioPropietario);
-                    cmd.Parameters.AddWithValue("CorreoDestino", correoDestino);
+                    cmd.Parameters.AddWithValue("IdUsuarioDestino", idUsuarioDestino);
                     cmd.Parameters.AddWithValue("Permisos", permisos);
 
                     // Parámetros de salida

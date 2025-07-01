@@ -1500,7 +1500,7 @@ GO
 
 ------------------------------------------------------------------------------------------------------------------
 
-CREATE PROCEDURE usp_EliminarCarpetaDefinitivamente
+CREATE OR ALTER PROCEDURE usp_EliminarCarpetaDefinitivamente
     @IdCarpeta INT,
     @Resultado BIT OUTPUT
 AS
@@ -1510,6 +1510,18 @@ BEGIN
     BEGIN TRY
         BEGIN TRANSACTION;
 
+        -- Primero eliminar archivos compartidos relacionados
+        DELETE FROM COMPARTIDOS
+        WHERE fk_id_archivo IN (
+            SELECT id_archivo FROM ARCHIVO
+            WHERE fk_id_carpeta IN (
+                SELECT id_carpeta FROM CARPETA 
+                WHERE id_carpeta = @IdCarpeta
+                OR carpeta_padre = @IdCarpeta
+            )
+        );
+
+        -- Eliminar los archivos
         ;WITH CarpetasRecursivas AS (
             SELECT id_carpeta 
             FROM CARPETA 
@@ -1524,6 +1536,15 @@ BEGIN
             SELECT id_carpeta FROM CarpetasRecursivas
         );
         
+        -- Eliminar carpetas compartidas relacionadas
+        DELETE FROM COMPARTIDOS
+        WHERE fk_id_carpeta IN (
+            SELECT id_carpeta FROM CARPETA 
+            WHERE id_carpeta = @IdCarpeta
+            OR carpeta_padre = @IdCarpeta
+        );
+        
+        -- Finalmente eliminar las carpetas
         ;WITH CarpetasRecursivas AS (
             SELECT id_carpeta 
             FROM CARPETA 
@@ -1537,7 +1558,6 @@ BEGIN
         WHERE id_carpeta IN (SELECT id_carpeta FROM CarpetasRecursivas);
         
         COMMIT TRANSACTION;
-
         SET @Resultado = 1;
     END TRY
     BEGIN CATCH        
@@ -1937,40 +1957,71 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_EliminarArchivoDefinitivamente
+ALTER PROCEDURE usp_EliminarArchivoDefinitivamente
     @IdArchivo INT,
-    @Resultado BIT OUTPUT
+    @IdUsuario INT,
+    @Resultado BIT OUTPUT,
+    @Mensaje NVARCHAR(500) OUTPUT
 AS
 BEGIN
+    SET NOCOUNT ON;
     SET @Resultado = 0;
+    SET @Mensaje = '';
 
     BEGIN TRY
-        -- Iniciar una transacción para asegurar la consistencia
-        BEGIN TRANSACTION;
-
-        -- Verificar si el archivo existe
-        IF EXISTS (SELECT 1 FROM ARCHIVO WHERE id_archivo = @IdArchivo)
+        -- Verificar si el archivo existe y pertenece al usuario
+        IF NOT EXISTS (
+            SELECT 1 FROM ARCHIVO a
+            INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+            WHERE a.id_archivo = @IdArchivo AND c.fk_id_usuario = @IdUsuario
+            AND a.estado = 0
+        )
         BEGIN
-            -- Eliminar registros relacionados en DETALLEARCHIVO
-            DELETE FROM DETALLEARCHIVO
-            WHERE fk_id_archivo = @IdArchivo;
-
-            -- Eliminar el archivo de manera definitiva
-            DELETE FROM ARCHIVO
-            WHERE id_archivo = @IdArchivo;
-
-            -- Indicar que la operación fue exitosa
-            SET @Resultado = 1;
+            SET @Mensaje = 'El archivo no existe, ya fue eliminado o no tienes permisos';
+            RETURN;
         END
 
-        -- Confirmar la transacción
+        -- Obtener información del archivo para registro (antes de eliminar)
+        DECLARE @NombreArchivo VARCHAR(100), @RutaArchivo VARCHAR(255);
+        SELECT 
+            @NombreArchivo = nombre,
+            @RutaArchivo = ruta
+        FROM ARCHIVO 
+        WHERE id_archivo = @IdArchivo;
+
+        -- Iniciar transacción
+        BEGIN TRANSACTION;
+
+        -- 1. Eliminar registros de compartidos primero (si existen)
+        IF EXISTS (SELECT 1 FROM COMPARTIDOS WHERE fk_id_archivo = @IdArchivo)
+        BEGIN
+            DELETE FROM COMPARTIDOS
+            WHERE fk_id_archivo = @IdArchivo;
+        END
+
+        -- 2. Eliminar el registro de la base de datos
+        DELETE FROM ARCHIVO
+        WHERE id_archivo = @IdArchivo;
+
+        -- Operación exitosa
+        SET @Resultado = 1;
+        SET @Mensaje = CONCAT('Archivo "', @NombreArchivo, '" eliminado definitivamente');
+
+        -- Confirmar transacción
         COMMIT TRANSACTION;
+
+        -- INSERT INTO AUDITORIA_ELIMINACIONES (tipo, id_elemento, nombre, ruta, usuario, fecha)
+        -- VALUES ('Archivo', @IdArchivo, @NombreArchivo, @RutaArchivo, @IdUsuario, GETDATE());
     END TRY
     BEGIN CATCH
-        -- En caso de error, deshacer los cambios
-        ROLLBACK TRANSACTION;        
-        SET @Resultado = 0;        
-        THROW;
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al eliminar el archivo: ' + ERROR_MESSAGE();
+        
+        -- INSERT INTO ERROR_LOG(procedimiento, error, usuario, fecha)
+        -- VALUES('usp_EliminarArchivoDefinitivamente', ERROR_MESSAGE(), @IdUsuario, GETDATE());
     END CATCH
 END
 GO
@@ -2135,7 +2186,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_VaciarPapelera
+CREATE OR ALTER PROCEDURE usp_VaciarPapelera
     @IdUsuario INT,    
     @Resultado BIT OUTPUT,    
     @Mensaje NVARCHAR(200) OUTPUT    
@@ -2163,24 +2214,36 @@ BEGIN
             RETURN;    
         END    
     
-        -- Iniciar una transacción para asegurar consistencia    
         BEGIN TRANSACTION;    
     
+        -- Primero eliminar registros de COMPARTIDOS relacionados con archivos a eliminar
+        DELETE FROM COMPARTIDOS
+        WHERE fk_id_archivo IN (
+            SELECT id_archivo FROM ARCHIVO 
+            WHERE estado = 0 AND fk_id_carpeta IN (
+                SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario
+            )
+        );
+        
         -- Eliminar archivos con estado = 0 y pertenecientes al usuario    
         DELETE FROM ARCHIVO    
         WHERE estado = 0 AND fk_id_carpeta IN (    
             SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario    
         );    
     
-        -- Eliminar archivos con estado = 0 y pertenecientes al usuario    
+        -- Primero eliminar registros de COMPARTIDOS relacionados con carpetas a eliminar
+        DELETE FROM COMPARTIDOS
+        WHERE fk_id_carpeta IN (
+            SELECT id_carpeta FROM CARPETA 
+            WHERE estado = 0 AND fk_id_usuario = @IdUsuario
+        );
+        
+        -- Eliminar carpetas con estado = 0 y pertenecientes al usuario    
         DELETE FROM CARPETA    
-        WHERE estado = 0 AND fk_id_usuario = @IdUsuario   
+        WHERE estado = 0 AND fk_id_usuario = @IdUsuario;   
     
-        -- Indicar que la operación fue exitosa    
         SET @Resultado = 1;    
         SET @Mensaje = 'Papelera vaciada correctamente';    
-    
-        -- Confirmar la transacción    
         COMMIT TRANSACTION;    
     END TRY    
     BEGIN CATCH    
@@ -2355,7 +2418,7 @@ GO
 CREATE OR ALTER PROCEDURE usp_CompartirCarpeta
     @IdCarpeta INT,
     @IdUsuarioPropietario INT,
-    @CorreoDestino VARCHAR(60),
+    @IdUsuarioDestino VARCHAR(60),
     @Permisos VARCHAR(20),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(500) OUTPUT
@@ -2363,19 +2426,20 @@ AS
 BEGIN
     SET NOCOUNT ON;
     
-    DECLARE @IdUsuarioDestino INT = NULL;
     DECLARE @ExisteCompartido BIT = 0;
     
-    -- Verificar si el usuario destino existe
-    SELECT @IdUsuarioDestino = id_usuario 
-    FROM USUARIOS 
-    WHERE correo = @CorreoDestino;
+    -- Verificar si el usuario existe y está activo
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuarioDestino AND estado = 1)
+	BEGIN
+		RAISERROR('Usuario no encontrado o inactivo', 16, 1);
+		RETURN;
+	END
     
     -- Verificar si ya está compartido
     IF EXISTS (
         SELECT 1 FROM COMPARTIDOS 
         WHERE fk_id_carpeta = @IdCarpeta 
-        AND correo_destino = @CorreoDestino
+        AND fk_id_usuario_destino = @IdUsuarioDestino
         AND estado = 1
     )
     BEGIN
@@ -2402,13 +2466,11 @@ BEGIN
         
         -- Insertar el registro de compartido
         INSERT INTO COMPARTIDOS (
-            correo_destino,
             permisos,
             fk_id_carpeta,
             fk_id_usuario_propietario,
             fk_id_usuario_destino
         ) VALUES (
-            @CorreoDestino,
             @Permisos,
             @IdCarpeta,
             @IdUsuarioPropietario,
@@ -2439,7 +2501,7 @@ BEGIN
         c.nombre AS nombre_carpeta,
         c.ruta,
         c.fecha_registro,
-        co.correo_destino,
+        u.correo AS correo_destino,
         u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,
         co.permisos,
         co.fecha_compartido
