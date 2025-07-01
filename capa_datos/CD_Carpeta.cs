@@ -477,10 +477,11 @@ namespace capa_datos
             return resultado;
         }
 
-        public bool VaciarPapelera(int IdUsuario, out string mensaje)
+        public bool VaciarPapelera(int IdUsuario, out string mensaje, out List<(string Tipo, string Ruta)> rutasAEliminar)
         {
             bool resultado = false;
             mensaje = string.Empty;
+            rutasAEliminar = new List<(string, string)>();
 
             try
             {
@@ -489,23 +490,27 @@ namespace capa_datos
                     SqlCommand cmd = new SqlCommand("usp_VaciarPapelera", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // Parámetros
                     cmd.Parameters.AddWithValue("IdUsuario", IdUsuario);
-
-                    // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
-                    cmd.Parameters.Add("Mensaje", SqlDbType.NVarChar, 200).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.NVarChar, 500).Direction = ParameterDirection.Output;
 
                     conexion.Open();
-                    cmd.ExecuteNonQuery();
 
-                    // Obtener resultados
-                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value &&
-                               Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        // Leer las rutas a eliminar
+                        while (reader.Read())
+                        {
+                            rutasAEliminar.Add((
+                                reader["Tipo"].ToString(),
+                                reader["Ruta"].ToString()
+                            ));
+                        }
 
-                    mensaje = cmd.Parameters["Mensaje"].Value != DBNull.Value ?
-                             cmd.Parameters["Mensaje"].Value.ToString() :
-                             "Operación completada sin mensaje específico";
+                    }
+
+                    resultado = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
                 }
             }
             catch (Exception ex)

@@ -2189,11 +2189,18 @@ GO
 CREATE OR ALTER PROCEDURE usp_VaciarPapelera
     @IdUsuario INT,    
     @Resultado BIT OUTPUT,    
-    @Mensaje NVARCHAR(200) OUTPUT    
+    @Mensaje NVARCHAR(500) OUTPUT
 AS    
 BEGIN    
+    SET NOCOUNT ON;
     SET @Resultado = 0;    
     SET @Mensaje = '';    
+    
+    -- Tabla temporal para almacenar rutas a eliminar
+    CREATE TABLE #RutasAEliminar (
+        Tipo VARCHAR(10),
+        Ruta VARCHAR(500)
+    );
     
     BEGIN TRY    
         -- Verificar si hay registros en la papelera    
@@ -2211,12 +2218,26 @@ BEGIN
         IF @TotalRegistros = 0    
         BEGIN    
             SET @Mensaje = 'La papelera no contiene registros';    
+            DROP TABLE #RutasAEliminar;
             RETURN;    
         END    
     
         BEGIN TRANSACTION;    
     
-        -- Primero eliminar registros de COMPARTIDOS relacionados con archivos a eliminar
+        -- Obtener rutas de archivos a eliminar
+        INSERT INTO #RutasAEliminar (Tipo, Ruta)
+        SELECT 'Archivo', a.ruta
+        FROM ARCHIVO a
+        INNER JOIN CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+        WHERE a.estado = 0 AND c.fk_id_usuario = @IdUsuario;
+        
+        -- Obtener rutas de carpetas a eliminar
+        INSERT INTO #RutasAEliminar (Tipo, Ruta)
+        SELECT 'Carpeta', ruta
+        FROM CARPETA
+        WHERE estado = 0 AND fk_id_usuario = @IdUsuario;
+    
+        -- Eliminar registros de COMPARTIDOS relacionados con archivos a eliminar
         DELETE FROM COMPARTIDOS
         WHERE fk_id_archivo IN (
             SELECT id_archivo FROM ARCHIVO 
@@ -2231,7 +2252,7 @@ BEGIN
             SELECT id_carpeta FROM CARPETA WHERE fk_id_usuario = @IdUsuario    
         );    
     
-        -- Primero eliminar registros de COMPARTIDOS relacionados con carpetas a eliminar
+        -- Eliminar registros de COMPARTIDOS relacionados con carpetas a eliminar
         DELETE FROM COMPARTIDOS
         WHERE fk_id_carpeta IN (
             SELECT id_carpeta FROM CARPETA 
@@ -2243,8 +2264,11 @@ BEGIN
         WHERE estado = 0 AND fk_id_usuario = @IdUsuario;   
     
         SET @Resultado = 1;    
-        SET @Mensaje = 'Papelera vaciada correctamente';    
+        SET @Mensaje = CONCAT('Papelera vaciada correctamente. Se eliminaron ', @TotalRegistros, ' elementos.');    
         COMMIT TRANSACTION;    
+        
+        -- Devolver las rutas para eliminación física
+        SELECT Tipo, Ruta FROM #RutasAEliminar;
     END TRY    
     BEGIN CATCH    
         IF @@TRANCOUNT > 0    
@@ -2253,7 +2277,9 @@ BEGIN
         SET @Resultado = 0;    
         SET @Mensaje = 'Error al vaciar la papelera: ' + ERROR_MESSAGE();    
         THROW;    
-    END CATCH    
+    END CATCH
+    
+    DROP TABLE #RutasAEliminar;
 END
 GO
 -----------------------------------------------------------------------------------------------------------------

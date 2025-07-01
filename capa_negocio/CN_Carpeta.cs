@@ -1,10 +1,11 @@
-﻿using System;
+﻿using capa_datos;
+using capa_entidad;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using capa_datos;
-using capa_entidad;
+using System.Web;
 
 namespace capa_negocio
 {
@@ -86,7 +87,7 @@ namespace capa_negocio
         public int VaciarPapelera(int IdUsuario, out string mensaje)
         {
             mensaje = string.Empty;
-            
+
             if (IdUsuario <= 0)
             {
                 mensaje = "El ID del usuario no es válido.";
@@ -95,11 +96,44 @@ namespace capa_negocio
 
             try
             {
-                bool resultado = CD_Carpeta.VaciarPapelera(IdUsuario, out mensaje);
+                List<(string Tipo, string Ruta)> rutasAEliminar;
+                bool resultado = CD_Carpeta.VaciarPapelera(IdUsuario, out mensaje, out rutasAEliminar);
 
                 if (mensaje.Contains("no contiene registros"))
                 {
                     return -1;
+                }
+
+                // Eliminar físicamente los archivos/carpetas
+                if (resultado && rutasAEliminar.Any())
+                {
+                    var errores = new List<string>();
+
+                    foreach (var item in rutasAEliminar)
+                    {
+                        try
+                        {
+                            string rutaFisica = HttpContext.Current.Server.MapPath(item.Ruta.Replace("~", ""));
+
+                            if (item.Tipo == "Archivo" && System.IO.File.Exists(rutaFisica))
+                            {
+                                System.IO.File.Delete(rutaFisica);
+                            }
+                            else if (item.Tipo == "Carpeta" && System.IO.Directory.Exists(rutaFisica))
+                            {
+                                System.IO.Directory.Delete(rutaFisica, true);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            errores.Add($"Error eliminando {item.Tipo}: {ex.Message}");
+                        }
+                    }
+
+                    if (errores.Any())
+                    {
+                        mensaje += " | Errores físicos: " + string.Join("; ", errores);
+                    }
                 }
 
                 return resultado ? 1 : 0;
