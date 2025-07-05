@@ -2359,6 +2359,8 @@ BEGIN
 END
 GO
 
+-----------------------------------------------------------------------------------------------------------------
+
 -- PROCEDIMIENTO PARA BUSCAR ARCHIVOS DEL USUARIO (por nombre base sin extensión)
 CREATE OR ALTER PROCEDURE usp_BuscarArchivosUsuario
     @Nombre VARCHAR(255),
@@ -2425,6 +2427,9 @@ BEGIN
 END
 GO
 
+-----------------------------------------------------------------------------------------------------------------
+
+-- PROCEDIMIENTO ALMACENADO PARA ACTUALIZAR LA FOTO DE PERFIL DEL USUARIO
 CREATE PROCEDURE sp_ActualizarFotoUsuario
     @IdUsuario INT,
     @Perfil NVARCHAR(MAX)
@@ -2441,6 +2446,9 @@ BEGIN
 END
 GO
 
+-----------------------------------------------------------------------------------------------------------------
+
+-- PROCEDIMIENTO ALMACENADO PARA COMPARTIR UNA CARPETA
 CREATE OR ALTER PROCEDURE usp_CompartirCarpeta
     @IdCarpeta INT,
     @IdUsuarioPropietario INT,
@@ -2516,6 +2524,9 @@ BEGIN
 END
 GO
 
+-----------------------------------------------------------------------------------------------------------------
+
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER LAS CARPETAS COMPARTIDAS POR EL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerCarpetasCompartidasPorMi
     @IdUsuarioPropietario INT
 AS
@@ -2546,18 +2557,17 @@ BEGIN
 END
 GO
 
+-----------------------------------------------------------------------------------------------------------------
+
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER LAS CARPETAS QUE LE COMPARTIERON AL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerCarpetasCompartidasConmigo
-    @CorreoUsuarioDestino VARCHAR(60)
+    @idUsuario VARCHAR(60)
 AS
 BEGIN
     SET NOCOUNT ON;
     
-    SELECT 
-        c.id_carpeta,
-        c.nombre AS nombre_carpeta,
-        c.ruta,
-        c.fecha_registro,
-        u.pri_nombre + ' ' + u.pri_apellido AS nombre_propietario,
+    SELECT c.*,      
+        u.pri_nombre + ' ' + u.pri_apellido AS propietario,
         co.permisos,
         co.fecha_compartido
     FROM 
@@ -2567,8 +2577,7 @@ BEGIN
     INNER JOIN
         USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
     WHERE 
-        (co.correo_destino = @CorreoUsuarioDestino OR 
-         co.fk_id_usuario_destino = (SELECT id_usuario FROM USUARIOS WHERE correo = @CorreoUsuarioDestino))
+        co.fk_id_usuario_destino = @idUsuario
         AND co.estado = 1
         AND c.estado = 1
     ORDER BY 
