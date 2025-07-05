@@ -240,13 +240,29 @@ namespace capa_presentacion.Controllers
 
         #region CarpetasCompartidas
 
-        // Vista a la vista de Carpetas Compartidas
+        // Vista de Carpetas Compartidas
         [HttpGet]
         public ActionResult CarpetasCompartidas()
         {
             return View();
         }
 
+        // Enpoint(GET): Listar todas las carpetas del usuario autenticado
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult ListarCarpetasCompartidasConmigo()
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            int resultado;
+            string mensaje;
+
+            List<CARPETA> lst = new List<CARPETA>();
+            lst = CN_Carpeta.ListarCarpetasCompartidasConmigo(usuario.id_usuario, out resultado, out mensaje);
+
+            return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(Post): Compartir carpeta
         [HttpPost]
         public JsonResult CompartirCarpeta(int idCarpeta, int idUsuarioDestino, string permisos)
         {

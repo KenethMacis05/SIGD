@@ -1957,7 +1957,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE usp_EliminarArchivoDefinitivamente
+CREATE OR ALTER PROCEDURE usp_EliminarArchivoDefinitivamente
     @IdArchivo INT,
     @IdUsuario INT,
     @Resultado BIT OUTPUT,
@@ -2561,27 +2561,58 @@ GO
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LAS CARPETAS QUE LE COMPARTIERON AL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerCarpetasCompartidasConmigo
-    @idUsuario VARCHAR(60)
+    @IdUsuario VARCHAR(60),
+	@Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
 AS
 BEGIN
-    SET NOCOUNT ON;
-    
-    SELECT c.*,      
-        u.pri_nombre + ' ' + u.pri_apellido AS propietario,
-        co.permisos,
-        co.fecha_compartido
-    FROM 
-        COMPARTIDOS co
-    INNER JOIN 
-        CARPETA c ON co.fk_id_carpeta = c.id_carpeta
-    INNER JOIN
-        USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
-    WHERE 
-        co.fk_id_usuario_destino = @idUsuario
-        AND co.estado = 1
-        AND c.estado = 1
-    ORDER BY 
-        co.fecha_compartido DESC;
+    SET NOCOUNT ON;
+    
+	-- Validar si el usuario existe
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+	BEGIN
+		SET @Resultado = 0;
+		SET @Mensaje = 'El usuario no existe';
+		RETURN;
+	END
+    
+	-- Verificar si el usuario tiene carpetas compartidas
+	IF NOT EXISTS (
+		SELECT 1
+		FROM COMPARTIDOS co
+		INNER JOIN CARPETA c ON co.fk_id_carpeta = c.id_carpeta
+		INNER JOIN USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
+		WHERE co.fk_id_usuario_destino = @idUsuario
+		AND co.estado = 1
+		AND c.estado = 1
+	)
+	BEGIN
+		SET @Resultado = 0;
+		SET @Mensaje = 'El usuario no tiene carpetas compartidas con el.';
+	END
+	ELSE
+	BEGIN
+		-- Si hay carpetas, seleccionarlas para el resultado final
+		SELECT c.*,      
+        	u.pri_nombre + ' ' + u.pri_apellido AS propietario,
+        	co.permisos,
+        	co.fecha_compartido
+    	FROM 
+        	COMPARTIDOS co
+    	INNER JOIN 
+        	CARPETA c ON co.fk_id_carpeta = c.id_carpeta
+    	INNER JOIN
+        	USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
+    	WHERE 
+        	co.fk_id_usuario_destino = @idUsuario
+        	AND co.estado = 1
+        	AND c.estado = 1
+    	ORDER BY 
+        	co.fecha_compartido DESC;
+
+		SET @Resultado = 1;
+		SET @Mensaje = 'Carpetas cargadas correctamente';
+	END
 END
 GO
 --USE SISTEMA_DE_GESTION_DIDACTICA;

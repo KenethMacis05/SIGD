@@ -15,9 +15,14 @@ namespace capa_entidad
         public DateTime fecha_registro { get; set; }
         public DateTime fecha_eliminacion { get; set; }
         public bool estado { get; set; }
-        public int fk_id_usuario { get; set; }
         public int? carpeta_padre { get; set; }
+        public int fk_id_usuario { get; set; }
         public USUARIOS usuario { get; set; }
+
+        // CARPETAS COMPARTIDAS
+        public string propietario { get; set; }
+        public string permisos { get; set; }
+        public DateTime fecha_compartido { get; set; }
     }
 
     public class CARPETACOMPARTIDA

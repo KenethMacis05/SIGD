@@ -600,9 +600,11 @@ namespace capa_datos
             return lista;
         }
 
-        public List<CARPETACOMPARTIDA> ObtenerCarpetasCompartidasConmigo(string correoUsuario)
+        public List<CARPETA> ObtenerCarpetasCompartidasConmigo(int idUsuario, out int resultado, out string mensaje)
         {
-            List<CARPETACOMPARTIDA> lista = new List<CARPETACOMPARTIDA>();
+            List<CARPETA> lista = new List<CARPETA>();
+            resultado = 0;
+            mensaje = string.Empty;
 
             try
             {
@@ -610,26 +612,36 @@ namespace capa_datos
                 {
                     SqlCommand cmd = new SqlCommand("usp_ObtenerCarpetasCompartidasConmigo", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("CorreoUsuarioDestino", correoUsuario);
 
+                    // Parametro de entrada
+                    cmd.Parameters.AddWithValue("IdUsuario", idUsuario);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
                     conexion.Open();
 
                     using (SqlDataReader dr = cmd.ExecuteReader())
                     {
                         while (dr.Read())
                         {
-                            lista.Add(new CARPETACOMPARTIDA
+                            lista.Add(new CARPETA
                             {
-                                IdCarpeta = Convert.ToInt32(dr["id_carpeta"]),
-                                NombreCarpeta = dr["nombre_carpeta"].ToString(),
-                                Ruta = dr["ruta"].ToString(),
-                                FechaRegistro = Convert.ToDateTime(dr["fecha_registro"]),
-                                NombrePropietario = dr["nombre_propietario"].ToString(),
-                                Permisos = dr["permisos"].ToString(),
-                                FechaCompartido = Convert.ToDateTime(dr["fecha_compartido"])
+                                id_carpeta = Convert.ToInt32(dr["id_carpeta"]),
+                                nombre = dr["nombre"].ToString(),
+                                estado = Convert.ToBoolean(dr["estado"]),
+                                carpeta_padre = dr["carpeta_padre"] == DBNull.Value ? (int?)null : Convert.ToInt32(dr["carpeta_padre"]),
+                                propietario = dr["propietario"].ToString(),
+                                permisos = dr["permisos"].ToString(),
+                                fecha_compartido = Convert.ToDateTime(dr["fecha_compartido"])
                             });
                         }
                     }
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
                 }
             }
             catch (Exception ex)

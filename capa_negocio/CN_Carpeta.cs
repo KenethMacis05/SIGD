@@ -47,6 +47,11 @@ namespace capa_negocio
             return CD_Carpeta.ObtenerCarpetasCompartidasPorMi(idUsuario);
         }
 
+        public List<CARPETA> ListarCarpetasCompartidasConmigo(int id_usuario, out int resultado, out string mensaje)
+        {
+            return CD_Carpeta.ObtenerCarpetasCompartidasConmigo(id_usuario, out resultado, out mensaje);
+        }
+
         public int Crear(CARPETA carpeta, out string mensaje)
         {
             mensaje = string.Empty;
