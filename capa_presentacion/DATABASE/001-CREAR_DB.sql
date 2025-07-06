@@ -137,6 +137,7 @@ CREATE TABLE COMPARTIDOS (
     permisos VARCHAR(20) NOT NULL CHECK (permisos IN ('lectura', 'edicion')),
     estado BIT DEFAULT 1,
     fecha_compartido DATETIME DEFAULT GETDATE(),
+    tipoArchivo VARCHAR(10) CHECK (TipoArchivo IN ('ARCHIVO', 'CARPETA')),
     fk_id_archivo INT NULL,
     fk_id_carpeta INT NULL,
     fk_id_usuario_propietario INT NOT NULL,

@@ -486,5 +486,100 @@ namespace capa_datos
             }
             return resultado;
         }
+
+        public bool CompartirArchivo(int idArchivo, int idUsuarioPropietario, int idUsuarioDestino, string permisos, out string mensaje)
+        {
+            bool respuesta = false;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_CompartirArchivo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("idArchivo", idArchivo);
+                    cmd.Parameters.AddWithValue("IdUsuarioPropietario", idUsuarioPropietario);
+                    cmd.Parameters.AddWithValue("IdUsuarioDestino", idUsuarioDestino);
+                    cmd.Parameters.AddWithValue("Permisos", permisos);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    respuesta = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                respuesta = false;
+                mensaje = "Error en la capa de datos: " + ex.Message;
+            }
+
+            return respuesta;
+        }
+
+        public List<ARCHIVO> ObtenerArchivosCompartidosConmigo(int idUsuario, out int resultado, out string mensaje)
+        {
+            List<ARCHIVO> lista = new List<ARCHIVO>();
+            resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerArchivosCompartidosConmigo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parametro de entrada
+                    cmd.Parameters.AddWithValue("IdUsuario", idUsuario);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new ARCHIVO
+                            {
+
+                                id_archivo = dr["id_archivo"] != DBNull.Value ? Convert.ToInt32(dr["id_archivo"]) : 0,
+                                nombre = dr["nombre_archivo"] != DBNull.Value ? dr["nombre_archivo"].ToString() : string.Empty,
+                                ruta = dr["ruta"] != DBNull.Value ? dr["ruta"].ToString() : string.Empty,
+                                size = dr["size"] != DBNull.Value ? Convert.ToInt32(dr["size"]) : 0,
+                                tipo = dr["tipo"] != DBNull.Value ? dr["tipo"].ToString() : string.Empty,
+                                fecha_subida = dr["fecha_subida"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_subida"]) : DateTime.MinValue,
+                                estado = dr["estado"] != DBNull.Value && Convert.ToBoolean(dr["estado"]),
+                                id_carpeta = dr["fk_id_carpeta"] != DBNull.Value ? Convert.ToInt32(dr["fk_id_carpeta"]) : 0,
+                                nombre_carpeta = dr["nombre_carpeta"] != DBNull.Value ? dr["nombre_carpeta"].ToString() : string.Empty,
+                                propietario = dr["propietario"].ToString(),
+                                permisos = dr["permisos"].ToString(),
+                                fecha_compartido = Convert.ToDateTime(dr["fecha_compartido"])
+                            });
+                        }
+                    }
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener carpetas compartidas conmigo: " + ex.Message);
+            }
+
+            return lista;
+        }
     }
 }

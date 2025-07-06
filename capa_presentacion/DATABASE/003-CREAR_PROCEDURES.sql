@@ -2615,6 +2615,183 @@ BEGIN
 	END
 END
 GO
+
+-- PROCEDIMIENTO ALMACENADO PARA COMPARTIR UN ARCHIVO
+CREATE OR ALTER PROCEDURE usp_CompartirArchivo
+    @IdArchivo INT,  
+    @IdUsuarioPropietario INT,  
+    @IdUsuarioDestino VARCHAR(60),  
+    @Permisos VARCHAR(20),  
+    @Resultado INT OUTPUT,  
+    @Mensaje VARCHAR(500) OUTPUT  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+      
+    DECLARE @ExisteCompartido BIT = 0;  
+      
+    -- Verificar si el usuario existe y está activo  
+	 IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuarioDestino AND estado = 1)  
+	 BEGIN  
+	  RAISERROR('Usuario no encontrado o inactivo', 16, 1);  
+	  RETURN;  
+	 END  
+      
+    -- Verificar si ya está compartido  
+    IF EXISTS (  
+        SELECT 1 FROM COMPARTIDOS   
+        WHERE fk_id_archivo = @IdArchivo
+        AND fk_id_usuario_destino = @IdUsuarioDestino  
+        AND estado = 1  
+    )  
+    BEGIN  
+        SET @ExisteCompartido = 1;  
+    END  
+      
+    -- Validaciones  
+    IF NOT EXISTS (SELECT 1 FROM ARCHIVO WHERE id_archivo = @IdArchivo AND estado = 1)  
+    BEGIN  
+        SET @Resultado = 0;  
+        SET @Mensaje = 'El archivo no existe o ha sido eliminado';  
+        RETURN;  
+    END  
+      
+    IF @ExisteCompartido = 1  
+    BEGIN  
+        SET @Resultado = 0;  
+        SET @Mensaje = 'El archivo ya está compartido con el usuario';  
+        RETURN;  
+    END  
+      
+    BEGIN TRY  
+        BEGIN TRANSACTION;  
+          
+        -- Insertar el registro de compartido  
+        INSERT INTO COMPARTIDOS (  
+            permisos,  
+            fk_id_archivo,  
+            fk_id_usuario_propietario,  
+            fk_id_usuario_destino  
+        ) VALUES (  
+            @Permisos,  
+            @IdArchivo,
+            @IdUsuarioPropietario,  
+            @IdUsuarioDestino  
+        );  
+          
+        SET @Resultado = 1;  
+        SET @Mensaje = 'Archivo compartido exitosamente';  
+          
+        COMMIT TRANSACTION;  
+    END TRY  
+    BEGIN CATCH  
+        ROLLBACK TRANSACTION;  
+        SET @Resultado = 0;  
+        SET @Mensaje = 'Error al compartir el archivo: ' + ERROR_MESSAGE();  
+    END CATCH  
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS COMPARTIDOS POR EL USUARIO
+CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosPorMi
+    @IdUsuarioPropietario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        a.id_archivo,
+        a.nombre AS nombre_archivo,
+		a.ruta,
+		a.size,
+		a.tipo,
+		a.fecha_subida,
+        u.correo AS correo_destino,
+        u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,
+        co.permisos,
+        co.fecha_compartido
+    FROM 
+        COMPARTIDOS co
+    INNER JOIN 
+        ARCHIVO a ON co.fk_id_archivo = a.id_archivo
+    LEFT JOIN
+        USUARIOS u ON co.fk_id_usuario_destino = u.id_usuario
+    WHERE 
+        co.fk_id_usuario_propietario = @IdUsuarioPropietario
+        AND co.estado = 1
+        AND a.estado = 1
+    ORDER BY 
+        co.fecha_compartido DESC;
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS QUE LE COMPARTIERON AL USUARIO
+CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosConmigo
+    @IdUsuario VARCHAR(60),
+	@Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+	-- Validar si el usuario existe
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+	BEGIN
+		SET @Resultado = 0;
+		SET @Mensaje = 'El usuario no existe';
+		RETURN;
+	END
+    
+	-- Verificar si el usuario tiene archivos compartidos
+	IF NOT EXISTS (
+		SELECT 1
+		FROM COMPARTIDOS co
+		INNER JOIN ARCHIVO c ON co.fk_id_archivo = c.id_archivo
+		INNER JOIN USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
+		WHERE co.fk_id_usuario_destino = @idUsuario
+		AND co.estado = 1
+		AND c.estado = 1
+	)
+	BEGIN
+		SET @Resultado = 0;
+		SET @Mensaje = 'El usuario no tiene archivos compartidos con el.';
+	END
+	ELSE
+	BEGIN
+		-- Si hay archivos, seleccionarlos para el resultado final
+		SELECT 
+			a.id_archivo,
+			a.nombre AS nombre_archivo,
+			a.ruta,
+			a.size,
+			a.tipo,
+			a.fecha_subida,
+			a.estado,
+			a.fk_id_carpeta,
+			c.nombre AS nombre_carpeta,
+        	u.pri_nombre + ' ' + u.pri_apellido AS propietario,
+        	co.permisos,
+        	co.fecha_compartido
+    	FROM 
+        	COMPARTIDOS co
+    	INNER JOIN 
+        	ARCHIVO a ON co.fk_id_archivo = a.id_archivo
+		INNER JOIN 
+			CARPETA c ON a.fk_id_carpeta = c.id_carpeta
+    	INNER JOIN
+        	USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
+    	WHERE 
+        	co.fk_id_usuario_destino = 2
+        	AND co.estado = 1
+        	AND a.estado = 1
+    	ORDER BY 
+        	co.fecha_compartido DESC;
+
+		SET @Resultado = 1;
+		SET @Mensaje = 'Archivos cargados correctamente';
+	END
+END
+GO
 --USE SISTEMA_DE_GESTION_DIDACTICA;
 --GRANT EXECUTE TO [IIS APPPOOL\sigd];
 --GO

@@ -20,5 +20,11 @@ namespace capa_entidad
         public int? id_usuario { get; set; }
         public string nombre_carpeta { get; set; }
         public byte[] Contenido { get; set; }
+
+        // Propiedades para compartir archivos
+
+        public string propietario { get; set; }
+        public string permisos { get; set; }
+        public DateTime fecha_compartido { get; set; }
     }
 }

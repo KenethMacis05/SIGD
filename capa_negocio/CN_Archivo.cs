@@ -48,6 +48,10 @@ namespace capa_negocio
             return CD_Archivo.ListarArchivosEliminados(id_usuario, out resultado, out mensaje);
         }
 
+        public List<ARCHIVO> ListarArchivosCompartidosConmigo(int id_usuario, out int resultado, out string mensaje)
+        {
+            return CD_Archivo.ObtenerArchivosCompartidosConmigo(id_usuario, out resultado, out mensaje);
+        }
 
         public int SubirArchivo(ARCHIVO archivo, out string mensaje)
         {
@@ -81,6 +85,23 @@ namespace capa_negocio
         public bool ObtenerRutaArchivoPorId(int idArchivo, out string ruta, out string mensaje)
         {
             return CD_Archivo.ObtenerRutaArchivoPorId(idArchivo, out ruta, out mensaje);
+        }
+
+        public bool CompartirArchivo(int idArchivo, int idUsuarioPropietario, int idUsuarioDestino, string permisos, out string mensaje)
+        {
+            //if (string.IsNullOrEmpty(correoDestino))
+            //{
+            //    mensaje = "Debe especificar un correo electrónico válido para compartir la carpeta.";
+            //    return false;
+            //}
+
+            if (permisos != "lectura" && permisos != "edicion")
+            {
+                mensaje = "Permisos no válidos";
+                return false;
+            }
+
+            return CD_Archivo.CompartirArchivo(idArchivo, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
         }
     }
 }

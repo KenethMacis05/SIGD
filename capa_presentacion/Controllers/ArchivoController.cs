@@ -487,6 +487,53 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
+        // Enpoint(GET): Listar archivos compartidos conmigo
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult ListarArchivosCompartidosConmigo()
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            int resultado;
+            string mensaje;
+
+            List<ARCHIVO> lst = new List<ARCHIVO>();
+            lst = CN_Archivo.ListarArchivosCompartidosConmigo(usuario.id_usuario, out resultado, out mensaje);
+
+            return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(Post): Compartir archivo
+        [HttpPost]
+        public JsonResult CompartirArchivo(int idArchivo, int idUsuarioDestino, string permisos)
+        {
+            string mensaje = string.Empty;
+            bool respuesta = false;
+
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null)
+                {
+                    return Json(new
+                    {
+                        respuesta = false,
+                        mensaje = "La sesión ha expirado. Por favor, inicie sesión nuevamente para continuar."
+                    }, JsonRequestBehavior.AllowGet);
+                }
+
+                var idUsuarioPropietario = usuario.id_usuario;
+
+                respuesta = CN_Archivo.CompartirArchivo(idArchivo, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
+            }
+            catch (Exception ex)
+            {
+                mensaje = $"Error en el sistema al intentar compartir la carpeta. Detalles técnicos: {ex.Message}";
+                System.Diagnostics.Trace.TraceError($"Error compartiendo carpeta: {ex.ToString()}");
+            }
+
+            return Json(new { Respuesta = respuesta, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Papelera

@@ -266,6 +266,9 @@
     <!-- Modal para compartir carpeta -->
     @Html.Partial("~/Views/Archivo/_ModalCompartirCarpeta.cshtml")
 
+    <!-- Modal para compartir archivo -->
+    @Html.Partial("~/Views/Archivo/_ModalCompartirArchivo.cshtml")
+
     <!-- Modal para renombrar un archivo-->
     @Html.Partial("~/Views/Archivo/_ModalRenombrarArchivo.cshtml")
 
@@ -295,6 +298,7 @@
             eliminarCarpetaUrl: '@Url.Action("EliminarCarpeta", "Archivo")',
             eliminarArchivoUrl: '@Url.Action("EliminarArchivo", "Archivo")',
             compartirCarpetaUrl: '@Url.Action("CompartirCarpeta", "Archivo")',
+            compartirArchivoUrl: '@Url.Action("CompartirArchivo", "Archivo")',
             subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")',
             listarPapeleraUrl: '@Url.Action("ListarPapelera", "Archivo")',
             vaciarPapeleraUrl: '@Url.Action("VaciarPapelera", "Archivo")',

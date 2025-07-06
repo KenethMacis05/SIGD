@@ -313,7 +313,7 @@ function GuardarCarpeta() {
                 showAlert("Error", mensaje, "error", true);
             }
         },
-        error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+        error: (xhr) => { showAlert("Error", `Error al conectar con el servidor Guardar Carpetas: ${xhr.statusText}`, "error"); }
     });
 }
 
@@ -356,7 +356,7 @@ function RenombrarArchivo() {
                 showAlert("Error", "No se pudo actualizar el archivo", "error", true);
             }
         },
-        error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+        error: (xhr) => { showAlert("Error", `Error al conectar con el servidor Renombrar Archivo: ${xhr.statusText}`, "error"); }
     });
 }
 
@@ -440,7 +440,7 @@ function SubirArchivos() {
                     titulo = "Error en la carga";
                 } else if (hayExito) {
                     icono = "success";
-                    titulo = "Carga exitosa";
+                    titulo = "Archivos subidos";
                 }
 
                 showAlert(titulo, resumen, icono, false, true);
@@ -452,7 +452,7 @@ function SubirArchivos() {
             recargarArchivos()
         },
         error: (xhr) => {
-            Swal.fire("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            Swal.fire("Error", `Error al conectar con el servidor Subir Archivos: ${xhr.statusText}`, "error");
         }
     });
 }
@@ -488,7 +488,7 @@ $(document).on('click', '.btn-eliminar', function (e) {
                         $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la carpeta", "error"); }
                 },
-                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor Eliminar Carpeta: ${xhr.statusText}`, "error"); }
             });
         }
     });
@@ -525,7 +525,7 @@ $(document).on('click', '.btn-eliminarArchivo', function (e) {
 
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el archivo", "error"); }
                 },
-                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor Eliminar Archivo: ${xhr.statusText}`, "error"); }
             });
         }
     });
@@ -553,7 +553,7 @@ function vaciarPapelera() {
                     } else { showAlert("Error", response.Mensaje || "No se pudo vaciar la papelera", "error"); }
                 },
                 complete: () => $("#datatableArchivoEliminados .tbody").LoadingOverlay("hide"),
-                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor Vaciar Papelera: ${xhr.statusText}`, "error"); }
             });
         }
     });
@@ -894,7 +894,7 @@ $("#datatableArchivoEliminados tbody").on("click", '.btn-eliminarDifinitivamente
                     }
                 },
                 error: (xhr) => {
-                    showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+                    showAlert("Error", `Error al conectar con el servidor Eliminar Difinitivamente: ${xhr.statusText}`, "error");
                 }
             });
         }
@@ -953,7 +953,7 @@ $(document).on('click', '.file-manager-recent-item-title', function (e) {
             }
         },
         error: function (xhr) {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            showAlert("Error", `Error al conectar con el servidor Visualizar Archivo: ${xhr.statusText}`, "error");
         }
     });
 });
@@ -1328,28 +1328,70 @@ const dataTableOptionsComparitos = {
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-dejarDeCompartir"><i class="fa fa-ban"></i></button>',
+                '<button type="button" class="btn btn-danger btn-sm ms-2" id="btn-dejarDeCompartir"><i class="fa fa-ban"></i></button>',
             width: "90"
         },
     ]
 };
 
-// Listar usuarios en el select2 con paginación y excluyendo al usuario actual
+//Boton dejar de compartir carpeta
+$("#datatableArchivoCompartidos tbody").on("click", '#btn-dejarDeCompartir', function () {
+    const archivoleccionado = $(this).closest("tr");
+    const data = dataTable.row(archivoleccionado).data();
+
+    confirmarEliminacion().then((result) => {
+        if (result.isConfirmed) {
+            showLoadingAlert("Dejando de compartir archivo o carpeta", "Por favor espere...")
+
+            console.log(data)
+        }
+    });
+});
+
+// Listar usuarios en el select2
 $.ajax({
     url: config.listarUsuariosUrl,
     type: "GET",
     dataType: "json",
     contentType: "application/json; charset=utf-8",
     success: function (response) {
-        $('#correosCompartir').empty();
+        // Limpiar y poblar el select para el modal de ARCHIVOS
+        $('#correosCompartirArchivo').empty();
+        $.each(response.data, function (index, usuario) {
+            $('#correosCompartirArchivo').append(
+                `<option value="${usuario.id_usuario}">
+                        ${usuario.pri_nombre} ${usuario.pri_apellido} (${usuario.correo})
+                    </option>`);
+        });
 
+        // Limpiar y poblar el select para el modal de CARPETAS
+        $('#correosCompartir').empty();
         $.each(response.data, function (index, usuario) {
             $('#correosCompartir').append(
                 `<option value="${usuario.id_usuario}">
-                    ${usuario.pri_nombre} ${usuario.pri_apellido} (${usuario.correo})
-                </option>`);
+                        ${usuario.pri_nombre} ${usuario.pri_apellido} (${usuario.correo})
+                    </option>`);
         });
 
+        // Inicializar Select2 para el modal de ARCHIVOS
+        $('#correosCompartirArchivo').select2({
+            placeholder: 'Selecciona uno o más usuarios',
+            width: '100%',
+            theme: "classic",
+            minimumResultsForSearch: 5,
+            dropdownParent: $('#modalCompartirArchivo'),
+            language: {
+                noResults: function () {
+                    return "No se encontraron resultados";
+                },
+                searching: function () {
+                    return "Buscando...";
+                }
+            },
+            minimumInputLength: 0,
+        });
+
+        // Inicializar Select2 para el modal de CARPETAS
         $('#correosCompartir').select2({
             placeholder: 'Selecciona uno o más usuarios',
             width: '100%',
@@ -1364,12 +1406,11 @@ $.ajax({
                     return "Buscando...";
                 }
             },
-            
             minimumInputLength: 0,
         });
     },
     error: (xhr) => {
-        showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+        showAlert("Error", `Error al conectar con el servidor Listar Usuarios: ${xhr.statusText}`, "error");
     }
 });
 
@@ -1380,6 +1421,15 @@ $(document).on('click', '.btn-compartir', function (e) {
 
     $("#idCarpetaCompartir").val(idCarpeta);
     $("#modalCompartir").modal("show");
+});
+
+// Abrir modal compartir archivo
+$(document).on('click', '.btn-compartirArchivo', function (e) {
+    e.preventDefault();
+    const idArchivo = $(this).data('archivo-id');
+
+    $("#idArchivoCompartir").val(idArchivo);
+    $("#modalCompartirArchivo").modal("show");
 });
 
 // Función para compartir carpeta
@@ -1436,7 +1486,64 @@ function compartirCarpeta() {
             $('#modalCompartir').modal('hide');
             $('#correosCompartir').val(null).trigger('change');
         })
-        .catch(error => { Swal.close(); showAlert("Error", `Error al conectar con el servidor: ${error.statusText}`, "error"); });
+        .catch(error => { Swal.close(); showAlert("Error", `Error al conectar con el servidor Compartir Carpeta: ${error.statusText}`, "error"); });
+}
+
+// Función para compartir archivos
+function compartirArchivo() {
+    const idArchivo = $('#idArchivoCompartir').val();
+    const idUsuariosDestinos = $('#correosCompartirArchivo').val();
+    const permisos = $('#permisosCompartirArchivo').val();
+
+    if (!idUsuariosDestinos || idUsuariosDestinos.length === 0) {
+        showAlert("Error", "Debes seleccionar al menos un usuario", "error");
+        return;
+    }
+
+    showLoadingAlert("Compartiendo", "Procesando solicitud...");
+
+    // Compartir con cada usuario seleccionado
+    let promises = idUsuariosDestinos.map(idUsuarioDestino => {
+        return new Promise((resolve, reject) => {
+            $.ajax({
+                url: config.compartirArchivoUrl,
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    idArchivo: idArchivo,
+                    idUsuarioDestino: idUsuarioDestino,
+                    permisos: permisos
+                }),
+                success: function (data) {
+                    resolve(data);
+                },
+                error: function (xhr) {
+                    reject(xhr);
+                }
+            });
+        });
+    });
+
+    Promise.all(promises)
+        .then(results => {
+            Swal.close();
+
+            // Filtrar solo las respuestas fallidas
+            const errores = results.filter(r => r.Respuesta === false);
+
+            if (errores.length > 0) {
+                const mensajes = errores.map(e => e.Mensaje).join('\n');
+                showAlert("Advertencia", `Algunos usuarios no recibieron el archivo:\n${mensajes}`, "warning");
+            } else {
+                showAlert("¡Éxito!", "Archivo compartido con todos los usuarios seleccionados", "success", true);
+                $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
+            }
+
+            $('#correosCompartirArchivo').val(null).trigger('change');
+            $('#modalCompartirArchivo').modal('hide');
+        })
+        .catch(error => { Swal.close(); showAlert("Error", `Error al conectar con el servidor Compartir Archivo: ${error.statusText}`, "error"); });
 }
 
 

@@ -692,6 +692,7 @@
     <Content Include="Views\Archivo\_ModalSubirArchivos.cshtml" />
     <Content Include="Views\Archivo\_ModalVisualizarPDF-TXT.cshtml" />
     <Content Include="Views\Archivo\_ModalVisualizarDocsOnlyOffice.cshtml" />
+    <Content Include="Views\Archivo\_ModalCompartirArchivo.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />
