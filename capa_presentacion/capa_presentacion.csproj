@@ -686,6 +686,12 @@
     <Content Include="Scripts\Summernote\lang\summernote-zh-TW.js.map" />
     <Content Include="Views\Menu\Index.cshtml" />
     <Content Include="Views\Usuario\Configuraciones.cshtml" />
+    <Content Include="Views\Archivo\_ModalCrearCarpeta.cshtml" />
+    <Content Include="Views\Archivo\_ModalCompartirCarpeta.cshtml" />
+    <Content Include="Views\Archivo\_ModalRenombrarArchivo.cshtml" />
+    <Content Include="Views\Archivo\_ModalSubirArchivos.cshtml" />
+    <Content Include="Views\Archivo\_ModalVisualizarPDF-TXT.cshtml" />
+    <Content Include="Views\Archivo\_ModalVisualizarDocsOnlyOffice.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

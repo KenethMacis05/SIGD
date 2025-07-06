@@ -13,7 +13,7 @@
         <ul class="nav nav-tabs" id="myTab" role="tablist">
             <!--Boton 1-->
             <li class="nav-item" role="presentation">
-                <button class="nav-link active esp-link" id="home-tab" onclick="handleTabClickComparitos('home')" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
+                <button class="nav-link active esp-link" id="compartidosConmigo-tab" onclick="handleTabClick('compartidosConmigo')" data-bs-toggle="tab" data-bs-target="#compartidosConmigo" type="button" role="tab" aria-controls="compartidosConmigo" aria-selected="true">
                     Carpetas compartidas
                 </button>
             </li>
@@ -21,11 +21,11 @@
     </div>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
-            <!-- Contenedor 1-->
-            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+            <!-- Contenedor 1 -->
+            <div class="tab-pane fade show active" id="compartidosConmigo" role="tabpanel" aria-labelledby="compartidosConmigo-tab">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="mb-0">Carpetas compartidas</h2>
-                    <div class="d-flex align-items-center">
+                    <!-- <div class="d-flex align-items-center">
                         <button type="button" class="btn btn-secondary ms-2" onclick="abrirModalCarpeta(null)">
                             <i class="fa fa-folder me-2"></i>Crear Carpeta
                         </button>
@@ -35,10 +35,10 @@
                         <button type="button" class="btn btn-outline-primary ms-2" onclick="descargar()">
                             <i class="fas fa-download me-2"></i>Descargar
                         </button>
-                    </div>
+                    </div>-->
                 </div>
 
-                <ol class="breadcrumb mb-4 shadow-sm rounded bg-light p-3 align-items-center" id="breadcrumb-paginador">
+                <ol class="breadcrumb mb-4 shadow-sm rounded bg-light p-3 align-items-center" id="breadcrumb-paginador-compartidos">
                     <li class="breadcrumb-item">
                         <a href="#" onclick="navegarAInicio()" class="text-primary fw-bold">
                             <i class="fas fa-home me-2"></i>Inicio
@@ -51,7 +51,7 @@
 
                 <!--Carpetas-->
                 <div class="container-fluid mb-3">
-                    <div class="row g-3" id="contenedor-carpetas-comparitas">
+                    <div class="row g-3" id="contenedor-carpetas-compartidas">
                         <!-- Las carpetas se cargarán aquí dinámicamente -->
                     </div>
                 </div>
@@ -60,146 +60,34 @@
 
                 <!-- Archivos -->
                 <div class="container-fluid mb-3">
-                    <div class="row g-3" id="contenedor-archivos-comparitos">
+                    <div class="row g-3" id="contenedor-archivos-compartidos">
                         <!-- Los archivos se cargarán dinámicamente aquí -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal para crear/editar una nueva carpeta-->
+    @Html.Partial("~/Views/Archivo/_ModalCrearCarpeta.cshtml")
+
+    <!-- Modal para renombrar un archivo-->
+    @Html.Partial("~/Views/Archivo/_ModalRenombrarArchivo.cshtml")
+
+    <!-- Modal para subir archivos -->
+    @Html.Partial("~/Views/Archivo/_ModalSubirArchivos.cshtml")
+
+    <!-- Modal visualizar pdf/text -->
+    @Html.Partial("~/Views/Archivo/_ModalVisualizarPDF-TXT.cshtml")
+
+    <!-- Modal visualizar documentos onlyoffice -->
+    @Html.Partial("~/Views/Archivo/_ModalVisualizarDocsOnlyOffice.cshtml")
+
+    <!-- Modal visualizar imagenes/videos -->
+    <div id="lightgallery" style="display:none;" hidden></div>
+
 </div>
 
-<!-- Modal para crear una nueva carpeta-->
-<div class="modal fade" id="createCarpeta" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header text-light" style="background-color: #0072BB">
-                <h5 class="modal-title" id="exampleModalLabel">Carpeta</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body g-2">
-                <input type="hidden" name="idCarpetaPadre" id="idCarpetaPadre" value="0">
-                <input type="hidden" name="idCarpeta" id="idCarpeta" value="0">
-
-                <div class="row mb-3">
-                    <div class="input-group flex-nowrap">
-                        <span class="input-group-text" id="addon-wrapping"><i class="fa fa-folder"></i></span>
-                        <input type="text" class="form-control" placeholder="Nombre" aria-label="Nombre" aria-describedby="addon-wrapping" id="nombre" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                        <i class="fas fa-times-circle me-2"></i>Cerrar
-                    </button>
-                    <button type="submit" style="background: #0072BB " onclick="GuardarCarpeta()" class="btn btn-success w-50">
-                        <i class="fas fa-save me-2"></i>Guardar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para renombrar un archivo-->
-<div class="modal fade" id="renombrarArchivo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header text-light" style="background-color: #0072BB">
-                <h5 class="modal-title" id="exampleModalLabel">Renombrar archivo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body g-2">
-                <input type="hidden" name="idArchivo" id="idArchivo" value="0">
-                <input type="hidden" name="carpetaPadreArchivo" id="carpetaPadreArchivo" value="0">
-                <input type="hidden" id="tipoArchivo" name="tipoArchivo" value="">
-
-                <div class="row mb-3">
-                    <div class="input-group flex-nowrap">
-                        <span class="input-group-text" id="addon-wrapping"><i class="fa fa-file"></i></span>
-                        <input type="text" class="form-control" placeholder="Nombre" aria-label="Nombre" aria-describedby="addon-wrapping" id="nombreArchivo" autocomplete="off">
-                    </div>
-                </div>
-
-                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                        <i class="fas fa-times-circle me-2"></i>Cerrar
-                    </button>
-                    <button type="submit" style="background: #0072BB " onclick="RenombrarArchivo()" class="btn btn-success w-50">
-                        <i class="fas fa-save me-2"></i>Guardar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal para subir archivos -->
-<div class="modal fade" id="subirArchivo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header text-light" style="background-color: #0072BB">
-                <h5 class="modal-title">Subir Archivo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body g-2">
-                <input type="hidden" name="idCarpeta2" id="idCarpeta2" value="0">
-                <div id="custom-dropzone" class="custom-dropzone dz-clickable mb-3">
-                    <div class="dz-message" data-dz-message>
-                        <i class="fa fa-upload text-secondary"></i>
-                        <span class="dz-text">Arrastra aquí o haz clic para <span class="dz-browse">Seleccionar archivos</span></span>
-                    </div>
-                </div>
-                <div id="total-size" class="mb-2 text-end text-secondary" style="font-size: 0.97rem;">
-                    Tamaño total: 0 B
-                </div>
-                <ul id="dropzone-preview-list" class="dz-preview-list"></ul>
-            </div>
-            <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                    <i class="fas fa-times-circle me-2"></i>Cerrar
-                </button>
-                <button type="button" style="background: #0072BB " onclick="SubirArchivos()" class="btn btn-success w-50">
-                    <i class="fas fa-save me-2"></i>Guardar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="lightgallery" style="display:none;" hidden></div>
-
-<!-- Modal para visualizar archivos onlyoffice -->
-<div class="modal fade" id="modalDocumento" tabindex="-1" aria-labelledby="modalDocumentoLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content text-white" style="background-color: #323639 !important">
-            <div class="modal-header" style="background-color: #525659 !important">
-                <h5 id="modalDocumentoLabel" class="mb-0">Vista previa de documento</h5>
-                <div class="d-flex align-items-center ms-auto">
-                    <button type="button" class="btn btn-outline-light me-2" id="btnFullScreenDocumento" title="Pantalla completa">
-                        <i class="fa fa-expand"></i>
-                    </button>
-                    <button type="button" class="btn-close btn-danger" data-bs-dismiss="modal"></button>
-                </div>
-            </div>
-            <div class="modal-body" id="contenedorDocumento" style="min-height:70vh;"></div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="onlyofficeModal" tabindex="-1" aria-labelledby="onlyofficeModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content text-white" style="background-color: #323639 !important">
-            <div class="modal-header" style="background-color: #525659 !important">
-                <h5 id="onlyofficeModalLabel">Vista previa y edición de Office</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0" style="height:100vh;">
-                <div id="onlyoffice-editor" style="width:100%; height:100vh; background:#262626;"></div>
-            </div>
-        </div>
-    </div>
-</div>
 
 @section scripts{
     <script type="text/javascript">

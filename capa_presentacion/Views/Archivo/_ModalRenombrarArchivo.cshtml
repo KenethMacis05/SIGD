@@ -1,0 +1,32 @@
+<!-- Modal para renombrar un archivo-->
+<div class="modal fade" id="renombrarArchivo" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #0072BB">
+                <h5 class="modal-title" id="exampleModalLabel">Renombrar archivo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body g-2">
+                <input type="text" name="idArchivo" id="idArchivo" value="0">
+                <input type="text" name="carpetaPadreArchivo" id="carpetaPadreArchivo" value="0">
+                <input type="text" id="tipoArchivo" name="tipoArchivo" value="">
+
+                <div class="row mb-3">
+                    <div class="input-group flex-nowrap">
+                        <span class="input-group-text" id="addon-wrapping"><i class="fa fa-file"></i></span>
+                        <input type="text" class="form-control" placeholder="Nombre" aria-label="Nombre" aria-describedby="addon-wrapping" id="nombreArchivo" autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                        <i class="fas fa-times-circle me-2"></i>Cerrar
+                    </button>
+                    <button type="submit" style="background: #0072BB " onclick="RenombrarArchivo()" class="btn btn-success w-50">
+                        <i class="fas fa-save me-2"></i>Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

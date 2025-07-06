@@ -1,0 +1,36 @@
+<!-- Modal para compartir carpeta -->
+<div class="modal fade" id="modalCompartir" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #0072BB">
+                <h5 class="modal-title">Compartir Carpeta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="idCarpetaCompartir" id="idCarpetaCompartir" value="0" />
+                <div class="mb-3">
+                    <label class="form-label">Correos de usuarios</label>
+                    <select class="form-control" id="correosCompartir" name="correosCompartir" multiple="multiple" style="width: 100%;" tabindex="-1"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Permisos</label>
+                    <div class="input-group">
+                        <select class="form-select" id="permisosCompartir">
+                            <option value="lectura">Solo lectura</option>
+                            <option value="edicion">Edición</option>
+                        </select>
+                        <span class="input-group-text"><i class="fa fa-key"></i></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i>Cerrar
+                </button>
+                <button type="button" style="background: #0072BB " onclick="compartirCarpeta()" class="btn btn-success w-50">
+                    <i class="fas fa-share me-2"></i>Compartir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

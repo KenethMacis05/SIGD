@@ -292,7 +292,7 @@ function generarHtmlCarpeta(carpeta, index) {
         : formatASPNetDate(carpeta.fecha_registro);
 
     return `
-    <div class="col-sm-6 col-md-4 col-lg-3">
+    <div class="col-sm-6 col-md-4 col-lg-3" data-folder-card>
         <div class="card file-manager-group h-100 shadow-sm">
             <div class="card-body d-flex align-items-center">
                 <i class="fas fa-folder-open fa-2x text-${color} me-3 d-none"></i>
@@ -302,36 +302,36 @@ function generarHtmlCarpeta(carpeta, index) {
                         <a href="#" class="file-manager-group-title h5 text-decoration-none text-dark" data-carpetaPadre-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
                         ${propietarioHtml}
                     </div>
-                    <span class="file-manager-group-about text-muted small">${formatASPNetDate(fechaAMostrar)}</span>
+                    <span class="file-manager-group-about text-muted small">${fechaAMostrar}</span>
                 </div>
                 <div class="ms-auto">
                     <a href="#" class="dropdown-toggle file-manager-recent-file-actions" 
                         data-bs-toggle="dropdown" data-carpeta-id="${carpeta.id_carpeta}">
                         <i class="fas fa-ellipsis-v"></i>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
+                    <ul class="dropdown-menu dropdown-menu-end shadow rounded py-1">
                         <li>
-                            <a class="dropdown-item btn-crearSubCarpeta" href="#" data-carpetaPadre-id="${carpeta.id_carpeta}">
+                            <a class="dropdown-item btn-crearSubCarpeta px-3 py-2" href="#" data-carpetaPadre-id="${carpeta.id_carpeta}">
                                 <i class="fas fa-plus me-2"></i>Crear carpeta
                             </a>
                         </li>
                         <li>
-                            <a class="dropdown-item btn-subirArchivo" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
+                            <a class="dropdown-item btn-subirArchivo px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
                                 <i class="fas fa-file me-2"></i>Subir Archivo
                             </a>
                         </li>
-                        <li><a class="dropdown-item btn-compartir" href="#" data-carpeta-id="${carpeta.id_carpeta}">
+                        <li><a class="dropdown-item btn-compartir px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
                             <i class="fas fa-share me-2"></i>Compartir
                         </a></li>
-                        <li><a class="dropdown-item btn-descargar" href="#" data-carpeta-id="${carpeta.id_carpeta}">
+                        <li><a class="dropdown-item btn-descargar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
                             <i class="fas fa-download me-2"></i>Descargar
                         </a></li>
                         <li>
-                            <a class="dropdown-item btn-editar" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
+                            <a class="dropdown-item btn-editar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
                                 <i class="fas fa-edit me-2"></i>Renombrar
                             </a>
                         </li>
-                        <li><a class="dropdown-item btn-eliminar" href="#" data-carpeta-id="${carpeta.id_carpeta}">
+                        <li><a class="dropdown-item btn-eliminar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
                             <i class="fas fa-trash me-2"></i>Eliminar
                         </a></li>
                     </ul>
@@ -340,6 +340,40 @@ function generarHtmlCarpeta(carpeta, index) {
         </div>
     </div>`;
 }
+
+function initializeFolderContextMenu() {
+    const folderCards = document.querySelectorAll('[data-folder-card]');
+
+    folderCards.forEach(card => {
+        card.addEventListener('contextmenu', function (event) {
+            event.preventDefault();
+
+            const dropdownToggle = this.querySelector('.dropdown-toggle');
+
+            if (dropdownToggle) {
+                document.querySelectorAll('.dropdown-menu.show').forEach(openMenu => {
+                    const bsDropdown = bootstrap.Dropdown.getInstance(openMenu.previousElementSibling);
+                    if (bsDropdown) {
+                        bsDropdown.hide();
+                    }
+                });
+                dropdownToggle.click();
+            }
+        });
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!event.target.closest('.dropdown-menu') && !event.target.closest('.dropdown-toggle')) {
+            document.querySelectorAll('.dropdown-menu.show').forEach(openMenu => {
+                const bsDropdown = bootstrap.Dropdown.getInstance(openMenu.previousElementSibling);
+                if (bsDropdown) {
+                    bsDropdown.hide();
+                }
+            });
+        }
+    });
+}
+
 
 // Función para generar el HTML de un archivo
 function generarHtmlArchivo(archivo) {

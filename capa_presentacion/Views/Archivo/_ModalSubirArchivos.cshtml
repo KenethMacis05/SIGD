@@ -1,0 +1,32 @@
+<!-- Modal para subir archivos -->
+<div class="modal fade" id="subirArchivo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #0072BB">
+                <h5 class="modal-title">Subir Archivo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body g-2">
+                <input type="hidden" name="idCarpeta2" id="idCarpeta2" value="0">
+                <div id="custom-dropzone" class="custom-dropzone dz-clickable mb-3">
+                    <div class="dz-message" data-dz-message>
+                        <i class="fa fa-upload text-secondary"></i>
+                        <span class="dz-text">Arrastra aquí o haz clic para <span class="dz-browse">Seleccionar archivos</span></span>
+                    </div>
+                </div>
+                <div id="total-size" class="mb-2 text-end text-secondary" style="font-size: 0.97rem;">
+                    Tamaño total: 0 B
+                </div>
+                <ul id="dropzone-preview-list" class="dz-preview-list"></ul>
+            </div>
+            <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i>Cerrar
+                </button>
+                <button type="button" style="background: #0072BB " onclick="SubirArchivos()" class="btn btn-success w-50">
+                    <i class="fas fa-save me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

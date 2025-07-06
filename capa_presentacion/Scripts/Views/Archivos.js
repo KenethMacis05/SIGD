@@ -2,6 +2,7 @@
 let carpetaActualId = null;
 let dataTable;
 let dataTableCompartidos;
+let activeTab
 
 // Agregar una nueva entrada al breadcrumbStack
 function agregarBreadcrumb(nombreCarpeta, idCarpeta) {
@@ -31,9 +32,27 @@ function actualizarBreadcrumbHTML() {
             `;
         }
     });
-    document.getElementById("breadcrumb-paginador").innerHTML = html;
-    document.getElementById("breadcrumb-paginador2").innerHTML = html;
-    document.getElementById("breadcrumb-paginador3").innerHTML = html;
+
+    const breadcrumbCompartidos = document.getElementById("breadcrumb-paginador-compartidos");
+
+    if (breadcrumbCompartidos) {
+        breadcrumbCompartidos.innerHTML = html;
+    } else {
+        switch (activeTab) {
+            case "home":
+                document.getElementById("breadcrumb-paginador").innerHTML = html;
+                break;
+            case "archivos":
+                document.getElementById("breadcrumb-paginador-todos").innerHTML = html;
+                break;
+            case "buscar":
+                document.getElementById("breadcrumb-paginador-encontrados").innerHTML = html;
+                break;
+            default:
+                document.getElementById("breadcrumb-paginador").innerHTML = html;
+                break;
+        }
+    }
 }
 
 // Retroceder a una carpeta anterior
@@ -41,14 +60,34 @@ function retroceder(index) {
     breadcrumbStack = breadcrumbStack.slice(0, index + 1);
 
     const carpetaSeleccionada = breadcrumbStack[index];
-
+    carpetaActualId = carpetaSeleccionada.id;
     actualizarBreadcrumbHTML();
-    cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-recientes");
-    cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-todos");
-    cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-encontradas");
-    cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-recientes");
-    cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-todos");
-    cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-encontrados");
+
+    const breadcrumbCompartidos = document.getElementById("breadcrumb-paginador-compartidos");
+
+    if (breadcrumbCompartidos) {
+        cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-compartidas");
+        cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-comparitos");
+    } else {
+        switch (activeTab) {
+            case "home":
+                cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-recientes");
+                cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-recientes");
+                break;
+            case "archivos":
+                cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-todos");
+                cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-todos");
+                break;
+            case "buscar":
+                cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-encontradas");
+                cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-encontrados");
+                break;
+            default:
+                cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-recientes");
+                cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-recientes");
+                break;
+        }
+    }
 }
 
 // Navegar al inicio del paginador
@@ -66,33 +105,47 @@ function navegarAInicio() {
         </li>
     `;
 
-    // Actualizar los tres breadcrumbs
-    document.getElementById("breadcrumb-paginador").innerHTML = homeHtml;
-    document.getElementById("breadcrumb-paginador2").innerHTML = homeHtml;
-    document.getElementById("breadcrumb-paginador3").innerHTML = homeHtml;
+    const breadcrumbCompartidos = document.getElementById("breadcrumb-paginador-compartidos");
 
-    // Detectar si estamos en el tab de búsqueda y hay búsqueda activa
-    const inputBuscar = $('#buscar input[type="text"]');
-    if (
-        $('#buscar').hasClass('active') && // tab buscar activo
-        inputBuscar.length &&
-        inputBuscar.val().trim() !== "" &&
-        ultimoValorBuscado !== ""
-    ) {
-        // Restaurar los resultados originales de búsqueda
-        renderCarpetas(resultadosBusquedaCarpetas, "contenedor-carpetas-encontradas");
-        renderArchivos(resultadosBusquedaArchivos, "contenedor-archivos-encontrados");
-        return;
+    if (breadcrumbCompartidos) {
+        breadcrumbCompartidos.innerHTML = homeHtml;
+        cargarCarpetasCompartidas(config.listarCarpetasCompartidasConmigoUrl, "contenedor-carpetas-compartidas")
+        document.getElementById("contenedor-archivos-compartidos").innerHTML = '';
+    } else {
+        switch (activeTab) {
+            case "home":
+                document.getElementById("breadcrumb-paginador").innerHTML = homeHtml;
+                cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+                cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+                break;
+            case "archivos":
+                document.getElementById("breadcrumb-paginador-todos").innerHTML = homeHtml;
+                cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
+                cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+                break;
+            case "buscar":
+                document.getElementById("breadcrumb-paginador-encontrados").innerHTML = homeHtml;
+
+                // Detectar si hay búsqueda activa
+                const inputBuscar = $('#buscar input[type="text"]');
+                if (inputBuscar.length && inputBuscar.val().trim() !== "" && ultimoValorBuscado !== ""
+                ) {
+                    renderCarpetas(resultadosBusquedaCarpetas, "contenedor-carpetas-encontradas");
+                    renderArchivos(resultadosBusquedaArchivos, "contenedor-archivos-encontrados");
+                    return;
+                }
+
+                // Limpiar los contenedores de encontrados
+                renderCarpetas([], "contenedor-carpetas-encontradas");
+                renderArchivos([], "contenedor-archivos-encontrados");
+                break;
+            default:
+                document.getElementById("breadcrumb-paginador").innerHTML = homeHtml;
+                cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+                cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+                break;
+        }
     }
-
-    // Recargar el contenido inicial en cada sección (modo normal)
-    cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
-    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-    cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-    // Limpiar los contenedores de encontrados
-    renderCarpetas([], "contenedor-carpetas-encontradas");
-    renderArchivos([], "contenedor-archivos-encontrados");
 }
 
 // Navegar a las sub carpetas
@@ -103,15 +156,31 @@ $(document).on('click', '.file-manager-group-title', function (e) {
     const contenedorId = $(this).closest('.row').attr('id');
     const nombreCarpeta = $(this).text().trim();
 
-    console.log(idCarpetaPadre, contenedorId, nombreCarpeta);
-
     agregarBreadcrumb(nombreCarpeta, idCarpetaPadre);
 
     carpetaActualId = idCarpetaPadre;
     cargarSubCarpetas(idCarpetaPadre, contenedorId);
-    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes")
-    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos")
-    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-encontrados")
+
+    const breadcrumbCompartidos = document.getElementById("breadcrumb-paginador-compartidos");
+
+    if (breadcrumbCompartidos) {
+        cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-compartidos")
+    } else {
+        switch (activeTab) {
+            case "home":
+                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes")
+                break;
+            case "archivos":
+                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos")
+                break;
+            case "buscar":
+                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-encontrados")
+                break;
+            default:
+                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes")
+                break;
+        }
+    }
 });
 
 // Abrir el modal para crear o editar una carpeta
@@ -237,13 +306,7 @@ function GuardarCarpeta() {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "Carpeta creada correctamente" : "Carpeta actualizada correctamente");
                 showAlert("¡Éxito!", mensaje, "success", true);
                 $("#nombre").val("");
-                if (carpetaActualId == null) {
-                    cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-                    cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
-                } else {
-                    cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-recientes");
-                    cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-todos");
-                }
+                recargarCarpetas()
             }
             else {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "No se pudo crear la carpeta" : "No se pudo actualizar la carpeta");
@@ -287,13 +350,7 @@ function RenombrarArchivo() {
                 
                 showAlert("¡Éxito!", "Archivo renombrado correctamente", "success", true);
                 
-                if (carpetaActualId == null) {
-                    cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-                    cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-                } else {
-                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes");
-                    cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
-                }
+                recargarArchivos()
             }
             else {
                 showAlert("Error", "No se pudo actualizar el archivo", "error", true);
@@ -392,13 +449,7 @@ function SubirArchivos() {
                 Swal.fire(data.Respuesta ? "Éxito" : "Error", data.Mensaje, data.Respuesta ? "success" : "error");
             }
 
-            if (carpetaActualId == null) {
-                cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-                cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-            } else {
-                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes");
-                cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
-            }
+            recargarArchivos()
         },
         error: (xhr) => {
             Swal.fire("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
@@ -428,13 +479,7 @@ $(document).on('click', '.btn-eliminar', function (e) {
                     Swal.close();
                     if (response.Respuesta) {
                         showAlert("¡Eliminado!", response.Mensaje || "Carpeta eliminada correctamente", "success", true);
-                        if (carpetaActualId == null) {
-                            cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
-                            cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
-                        } else {
-                            cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-recientes");
-                            cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-todos");
-                        }
+                        recargarCarpetas()
 
                         // Limpiar los contenedores de encontrados
                         limpiarArchivos()
@@ -471,13 +516,7 @@ $(document).on('click', '.btn-eliminarArchivo', function (e) {
                     Swal.close();
                     if (response.Respuesta) {
                         showAlert("¡Eliminado!", response.Mensaje || "Archivo eliminado correctamente", "success", true);
-                        if (carpetaActualId == null) {
-                            cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-                            cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-                        } else {
-                            cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes")
-                            cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos")
-                        }
+                        recargarArchivos()
                         $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
                         $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
 
@@ -536,6 +575,8 @@ function cargarCarpetasGenerico(url, contenedorId, idCarpeta = null) {
                     html += generarHtmlCarpeta(carpeta, index);
                 });
 
+                initializeFolderContextMenu();
+
                 $(`#${contenedorId}`).html(html);
             } else {
                 $(`#${contenedorId}`).html(`
@@ -567,6 +608,29 @@ function cargarCarpetasCompartidas(url, contenedorId) {
 function cargarSubCarpetas(idCarpeta, contenedorId) {
     cargarCarpetasGenerico(config.listarSubCarpetasUrl, contenedorId, idCarpeta);
 }
+
+function recargarArchivos() {
+    if (carpetaActualId == null) {
+        cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+        cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
+    } else {
+        cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-recientes");
+        cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
+        cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-compartidos");
+    }
+}
+
+function recargarCarpetas() {
+    if (carpetaActualId == null) {
+        cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
+        cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
+    } else {
+        cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-recientes");
+        cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-todos");
+        cargarSubCarpetas(carpetaActualId, "contenedor-carpetas-compartidas");
+    }
+}
+
 
 // Función para cargar archivos
 function cargarArchivos(url, contenedorId) {
@@ -621,23 +685,21 @@ function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
 }
 
 // Función para obtener el contenedor
+
 function handleTabClick(activeTabId) {
     if (activeTabId === "home") {
         // Cargar carpetas recientes
         cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
         cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-        navegarAInicio();
-        limpiarArchivos();
+        
     } else if (activeTabId === "archivos") {
         // Cargar todas las carpetas
         cargarCarpetas(config.listarCarpetasUrl, "contenedor-carpetas-todos");
         cargarArchivos(config.listarArchivosUrl, "contenedor-archivos-todos");
-        navegarAInicio();
-        limpiarArchivos();
-    } else if (activeTabId === "buscar") {
-        navegarAInicio();
-        limpiarArchivos();
     }
+    activeTab = activeTabId;
+    navegarAInicio();
+    limpiarArchivos();
 }
 
 // Efectos hover para carpetas
@@ -945,7 +1007,7 @@ let myDropzone = null;
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
-    cargarCarpetasCompartidas(config.listarCarpetasCompartidasConmigoUrl, "contenedor-carpetas-comparitas");
+    cargarCarpetasCompartidas(config.listarCarpetasCompartidasConmigoUrl, "contenedor-carpetas-compartidas");
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
     dataTableCompartidos = $("#datatableArchivoCompartidos").DataTable(dataTableOptionsComparitos)
 
