@@ -5,6 +5,7 @@
 }
 
 <link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleDropzone.css")" />
+<link rel="stylesheet" href="@Url.Content("~/Content/Views/Archivos.css")" />
 
 <!--Contenedor-->
 <div class="card shadow-sm mt-3">
@@ -223,39 +224,6 @@
             buscarArchivos: '@Url.Action("Buscar", "Archivo")',
             listarUsuariosUrl: '@Url.Action("ListarUsuarios", "Usuario")',
         };
-
-        $(document).ready(function () {
-            $.ajax({
-                url: config.listarCarpetasCompartidasConmigoUrl,
-                type: 'GET',
-                beforeSend: () => $(`#contenedor-carpetas-comparitas`).LoadingOverlay("show"),
-                success: function (response) {
-                    if (response.data && response.data.length > 0) {
-                        let html = '';
-
-                        // Generar el HTML para cada carpeta
-                        $.each(response.data, function (index, carpeta) {
-                            html += generarHtmlCarpeta(carpeta, index);
-                        });
-
-                        console.log(response.data)
-
-                        $(`#contenedor-carpetas-comparitas`).html(html);
-                    } else {
-                        $(`#contenedor-carpetas-comparitas`).html(`
-                            <div class="alert alert-light">
-                                No hay carpetas disponibles
-                                    <img src="/Assets/img/carpeta_vacia.png" alt="No hay archivos" style="max-width: 150px; display: block; margin: 10px auto;" />
-                            </div>
-                        `);
-                    }
-                },
-                error: function () {
-                    $(`#contenedor-carpetas-comparitas`).html('<div class="alert alert-danger">Error al cargar las carpetas</div>');
-                },
-                complete: () => $(`#contenedor-carpetas-comparitas`).LoadingOverlay("hide")
-            });
-        })
     </script>
     <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
 }

@@ -103,6 +103,8 @@ $(document).on('click', '.file-manager-group-title', function (e) {
     const contenedorId = $(this).closest('.row').attr('id');
     const nombreCarpeta = $(this).text().trim();
 
+    console.log(idCarpetaPadre, contenedorId, nombreCarpeta);
+
     agregarBreadcrumb(nombreCarpeta, idCarpetaPadre);
 
     carpetaActualId = idCarpetaPadre;
@@ -556,6 +558,11 @@ function cargarCarpetas(url, contenedorId) {
     cargarCarpetasGenerico(url, contenedorId);
 }
 
+// Función para cargar las carpetas comparitas
+function cargarCarpetasCompartidas(url, contenedorId) {
+    cargarCarpetasGenerico(url, contenedorId);
+}
+
 // Función para cargar subcarpetas
 function cargarSubCarpetas(idCarpeta, contenedorId) {
     cargarCarpetasGenerico(config.listarSubCarpetasUrl, contenedorId, idCarpeta);
@@ -938,6 +945,7 @@ let myDropzone = null;
 $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
+    cargarCarpetasCompartidas(config.listarCarpetasCompartidasConmigoUrl, "contenedor-carpetas-comparitas");
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
     dataTableCompartidos = $("#datatableArchivoCompartidos").DataTable(dataTableOptionsComparitos)
 

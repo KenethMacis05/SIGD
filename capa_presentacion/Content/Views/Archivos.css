@@ -1,0 +1,111 @@
+﻿/* Estilos de carpetas y archivos */
+
+.file-manager-group {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 10px;
+}
+
+.file-manager-recent-item {
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0 !important;
+    border-radius: 10px;
+}
+
+.file-manager-group:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.file-manager-recent-item:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.file-manager-group .card-body {
+    cursor: pointer;
+    position: relative;
+}
+
+.file-manager-recent-item .card-body {
+    cursor: pointer;
+    position: relative;
+}
+
+.file-manager-group-title {
+    transition: color 0.2s ease;
+}
+
+.file-manager-recent-item-title {
+    transition: color 0.2s ease;
+}
+
+.file-manager-group:hover .file-manager-group-title {
+    color: var(--bs-primary) !important;
+}
+
+.file-manager-recent-item:hover .file-manager-recent-item-title {
+    color: var(--bs-primary) !important;
+}
+
+.file-manager-recent-file-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.file-manager-group:hover .file-manager-recent-file-actions {
+    opacity: 1;
+}
+
+.file-manager-recent-item:hover .file-manager-recent-file-actions {
+    opacity: 1 !important;
+}
+
+.dropdown-toggle::after {
+    display: none;
+}
+
+.file-manager-group-compartidos {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.file-manager-recent-item:hover .file-manager-recent-file-actions {
+    opacity: 1 !important;
+}
+
+/* Estilo general del breadcrumb */
+.breadcrumb {
+    background-color: #f8f9fa;
+    border-radius: 0.5rem;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Elementos dentro del breadcrumb */
+.breadcrumb-item a {
+    text-decoration: none;
+    color: #007bff;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-item a:hover {
+    color: #0056b3;
+}
+
+/* Último elemento (activo) */
+.breadcrumb-item.active {
+    color: #6c757d;
+    font-weight: bold;
+}
+
+/* Iconos */
+.breadcrumb-item i {
+    font-size: 1.2rem;
+    vertical-align: middle;
+}
+
+/* Espaciado */
+.breadcrumb-item {
+    margin-right: 0.5rem;
+}

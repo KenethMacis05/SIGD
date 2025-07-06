@@ -286,6 +286,7 @@ const COLORS = ['primary', 'warning', 'danger', 'success', 'info', 'secondary'];
 // Función para generar el HTML de una carpeta
 function generarHtmlCarpeta(carpeta, index) {
     const color = COLORS[index % COLORS.length];
+    const propietarioHtml = carpeta.propietario ? `<span class="text-muted small">(${carpeta.propietario})</span>` : '';
     const fechaAMostrar = (carpeta.fecha_registro === "/Date(-62135575200000)/")
         ? formatASPNetDate(carpeta.fecha_compartido)
         : formatASPNetDate(carpeta.fecha_registro);
@@ -297,7 +298,10 @@ function generarHtmlCarpeta(carpeta, index) {
                 <i class="fas fa-folder-open fa-2x text-${color} me-3 d-none"></i>
                 <i class="fas fa-folder fa-2x text-${color} me-3"></i>
                 <div class="file-manager-group-info flex-fill">
-                    <a href="#" class="file-manager-group-title h5 d-block text-decoration-none text-dark" data-carpetaPadre-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
+                    <div class="file-manager-group-compartidos">
+                        <a href="#" class="file-manager-group-title h5 text-decoration-none text-dark" data-carpetaPadre-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
+                        ${propietarioHtml}
+                    </div>
                     <span class="file-manager-group-about text-muted small">${formatASPNetDate(fechaAMostrar)}</span>
                 </div>
                 <div class="ms-auto">

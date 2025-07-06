@@ -1,13 +1,9 @@
-﻿﻿ /* Set padding to keep content from hitting the edges */
-.body-content {
+﻿.body-content {
     margin-top: 15px;
     padding-left: 15px;
     padding-right: 15px;
 }
 
-/* Override the default bootstrap behavior where horizontal description lists 
-   will truncate terms that are too long to fit in the left column 
-*/
 .dl-horizontal dt {
     white-space: normal;
 }
@@ -63,26 +59,26 @@
     transition: color 0.3s ease;
 }
 
-    /* Crear la línea inferior con ::after */
-    .nav-link.esp-submenu-link::after {
-        content: '';
-        position: absolute;
-        left: 0;
-        bottom: 0;
-        width: 0; /* Inicialmente sin anchura */
-        height: 2px; /* Grosor de la línea */
-        background-color: var(--colorSecundario);
-        transition: width 0.3s ease; /* Animación de la anchura */
-    }
+/* Crear la línea inferior con ::after */
+.nav-link.esp-submenu-link::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--colorSecundario);
+    transition: width 0.3s ease;
+}
 
-    /* Animación al hacer hover */
-    .nav-link.esp-submenu-link:hover {
-        color: var(--colorSecundario);
-    }
+/* Animación al hacer hover */
+.nav-link.esp-submenu-link:hover {
+    color: var(--colorSecundario);
+}
 
-        .nav-link.esp-submenu-link:hover::after {
-            width: 100%; /* La línea se expande de izquierda a derecha */
-        }
+.nav-link.esp-submenu-link:hover::after {
+    width: 100%;
+}
 
 .table-cabezera {
     background: var(--colorSecundario) !important
@@ -93,25 +89,25 @@
 }
 
 .collapse {
-    max-height: 0 !important; /* Altura inicial (colapsado) */
-    overflow: hidden !important; /* Oculta el contenido que excede la altura */
-    transition: max-height 0.5s ease !important; /* Animación suave */
+    max-height: 0 !important;
+    overflow: hidden !important;
+    transition: max-height 0.5s ease !important;
 }
 
-    .collapse.show {
-        max-height: 500px !important; /* Altura máxima (ajusta según tu contenido) */
-    }
+.collapse.show {
+    max-height: 500px !important;
+}
 
 .sb-sidenav-collapse-arrow i {
-    transition: transform 0.3s ease !important; /* Animación para el ícono */
+    transition: transform 0.3s ease !important;
 }
 
 .collapsed .sb-sidenav-collapse-arrow i {
-    transform: rotate(0deg) !important; /* Flecha hacia abajo */
+    transform: rotate(0deg) !important;
 }
 
 .sb-sidenav-collapse-arrow i {
-    transform: rotate(180deg) !important; /* Flecha hacia arriba */
+    transform: rotate(180deg) !important;
 }
 
 /*Estilos del Login*/
@@ -155,35 +151,35 @@
     transition: border-color 0.3s ease-in-out;
 }
 
-    .input-wrapper input {
-        flex: 1;
-        border: none;
-        background: none;
-        padding: 10px;
-        font-size: 14px;
-        outline: none;
-        color: #333;
-    }
+.input-wrapper input {
+    flex: 1;
+    border: none;
+    background: none;
+    padding: 10px;
+    font-size: 14px;
+    outline: none;
+    color: #333;
+}
 
-    .input-wrapper .icon {
-        background-color: #0a1f5e;
-        padding: 11px 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 3px;
-        color: white;
-        cursor: pointer;
-    }
+.input-wrapper .icon {
+    background-color: #0a1f5e;
+    padding: 11px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+}
 
-    .input-wrapper:focus-within {
-        border: 1px solid #0072BB;
-        box-shadow: 0px 0px 5px rgba(0, 115, 187, 0.658);
-    }
+.input-wrapper:focus-within {
+    border: 1px solid #0072BB;
+    box-shadow: 0px 0px 5px rgba(0, 115, 187, 0.658);
+}
 
-        .input-wrapper:focus-within .icon {
-            background-color: #0072BB;
-        }
+.input-wrapper:focus-within .icon {
+    background-color: #0072BB;
+}
 
 .toggle-password {
     cursor: pointer;
@@ -195,13 +191,13 @@
     box-shadow: -3px 3px 10px rgb(128, 128, 128, 0.658);
 }
 
-    .btnLogin:hover {
-        background-color: #0283D5 !important;
-    }
+.btnLogin:hover {
+    background-color: #0283D5 !important;
+}
 
-    .btnLogin:active {
-        background-color: #025E99 !important;
-    }
+.btnLogin:active {
+    background-color: #025E99 !important;
+}
 
 @media (max-width: 768px) {
     .separador {
@@ -231,25 +227,25 @@
     gap: 8px;
 }
 
-    .spinner .dot {
-        width: 12px;
-        height: 12px;
-        background-color: #0072BB;
-        border-radius: 50%;
-        animation: bounce 1.5s infinite ease-in-out;
-    }
+.spinner .dot {
+    width: 12px;
+    height: 12px;
+    background-color: #0072BB;
+    border-radius: 50%;
+    animation: bounce 1.5s infinite ease-in-out;
+}
 
-        .spinner .dot:nth-child(1) {
-            animation-delay: 0s;
-        }
+.spinner .dot:nth-child(1) {
+    animation-delay: 0s;
+}
 
-        .spinner .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
+.spinner .dot:nth-child(2) {
+    animation-delay: 0.2s;
+}
 
-        .spinner .dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+.spinner .dot:nth-child(3) {
+    animation-delay: 0.4s;
+}
 
 @keyframes bounce {
     0%, 80%, 100% {
@@ -262,70 +258,6 @@
         opacity: 1;
     }
 }
-
-/*Estilos de carpetas y archivos*/
-
-.file-manager-group {
-    transition: all 0.3s ease;
-    border: 1px solid #e0e0e0 !important;
-    border-radius: 10px;
-}
-.file-manager-recent-item {
-    transition: all 0.3s ease;
-    border: 1px solid #e0e0e0 !important;
-    border-radius: 10px;
-}
-
-.file-manager-group:hover {
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1) !important;
-    border-color: var(--bs-primary) !important;
-}
-.file-manager-recent-item:hover {
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1) !important;
-    border-color: var(--bs-primary) !important;
-} 
-
-.file-manager-group .card-body {
-    cursor: pointer;
-    position: relative;
-}
-.file-manager-recent-item .card-body {
-    cursor: pointer;
-    position: relative;
-} 
-
-.file-manager-group-title {
-    transition: color 0.2s ease;
-}
-.file-manager-recent-item-title {
-    transition: color 0.2s ease;
-}
-
-.file-manager-group:hover .file-manager-group-title {
-    color: var(--bs-primary) !important;
-}
-
-.file-manager-recent-item:hover .file-manager-recent-item-title {
-    color: var(--bs-primary) !important;
-}
-
-.file-manager-recent-file-actions {
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.file-manager-group:hover .file-manager-recent-file-actions {
-    opacity: 1;
-}
-
-.file-manager-recent-item:hover .file-manager-recent-file-actions {
-    opacity: 1 !important;
-}
-
-.dropdown-toggle::after {
-    display: none;
-}
-
 
 /*Estilos de la barra restablecer*/
 .password-strength {
@@ -347,42 +279,4 @@
 .strength-strong {
     background-color: #28a745;
     width: 100%;
-}
-
-.file-manager-recent-item:hover .file-manager-recent-file-actions {
-    opacity: 1 !important;
-}
-/* Estilo general del breadcrumb */
-.breadcrumb {
-    background-color: #f8f9fa; /* Fondo claro */
-    border-radius: 0.5rem; /* Bordes redondeados */
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1); /* Sombra suave */
-}
-
-/* Elementos dentro del breadcrumb */
-.breadcrumb-item a {
-    text-decoration: none; /* Sin subrayado */
-    color: #007bff; /* Azul Bootstrap */
-    transition: color 0.2s ease;
-}
-
-    .breadcrumb-item a:hover {
-        color: #0056b3; /* Azul más oscuro al pasar el cursor */
-    }
-
-/* Último elemento (activo) */
-.breadcrumb-item.active {
-    color: #6c757d; /* Gris oscuro */
-    font-weight: bold; /* Texto más grueso */
-}
-
-/* Iconos */
-.breadcrumb-item i {
-    font-size: 1.2rem; /* Tamaño de los iconos */
-    vertical-align: middle;
-}
-
-/* Espaciado */
-.breadcrumb-item {
-    margin-right: 0.5rem; /* Espaciado entre elementos */
 }
