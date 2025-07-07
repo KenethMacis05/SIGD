@@ -81,6 +81,12 @@ namespace capa_negocio
             return eliminado ? 1 : 0;
         }
 
+        public int DejarDeCompartirArchivo(int id_archivo, int idUsuarioPropietario, out string mensaje)
+        {
+            bool dejarDeCompartir = CD_Archivo.DejarDeCompartirArchivo(id_archivo, idUsuarioPropietario, out mensaje);
+            return dejarDeCompartir ? 1 : 0;
+        }
+
         public int EliminarDefinitivamente(int id_archivo, int id_usuario, out string mensaje)
         {
             bool eliminado = CD_Archivo.EliminarArchivoDefinitivamente(id_archivo, id_usuario, out mensaje);

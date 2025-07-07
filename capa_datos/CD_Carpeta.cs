@@ -652,5 +652,43 @@ namespace capa_datos
 
             return lista;
         }
+
+        public bool DejarDeCompartirCarpeta(int id_carpeta, int idUsuarioPropietario, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_DejarDeCompartirCarpeta", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetro de entrada
+                    cmd.Parameters.AddWithValue("IdCompartido", id_carpeta);
+                    cmd.Parameters.AddWithValue("IdUsuarioPropietario", idUsuarioPropietario);
+
+                    // Agregar parámetro de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al dejar de compartir el archivo: " + ex.Message;
+            }
+            return resultado;
+        }
     }
 }

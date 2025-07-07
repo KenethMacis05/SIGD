@@ -318,8 +318,18 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Controlador para Borrar carpetas compartidas
+        // Endpoint(POST): Dejar de compartir una carpeta
+        [AllowAnonymous]
+        [HttpPost]
+        public JsonResult DejarDeCompartirCarpeta(int id_carpeta)
+        {
+            string mensaje = string.Empty;
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
 
+            int resultado = CN_Carpeta.DejarDeCompartirCarpeta(id_carpeta, usuario.id_usuario, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
 
         #endregion
 
@@ -556,6 +566,19 @@ namespace capa_presentacion.Controllers
             }
 
             return Json(new { Respuesta = respuesta, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Endpoint(POST): Dejar de compartir un archivo
+        [AllowAnonymous]
+        [HttpPost]
+        public JsonResult DejarDeCompartirArchivo(int id_archivo)
+        {
+            string mensaje = string.Empty;
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+            int resultado = CN_Archivo.DejarDeCompartirArchivo(id_archivo, usuario.id_usuario, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

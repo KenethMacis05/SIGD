@@ -171,5 +171,11 @@ namespace capa_negocio
 
             return CD_Carpeta.CompartirCarpeta(idCarpeta, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
         }
+
+        public int DejarDeCompartirCarpeta(int id_carpeta, int idUsuarioPropietario, out string mensaje)
+        {
+            bool dejarDeCompartir = CD_Carpeta.DejarDeCompartirCarpeta(id_carpeta, idUsuarioPropietario, out mensaje);
+            return dejarDeCompartir ? 1 : 0;
+        }
     }
 }

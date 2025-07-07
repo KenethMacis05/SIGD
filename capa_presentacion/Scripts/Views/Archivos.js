@@ -1453,26 +1453,60 @@ const dataTableOptionsArchivosCompartidos = {
 $("#datatableCarpetasCompartidas tbody").on("click", '#btn-dejarDeCompartirCarpeta', function () {
     const carpetaSeleccionado = $(this).closest("tr");
     const data = dataTableCarpetasCompartidas.row(carpetaSeleccionado).data();
+    id_carpeta = data.IdCarpeta;
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
             showLoadingAlert("Dejando de compartir carpeta", "Por favor espere...")
 
-            console.log(data)
+            // Enviar petición AJAX
+            $.ajax({
+                url: config.dejarDeCompartirCarpetaUrl,
+                type: "POST",
+                data: JSON.stringify({ id_carpeta: id_carpeta }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        showAlert("¡Eliminado!", response.Mensaje || "Se dejo de compartir la carpeta", "success", true);
+                        dataTableCarpetasCompartidas.row(carpetaSeleccionado).remove().draw();
+                    } else { showAlert("Error", response.Mensaje || "No se pudo dejar de compartir la carpeta", "error"); }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor, dejar de compartir carpeta: ${xhr.statusText}`, "error"); }
+            });
         }
     });
 });
 
-//Boton dejar de compartir carpeta
+//Boton dejar de compartir archivo
 $("#datatableArchivosCompartidos tbody").on("click", '#btn-dejarDeCompartirArchivo', function () {
     const archivoSeleccionado = $(this).closest("tr");
     const data = dataTableArchivosCompartidos.row(archivoSeleccionado).data();
+    id_archivo = data.IdArchivo;
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
             showLoadingAlert("Dejando de compartir archivo", "Por favor espere...")
 
-            console.log(data)
+            // Enviar petición AJAX
+            $.ajax({
+                url: config.dejarDeCompartirArchivoUrl,
+                type: "POST",
+                data: JSON.stringify({ id_archivo: id_archivo }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        showAlert("¡Eliminado!", response.Mensaje || "Se dejo de compartir el archivo", "success", true);
+                        dataTableArchivosCompartidos.row(archivoSeleccionado).remove().draw();
+                    } else { showAlert("Error", response.Mensaje || "No se pudo dejar de compartir el archivo", "error"); }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor, dejar de compartir archivo: ${xhr.statusText}`, "error"); }
+            });
         }
     });
 });

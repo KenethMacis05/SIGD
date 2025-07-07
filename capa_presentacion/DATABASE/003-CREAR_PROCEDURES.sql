@@ -2847,7 +2847,7 @@ BEGIN
 
     -- Eliminar el registro de compartición de la tabla COMPARTIDOS
     DELETE FROM COMPARTIDOS
-    WHERE id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'CARPETA';
+    WHERE fk_id_usuario_propietario = @IdUsuarioPropietario AND id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'CARPETA';
 
     -- Verificar si la eliminación fue exitosa
     IF @@ROWCOUNT > 0
@@ -2884,7 +2884,7 @@ BEGIN
 
     -- Eliminar el registro de compartición de la tabla COMPARTIDOS
     DELETE FROM COMPARTIDOS
-    WHERE id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'ARCHIVO';
+    WHERE fk_id_usuario_propietario = @IdUsuarioPropietario AND id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'ARCHIVO';
 
     -- Verificar si la eliminación fue exitosa
     IF @@ROWCOUNT > 0
