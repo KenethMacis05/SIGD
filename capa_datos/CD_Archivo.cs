@@ -62,6 +62,35 @@ namespace capa_datos
             return listaArchivo;
         }
 
+        public string ObtenerNombrePorId(int idArchivo)
+        {
+            string nombreArchivo = string.Empty;
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerNombreArchivo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdArchivo", idArchivo);
+
+                    conexion.Open();
+
+                    object result = cmd.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        nombreArchivo = result.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener el nombre de la carpeta: " + ex.Message, ex);
+            }
+            return nombreArchivo;
+        }
+
         public List<ARCHIVO> ListarArchivos(int id_usuario, out int resultado, out string mensaje)
         {
             List<ARCHIVO> listaArchivo = new List<ARCHIVO>();

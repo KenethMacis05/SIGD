@@ -119,6 +119,35 @@ namespace capa_datos
             return listaCarpeta;
         }
 
+        public string ObtenerNombrePorId(int idCarpeta)
+        {
+            string nombreCarpeta = string.Empty;
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerNombreCarpeta", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdCarpeta", idCarpeta);
+
+                    conexion.Open();
+
+                    object result = cmd.ExecuteScalar();
+
+                    if (result != null && result != DBNull.Value)
+                    {
+                        nombreCarpeta = result.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener el nombre de la carpeta: " + ex.Message, ex);
+            }
+            return nombreCarpeta;
+        }
+
         public List<CARPETA> BuscarCarpetas(string nombre, int id_usuario, out int resultado, out string mensaje)
         {
             List<CARPETA> listaCarpeta = new List<CARPETA>();

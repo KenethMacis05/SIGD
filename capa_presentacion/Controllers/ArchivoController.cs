@@ -283,7 +283,8 @@ namespace capa_presentacion.Controllers
 
                 var idUsuarioPropietario = usuario.id_usuario;
 
-                respuesta = CN_Carpeta.CompartirCarpeta(idCarpeta, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
+                int resultado = CN_Carpeta.CompartirCarpeta(idCarpeta, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
+                respuesta = (resultado == 1);
             }
             catch (Exception ex)
             {
