@@ -557,8 +557,8 @@ namespace capa_presentacion.Controllers
                 }
 
                 var idUsuarioPropietario = usuario.id_usuario;
-
-                respuesta = CN_Archivo.CompartirArchivo(idArchivo, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
+                int resultado = CN_Archivo.CompartirArchivo(idArchivo, idUsuarioPropietario, idUsuarioDestino, permisos, out mensaje);
+                respuesta = (resultado == 1);
             }
             catch (Exception ex)
             {
