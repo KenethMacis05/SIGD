@@ -1,7 +1,8 @@
 ﻿let breadcrumbStack = [];
 let carpetaActualId = null;
 let dataTable;
-let dataTableCompartidos;
+let dataTableCarpetasCompartidas;
+let dataTableArchivosCompartidos;
 let activeTab
 
 // Agregar una nueva entrada al breadcrumbStack
@@ -307,6 +308,8 @@ function GuardarCarpeta() {
                 showAlert("¡Éxito!", mensaje, "success", true);
                 $("#nombre").val("");
                 recargarCarpetas()
+                $('#datatableCarpetasCompartidas').DataTable().ajax.reload(null, false);
+                $('#datatableArchivosCompartidos').DataTable().ajax.reload(null, false);
             }
             else {
                 const mensaje = data.Mensaje || (Carpeta.id_carpeta == 0 ? "No se pudo crear la carpeta" : "No se pudo actualizar la carpeta");
@@ -349,7 +352,7 @@ function RenombrarArchivo() {
             if (data.Resultado || data.Respuesta) {
                 
                 showAlert("¡Éxito!", "Archivo renombrado correctamente", "success", true);
-                
+                $('#datatableArchivosCompartidos').DataTable().ajax.reload(null, false);
                 recargarArchivos()
             }
             else {
@@ -485,7 +488,8 @@ $(document).on('click', '.btn-eliminar', function (e) {
                         limpiarArchivos()
 
                         $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
-                        $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
+                        $('#datatableCarpetasCompartidas').DataTable().ajax.reload(null, false);
+                        $('#datatableArchivosCompartidos').DataTable().ajax.reload(null, false);
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la carpeta", "error"); }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor Eliminar Carpeta: ${xhr.statusText}`, "error"); }
@@ -518,7 +522,8 @@ $(document).on('click', '.btn-eliminarArchivo', function (e) {
                         showAlert("¡Eliminado!", response.Mensaje || "Archivo eliminado correctamente", "success", true);
                         recargarArchivos()
                         $('#datatableArchivoEliminados').DataTable().ajax.reload(null, false);
-                        $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
+                        $('#datatableCarpetasCompartidas').DataTable().ajax.reload(null, false);
+                        $('#datatableArchivosCompartidos').DataTable().ajax.reload(null, false);
 
                         // Limpiar los contenedores de encontrados
                         limpiarArchivos()
@@ -618,6 +623,7 @@ function recargarArchivos() {
         cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-todos");
         cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-compartidos");
     }
+    cargarArchivosCompartidos(config.listarArchivosCompartidosConmigoUrl, "contenedor-archivos-compartidos-conmigo")
 }
 
 function recargarCarpetas() {
@@ -631,9 +637,34 @@ function recargarCarpetas() {
     }
 }
 
-
 // Función para cargar archivos
 function cargarArchivos(url, contenedorId) {
+    $.ajax({
+        url: url,
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: () => $(`#${contenedorId}`).LoadingOverlay("show"),
+        success: function (response) {
+            if (response.data && response.data.length > 0) {
+                let html = '';
+                $.each(response.data, function (index, archivo) {
+                    const html = response.data.map(generarHtmlArchivo).join("");
+                    $(`#${contenedorId}`).html(html);
+                });
+
+            } else {
+                $(`#${contenedorId}`).html('<div class="alert alert-light">No hay archivos disponibles</div>');
+            }
+        },
+        error: function () {
+            $(`#${contenedorId}`).html('<div class="alert alert-danger">Error al cargar las archivos</div>');
+        },
+        complete: () => $(`#${contenedorId}`).LoadingOverlay("hide")
+    });
+}
+
+// Función para cargar archivos compartidos
+function cargarArchivosCompartidos(url, contenedorId) {
     $.ajax({
         url: url,
         type: 'GET',
@@ -1008,8 +1039,10 @@ $(document).ready(function () {
     cargarCarpetas(config.listarCarpetasRecientesUrl, "contenedor-carpetas-recientes");
     cargarArchivos(config.listarArchivosRecientesUrl, "contenedor-archivos-recientes");
     cargarCarpetasCompartidas(config.listarCarpetasCompartidasConmigoUrl, "contenedor-carpetas-compartidas");
+    cargarArchivosCompartidos(config.listarArchivosCompartidosConmigoUrl, "contenedor-archivos-compartidos-conmigo");
     dataTable = $("#datatableArchivoEliminados").DataTable(dataTableOptions);
-    dataTableCompartidos = $("#datatableArchivoCompartidos").DataTable(dataTableOptionsComparitos)
+    dataTableCarpetasCompartidas = $("#datatableCarpetasCompartidas").DataTable(dataTableOptionsCarpetasCompartidas)
+    dataTableArchivosCompartidos = $("#datatableArchivosCompartidos").DataTable(dataTableOptionsArchivosCompartidos)
 
     myDropzone = new Dropzone("#custom-dropzone", {
         url: "#",
@@ -1256,11 +1289,11 @@ function limpiarArchivos() {
 }
 
 // Leer carpetas compartidas por mi
-const dataTableOptionsComparitos = {
+const dataTableOptionsCarpetasCompartidas = {
     ...dataTableConfig,
 
     ajax: {
-        url: config.listarCarpetasComparidasUrl,
+        url: config.listarCarpetasCompartidasUrl,
         type: "GET",
         dataType: "json"
     },
@@ -1328,20 +1361,116 @@ const dataTableOptionsComparitos = {
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-2" id="btn-dejarDeCompartir"><i class="fa fa-ban"></i></button>',
+                '<button type="button" class="btn btn-danger btn-sm ms-2" id="btn-dejarDeCompartirCarpeta"><i class="fa fa-ban"></i></button>',
+            width: "90"
+        },
+    ]
+};
+
+// Leer archivos compartidas por mi
+const dataTableOptionsArchivosCompartidos = {
+    ...dataTableConfig,
+
+    ajax: {
+        url: config.listarArchivosCompartidosUrl,
+        type: "GET",
+        dataType: "json"
+    },
+
+    columns: [
+        {
+            data: null,
+            title: "#",
+            render: function (data, type, row, meta) {
+                return meta.row + 1;
+            },
+            orderable: false,
+            width: "5"
+        },
+        {
+            data: "NombreArchivo", title: "Archivo",
+            render: function (data, type, row) {
+                const extension = `.${data.split('.').pop().toLowerCase()}`;
+                const { icono, color } = obtenerIconoYColor(extension);
+
+                return `<i class="fa ${icono} ${color} fa-2x"></i> ${data}`;
+            }
+        },
+        { data: "Ruta", title: "Ruta" },
+        {
+            data: "FechaCompartido", title: "Fecha compartida",
+            render: function (data) {
+                return data ? formatASPNetDate(data) : "N/A";
+            }
+        },
+        {
+            data: "NombreDestinatario",
+            title: "Usuario",
+            render: function (data, type, row) {
+                return `
+                    <div class="d-flex flex-column">
+                        <span>${data}</span>
+                        <small class="text-muted">
+                            <i class="fas fa-envelope fa-xs me-1"></i>
+                            ${row.CorreoDestinatario}
+                        </small>
+                    </div>
+                `;
+            }
+        },
+        {
+            data: "Permisos", title: "Permisos",
+            render: function (valor) {
+                let iconHtml = '';
+                let text = '';
+                let badgeClass = '';
+
+                if (valor === "lectura") {
+                    iconHtml = '<i class="fa fa-eye"></i>';
+                    text = 'LECTURA';
+                    badgeClass = 'text-bg-info';
+                } else if (valor === "edicion") {
+                    iconHtml = '<i class="fa fa-edit"></i>';
+                    text = 'EDICIÓN';
+                    badgeClass = 'text-bg-warning';
+                } 
+                return `<div class="d-flex justify-content-center align-items-center fs-5">
+                            <span class="badge ${badgeClass} text-white">${iconHtml} ${text}</span>
+                        </div>`;
+            },
+            width: "90"
+        },
+        {
+            defaultContent:
+                '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-2" id="btn-dejarDeCompartirArchivo"><i class="fa fa-ban"></i></button>',
             width: "90"
         },
     ]
 };
 
 //Boton dejar de compartir carpeta
-$("#datatableArchivoCompartidos tbody").on("click", '#btn-dejarDeCompartir', function () {
-    const archivoleccionado = $(this).closest("tr");
-    const data = dataTable.row(archivoleccionado).data();
+$("#datatableCarpetasCompartidas tbody").on("click", '#btn-dejarDeCompartirCarpeta', function () {
+    const carpetaSeleccionado = $(this).closest("tr");
+    const data = dataTableCarpetasCompartidas.row(carpetaSeleccionado).data();
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
-            showLoadingAlert("Dejando de compartir archivo o carpeta", "Por favor espere...")
+            showLoadingAlert("Dejando de compartir carpeta", "Por favor espere...")
+
+            console.log(data)
+        }
+    });
+});
+
+//Boton dejar de compartir carpeta
+$("#datatableArchivosCompartidos tbody").on("click", '#btn-dejarDeCompartirArchivo', function () {
+    const archivoSeleccionado = $(this).closest("tr");
+    const data = dataTableArchivosCompartidos.row(archivoSeleccionado).data();
+
+    confirmarEliminacion().then((result) => {
+        if (result.isConfirmed) {
+            showLoadingAlert("Dejando de compartir archivo", "Por favor espere...")
 
             console.log(data)
         }
@@ -1480,7 +1609,7 @@ function compartirCarpeta() {
                 showAlert("Advertencia", `Algunos usuarios no recibieron la carpeta:\n${mensajes}`, "warning");
             } else {
                 showAlert("¡Éxito!", "Carpeta compartida con todos los usuarios seleccionados", "success", true);
-                $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
+                $('#datatableCarpetasCompartidas').DataTable().ajax.reload(null, false);
             }
 
             $('#modalCompartir').modal('hide');
@@ -1537,7 +1666,7 @@ function compartirArchivo() {
                 showAlert("Advertencia", `Algunos usuarios no recibieron el archivo:\n${mensajes}`, "warning");
             } else {
                 showAlert("¡Éxito!", "Archivo compartido con todos los usuarios seleccionados", "success", true);
-                $('#datatableArchivoCompartidos').DataTable().ajax.reload(null, false);
+                $('#datatableArchivosCompartidos').DataTable().ajax.reload(null, false);
             }
 
             $('#correosCompartirArchivo').val(null).trigger('change');

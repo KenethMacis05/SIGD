@@ -53,6 +53,11 @@ namespace capa_negocio
             return CD_Archivo.ObtenerArchivosCompartidosConmigo(id_usuario, out resultado, out mensaje);
         }
 
+        public List<ARCHIVOCOMPARTIDO> ListarArchivosCompartidosPorMi(int idUsuario)
+        {
+            return CD_Archivo.ObtenerArchivosCompartidosPorMi(idUsuario);
+        }
+
         public int SubirArchivo(ARCHIVO archivo, out string mensaje)
         {
             mensaje = string.Empty;

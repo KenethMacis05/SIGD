@@ -524,6 +524,47 @@ namespace capa_datos
             return respuesta;
         }
 
+        public List<ARCHIVOCOMPARTIDO> ObtenerArchivosCompartidosPorMi(int idUsuarioPropietario)
+        {
+            List<ARCHIVOCOMPARTIDO> lista = new List<ARCHIVOCOMPARTIDO>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerArchivosCompartidosPorMi", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("IdUsuarioPropietario", idUsuarioPropietario);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new ARCHIVOCOMPARTIDO
+                            {
+                                IdArchivo = Convert.ToInt32(dr["id_compartido"]),
+                                NombreArchivo = dr["nombre_archivo"].ToString(),
+                                Ruta = dr["ruta"].ToString(),
+                                FechaRegistro = Convert.ToDateTime(dr["fecha_subida"]),
+                                CorreoDestinatario = dr["correo_destino"].ToString(),
+                                NombreDestinatario = dr["nombre_destinatario"].ToString(),
+                                Permisos = dr["permisos"].ToString(),
+                                FechaCompartido = Convert.ToDateTime(dr["fecha_compartido"])
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener carpetas compartidas: " + ex.Message);
+            }
+
+            return lista;
+        }
+
         public List<ARCHIVO> ObtenerArchivosCompartidosConmigo(int idUsuario, out int resultado, out string mensaje)
         {
             List<ARCHIVO> lista = new List<ARCHIVO>();
@@ -559,12 +600,12 @@ namespace capa_datos
                                 ruta = dr["ruta"] != DBNull.Value ? dr["ruta"].ToString() : string.Empty,
                                 size = dr["size"] != DBNull.Value ? Convert.ToInt32(dr["size"]) : 0,
                                 tipo = dr["tipo"] != DBNull.Value ? dr["tipo"].ToString() : string.Empty,
-                                fecha_subida = dr["fecha_subida"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_subida"]) : DateTime.MinValue,
                                 estado = dr["estado"] != DBNull.Value && Convert.ToBoolean(dr["estado"]),
                                 id_carpeta = dr["fk_id_carpeta"] != DBNull.Value ? Convert.ToInt32(dr["fk_id_carpeta"]) : 0,
                                 nombre_carpeta = dr["nombre_carpeta"] != DBNull.Value ? dr["nombre_carpeta"].ToString() : string.Empty,
                                 propietario = dr["propietario"].ToString(),
                                 permisos = dr["permisos"].ToString(),
+                                correo = dr["correo"].ToString(),
                                 fecha_compartido = Convert.ToDateTime(dr["fecha_compartido"])
                             });
                         }

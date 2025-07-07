@@ -286,7 +286,8 @@ const COLORS = ['primary', 'warning', 'danger', 'success', 'info', 'secondary'];
 // Función para generar el HTML de una carpeta
 function generarHtmlCarpeta(carpeta, index) {
     const color = COLORS[index % COLORS.length];
-    const propietarioHtml = carpeta.propietario ? `<span class="text-muted small">(${carpeta.propietario})</span>` : '';
+    const propietarioHtml = carpeta.propietario ? `<span class="text-muted small">Propie: (${carpeta.propietario})</span>` : '';
+    const correoHtml = carpeta.correo ? `<span class="text-muted small">(${carpeta.correo})</span>` : '';
     const fechaAMostrar = (carpeta.fecha_registro === "/Date(-62135575200000)/")
         ? formatASPNetDate(carpeta.fecha_compartido)
         : formatASPNetDate(carpeta.fecha_registro);
@@ -374,10 +375,14 @@ function initializeFolderContextMenu() {
     });
 }
 
-
 // Función para generar el HTML de un archivo
 function generarHtmlArchivo(archivo) {
     const { icono, color } = obtenerIconoYColor(archivo.tipo);
+    const propietarioHtml = archivo.propietario ? `<span class="text-muted small">${archivo.propietario}</span>` : '';
+    const correoHtml = archivo.correo ? `<span class="text-muted small">(${archivo.correo})</span>` : '';
+    const fechaAMostrar = (archivo.fecha_subida === "/Date(-62135575200000)/")
+        ? formatASPNetDate(archivo.fecha_compartido)
+        : formatASPNetDate(archivo.fecha_subida);
 
     return `
     <div class="col-sm-12 col-md-12 col-lg-6">
@@ -386,8 +391,13 @@ function generarHtmlArchivo(archivo) {
                 <div class="d-flex align-items-center gap-3">
                     <i class="fas ${icono} fa-lg ${color} fa-2x"></i>
                     <div class="flex-fill">                                        
-                        <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block" data-archivo-id="${archivo.id_archivo}" data-archivo-nombre="${archivo.nombre}" data-archivo-tipo="${archivo.tipo}">${archivo.nombre}</a>
-                        <small class="text-muted">${formatFileSize(archivo.size)} - ${formatASPNetDate(archivo.fecha_subida)}</small>
+                        <div class="file-manager-group-compartidos">
+                            <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block" data-archivo-id="${archivo.id_archivo}" data-archivo-nombre="${archivo.nombre}" data-archivo-tipo="${archivo.tipo}">${archivo.nombre}</a>
+                            <div>
+                                ${propietarioHtml} ${correoHtml}
+                            </div>
+                        </div>
+                        <small class="text-muted">${formatFileSize(archivo.size)} - ${fechaAMostrar}</small>
                     </div>
                     <div class="dropdown">
                         <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">

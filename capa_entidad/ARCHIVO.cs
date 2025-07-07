@@ -25,6 +25,19 @@ namespace capa_entidad
 
         public string propietario { get; set; }
         public string permisos { get; set; }
+        public string correo { get; set; }
         public DateTime fecha_compartido { get; set; }
+    }
+
+    public class ARCHIVOCOMPARTIDO
+    {
+        public int IdArchivo;
+        public string NombreArchivo;
+        public string Ruta;
+        public DateTime FechaRegistro;
+        public string CorreoDestinatario;
+        public string NombreDestinatario;
+        public string Permisos;
+        public DateTime FechaCompartido;
     }
 }

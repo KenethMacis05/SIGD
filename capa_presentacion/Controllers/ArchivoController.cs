@@ -502,6 +502,30 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
+        // Enpoint(Get): Listar las archivos compartidos
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult ListarArchivosCompartidos()
+        {
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null)
+                {
+                    return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+                }
+
+                List<ARCHIVOCOMPARTIDO> lst = new List<ARCHIVOCOMPARTIDO>();
+                lst = CN_Archivo.ListarArchivosCompartidosPorMi(usuario.id_usuario);
+
+                return Json(new { success = true, data = lst }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         // Enpoint(Post): Compartir archivo
         [HttpPost]
         public JsonResult CompartirArchivo(int idArchivo, int idUsuarioDestino, string permisos)

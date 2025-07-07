@@ -2534,7 +2534,7 @@ BEGIN
     SET NOCOUNT ON;
     
     SELECT 
-        c.id_carpeta,
+        co.id_compartido,
         c.nombre AS nombre_carpeta,
         c.ruta,
         c.fecha_registro,
@@ -2557,6 +2557,36 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS COMPARTIDOS POR EL USUARIO
+CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosPorMi
+    @IdUsuarioPropietario INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT 
+        co.id_compartido,
+        a.nombre AS nombre_archivo,
+        a.ruta,
+        a.fecha_subida,
+        u.correo AS correo_destino,
+        u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,
+        co.permisos,
+        co.fecha_compartido
+    FROM 
+        COMPARTIDOS co
+    INNER JOIN 
+        ARCHIVO a ON co.fk_id_archivo = a.id_archivo
+    LEFT JOIN
+        USUARIOS u ON co.fk_id_usuario_destino = u.id_usuario
+    WHERE 
+        co.fk_id_usuario_propietario = @IdUsuarioPropietario
+        AND co.estado = 1
+        AND a.estado = 1
+    ORDER BY 
+        co.fecha_compartido DESC;
+END
+GO
 -----------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LAS CARPETAS QUE LE COMPARTIERON AL USUARIO
@@ -2595,6 +2625,7 @@ BEGIN
 		-- Si hay carpetas, seleccionarlas para el resultado final
 		SELECT c.*,      
         	u.pri_nombre + ' ' + u.pri_apellido AS propietario,
+			u.correo,
         	co.permisos,
         	co.fecha_compartido
     	FROM 
@@ -2615,7 +2646,6 @@ BEGIN
 	END
 END
 GO
-
 -- PROCEDIMIENTO ALMACENADO PARA COMPARTIR UN ARCHIVO
 CREATE OR ALTER PROCEDURE usp_CompartirArchivo
     @IdArchivo INT,  
@@ -2765,11 +2795,11 @@ BEGIN
 			a.ruta,
 			a.size,
 			a.tipo,
-			a.fecha_subida,
 			a.estado,
 			a.fk_id_carpeta,
 			c.nombre AS nombre_carpeta,
         	u.pri_nombre + ' ' + u.pri_apellido AS propietario,
+			u.correo, 
         	co.permisos,
         	co.fecha_compartido
     	FROM 
@@ -2781,7 +2811,7 @@ BEGIN
     	INNER JOIN
         	USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
     	WHERE 
-        	co.fk_id_usuario_destino = 2
+        	co.fk_id_usuario_destino = @IdUsuario
         	AND co.estado = 1
         	AND a.estado = 1
     	ORDER BY 
@@ -2790,6 +2820,84 @@ BEGIN
 		SET @Resultado = 1;
 		SET @Mensaje = 'Archivos cargados correctamente';
 	END
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA DEJAR DE COMPARTIR UNA CARPETA
+CREATE OR ALTER PROCEDURE usp_DejarDeCompartirCarpeta
+    @IdCompartido INT,
+	@IdUsuarioPropietario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el registro de compartición existe, está activo y es de tipo 'CARPETA'
+    IF NOT EXISTS (SELECT 1 FROM COMPARTIDOS 
+		WHERE fk_id_usuario_propietario = @IdUsuarioPropietario 
+			AND id_compartido = @IdCompartido 
+			AND estado = 1 
+			AND TipoArchivo = 'CARPETA')
+    BEGIN
+        SET @Resultado = 0;
+        SET @Mensaje = 'El registro de compartición de carpeta no existe o ya se encuentra inactivo.';
+        RETURN;
+    END
+
+    -- Eliminar el registro de compartición de la tabla COMPARTIDOS
+    DELETE FROM COMPARTIDOS
+    WHERE id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'CARPETA';
+
+    -- Verificar si la eliminación fue exitosa
+    IF @@ROWCOUNT > 0
+    BEGIN
+        SET @Resultado = 1;
+        SET @Mensaje = 'Carpeta dejada de compartir exitosamente.';
+    END
+    ELSE
+    BEGIN
+        -- Esto debería ocurrir solo en casos excepcionales si la validación anterior pasó
+        SET @Resultado = 0;
+        SET @Mensaje = 'No se pudo eliminar el registro de la carpeta compartida.';
+    END
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA DEJAR DE COMPARTIR UN ARCHIVO
+CREATE OR ALTER PROCEDURE usp_DejarDeCompartirArchivo
+    @IdCompartido INT,
+	@IdUsuarioPropietario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el registro de compartición existe, está activo y es de tipo 'ARCHIVO'
+    IF NOT EXISTS (SELECT 1 FROM COMPARTIDOS WHERE fk_id_usuario_propietario = @IdUsuarioPropietario AND id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'ARCHIVO')
+    BEGIN
+        SET @Resultado = 0;
+        SET @Mensaje = 'El registro de compartición de archivo no existe o ya se encuentra inactivo.';
+        RETURN;
+    END
+
+    -- Eliminar el registro de compartición de la tabla COMPARTIDOS
+    DELETE FROM COMPARTIDOS
+    WHERE id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'ARCHIVO';
+
+    -- Verificar si la eliminación fue exitosa
+    IF @@ROWCOUNT > 0
+    BEGIN
+        SET @Resultado = 1;
+        SET @Mensaje = 'Archivo dejado de compartir exitosamente.';
+    END
+    ELSE
+    BEGIN
+        -- Esto debería ocurrir solo en casos excepcionales si la validación anterior pasó
+        SET @Resultado = 0;
+        SET @Mensaje = 'No se pudo eliminar el registro del archivo compartido.';
+    END
 END
 GO
 --USE SISTEMA_DE_GESTION_DIDACTICA;

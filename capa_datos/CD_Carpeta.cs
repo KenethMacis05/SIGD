@@ -579,7 +579,7 @@ namespace capa_datos
                         {
                             lista.Add(new CARPETACOMPARTIDA
                             {
-                                IdCarpeta = Convert.ToInt32(dr["id_carpeta"]),
+                                IdCarpeta = Convert.ToInt32(dr["id_compartido"]),
                                 NombreCarpeta = dr["nombre_carpeta"].ToString(),
                                 Ruta = dr["ruta"].ToString(),
                                 FechaRegistro = Convert.ToDateTime(dr["fecha_registro"]),
@@ -635,6 +635,7 @@ namespace capa_datos
                                 carpeta_padre = dr["carpeta_padre"] == DBNull.Value ? (int?)null : Convert.ToInt32(dr["carpeta_padre"]),
                                 propietario = dr["propietario"].ToString(),
                                 permisos = dr["permisos"].ToString(),
+                                correo = dr["correo"].ToString(),
                                 fecha_compartido = Convert.ToDateTime(dr["fecha_compartido"])
                             });
                         }

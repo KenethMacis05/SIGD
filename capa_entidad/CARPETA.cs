@@ -22,6 +22,7 @@ namespace capa_entidad
         // CARPETAS COMPARTIDAS
         public string propietario { get; set; }
         public string permisos { get; set; }
+        public string correo { get; set; }
         public DateTime fecha_compartido { get; set; }
     }
 

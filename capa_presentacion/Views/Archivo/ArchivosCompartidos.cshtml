@@ -1,54 +1,100 @@
 ﻿
 @{
-    ViewBag.Title = "Archivos Compartidos";
+    ViewBag.Title = "Archivos Compartidas";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<!--Titulo-->
-<div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Archivos Compartidos</h2></div>
+<link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleDropzone.css")" />
+<link rel="stylesheet" href="@Url.Content("~/Content/Views/Archivos.css")" />
 
-<!-- Input y botón -->
-<label for="mensajeInput">Escribe un mensaje:</label>
-<input type="text" id="mensajeInput" placeholder="Escribe algo aquí">
-<button id="enviarMensaje">Enviar</button>
-<div id="resultado" style="margin-top: 20px; color: #333;"></div>
+<!--Contenedor-->
+<div class="card shadow-sm mt-3">
+    <div class="card-header pb-0 border-bottom-0">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <!--Boton 1-->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active esp-link" id="archivosCompartidosConmigo-tab" onclick="handleTabClick('archivosCompartidosConmigo')" data-bs-toggle="tab" data-bs-target="#archivosCompartidosConmigo" type="button" role="tab" aria-controls="archivosCompartidosConmigo" aria-selected="true">
+                    Archivos compartidos
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <!-- Contenedor 1 -->
+            <div class="tab-pane fade show active" id="archivosCompartidosConmigo" role="tabpanel" aria-labelledby="archivosCompartidosConmigo-tab">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="mb-0">Archivos compartidos</h2>
+                    <!-- <div class="d-flex align-items-center">
+                        <button type="button" class="btn btn-secondary ms-2" onclick="abrirModalCarpeta(null)">
+                            <i class="fa fa-folder me-2"></i>Crear Carpeta
+                        </button>
+                        <button type="button" class="btn btn-primary ms-2" onclick="abrirModalSubirArchivo(null)">
+                            <i class="fas fa-upload me-2"></i>Subir Archivo
+                        </button>
+                        <button type="button" class="btn btn-outline-primary ms-2" onclick="descargar()">
+                            <i class="fas fa-download me-2"></i>Descargar
+                        </button>
+                    </div>-->
+                </div>
 
-@section scripts {    
+                <hr />
+
+                <!-- Archivos -->
+                <div class="container-fluid mb-3">
+                    <div class="row g-3" id="contenedor-archivos-compartidos-conmigo">
+                        <!-- Los archivos se cargarán dinámicamente aquí -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para crear/editar una nueva carpeta-->
+    @Html.Partial("~/Views/Archivo/_ModalCrearCarpeta.cshtml")
+
+    <!-- Modal para renombrar un archivo-->
+    @Html.Partial("~/Views/Archivo/_ModalRenombrarArchivo.cshtml")
+
+    <!-- Modal para subir archivos -->
+    @Html.Partial("~/Views/Archivo/_ModalSubirArchivos.cshtml")
+
+    <!-- Modal visualizar pdf/text -->
+    @Html.Partial("~/Views/Archivo/_ModalVisualizarPDF-TXT.cshtml")
+
+    <!-- Modal visualizar documentos onlyoffice -->
+    @Html.Partial("~/Views/Archivo/_ModalVisualizarDocsOnlyOffice.cshtml")
+
+    <!-- Modal visualizar imagenes/videos -->
+    <div id="lightgallery" style="display:none;" hidden></div>
+
+</div>
+
+
+@section scripts{
     <script type="text/javascript">
-        $(document).ready(function () {
-            $('#enviarMensaje').click(function () {
-                const mensaje = $('#mensajeInput').val(); // Obtener el valor del input
-
-                if (!mensaje) {
-                    alert("Por favor, escribe un mensaje.");
-                    return;
-                }
-
-                // Realizar la solicitud AJAX
-                $.ajax({
-                    url: '@Url.Action("ProcesarMensaje", "Usuario")',
-                    type: 'POST',
-                    contentType: 'application/json; charset=utf-8',
-                    dataType: 'json',
-                    data: JSON.stringify({ mensaje: mensaje }), // Enviar el mensaje como JSON
-                    success: function (response) {
-                        if (response.error) {
-                            $('#resultado').html(`<p style="color:red;">Error: ${response.mensaje}</p>`);
-                        } else {
-                            $('#resultado').html(`
-                                <p><strong>Mensaje Original:</strong> ${response.original}</p>
-                                <p><strong>Respuesta:</strong> ${response.respuesta}</p>
-                                <p><strong>Fecha:</strong> ${response.fecha}</p>
-                            `);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error("Error en la solicitud:", error);
-                        console.error("Detalles:", xhr.responseText);
-                        $('#resultado').html('<p style="color:red;">Ocurrió un error al procesar tu mensaje. Inténtalo de nuevo más tarde.</p>');
-                    }
-                });
-            });
-        });
+        const config = {
+            listarCarpetasCompartidasConmigoUrl: '@Url.Action("ListarCarpetasCompartidasConmigo", "Archivo")',
+            listarArchivosCompartidosConmigoUrl: '@Url.Action("ListarArchivosCompartidosConmigo", "Archivo")',
+            listarCarpetasRecientesUrl: '@Url.Action("ListarCarpetasRecientes", "Archivo")',
+            listarCarpetasUrl: '@Url.Action("ListarCarpetas", "Archivo")',
+            listarCarpetasComparidasUrl: '@Url.Action("ListarCarpetasCompartidas", "Archivo")',
+            listarArchivosRecientesUrl: '@Url.Action("ListarArchivosRecientes", "Archivo")',
+            listarArchivosUrl: '@Url.Action("ListarArchivos", "Archivo")',
+            guardarCarpetaUrl: '@Url.Action("GuardarCarpeta", "Archivo")',
+            eliminarCarpetaUrl: '@Url.Action("EliminarCarpeta", "Archivo")',
+            eliminarArchivoUrl: '@Url.Action("EliminarArchivo", "Archivo")',
+            compartirCarpetaUrl: '@Url.Action("CompartirCarpeta", "Archivo")',
+            subirArchivoUrl: '@Url.Action("SubirArchivo", "Archivo")',
+            listarPapeleraUrl: '@Url.Action("ListarPapelera", "Archivo")',
+            vaciarPapeleraUrl: '@Url.Action("VaciarPapelera", "Archivo")',
+            eliminarDefinitivamenteUrl: '@Url.Action("EliminarDefinitivamente", "Archivo")',
+            listarSubCarpetasUrl: '@Url.Action("ListarSubCarpetas", "Archivo")',
+            listarArchivosPorCarpetaUrl: '@Url.Action("ListarArchivosPorCarpeta", "Archivo")',
+            renombrarArchivoUrl: '@Url.Action("RenombrarArchivo", "Archivo")',
+            buscarArchivos: '@Url.Action("Buscar", "Archivo")',
+            listarUsuariosUrl: '@Url.Action("ListarUsuarios", "Usuario")',
+        };
     </script>
+    <script src="@Url.Content("~/Scripts/Views/Archivos.js")" type="text/javascript"></script>
 }

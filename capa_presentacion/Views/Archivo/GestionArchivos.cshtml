@@ -191,12 +191,32 @@
 
             <!-- Contenedor 4-->
             <div class="tab-pane fade" id="compartidos" role="tabpanel" aria-labelledby="compartidos-tab">
-                <h2 class="mb-0">Archivos compartidos</h2>
-
+                <h2 class="mb-0">Carpetas compartidas</h2>
                 <hr />
-
                 <!--Tabla-->
-                <table class="display cell-border" style="width: 100%" id="datatableArchivoCompartidos">
+                <table class="display cell-border" style="width: 100%" id="datatableCarpetasCompartidas">
+                    <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                        <tr>
+                            <th>#</th>
+                            <th>Carpeta</th>
+                            <th>Ruta</th>
+                            <th>Fecha compartida</th>
+                            <th>Usuario</th>
+                            <th>Permisos</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tfoot>
+
+                    </tfoot>
+                </table>
+
+                <h2 class="mb-0">Archivos compartidos</h2>
+                <hr />
+                <!--Tabla-->
+                <table class="display cell-border" style="width: 100%" id="datatableArchivosCompartidos">
                     <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
                         <tr>
                             <th>#</th>
@@ -291,7 +311,8 @@
         const config = {
             listarCarpetasRecientesUrl: '@Url.Action("ListarCarpetasRecientes", "Archivo")',
             listarCarpetasUrl: '@Url.Action("ListarCarpetas", "Archivo")',
-            listarCarpetasComparidasUrl: '@Url.Action("ListarCarpetasCompartidas", "Archivo")',
+            listarCarpetasCompartidasUrl: '@Url.Action("ListarCarpetasCompartidas", "Archivo")',
+            listarArchivosCompartidosUrl: '@Url.Action("ListarArchivosCompartidos", "Archivo")',
             listarArchivosRecientesUrl: '@Url.Action("ListarArchivosRecientes", "Archivo")',
             listarArchivosUrl: '@Url.Action("ListarArchivos", "Archivo")',
             guardarCarpetaUrl: '@Url.Action("GuardarCarpeta", "Archivo")',
