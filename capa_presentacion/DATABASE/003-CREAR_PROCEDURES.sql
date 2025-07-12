@@ -2449,7 +2449,7 @@ GO
 -----------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA COMPARTIR UNA CARPETA
-CREATE OR ALTER PROCEDURE usp_CompartirCarpeta
+CREATE OR ALTER  PROCEDURE usp_CompartirCarpeta
     @IdCarpeta INT,
     @IdUsuarioPropietario INT,
     @IdUsuarioDestino VARCHAR(60),
@@ -2501,11 +2501,13 @@ BEGIN
         -- Insertar el registro de compartido
         INSERT INTO COMPARTIDOS (
             permisos,
+			tipoArchivo,
             fk_id_carpeta,
             fk_id_usuario_propietario,
             fk_id_usuario_destino
         ) VALUES (
             @Permisos,
+			'CARPETA',
             @IdCarpeta,
             @IdUsuarioPropietario,
             @IdUsuarioDestino
@@ -2523,8 +2525,7 @@ BEGIN
     END CATCH
 END
 GO
-
------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LAS CARPETAS COMPARTIDAS POR EL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerCarpetasCompartidasPorMi
@@ -2556,6 +2557,7 @@ BEGIN
         co.fecha_compartido DESC;
 END
 GO
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS COMPARTIDOS POR EL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosPorMi
@@ -2590,7 +2592,7 @@ GO
 -----------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LAS CARPETAS QUE LE COMPARTIERON AL USUARIO
-CREATE OR ALTER PROCEDURE usp_ObtenerCarpetasCompartidasConmigo
+CREATE OR ALTER  PROCEDURE usp_ObtenerCarpetasCompartidasConmigo
     @IdUsuario VARCHAR(60),
 	@Resultado INT OUTPUT,
 	@Mensaje VARCHAR(255) OUTPUT
@@ -2646,6 +2648,8 @@ BEGIN
 	END
 END
 GO
+--------------------------------------------------------------------------------------------------------------------
+
 -- PROCEDIMIENTO ALMACENADO PARA COMPARTIR UN ARCHIVO
 CREATE OR ALTER PROCEDURE usp_CompartirArchivo
     @IdArchivo INT,  
@@ -2698,12 +2702,14 @@ BEGIN
           
         -- Insertar el registro de compartido  
         INSERT INTO COMPARTIDOS (  
-            permisos,  
+            permisos,
+			tipoArchivo,
             fk_id_archivo,  
             fk_id_usuario_propietario,  
             fk_id_usuario_destino  
         ) VALUES (  
-            @Permisos,  
+            @Permisos,
+			'ARCHIVO',
             @IdArchivo,
             @IdUsuarioPropietario,  
             @IdUsuarioDestino  
@@ -2721,6 +2727,7 @@ BEGIN
     END CATCH  
 END
 GO
+-----------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS COMPARTIDOS POR EL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosPorMi
@@ -2754,6 +2761,7 @@ BEGIN
         co.fecha_compartido DESC;
 END
 GO
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS QUE LE COMPARTIERON AL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosConmigo
@@ -2822,6 +2830,7 @@ BEGIN
 	END
 END
 GO
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA DEJAR DE COMPARTIR UNA CARPETA
 CREATE OR ALTER PROCEDURE usp_DejarDeCompartirCarpeta
@@ -2847,7 +2856,7 @@ BEGIN
 
     -- Eliminar el registro de compartición de la tabla COMPARTIDOS
     DELETE FROM COMPARTIDOS
-    WHERE fk_id_usuario_propietario = @IdUsuarioPropietario AND id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'CARPETA';
+    WHERE id_compartido = @IdCompartido AND estado = 1 AND TipoArchivo = 'CARPETA';
 
     -- Verificar si la eliminación fue exitosa
     IF @@ROWCOUNT > 0
@@ -2863,9 +2872,10 @@ BEGIN
     END
 END
 GO
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA DEJAR DE COMPARTIR UN ARCHIVO
-CREATE OR ALTER PROCEDURE usp_DejarDeCompartirArchivo
+CREATE OR ALTER  PROCEDURE usp_dejarDeCompartirArchivo
     @IdCompartido INT,
 	@IdUsuarioPropietario INT,
     @Resultado INT OUTPUT,
@@ -2900,6 +2910,7 @@ BEGIN
     END
 END
 GO
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER EL NOMBRE DE UNA CARPETA POR SU ID
 CREATE OR ALTER PROCEDURE usp_ObtenerNombreCarpeta
@@ -2912,6 +2923,7 @@ BEGIN
     WHERE id_carpeta = @IdCarpeta AND estado = 1;
 END
 GO
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER EL NOMBRE DE UN ARCHIVO POR SU ID
 CREATE OR ALTER PROCEDURE usp_ObtenerNombreArchivo
