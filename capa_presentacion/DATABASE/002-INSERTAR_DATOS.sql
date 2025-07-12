@@ -222,12 +222,6 @@ INSERT INTO ARCHIVO (nombre, size, tipo, fk_id_carpeta)
            ('video2.mp4', '1111', '.mp4', 7), ('musica2.mp3', '1111', '.mp3', 8)
 GO
 
--- (3) REGISTROS EN TABLA ARCHIVO/CARPETAS COMPARTIDAS
-INSERT INTO DETALLEARCHIVO (correo, fk_id_archivo, fk_id_carpeta, fk_id_usuario)
-VALUES 
-    ('ken123oficial@gmail.com', 1, 1, 1),
-    ('admin@gmail.com', 2, 2, 2)
-GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- (6) REGISTROS EN TABLA ASIGNATURA
