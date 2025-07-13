@@ -284,13 +284,70 @@ function formatFileSize(bytes) {
 const COLORS = ['primary', 'warning', 'danger', 'success', 'info', 'secondary'];
 
 // Función para generar el HTML de una carpeta
-function generarHtmlCarpeta(carpeta, index) {
+function generarHtmlCarpeta(carpeta, index, permisosHeredados = null) {
     const color = COLORS[index % COLORS.length];
     const propietarioHtml = carpeta.propietario ? `<span class="text-muted small">Propie: (${carpeta.propietario})</span>` : '';
-    const correoHtml = carpeta.correo ? `<span class="text-muted small">(${carpeta.correo})</span>` : '';
     const fechaAMostrar = (carpeta.fecha_registro === "/Date(-62135575200000)/")
         ? formatASPNetDate(carpeta.fecha_compartido)
         : formatASPNetDate(carpeta.fecha_registro);
+
+    // Permiso efectivo: explícito o heredado
+    let permisoEfectivo = (carpeta.permisos !== undefined && carpeta.permisos !== null && carpeta.permisos !== "")
+        ? carpeta.permisos
+        : permisosHeredados;
+
+    let mostrarMenu = true;
+    if (permisoEfectivo === "lectura") {
+        mostrarMenu = false;
+    }
+
+    // Menú de opciones (solo si mostrarMenu es true)
+    let menuOpcionesHtml = "";
+    if (mostrarMenu) {
+        menuOpcionesHtml = `
+        <div class="ms-auto">
+            <a href="#" class="dropdown-toggle file-manager-recent-file-actions" 
+                data-bs-toggle="dropdown" data-carpeta-id="${carpeta.id_carpeta}">
+                <i class="fas fa-ellipsis-v"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow rounded py-1">
+                <li>
+                    <a class="dropdown-item btn-crearSubCarpeta px-3 py-2" href="#" data-carpetaPadre-id="${carpeta.id_carpeta}">
+                        <i class="fas fa-plus me-2"></i>Crear carpeta
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item btn-subirArchivo px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
+                        <i class="fas fa-file me-2"></i>Subir Archivo
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item btn-compartir px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
+                        <i class="fas fa-share me-2"></i>Compartir
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item btn-descargar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
+                        <i class="fas fa-download me-2"></i>Descargar
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item btn-editar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
+                        <i class="fas fa-edit me-2"></i>Renombrar
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item btn-eliminar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
+                        <i class="fas fa-trash me-2"></i>Eliminar
+                    </a>
+                </li>
+            </ul>
+        </div>
+        `;
+    }
+
+    // data-permisos para heredar al navegar
+    const dataPermisos = permisoEfectivo ? `data-permisos="${permisoEfectivo}"` : '';
 
     return `
     <div class="col-sm-6 col-md-4 col-lg-3" data-folder-card>
@@ -300,89 +357,71 @@ function generarHtmlCarpeta(carpeta, index) {
                 <i class="fas fa-folder fa-2x text-${color} me-3"></i>
                 <div class="file-manager-group-info flex-fill">
                     <div class="file-manager-group-compartidos">
-                        <a href="#" class="file-manager-group-title h5 text-decoration-none text-dark" data-carpetaPadre-id="${carpeta.id_carpeta}">${carpeta.nombre}</a>
+                        <a href="#" class="file-manager-group-title h5 text-decoration-none text-dark"
+                            data-carpetaPadre-id="${carpeta.id_carpeta}"
+                            ${dataPermisos}
+                        >${carpeta.nombre}</a>
                         ${propietarioHtml}
                     </div>
                     <span class="file-manager-group-about text-muted small">${fechaAMostrar}</span>
                 </div>
-                <div class="ms-auto">
-                    <a href="#" class="dropdown-toggle file-manager-recent-file-actions" 
-                        data-bs-toggle="dropdown" data-carpeta-id="${carpeta.id_carpeta}">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end shadow rounded py-1">
-                        <li>
-                            <a class="dropdown-item btn-crearSubCarpeta px-3 py-2" href="#" data-carpetaPadre-id="${carpeta.id_carpeta}">
-                                <i class="fas fa-plus me-2"></i>Crear carpeta
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item btn-subirArchivo px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
-                                <i class="fas fa-file me-2"></i>Subir Archivo
-                            </a>
-                        </li>
-                        <li><a class="dropdown-item btn-compartir px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
-                            <i class="fas fa-share me-2"></i>Compartir
-                        </a></li>
-                        <li><a class="dropdown-item btn-descargar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
-                            <i class="fas fa-download me-2"></i>Descargar
-                        </a></li>
-                        <li>
-                            <a class="dropdown-item btn-editar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}" data-carpeta-nombre="${carpeta.nombre}">
-                                <i class="fas fa-edit me-2"></i>Renombrar
-                            </a>
-                        </li>
-                        <li><a class="dropdown-item btn-eliminar px-3 py-2" href="#" data-carpeta-id="${carpeta.id_carpeta}">
-                            <i class="fas fa-trash me-2"></i>Eliminar
-                        </a></li>
-                    </ul>
-                </div>
+                ${menuOpcionesHtml}
             </div>
         </div>
     </div>`;
 }
 
-function initializeFolderContextMenu() {
-    const folderCards = document.querySelectorAll('[data-folder-card]');
-
-    folderCards.forEach(card => {
-        card.addEventListener('contextmenu', function (event) {
-            event.preventDefault();
-
-            const dropdownToggle = this.querySelector('.dropdown-toggle');
-
-            if (dropdownToggle) {
-                document.querySelectorAll('.dropdown-menu.show').forEach(openMenu => {
-                    const bsDropdown = bootstrap.Dropdown.getInstance(openMenu.previousElementSibling);
-                    if (bsDropdown) {
-                        bsDropdown.hide();
-                    }
-                });
-                dropdownToggle.click();
-            }
-        });
-    });
-
-    document.addEventListener('click', function (event) {
-        if (!event.target.closest('.dropdown-menu') && !event.target.closest('.dropdown-toggle')) {
-            document.querySelectorAll('.dropdown-menu.show').forEach(openMenu => {
-                const bsDropdown = bootstrap.Dropdown.getInstance(openMenu.previousElementSibling);
-                if (bsDropdown) {
-                    bsDropdown.hide();
-                }
-            });
-        }
-    });
-}
-
 // Función para generar el HTML de un archivo
-function generarHtmlArchivo(archivo) {
+function generarHtmlArchivo(archivo, permisosHeredados = null) {
     const { icono, color } = obtenerIconoYColor(archivo.tipo);
     const propietarioHtml = archivo.propietario ? `<span class="text-muted small">${archivo.propietario}</span>` : '';
     const correoHtml = archivo.correo ? `<span class="text-muted small">(${archivo.correo})</span>` : '';
     const fechaAMostrar = (archivo.fecha_subida === "/Date(-62135575200000)/")
         ? formatASPNetDate(archivo.fecha_compartido)
         : formatASPNetDate(archivo.fecha_subida);
+
+    // Permiso efectivo: explícito o heredado
+    let permisoEfectivo = (archivo.permisos !== undefined && archivo.permisos !== null && archivo.permisos !== "")
+        ? archivo.permisos
+        : permisosHeredados;
+
+    let mostrarMenu = true;
+    if (permisoEfectivo === "lectura") {
+        mostrarMenu = false;
+    }
+
+    // Menú de opciones (solo si mostrarMenu es true)
+    let menuOpcionesHtml = "";
+    if (mostrarMenu) {
+        menuOpcionesHtml = `
+        <div class="dropdown">
+            <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
+                <i class="fas fa-ellipsis-v"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li>
+                    <a class="dropdown-item btn-compartirArchivo" href="#" data-archivo-id="${archivo.id_archivo}">
+                        <i class="fas fa-share me-2"></i>Compartir
+                    </a>
+                </li>
+                <li>
+                    <a class="dropdown-item btn-descargarArchivo" href="#" data-archivo-id="${archivo.id_archivo}">
+                        <i class="fas fa-download me-2"></i>Descargar
+                    </a>
+                </li>
+                <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
+                <li>
+                    <a class="dropdown-item btn-editarArchivo" href="#" data-archivo-id="${archivo.id_archivo}" data-carpetapadre-id="${archivo.id_carpeta}" data-archivo-nombre="${archivo.nombre}">
+                        <i class="fas fa-edit me-2"></i>Renombrar
+                    </a>
+                </li>
+                <li><a class="dropdown-item btn-eliminarArchivo" href="#" data-archivo-id="${archivo.id_archivo}"><i class="fas fa-trash me-2"></i>Eliminar</a></li>
+            </ul>
+        </div>
+        `;
+    }
+
+    const dataPermisos = permisoEfectivo ? `data-permisos="${permisoEfectivo}"` : '';
 
     return `
     <div class="col-sm-12 col-md-12 col-lg-6">
@@ -392,37 +431,19 @@ function generarHtmlArchivo(archivo) {
                     <i class="fas ${icono} fa-lg ${color} fa-2x"></i>
                     <div class="flex-fill">                                        
                         <div class="file-manager-group-compartidos">
-                            <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block" data-archivo-id="${archivo.id_archivo}" data-archivo-nombre="${archivo.nombre}" data-archivo-tipo="${archivo.tipo}">${archivo.nombre}</a>
+                            <a href="#" class="file-manager-recent-item-title h5 text-decoration-none text-dark d-block"
+                                    data-archivo-id="${archivo.id_archivo}" 
+                                    data-archivo-nombre="${archivo.nombre}" 
+                                    data-archivo-tipo="${archivo.tipo}"
+                                    ${dataPermisos}
+                                >${archivo.nombre}</a>
                             <div>
                                 ${propietarioHtml} ${correoHtml}
                             </div>
                         </div>
                         <small class="text-muted">${formatFileSize(archivo.size)} - ${fechaAMostrar}</small>
                     </div>
-                    <div class="dropdown">
-                        <a href="#" class="dropdown-toggle file-manager-recent-file-actions text-dark" data-bs-toggle="dropdown">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end">
-                            <li>
-                                <a class="dropdown-item btn-compartirArchivo" href="#" data-archivo-id="${archivo.id_archivo}">
-                                    <i class="fas fa-share me-2"></i>Compartir
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item btn-descargarArchivo" href="#" data-archivo-id="${archivo.id_archivo}">
-                                    <i class="fas fa-download me-2"></i>Descargar
-                                </a>
-                            </li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-folder me-2"></i>Mover</a></li>
-                            <li>
-                                <a class="dropdown-item btn-editarArchivo" href="#" data-archivo-id="${archivo.id_archivo}" data-carpetapadre-id="${archivo.id_carpeta}" data-archivo-nombre="${archivo.nombre}">
-                                    <i class="fas fa-edit me-2"></i>Renombrar
-                                </a>
-                            </li>
-                            <li><a class="dropdown-item btn-eliminarArchivo" href="#" data-archivo-id="${archivo.id_archivo}"><i class="fas fa-trash me-2"></i>Eliminar</a></li>
-                        </ul>
-                    </div>
+                    ${menuOpcionesHtml}
                 </div>
             </div>
         </div>

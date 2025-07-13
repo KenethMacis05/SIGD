@@ -2560,34 +2560,34 @@ GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS COMPARTIDOS POR EL USUARIO
-CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosPorMi
-    @IdUsuarioPropietario INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    SELECT 
-        co.id_compartido,
-        a.nombre AS nombre_archivo,
-        a.ruta,
-        a.fecha_subida,
-        u.correo AS correo_destino,
-        u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,
-        co.permisos,
-        co.fecha_compartido
-    FROM 
-        COMPARTIDOS co
-    INNER JOIN 
-        ARCHIVO a ON co.fk_id_archivo = a.id_archivo
-    LEFT JOIN
-        USUARIOS u ON co.fk_id_usuario_destino = u.id_usuario
-    WHERE 
-        co.fk_id_usuario_propietario = @IdUsuarioPropietario
-        AND co.estado = 1
-        AND a.estado = 1
-    ORDER BY 
-        co.fecha_compartido DESC;
-END
+CREATE PROCEDURE usp_ObtenerArchivosCompartidosPorMi  
+    @IdUsuarioPropietario INT  
+AS  
+BEGIN  
+    SET NOCOUNT ON;  
+      
+    SELECT   
+        co.id_compartido,  
+        a.nombre AS nombre_archivo,  
+        a.ruta,  
+        a.fecha_subida,  
+        u.correo AS correo_destino,  
+        u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,  
+        co.permisos,  
+        co.fecha_compartido  
+    FROM   
+        COMPARTIDOS co  
+    INNER JOIN   
+        ARCHIVO a ON co.fk_id_archivo = a.id_archivo  
+    LEFT JOIN  
+        USUARIOS u ON co.fk_id_usuario_destino = u.id_usuario  
+    WHERE   
+        co.fk_id_usuario_propietario = @IdUsuarioPropietario  
+        AND co.estado = 1  
+        AND a.estado = 1  
+    ORDER BY   
+        co.fecha_compartido DESC;  
+END  
 GO
 -----------------------------------------------------------------------------------------------------------------
 

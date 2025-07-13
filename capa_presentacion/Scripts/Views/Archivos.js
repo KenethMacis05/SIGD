@@ -1,9 +1,35 @@
 ﻿let breadcrumbStack = [];
 let carpetaActualId = null;
+let permisosCarpeta = null;
 let dataTable;
 let dataTableCarpetasCompartidas;
 let dataTableArchivosCompartidos;
 let activeTab
+
+// Generar HTML botones de acción
+function mostrarBotonesAccionesCarpeta(permisos, contenedorBotonesId = "contenedor-botones-acciones") {
+    const $contenedor = $("#" + contenedorBotonesId);
+
+    // Limpia el contenedor antes de mostrar
+    $contenedor.html("");
+
+    // Solo muestra los botones si tiene permiso de edición
+    if (permisos === "edicion") {
+        $contenedor.html(`
+            <div class="d-flex align-items-center">
+                <button type="button" class="btn btn-secondary ms-2" onclick="abrirModalCarpeta(null)">
+                    <i class="fa fa-folder me-2"></i>Crear Carpeta
+                </button>
+                <button type="button" class="btn btn-primary ms-2" onclick="abrirModalSubirArchivo(null)">
+                    <i class="fas fa-upload me-2"></i>Subir Archivo
+                </button>
+                <button type="button" class="btn btn-outline-primary ms-2" onclick="descargar(null)">
+                    <i class="fas fa-download me-2"></i>Descargar
+                </button>
+            </div>
+        `);
+    }
+}
 
 // Agregar una nueva entrada al breadcrumbStack
 function agregarBreadcrumb(nombreCarpeta, idCarpeta) {
@@ -61,14 +87,13 @@ function retroceder(index) {
     breadcrumbStack = breadcrumbStack.slice(0, index + 1);
 
     const carpetaSeleccionada = breadcrumbStack[index];
-    carpetaActualId = carpetaSeleccionada.id;
     actualizarBreadcrumbHTML();
 
     const breadcrumbCompartidos = document.getElementById("breadcrumb-paginador-compartidos");
 
     if (breadcrumbCompartidos) {
-        cargarSubCarpetas(carpetaSeleccionada.id, "contenedor-carpetas-compartidas");
-        cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-comparitos");
+        cargarCarpetasHijasCompartidas(carpetaSeleccionada.id, "contenedor-carpetas-compartidas", permisosCarpeta);
+        cargarArchivosPorCarpeta(carpetaSeleccionada.id, "contenedor-archivos-compartidos", permisosCarpeta)
     } else {
         switch (activeTab) {
             case "home":
@@ -96,6 +121,7 @@ function navegarAInicio() {
     // Limpiar el stack del breadcrumb y carpeta actual
     breadcrumbStack = [];
     carpetaActualId = null;
+    permisosCarpeta = null;
 
     // HTML del ítem de inicio
     const homeHtml = `
@@ -154,18 +180,26 @@ $(document).on('click', '.file-manager-group-title', function (e) {
     e.preventDefault();
 
     const idCarpetaPadre = $(this).data('carpetapadre-id');
+    const permisos = $(this).data('permisos');
     const contenedorId = $(this).closest('.row').attr('id');
     const nombreCarpeta = $(this).text().trim();
 
     agregarBreadcrumb(nombreCarpeta, idCarpetaPadre);
 
     carpetaActualId = idCarpetaPadre;
-    cargarSubCarpetas(idCarpetaPadre, contenedorId);
+    permisosCarpeta = permisos
+
+    if (permisos !== undefined && permisos !== null) {
+        cargarCarpetasHijasCompartidas(idCarpetaPadre, contenedorId, permisos);
+        mostrarBotonesAccionesCarpeta(permisos)
+    } else {
+        cargarSubCarpetas(idCarpetaPadre, contenedorId);
+    }
 
     const breadcrumbCompartidos = document.getElementById("breadcrumb-paginador-compartidos");
 
     if (breadcrumbCompartidos) {
-        cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-compartidos")
+        cargarArchivosPorCarpeta(carpetaActualId, "contenedor-archivos-compartidos", permisos)
     } else {
         switch (activeTab) {
             case "home":
@@ -565,7 +599,7 @@ function vaciarPapelera() {
 }
 
 // Función para cargar carpetas o subcarpetas
-function cargarCarpetasGenerico(url, contenedorId, idCarpeta = null) {
+function cargarCarpetasGenerico(url, contenedorId, idCarpeta = null, permisos = null) {
     $.ajax({
         url: url,
         type: idCarpeta ? 'POST' : 'GET',
@@ -577,10 +611,8 @@ function cargarCarpetasGenerico(url, contenedorId, idCarpeta = null) {
 
                 // Generar el HTML para cada carpeta
                 $.each(response.data, function (index, carpeta) {
-                    html += generarHtmlCarpeta(carpeta, index);
+                    html += generarHtmlCarpeta(carpeta, index, permisos);
                 });
-
-                initializeFolderContextMenu();
 
                 $(`#${contenedorId}`).html(html);
             } else {
@@ -612,6 +644,9 @@ function cargarCarpetasCompartidas(url, contenedorId) {
 // Función para cargar subcarpetas
 function cargarSubCarpetas(idCarpeta, contenedorId) {
     cargarCarpetasGenerico(config.listarSubCarpetasUrl, contenedorId, idCarpeta);
+}
+function cargarCarpetasHijasCompartidas(idCarpeta, contenedorId, permisos) {
+    cargarCarpetasGenerico(config.listarSubCarpetasUrl, contenedorId, idCarpeta, permisos);
 }
 
 function recargarArchivos() {
@@ -690,7 +725,7 @@ function cargarArchivosCompartidos(url, contenedorId) {
 }
 
 // Función para cargar archivos por carpeta
-function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
+function cargarArchivosPorCarpeta(idCarpeta, contenedorId, permisos = null) {
     $.ajax({
         url: config.listarArchivosPorCarpetaUrl,
         type: 'GET',
@@ -699,17 +734,15 @@ function cargarArchivosPorCarpeta(idCarpeta, contenedorId) {
         beforeSend: () => $(`#${contenedorId}`).LoadingOverlay("show"),
         success: function (response) {
             if (response.data && response.data.length > 0) {
-                let html = '';
-                $.each(response.data, function (index, archivo) {
-                    const html = response.data.map(generarHtmlArchivo).join("");
-                    $(`#${contenedorId}`).html(html);
-                });
+                // Aquí cambiamos el map para pasar permisos
+                const html = response.data.map(archivo => generarHtmlArchivo(archivo, permisos)).join("");
+                $(`#${contenedorId}`).html(html);
             } else {
                 $(`#${contenedorId}`).html('<div class="alert alert-light">No hay archivos disponibles</div>');
             }
         },
         error: function () {
-            $(`#${contenedorId}`).html('<div class="alert alert-danger">Error al cargar las archivos</div>');
+            $(`#${contenedorId}`).html('<div class="alert alert-danger">Error al cargar los archivos</div>');
         },
         complete: () => $(`#${contenedorId}`).LoadingOverlay("hide")
     });
@@ -1360,7 +1393,7 @@ const dataTableOptionsCarpetasCompartidas = {
         },
         {
             defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
+                '<button type="button" class="btn btn-primary btn-sm" id=btn-EditarPermisoCarpeta><i class="fa fa-eye"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-2" id="btn-dejarDeCompartirCarpeta"><i class="fa fa-ban"></i></button>',
             width: "90"
         },
