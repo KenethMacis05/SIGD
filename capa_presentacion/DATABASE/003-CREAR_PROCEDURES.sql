@@ -2737,7 +2737,7 @@ BEGIN
     SET NOCOUNT ON;
     
     SELECT 
-        a.id_archivo,
+        co.id_compartido,
         a.nombre AS nombre_archivo,
 		a.ruta,
 		a.size,
