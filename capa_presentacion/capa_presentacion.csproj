@@ -359,6 +359,8 @@
     <Content Include="DATABASE\004-CREAR_VIEWS.sql" />
     <Content Include="DATABASE\005-JOD.sql" />
     <Content Include="DATABASE\006-FORMATEARDBAZURE.sql" />
+    <Content Include="DATABASE\DB_SINCATALOGOS\001-CREAR_DB.sql" />
+    <Content Include="DATABASE\DB_SINCATALOGOS\002-INSERTAR_DATOS.sql" />
     <Content Include="DATABASE\query.sql" />
     <Content Include="favicon.ico" />
     <Content Include="faviconUNAN.ico" />
