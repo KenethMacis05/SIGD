@@ -374,7 +374,7 @@ VALUES (
 );
 
 -- Asignatura 2: Diseño Web
-INSERT INTO MatrizAsignatura (fk_matriz_integracion, fk_asignatura, descripcion)
+INSERT INTO MatrizAsignatura (fk_matriz_integracion, asignatura, descripcion)
 VALUES (
     1, -- fk_matriz_integracion
     'Diseño Web', -- asignatura
@@ -382,7 +382,7 @@ VALUES (
 );
 
 -- Asignatura 3: Software
-INSERT INTO MatrizAsignatura (fk_matriz_integracion, fk_asignatura, descripcion)
+INSERT INTO MatrizAsignatura (fk_matriz_integracion, asignatura, descripcion)
 VALUES (
     1, -- fk_matriz_integracion
     'Software', -- asignatura
@@ -390,7 +390,7 @@ VALUES (
 );
 
 -- Asignatura 4: Seguridad Informática
-INSERT INTO MatrizAsignatura (fk_matriz_integracion, fk_asignatura, descripcion)
+INSERT INTO MatrizAsignatura (fk_matriz_integracion, asignatura, descripcion)
 VALUES (
     1, -- fk_matriz_integracion
     'Seguridad Informática', -- asignatura
@@ -412,7 +412,7 @@ INSERT INTO PlanDidacticoSemestral (
     fecha_inicio,
     fecha_fin,
     eje_disiplinar,
-    fk_asignatura,
+    asignatura,
     curriculum,
     competencias,
     objetivo_integrador,
@@ -519,7 +519,6 @@ GO
 
 -- (18) REGISTROS EN LA TABLA PLANCLASESDIARIO
 INSERT INTO PlanClasesDiario (
-    fk_plan_didactico_semestral,
     codigo,
     nombre,
     areaConocimiento,
@@ -548,7 +547,6 @@ INSERT INTO PlanClasesDiario (
     nivel_aprendizaje
 )
 VALUES (
-    1, -- fk_plan_didactico_semestral
     'PCD-001', -- codigo
     'Plan de Clases Diario de Hardware', -- nombre
     'Educación, Arte y Humanidades', -- areaConocimiento (Educación, Arte y Humanidades)

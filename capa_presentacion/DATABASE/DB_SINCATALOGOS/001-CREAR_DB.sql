@@ -425,14 +425,18 @@ CREATE TABLE PLANCLASESDIARIO (
 	fecha_registro DATETIME DEFAULT GETDATE(),
 
 	-- 1.	Datos Generales
-	-- Carrera (COMPONENTECURRICULAR)
+    -- Area del conocimiento
+	areaConocimiento VARCHAR(255),
+	-- Departamento
+	departamento VARCHAR(255),
+	-- Carrera
 	carrera VARCHAR(255),
 	
 	-- Eje (s)
 	ejes VARCHAR(255),
 
-	-- Componente curricular (as)
-	asignatura VARCHAR,
+	-- Componente curricular
+	asignatura VARCHAR(255),
 
 	-- Profesor
 	fk_profesor INT NOT NULL,
