@@ -147,9 +147,15 @@
     <Content Include="Assets\img\carpeta_vacia.png" />
     <Content Include="Assets\img\facebook.png" />
     <Content Include="Assets\img\Fondo-de-pantalla-web.jpg" />
+    <Content Include="Assets\img\icons-redes\facebook.png" />
+    <Content Include="Assets\img\icons-redes\instagram.png" />
+    <Content Include="Assets\img\icons-redes\tiktok.png" />
+    <Content Include="Assets\img\icons-redes\x.png" />
+    <Content Include="Assets\img\icons-redes\youtube.png" />
     <Content Include="Assets\img\instagram.png" />
     <Content Include="Assets\img\loginIMG1920x180-711x682.png" />
     <Content Include="Assets\img\Marca.png" />
+    <Content Include="Assets\img\Taza.png" />
     <Content Include="Assets\img\tiktok.png" />
     <Content Include="Assets\img\www.unan.edu.ni.png" />
     <Content Include="Assets\img\x.png" />
@@ -700,6 +706,7 @@
     <Content Include="Views\Archivo\_ModalCompartirArchivo.cshtml" />
     <Content Include="Views\Planificacion\DetallePlanDiario.cshtml" />
     <Content Include="Views\Planificacion\EditarPlanDiario.cshtml" />
+    <Content Include="Views\Home\Error.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

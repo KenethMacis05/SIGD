@@ -17,6 +17,11 @@ namespace capa_presentacion.Controllers
         {
             return View();
         }
+        
+        public ActionResult Error()
+        {
+            return View();
+        }
 
         public ActionResult CerrarSesion()
         {

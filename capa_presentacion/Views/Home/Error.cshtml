@@ -1,0 +1,113 @@
+﻿@{
+    ViewBag.Title = "Error de Acceso";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    .error-number {
+        font-size: 8rem;
+        font-weight: 700;
+        color: #0072BB;
+        text-shadow: 4px 4px 0 rgba(0,0,0,0.05);
+    }
+
+    .error-title {
+        font-size: 2.5rem;
+        color: #2c3e50;
+    }
+
+    .error-description {
+        font-size: 1.2rem;
+        color: #7f8c8d;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .error-image {
+        max-width: 50px;
+    }
+
+    .social-icon-container {
+        width: 40px;
+        height: 40px;
+        background-color: #0072BB !important;
+        transition: all 0.3s ease;
+    }
+
+    .social-icon-container:hover {
+        background-color: #0a2ba8 !important;
+        transform: translateY(-3px);
+    }
+</style>
+
+<div class="card mt-3">
+    <div class="card-body">
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="position-relative text-center">
+
+                    <div class="error-number">403</div>
+                    <h2 class="error-title">Acceso no autorizado</h2>
+
+                    <!-- Mensaje específico de error -->
+                    @if (TempData["MensajeErrorPermisos"] != null)
+                    {
+                        <p class="error-description">
+                            @TempData["MensajeErrorPermisos"]
+                            Si crees que esto es un error, por favor contacta al administrador del sistema.
+                        </p>
+                        TempData.Remove("MensajeErrorPermisos");
+                    }
+
+                    <div class="container d-flex justify-content-center gap-3 py-4">
+                        <!-- Facebook -->
+                        <a href="https://www.facebook.com/UNAN.Managua"
+                           class="social-icon-container rounded-circle bg-primary d-flex align-items-center justify-content-center p-2"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img src="@Url.Content("~/Assets/img/icons-redes/facebook.png")" alt="Facebook UNAN Managua" class="img-fluid" />
+                        </a>
+
+                        <!-- YouTube -->
+                        <a href="https://www.youtube.com/channel/UCaAtEPINZNv738R3vZI2Kjg"
+                           class="social-icon-container rounded-circle bg-primary d-flex align-items-center justify-content-center p-2"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img src="@Url.Content("~/Assets/img/icons-redes/youtube.png")" alt="YouTube UNAN Managua" class="img-fluid" />
+                        </a>
+
+                        <!-- TikTok -->
+                        <a href="https://www.tiktok.com/unanmanagua"
+                           class="social-icon-container rounded-circle bg-primary d-flex align-items-center justify-content-center p-2"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img src="@Url.Content("~/Assets/img/icons-redes/tiktok.png")" alt="TikTok UNAN Managua" class="img-fluid" />
+                        </a>
+
+                        <!-- Instagram -->
+                        <a href="https://www.instagram.com/unan.managua"
+                           class="social-icon-container rounded-circle bg-primary d-flex align-items-center justify-content-center p-2"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img src="@Url.Content("~/Assets/img/icons-redes/instagram.png")" alt="Instagram UNAN Managua" class="img-fluid" />
+                        </a>
+
+                        <!-- X (Twitter) -->
+                        <a href="https://x.com/UNANManagua"
+                           class="social-icon-container rounded-circle bg-primary d-flex align-items-center justify-content-center p-2"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            <img src="@Url.Content("~/Assets/img/icons-redes/x.png")" alt="X (Twitter) UNAN Managua" class="img-fluid" />
+                        </a>
+                    </div>
+
+                    <a href="@Url.Action("Index", "Home")" class="btn btn-primary">
+                        <i class="fas fa-home"></i> Volver al inicio
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

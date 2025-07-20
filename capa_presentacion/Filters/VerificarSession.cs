@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 
 namespace capa_presentacion.Filters
 {
@@ -90,13 +91,11 @@ namespace capa_presentacion.Filters
             // No verificar permisos para Home/Index ni Home/SinPermisos
             if (!
                 (controlador.Equals("Home", StringComparison.OrdinalIgnoreCase) ||
-                 controlador.Equals("Acceso", StringComparison.OrdinalIgnoreCase) ||
-                 controlador.Equals("Planificacion", StringComparison.OrdinalIgnoreCase) &&
+                 controlador.Equals("Acceso", StringComparison.OrdinalIgnoreCase) &&
 
                  (accion.Equals("Index", StringComparison.OrdinalIgnoreCase) ||
                   accion.Equals("CerrarSesion", StringComparison.OrdinalIgnoreCase) ||
-                  accion.Equals("Reestablecer", StringComparison.OrdinalIgnoreCase) ||
-                  accion.Equals("DetallePlanDiario", StringComparison.OrdinalIgnoreCase)
+                  accion.Equals("Reestablecer", StringComparison.OrdinalIgnoreCase)
                   )))
             {
 
@@ -107,16 +106,14 @@ namespace capa_presentacion.Filters
                 {
                     // El controlador o acción no existen en la base de datos
                     filterContext.Controller.TempData["MensajeErrorPermisos"] = "El controlador o la acción no existen en la base de datos.";
-                    filterContext.Controller.ViewBag.MensajeErrorPermisos = "El controlador o la acción no existen en la base de datos.";
-                    filterContext.Result = new RedirectResult("~/Home/Index");
+                    filterContext.Result = new RedirectResult("~/Home/Error");
                     return;
                 }
                 else if (resultadoPermiso == 0)
                 {
                     // El usuario no tiene permisos para acceder
-                    filterContext.Controller.TempData["MensajeErrorPermisos"] = "Usted no tiene permisos para realizar esta acción.";
-                    filterContext.Controller.ViewBag.MensajeErrorPermisos = "Usted no tiene permisos para realizar esta acción.";
-                    filterContext.Result = new RedirectResult("~/Home/Index");
+                    filterContext.Controller.TempData["MensajeErrorPermisos"] = "No tienes los permisos necesarios para acceder a esta página.";
+                    filterContext.Result = new RedirectResult("~/Home/Error");
                     return;
                 }
             }
