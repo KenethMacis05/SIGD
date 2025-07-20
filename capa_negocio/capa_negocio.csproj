@@ -53,6 +53,7 @@
     <Compile Include="CN_Controlador.cs" />
     <Compile Include="CN_Menu.cs" />
     <Compile Include="CN_Permisos.cs" />
+    <Compile Include="CN_PlanClasesDiario.cs" />
     <Compile Include="CN_Recursos.cs" />
     <Compile Include="CN_Rol.cs" />
     <Compile Include="CN_Usuario.cs" />

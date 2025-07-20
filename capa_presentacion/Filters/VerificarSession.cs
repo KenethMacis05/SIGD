@@ -90,11 +90,13 @@ namespace capa_presentacion.Filters
             // No verificar permisos para Home/Index ni Home/SinPermisos
             if (!
                 (controlador.Equals("Home", StringComparison.OrdinalIgnoreCase) ||
-                 controlador.Equals("Acceso", StringComparison.OrdinalIgnoreCase) &&
+                 controlador.Equals("Acceso", StringComparison.OrdinalIgnoreCase) ||
+                 controlador.Equals("Planificacion", StringComparison.OrdinalIgnoreCase) &&
 
                  (accion.Equals("Index", StringComparison.OrdinalIgnoreCase) ||
                   accion.Equals("CerrarSesion", StringComparison.OrdinalIgnoreCase) ||
-                  accion.Equals("Reestablecer", StringComparison.OrdinalIgnoreCase)
+                  accion.Equals("Reestablecer", StringComparison.OrdinalIgnoreCase) ||
+                  accion.Equals("DetallePlanDiario", StringComparison.OrdinalIgnoreCase)
                   )))
             {
 

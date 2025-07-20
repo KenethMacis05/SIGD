@@ -413,6 +413,7 @@ CREATE TABLE PLANCLASESDIARIO (
 	codigo VARCHAR(255) NOT NULL,	
 	nombre VARCHAR(255) NOT NULL,
 	fecha_registro DATETIME DEFAULT GETDATE(),
+    estado BIT DEFAULT 1,
 
 	-- 1.	Datos Generales
     -- Area del conocimiento

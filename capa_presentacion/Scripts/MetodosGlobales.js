@@ -32,39 +32,43 @@ const dataTableConfig = {
 };
 
 // Función para formatear la fecha
-function formatASPNetDate(jsonDate) {
+function formatASPNetDate(jsonDate, showTime = true) {
     if (!jsonDate) return 'Fecha no disponible';
+
+    let date;
 
     // Formato /Date(...)/
     if (typeof jsonDate === 'string' && jsonDate.startsWith('/Date(')) {
-        var timestamp = parseInt(jsonDate.substr(6));
-        var date = new Date(timestamp);
-        return date.toLocaleDateString('es-ES', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
+        const timestamp = parseInt(jsonDate.substr(6));
+        date = new Date(timestamp);
     }
-
     // Si ya es una fecha válida
-    try {
-        var date = new Date(jsonDate);
-        if (!isNaN(date.getTime())) {
-            return date.toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
+    else {
+        try {
+            date = new Date(jsonDate);
+            if (isNaN(date.getTime())) {
+                return 'Fecha no disponible';
+            }
+        } catch (e) {
+            console.error("Error formateando fecha:", e);
+            return 'Fecha no disponible';
         }
-    } catch (e) {
-        console.error("Error formateando fecha:", e);
     }
 
-    return 'Fecha no disponible';
+    // Opciones de formato
+    const options = {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    };
+
+    // Agregar hora si showTime es true
+    if (showTime) {
+        options.hour = '2-digit';
+        options.minute = '2-digit';
+    }
+
+    return date.toLocaleDateString('es-ES', options);
 }
 
 // Configuración de SweetAlert2

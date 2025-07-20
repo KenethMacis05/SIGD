@@ -86,7 +86,10 @@ VALUES
     -- ControladorController
     ('Controlador', 'listarControladores', 'Listar controladores', 'API'),
     ('Controlador', 'guardarControlador', 'Crear o actualizar controlador', 'API'),
-    ('Controlador', 'eliminarControlador', 'Eliminar controlador', 'API')    
+    ('Controlador', 'eliminarControlador', 'Eliminar controlador', 'API'),
+    
+    -- PlanificacionController
+    ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API')
 GO
 --------------------------------------------------------------------------------------------------------------------
 

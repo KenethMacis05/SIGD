@@ -361,6 +361,7 @@
     <Content Include="DATABASE\006-FORMATEARDBAZURE.sql" />
     <Content Include="DATABASE\DB_SINCATALOGOS\001-CREAR_DB.sql" />
     <Content Include="DATABASE\DB_SINCATALOGOS\002-INSERTAR_DATOS.sql" />
+    <Content Include="DATABASE\DB_SINCATALOGOS\003-CREAR_PROCEDURES.sql" />
     <Content Include="DATABASE\DB_SINCATALOGOS\004-CREAR_VIEWS.sql" />
     <Content Include="DATABASE\query.sql" />
     <Content Include="favicon.ico" />
@@ -593,6 +594,7 @@
     <Content Include="Scripts\Views\Archivos.js" />
     <Content Include="Scripts\Views\Menu.js" />
     <Content Include="Scripts\Views\Permisos.js" />
+    <Content Include="Scripts\Views\PlanClasesDiario.js" />
     <Content Include="Scripts\Views\Roles.js" />
     <Content Include="Scripts\Views\UserConfig.js" />
     <Content Include="Scripts\Views\Usuarios.js" />
@@ -696,6 +698,8 @@
     <Content Include="Views\Archivo\_ModalVisualizarPDF-TXT.cshtml" />
     <Content Include="Views\Archivo\_ModalVisualizarDocsOnlyOffice.cshtml" />
     <Content Include="Views\Archivo\_ModalCompartirArchivo.cshtml" />
+    <Content Include="Views\Planificacion\DetallePlanDiario.cshtml" />
+    <Content Include="Views\Planificacion\EditarPlanDiario.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

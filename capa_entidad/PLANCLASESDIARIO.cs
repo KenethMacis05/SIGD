@@ -13,8 +13,9 @@ namespace capa_entidad
         public string nombre { get; set; }
         public DateTime fecha_registro { get; set; }
 
+        public bool estado { get; set; }
         // Datos generales
-        public string areaConocimiento { get; set; }
+        public string area_conocimiento { get; set; }
         public string departamento { get; set; }
         public string carrera { get; set; }
         public string ejes { get; set; }
@@ -44,5 +45,7 @@ namespace capa_entidad
         public string criterios_aprendizaje { get; set; }
         public string indicadores_aprendizaje { get; set; }
         public string nivel_aprendizaje { get; set; }
+        public string profesor { get; set; }
+        public string periodo { get; set; }
     }
 }
