@@ -91,7 +91,8 @@ VALUES
     
     -- PlanificacionController
     ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API'),
-    ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista')
+    ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista'),
+    ('Planificacion', 'EditarPlanDiario', 'Vista de edición para los planes de clases diario', 'Vista')
 GO
 --------------------------------------------------------------------------------------------------------------------
 

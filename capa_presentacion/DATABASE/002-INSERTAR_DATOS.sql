@@ -89,7 +89,9 @@ VALUES
     ('Controlador', 'eliminarControlador', 'Eliminar controlador', 'API'),
     
     -- PlanificacionController
-    ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API')
+    ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API'),
+    ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista'),
+    ('Planificacion', 'EditarPlanDiario', 'Vista de edición para los planes de clases diario', 'Vista')
 GO
 --------------------------------------------------------------------------------------------------------------------
 
