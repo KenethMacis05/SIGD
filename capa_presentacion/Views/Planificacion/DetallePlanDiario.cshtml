@@ -1,7 +1,262 @@
-﻿
+﻿@model capa_entidad.PLANCLASESDIARIO
+
 @{
-    ViewBag.Title = "DetallePlanDiario";
+    ViewBag.Title = "Detalles Plan de Clases Diario";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>DetallePlanDiario</h2>
+<!--Titulo-->
+<div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert">
+    <h2 class="fs-3">@ViewBag.Title</h2>
+</div>
+
+<!--Contenedor-->
+<div class="card">
+    <div class="card-header pb-0 border-bottom-0">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <!--Boton 1-->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active esp-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
+                    Datos generales
+                </button>
+            </li>
+            <!--Boton 2-->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link esp-link" id="competencias-tab" data-bs-toggle="tab" data-bs-target="#competencias" type="button" role="tab" aria-controls="competencias" aria-selected="false">
+                    Competencias y Ejes
+                </button>
+            </li>
+            <!--Boton 3-->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link esp-link" id="objetivos-tab" data-bs-toggle="tab" data-bs-target="#objetivos" type="button" role="tab" aria-controls="objetivos" aria-selected="false">
+                    Objetivos y Contenidos
+                </button>
+            </li>
+            <!--Boton 4-->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link esp-link" id="actividades-tab" data-bs-toggle="tab" data-bs-target="#actividades" type="button" role="tab" aria-controls="actividades" aria-selected="false">
+                    Actividades
+                </button>
+            </li>
+            <!--Boton 5-->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link esp-link" id="evaluacion-tab" data-bs-toggle="tab" data-bs-target="#evaluacion" type="button" role="tab" aria-controls="evaluacion" aria-selected="false">
+                    Evaluación
+                </button>
+            </li>
+            <!--Boton 6-->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link esp-link" id="aprendizaje-tab" data-bs-toggle="tab" data-bs-target="#aprendizaje" type="button" role="tab" aria-controls="aprendizaje" aria-selected="false">
+                    Aprendizaje
+                </button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <!--Contenedor 1: Datos Generales-->
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Código</span>
+                            <input type="text" class="form-control" value="@Model.codigo" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Nombre</span>
+                            <input type="text" class="form-control" value="@Model.nombre" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Asignatura</span>
+                            <input type="text" class="form-control" value="@Model.asignatura" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Profesor</span>
+                            <input type="text" class="form-control" value="@Model.profesor" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Periodo</span>
+                            <input type="text" class="form-control" value="@Model.periodo" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Inicio/Fin</span>
+                            <input type="text" class="form-control" value="@Model.fecha_inicio.ToString("dd/MM/yyyy") - @Model.fecha_fin.ToString("dd/MM/yyyy")" disabled>
+                        </div>
+                    </div>
+
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Área de Conocimiento</span>
+                            <input type="text" class="form-control" value="@Model.area_conocimiento" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Departamento</span>
+                            <input type="text" class="form-control" value="@Model.departamento" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Carrera</span>
+                            <input type="text" class="form-control" value="@Model.carrera" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Competencias y Ejes-->
+            <div class="tab-pane fade" id="competencias" role="tabpanel" aria-labelledby="competencias-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Competencias</span>
+                            <input type="text" class="form-control" value="@Model.competencias" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Ejes</span>
+                            <input type="text" class="form-control" value="@Model.ejes" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">BOA</span>
+                            <input type="text" class="form-control" value="@Model.BOA" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Objetivos y Contenidos-->
+            <div class="tab-pane fade" id="objetivos" role="tabpanel" aria-labelledby="objetivos-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Objetivo de Aprendizaje</span>
+                            <input type="text" class="form-control" value="@Model.objetivo_aprendizaje" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Tema / Contenido</span>
+                            <input type="text" class="form-control" value="@Model.tema_contenido" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Indicador de Logro</span>
+                            <input type="text" class="form-control" value="@Model.indicador_logro" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Actividades-->
+            <div class="tab-pane fade" id="actividades" role="tabpanel" aria-labelledby="actividades-tab">
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Tareas Iniciales</span>
+                            <input type="text" class="form-control" value="@Model.tareas_iniciales" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Tareas de Desarrollo</span>
+                            <input type="text" class="form-control" value="@Model.tareas_desarrollo" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Tareas de Síntesis</span>
+                            <input type="text" class="form-control" value="@Model.tareas_sintesis" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Evaluación-->
+            <div class="tab-pane fade" id="evaluacion" role="tabpanel" aria-labelledby="evaluacion-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Estrategia de Evaluación</span>
+                            <input type="text" class="form-control" value="@Model.estrategia_evaluacion" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Instrumento de Evaluación</span>
+                            <input type="text" class="form-control" value="@Model.instrumento_evaluacion" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Evidencias de Aprendizaje</span>
+                            <input type="text" class="form-control" value="@Model.evidencias_aprendizaje" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Aprendizaje-->
+            <div class="tab-pane fade" id="aprendizaje" role="tabpanel" aria-labelledby="aprendizaje-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Criterios de Aprendizaje</span>
+                            <input type="text" class="form-control" value="@Model.criterios_aprendizaje" disabled>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Indicadores de Aprendizaje</span>
+                            <input type="text" class="form-control" value="@Model.indicadores_aprendizaje" disabled>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Nivel de Aprendizaje</span>
+                            <input type="text" class="form-control" value="@Model.nivel_aprendizaje" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="card-footer text-center">
+        <a href="@Url.Action("Plan_de_Clases_Diario", "Planificacion")" class="btn btn-danger"><i class="fa fa-arrow-left"></i> Volver</a>
+    </div>
+</div>

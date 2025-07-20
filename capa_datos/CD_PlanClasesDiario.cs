@@ -11,7 +11,7 @@ namespace capa_datos
 {
     public class CD_PlanClasesDiario
     {
-        // Listar planes de clases del usuario
+        // Listar datos generales de los planes de clases del usuario
         public List<PLANCLASESDIARIO> ListarPlanClasesDiario(int id_usuario, out int resultado, out string mensaje)
         {
             List<PLANCLASESDIARIO> lst = new List<PLANCLASESDIARIO>();
@@ -85,6 +85,18 @@ namespace capa_datos
                 throw new Exception("Error al listar los planes de clases: " + ex.Message);
             }
             return lst;
+        }
+
+        public PLANCLASESDIARIO ObtenerPlanDiarioPorId(int id_plan_diario, int id_usuario)
+        {
+            int resultado;
+            string mensaje;
+
+            List<PLANCLASESDIARIO> planes = ListarPlanClasesDiario(id_usuario, out resultado, out mensaje);
+
+            PLANCLASESDIARIO plan = planes.FirstOrDefault(p => p.id_plan_diario == id_plan_diario);
+
+            return plan;
         }
 
         public bool EliminarPlanClasesDiario(int id_plan_diario, out string mensaje)

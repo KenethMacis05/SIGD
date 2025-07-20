@@ -31,57 +31,6 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        // Vista Detalle del Plan de Clases Diario
-        [HttpGet]
-        public ActionResult DetallePlanDiario()
-        {
-            // Obtener el plan desde la capa de negocio
-            //PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id);
-
-            //if (plan == null)
-            //{
-            //    TempData["Error"] = "El plan de clases no existe.";
-            //    return RedirectToAction("Plan_de_Clases_Diario");
-            //}
-
-            return View();
-        }
-
-        // Vista Editar del Plan de Clases Diario
-        [AllowAnonymous]
-        [HttpGet]
-        public ActionResult EditarPlanDiario(int id)
-        {
-            //PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id);
-
-            //if (plan == null)
-            //{
-            //    TempData["Error"] = "El plan de clases no existe.";
-            //    return RedirectToAction("Plan_de_Clases_Diario");
-            //}
-
-            return View(id);
-        }
-
-        //[HttpPost]
-        //[AllowAnonymous]
-        //public ActionResult EditarPlanDiario(PLANCLASESDIARIO model)
-        //{
-        //    string mensaje;
-        //    bool resultado = CN_PlanClasesDiario.EditarPlanDiario(model, out mensaje);
-
-        //    if (resultado)
-        //    {
-        //        TempData["Success"] = "Plan de clases actualizado correctamente.";
-        //        return RedirectToAction("Plan_de_Clases_Diario", new { id = model.id_plan_diario });
-        //    }
-        //    else
-        //    {
-        //        TempData["Error"] = mensaje;
-        //        return View(model);
-        //    }
-        //}
-
         // Enpoint(GET): Listar planes de clases del usuario
         [HttpGet]
         public JsonResult ListarPlanesClases()
@@ -107,6 +56,57 @@ namespace capa_presentacion.Controllers
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
+        // Vista Detalle del Plan de Clases Diario
+        [HttpGet]
+        public ActionResult DetallePlanDiario(int id)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id, usuario.id_usuario);
+
+            if (plan == null || usuario == null)
+            {
+                ViewBag["Error"] = "El plan de clases no existe.";
+                return RedirectToAction("Plan_de_Clases_Diario");
+            }
+
+            return View(plan);
+        }
+
+        // Vista Editar del Plan de Clases Diario
+        [HttpGet]
+        public ActionResult EditarPlanDiario(int id)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id, usuario.id_usuario);
+
+            if (plan == null || usuario == null)
+            {
+                ViewBag["Error"] = "El plan de clases no existe.";
+                return RedirectToAction("Plan_de_Clases_Diario");
+            }
+
+            return View(plan);
+        }
+
+        //[HttpPost]
+        //[AllowAnonymous]
+        //public ActionResult EditarPlanDiario(PLANCLASESDIARIO model)
+        //{
+        //    string mensaje;
+        //    bool resultado = CN_PlanClasesDiario.EditarPlanDiario(model, out mensaje);
+
+        //    if (resultado)
+        //    {
+        //        TempData["Success"] = "Plan de clases actualizado correctamente.";
+        //        return RedirectToAction("Plan_de_Clases_Diario", new { id = model.id_plan_diario });
+        //    }
+        //    else
+        //    {
+        //        TempData["Error"] = mensaje;
+        //        return View(model);
+        //    }
+        //}
 
         // Enpoint(POST): Eliminar plan de clases diario
         [HttpPost]

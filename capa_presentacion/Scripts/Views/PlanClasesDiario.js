@@ -3,7 +3,7 @@
 $('#datatable tbody').on('click', '.btn-detalles', function () {
     var data = dataTable.row($(this).parents('tr')).data();
     // Redirigir a la pantalla de detalles
-    window.location.href = "/Planificacion/DetallePlanDiario";
+    window.location.href = "/Planificacion/DetallePlanDiario?id=" + data.id_plan_diario;
 });
 
 $('#datatable tbody').on('click', '.btn-editar', function () {
@@ -88,4 +88,19 @@ const dataTableOptions = {
 
 $(document).ready(function () {
     dataTable = $("#datatable").DataTable(dataTableOptions);
+    $('#competenciasSummernote').summernote({ height: 150 });
+    $('#ejesSummernote').summernote({ height: 150 });
+    $('#boaSummernote').summernote({ height: 150 });
+    $('#objetivoSummernote').summernote({ height: 150 });
+    $('#temaSummernote').summernote({ height: 150 });
+    $('#indicadorSummernote').summernote({ height: 150 });
+    $('#inicialesSummernote').summernote({ height: 150 });
+    $('#desarrolloSummernote').summernote({ height: 150 });
+    $('#sintesisSummernote').summernote({ height: 150 });
+    $('#estrategiaSummernote').summernote({ height: 150 });
+    $('#instrumentoSummernote').summernote({ height: 150 });
+    $('#evidenciasSummernote').summernote({ height: 150 });
+    $('#criteriosSummernote').summernote({ height: 150 });
+    $('#indicadoresSummernote').summernote({ height: 150 });
+    $('#nivelSummernote').summernote({ height: 150 });
 });

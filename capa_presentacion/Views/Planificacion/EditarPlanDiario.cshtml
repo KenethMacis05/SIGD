@@ -1,8 +1,347 @@
-﻿
+﻿@model capa_entidad.PLANCLASESDIARIO
+
 @{
-    ViewBag.Title = "EditarPlanDiario";
+    ViewBag.Title = "Editar Plan de Clases Diario";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>EditarPlanDiario</h2>
+<!--Titulo-->
+<div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert">
+    <h2 class="fs-3">@ViewBag.Title</h2>
+</div>
 
+@using (Html.BeginForm("EditarPlanDiario", "Planificacion", FormMethod.Post, new { @class = "card" }))
+{
+    @Html.HiddenFor(m => m.id_plan_diario)
+    <div class="card-header pb-0 border-bottom-0">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item"><button class="nav-link active esp-link" id="generales-tab" data-bs-toggle="tab" data-bs-target="#generales" type="button" role="tab" aria-controls="generales" aria-selected="true">Datos generales</button></li>
+            <li class="nav-item"><button class="nav-link esp-link" id="competencias-tab" data-bs-toggle="tab" data-bs-target="#competencias" type="button" role="tab" aria-controls="competencias" aria-selected="false">Competencias y Ejes</button></li>
+            <li class="nav-item"><button class="nav-link esp-link" id="objetivos-tab" data-bs-toggle="tab" data-bs-target="#objetivos" type="button" role="tab" aria-controls="objetivos" aria-selected="false">Objetivos y Contenidos</button></li>
+            <li class="nav-item"><button class="nav-link esp-link" id="actividades-tab" data-bs-toggle="tab" data-bs-target="#actividades" type="button" role="tab" aria-controls="actividades" aria-selected="false">Actividades</button></li>
+            <li class="nav-item"><button class="nav-link esp-link" id="evaluacion-tab" data-bs-toggle="tab" data-bs-target="#evaluacion" type="button" role="tab" aria-controls="evaluacion" aria-selected="false">Evaluación</button></li>
+            <li class="nav-item"><button class="nav-link esp-link" id="aprendizaje-tab" data-bs-toggle="tab" data-bs-target="#aprendizaje" type="button" role="tab" aria-controls="aprendizaje" aria-selected="false">Aprendizaje</button></li>
+        </ul>
+    </div>
+    <div class="card-body overflow-auto" style="max-height: 45vh;">
+        <div class="tab-content" id="myTabContent">
+            <!--Datos generales-->
+            <div class="tab-pane fade show active" id="generales" role="tabpanel" aria-labelledby="generales-tab">
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Código</span>
+                            @Html.TextBoxFor(m => m.codigo, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Nombre</span>
+                            @Html.TextBoxFor(m => m.nombre, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Asignatura</span>
+                            @Html.TextBoxFor(m => m.asignatura, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Profesor</span>
+                            @Html.TextBoxFor(m => m.profesor, new { @class = "form-control", @readonly = "readonly" })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Periodo</span>
+                            @Html.TextBoxFor(m => m.periodo, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Inicio/Fin</span>
+                            @Html.TextBoxFor(m => m.fecha_inicio, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control" })
+                            <span class="input-group-text">a</span>
+                            @Html.TextBoxFor(m => m.fecha_fin, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Área de Conocimiento</span>
+                            @Html.TextBoxFor(m => m.area_conocimiento, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Departamento</span>
+                            @Html.TextBoxFor(m => m.departamento, new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Carrera</span>
+                            @Html.TextBoxFor(m => m.carrera, new { @class = "form-control" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Competencias y Ejes-->
+            <div class="tab-pane fade" id="competencias" role="tabpanel" aria-labelledby="competencias-tab">
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-lightbulb fa-lg text-primary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Competencias</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.competencias, 5, 50, new { @class = "form-control", id = "competenciasSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-success shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-stream fa-lg text-success me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Ejes</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.ejes, 3, 50, new { @class = "form-control", id = "ejesSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-info shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-bullseye fa-lg text-info me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">BOA</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.BOA, 2, 50, new { @class = "form-control", id = "boaSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--Objetivos y Contenidos-->
+            <div class="tab-pane fade" id="objetivos" role="tabpanel" aria-labelledby="objetivos-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-warning shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-bullseye fa-lg text-warning me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Objetivo de Aprendizaje</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.objetivo_aprendizaje, 3, 50, new { @class = "form-control", id = "objetivoSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-secondary shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-book fa-lg text-secondary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Tema / Contenido</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.tema_contenido, 3, 50, new { @class = "form-control", id = "temaSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-dark shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-flag fa-lg text-dark me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Indicador de Logro</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.indicador_logro, 2, 50, new { @class = "form-control", id = "indicadorSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Actividades-->
+            <div class="tab-pane fade" id="actividades" role="tabpanel" aria-labelledby="actividades-tab">
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-success shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-play fa-lg text-success me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Tareas Iniciales</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.tareas_iniciales, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id =
+                                "inicialesSummernote"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-forward fa-lg text-primary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Tareas de Desarrollo</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.tareas_desarrollo, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id =
+                                                "desarrolloSummernote"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-info shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-check fa-lg text-info me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Tareas de Síntesis</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.tareas_sintesis, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id =
+                                                "sintesisSummernote"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Evaluación-->
+            <div class="tab-pane fade" id="evaluacion" role="tabpanel" aria-labelledby="evaluacion-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-danger shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-tasks fa-lg text-danger me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Estrategia de Evaluación</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.estrategia_evaluacion, 2, 50, new { @class = "form-control", id = "estrategiaSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-warning shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-clipboard-list fa-lg text-warning me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Instrumento de Evaluación</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.instrumento_evaluacion, 2, 50, new { @class = "form-control", id = "instrumentoSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-lightbulb fa-lg text-primary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Evidencias de Aprendizaje</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.evidencias_aprendizaje, 2, 50, new { @class = "form-control", id = "evidenciasSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!--Aprendizaje-->
+            <div class="tab-pane fade" id="aprendizaje" role="tabpanel" aria-labelledby="aprendizaje-tab">
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-info shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-graduation-cap fa-lg text-info me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Criterios de Aprendizaje</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.criterios_aprendizaje, 2, 50, new { @class = "form-control", id = "criteriosSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-secondary shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-list-alt fa-lg text-secondary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Indicadores de Aprendizaje</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.indicadores_aprendizaje, 2, 50, new { @class = "form-control", id = "indicadoresSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-dark shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-chart-line fa-lg text-dark me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Nivel de Aprendizaje</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.nivel_aprendizaje, 2, 50, new { @class = "form-control", id = "nivelSummernote" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-footer text-center">
+        <a href="@Url.Action("Plan_de_Clases_Diario", "Planificacion")" class="btn btn-danger"><i class="fa fa-arrow-left"></i> Volver</a>
+        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Guardar cambios</button>
+    </div>
+}
+
+@section scripts{
+    <script src="@Url.Content("~/Scripts/Views/PlanClasesDiario.js")" type="text/javascript"></script>
+}
