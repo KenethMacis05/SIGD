@@ -518,10 +518,16 @@ const summernoteConfig = {
         ['para', ['ul', 'ol', 'paragraph']],
         ['misc', ['fullscreen']]
     ],
-    tooltip: false,
     callbacks: {
         onChange: function (contents, $editable) {
-            $(this).val(contents).trigger('input');
+            $(this).summernote('save');
+            const contenidoLimpio = contents.replace(/<[^>]*>/g, '').trim();
+            if (contenidoLimpio) {
+                $(this).next('.note-editor').css('border', '');
+            }
+        },
+        onBlur: function () {
+            $(this).summernote('save');
         }
     }
 };

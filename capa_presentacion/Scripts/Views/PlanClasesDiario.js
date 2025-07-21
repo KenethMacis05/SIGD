@@ -1,4 +1,7 @@
 ﻿let dataTable;
+const $tabs = $('.tab-pane');
+const $tabButtons = $('.nav-link-tab');
+let currentTabIndex = 0;
 
 // Validación para fechas
 //document.querySelector('form').addEventListener('submit', function (e) {
@@ -12,46 +15,63 @@
 //});
 
 // Limpiar mensajes de error al corregir
-document.querySelectorAll('[required]').forEach(input => {
+document.querySelectorAll('#formPlanClasesDiario input[required]').forEach(function (input) {
     input.addEventListener('input', function () {
-        this.setCustomValidity('');
+        if (this.value.trim() !== "") this.classList.remove('is-invalid');
     });
 });
 
-// Validación antes de enviar el formulario
-//$('form').submit(function (e) {
-//    let isValid = true;
+// Función para validar el tab actual
+function validarTabActual() {
+    const $tabActual = $($tabs[currentTabIndex]);
+    let valido = true;
+    let camposFaltantes = [];
 
-//    // Validar campos requeridos
-//    $('[required]').each(function () {
-//        const $editor = $(this).next('.note-editor');
-//        if ($editor.length) {
-//            // Es un campo Summernote
-//            if ($editor.find('.note-editable').text().trim() === '') {
-//                this.setCustomValidity('Este campo es requerido');
-//                isValid = false;
-//            }
-//        } else if (this.value.trim() === '') {
-//            this.setCustomValidity('Este campo es requerido');
-//            isValid = false;
-//        }
-//    });
+    $tabActual.find('.is-invalid').removeClass('is-invalid');
 
-//    if (!isValid) {
-//        e.preventDefault();
-//        // Mostrar el primer tab con errores
-//        $('.is-invalid').first().closest('.tab-pane').each(function () {
-//            const tabId = $(this).attr('id');
-//            $(`a[href="#${tabId}"]`).tab('show');
-//        });
-//        alert('Por favor complete todos los campos requeridos');
-//    }
-//});
+    $tabActual.find('input[required], textarea[required], select[required]').each(function () {
+        const $elemento = $(this);
+        let valor = '';
+        let nombreCampo = '';
+        let esSummernote = false;
 
-// Limpiar validaciones al cambiar de tab
-$('a[data-toggle="tab"]').on('shown.bs.tab', function () {
-    $('.is-invalid').removeClass('is-invalid');
-});
+        if ($elemento.hasClass('summernote') || $elemento.next('.note-editor').length) {
+            esSummernote = true;
+            valor = $elemento.summernote('code').replace(/<[^>]*>/g, '').trim();
+        } else {
+            valor = $elemento.val().trim();
+        }
+
+        if (!valor) {
+            valido = false;
+
+            if (esSummernote) {
+                $elemento.next('.note-editor').css('border', '1px solid #dc3545');
+            } else {
+                $elemento.addClass('is-invalid');
+            }
+
+            nombreCampo = obtenerNombreCampo($elemento);
+            camposFaltantes.push(nombreCampo);
+        }
+    });
+
+    if (!valido && camposFaltantes.length > 0) {
+        const mensaje = `Por favor complete los siguientes campos:<br><br>- ${camposFaltantes.join('<br>- ')}`;
+        showAlert("Campos requeridos", mensaje, "error", true, true);
+    }
+    return valido;
+}
+
+// Función auxiliar para obtener el nombre del campo
+function obtenerNombreCampo($elemento) {
+    return $elemento.closest('.input-group').find('.input-group-text').text().trim() ||
+        $elemento.attr('placeholder') ||
+        $elemento.closest('.card').find('.form-label').text().trim() ||
+        $elemento.attr('name') ||
+        $elemento.closest('.form-group').find('label').text().trim() ||
+        'Campo sin nombre';
+}
 
 // Redirigir a la pantalla de detalles
 $('#datatable tbody').on('click', '.btn-detalles', function () {
@@ -63,6 +83,54 @@ $('#datatable tbody').on('click', '.btn-detalles', function () {
 $('#datatable tbody').on('click', '.btn-editar', function () {
     var data = dataTable.row($(this).parents('tr')).data();
     window.location.href = "/Planificacion/EditarPlanDiario?id=" + data.id_plan_diario;
+});
+
+// Botón de navegación Siguiente
+$('#btnSiguiente').click(function () {
+    if (validarTabActual()) {
+        if (currentTabIndex < $tabs.length - 1) {
+            $tabs.eq(currentTabIndex).animate({ opacity: 0 }, 200, function () {
+                $(this).removeClass('active show').css('display', 'none');
+
+                $tabButtons.eq(currentTabIndex).removeClass('active').attr('aria-selected', 'false');
+                currentTabIndex++;
+
+                $tabs.eq(currentTabIndex).css('display', 'block').animate({ opacity: 1 }, 200, function () {
+                    $(this).addClass('active show');
+                });
+                $tabButtons.eq(currentTabIndex).addClass('active').attr('aria-selected', 'true');
+
+                if (currentTabIndex === $tabs.length - 1) {
+                    $('#btnSiguiente').hide();
+                    $('#btnGuardar').show();
+                }
+                $('#btnAnterior').show();
+            });
+        }
+    }
+});
+
+// Botón de navegación Anterior
+$('#btnAnterior').click(function () {
+    if (currentTabIndex > 0) {
+        $tabs.eq(currentTabIndex).animate({ opacity: 0 }, 200, function () {
+            $(this).removeClass('active show').css('display', 'none');
+
+            $tabButtons.eq(currentTabIndex).removeClass('active').attr('aria-selected', 'false');
+            currentTabIndex--;
+
+            $tabs.eq(currentTabIndex).css('display', 'block').animate({ opacity: 1 }, 200, function () {
+                $(this).addClass('active show');
+            });
+            $tabButtons.eq(currentTabIndex).addClass('active').attr('aria-selected', 'true');
+
+            if (currentTabIndex === 0) {
+                $('#btnAnterior').hide();
+            }
+            $('#btnSiguiente').show();
+            $('#btnGuardar').hide();
+        });
+    }
 });
 
 //Boton eliminar plan de clases diario
@@ -156,137 +224,22 @@ $(document).ready(function () {
     $('#criteriosSummernote').summernote(summernoteConfig);
     $('#indicadoresSummernote').summernote(summernoteConfig);
     $('#nivelSummernote').summernote(summernoteConfig);
-});
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-$(document).ready(function () {
-    const $tabs = $('.tab-pane');
-    const $tabButtons = $('.nav-link-tab');
-    let currentTabIndex = 0;
-
-    // Ocultar todos los tabs excepto el primero
-    $tabs.not(':first').hide();
+    $tabs.not(':first').removeClass('active show');
     $tabButtons.not(':first').removeClass('active').attr('aria-selected', 'false');
 
-    // Deshabilitar navegación por clicks en tabs
     $('.nav-tabs').on('click', 'button', function (e) {
         e.preventDefault();
+        e.stopPropagation();
+        return false;
     });
 
-    // Función para validar el tab actual
-    function validarTabActual() {
-        const $tabActual = $($tabs[currentTabIndex]);
-        let valido = true;
-
-        $tabActual.find('[required]').each(function () {
-            const $elemento = $(this);
-            let valor = '';
-
-            // Manejar campos Summernote
-            if ($elemento.hasClass('summernote')) {
-                valor = $elemento.summernote('code').replace(/<[^>]*>/g, '').trim();
-            } else {
-                valor = $elemento.val().trim();
-            }
-
-            if (!valor) {
-                valido = false;
-                $elemento.addClass('is-invalid');
-                // Mostrar mensaje específico para el campo
-                const nombreCampo = $elemento.closest('.card').find('.form-label').text().trim();
-                showAlert("Campo requerido", `Por favor complete el campo: ${nombreCampo}`, "error");
-                return false; // Salir del each
-            }
-        });
-
-        return valido;
-    }
-
-    // Botón Siguiente
-    $('#btnSiguiente').click(function () {
-        if (validarTabActual()) {
-            if (currentTabIndex < $tabs.length - 1) {
-                // Cambiar al siguiente tab
-                $tabs.eq(currentTabIndex).hide();
-                $tabButtons.eq(currentTabIndex).removeClass('active').attr('aria-selected', 'false');
-
-                currentTabIndex++;
-                $tabs.eq(currentTabIndex).show();
-                $tabButtons.eq(currentTabIndex).addClass('active').attr('aria-selected', 'true');
-
-                // Mostrar/ocultar botones según posición
-                if (currentTabIndex === $tabs.length - 1) {
-                    $('#btnSiguiente').hide();
-                    $('#btnGuardar').show();
-                }
-
-                $('#btnAnterior').show();
-            }
-        }
+    $tabButtons.each(function () {
+        $(this).attr('data-bs-toggle', '');
+        $(this).css('pointer-events', 'none');
+        $(this).css('cursor', 'default');
     });
 
-    // Botón Anterior
-    $('#btnAnterior').click(function () {
-        if (currentTabIndex > 0) {
-            $tabs.eq(currentTabIndex).hide();
-            $tabButtons.eq(currentTabIndex).removeClass('active').attr('aria-selected', 'false');
-
-            currentTabIndex--;
-            $tabs.eq(currentTabIndex).show();
-            $tabButtons.eq(currentTabIndex).addClass('active').attr('aria-selected', 'true');
-
-            // Mostrar/ocultar botones según posición
-            if (currentTabIndex === 0) {
-                $('#btnAnterior').hide();
-            }
-
-            $('#btnSiguiente').show();
-            $('#btnGuardar').hide();
-        }
-    });
-
-    // Estado inicial de los botones
     $('#btnAnterior').hide();
     $('#btnGuardar').hide();
 });

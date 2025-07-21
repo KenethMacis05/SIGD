@@ -53,6 +53,13 @@ namespace capa_presentacion.Controllers
             }
         }
 
+        // Vista Crear Plan de Clases Diario
+        [HttpGet]
+        public ActionResult CrearPlanClasesDiario()
+        {
+            return View();
+        }
+
         // Vista Detalle del Plan de Clases Diario
         [HttpGet]
         public ActionResult DetallePlanDiario(int id)

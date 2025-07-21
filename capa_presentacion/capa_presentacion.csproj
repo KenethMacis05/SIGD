@@ -707,6 +707,8 @@
     <Content Include="Views\Planificacion\DetallePlanDiario.cshtml" />
     <Content Include="Views\Planificacion\EditarPlanDiario.cshtml" />
     <Content Include="Views\Home\Error.cshtml" />
+    <Content Include="Views\Planificacion\CrearPlanClasesDiario.cshtml" />
+    <Content Include="Views\Planificacion\_FormularioPlanClases.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

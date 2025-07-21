@@ -1,7 +1,7 @@
 ﻿@model capa_entidad.PLANCLASESDIARIO
 
 @{
-    ViewBag.Title = "Editar Plan de Clases Diario";
+    ViewBag.Title = "Crear Plan de Clases Diario";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -10,7 +10,7 @@
     <h2 class="fs-3">@ViewBag.Title</h2>
 </div>
 
-@Html.Partial("_FormularioPlanClases", Model)
+@Html.Partial("_FormularioPlanClases", Model ?? new capa_entidad.PLANCLASESDIARIO())
 
 @section scripts{
     <script src="@Url.Content("~/Scripts/Views/PlanClasesDiario.js")" type="text/javascript"></script>
