@@ -12,7 +12,7 @@ namespace capa_negocio
     {
         CD_PlanClasesDiario CD_PlanClasesDiario = new CD_PlanClasesDiario();
         
-        public void CrearPlanClaseDiario(capa_entidad.PLANCLASESDIARIO plan)
+        public void Crear(capa_entidad.PLANCLASESDIARIO plan)
         {
         }
         
@@ -20,17 +20,19 @@ namespace capa_negocio
         {
             return CD_PlanClasesDiario.ListarPlanClasesDiario(id_usuario, out resultado, out mensaje);
         }
+
         public PLANCLASESDIARIO ObtenerPlanDiarioPorId(int id_plan_diario, int id_usuario)
         {
             return CD_PlanClasesDiario.ObtenerPlanDiarioPorId(id_plan_diario, id_usuario);
         }
 
-        public bool EliminarPlanClasesDiario(int id_plan_diario, out string mensaje)
+        public int Eliminar(int id_plan, int id_usuario, out string mensaje)
         {
-            return CD_PlanClasesDiario.EliminarPlanClasesDiario(id_plan_diario, out mensaje);
+            bool eliminado = CD_PlanClasesDiario.EliminarPlanClasesDiario(id_plan, id_usuario, out mensaje);
+            return eliminado ? 1 : 0;
         }
 
-        public bool EditarPlanDiario(PLANCLASESDIARIO model, out string mensaje)
+        public bool Editar(PLANCLASESDIARIO model, out string mensaje)
         {
             throw new NotImplementedException();
         }

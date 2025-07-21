@@ -525,32 +525,12 @@ GO
 
 -- (18) REGISTROS EN LA TABLA PLANCLASESDIARIO
 INSERT INTO PlanClasesDiario (
-    codigo,
-    nombre,
-    areaConocimiento,
-    departamento,
-    carrera,
-    ejes,
-    asignatura,
-    fk_profesor,
-    fk_periodo,
-    competencias,
-    BOA,
-    fecha_inicio,
-    fecha_fin,
-    objetivo_aprendizaje,
-    tema_contenido,
-    indicador_logro,
-    tareas_iniciales,
-    tareas_desarrollo,
-    tareas_sintesis,
-    tipo_evaluacion,
-    estrategia_evaluacion,
-    instrumento_evaluacion,
-    evidencias_aprendizaje,
-    criterios_aprendizaje,
-    indicadores_aprendizaje,
-    nivel_aprendizaje
+    codigo, nombre, areaConocimiento, departamento, carrera, ejes, asignatura,
+    fk_profesor, fk_periodo, competencias, BOA, fecha_inicio, fecha_fin,
+    objetivo_aprendizaje, tema_contenido, indicador_logro,
+    tareas_iniciales, tareas_desarrollo, tareas_sintesis,
+    tipo_evaluacion, estrategia_evaluacion, instrumento_evaluacion,
+    evidencias_aprendizaje, criterios_aprendizaje, indicadores_aprendizaje, nivel_aprendizaje
 )
 VALUES (
     'PCD-001', -- codigo
@@ -578,7 +558,114 @@ VALUES (
     'Lista de componentes identificados', -- evidencias_aprendizaje
     'Precisión en la identificación', -- criterios_aprendizaje
     'Uso correcto de terminología', -- indicadores_aprendizaje
-    'Básico' -- nivel_aprendizaje
-);
+    'Básico'), -- nivel_aprendizaje
+    
+    ('PCD-002',
+    'Fundamentos de Redes',
+    'Ciencias Tecnológicas',
+    'Tecnologías de la Información',
+    'Ingeniería en Sistemas',
+    'Redes básicas',
+    'Redes de Computadoras',
+    1, -- ID profesor
+    1, -- ID periodo
+    'Configurar redes locales básicas',
+    'BOA de redes básicas',
+    '2023-10-22',
+    '2023-10-27',
+    'Comprender los protocolos básicos de redes',
+    'Introducción a TCP/IP',
+    'El estudiante configura una red local simple',
+    'Discusión sobre experiencias con redes',
+    'Configuración práctica de red LAN',
+    'Presentación de configuraciones realizadas',
+    'Formativa',
+    'Evaluación práctica',
+    'Lista de verificación',
+    'Red configurada funcionalmente',
+    'Correcta configuración de IP',
+    'Uso adecuado de comandos',
+    'Intermedio'),
+    
+    ('PCD-003',
+    'Introducción a Python',
+    'Ciencias Tecnológicas',
+    'Programación',
+    'Ingeniería de Software',
+    'Programación básica',
+    'Programación I',
+    1, -- ID profesor
+    1, -- ID periodo
+    'Desarrollar algoritmos básicos en Python',
+    'BOA de programación inicial',
+    '2023-11-01',
+    '2023-11-10',
+    'Escribir programas simples en Python',
+    'Sintaxis básica de Python',
+    'El estudiante resuelve problemas con estructuras básicas',
+    'Repaso de conceptos matemáticos',
+    'Ejercicios de codificación guiada',
+    'Presentación de programas desarrollados',
+    'Formativa',
+    'Evaluación por proyectos',
+    'Rúbrica de evaluación',
+    'Código fuente funcional',
+    'Lógica correcta',
+    'Uso apropiado de sintaxis',
+    'Básico'),
+    
+    ('PCD-004',
+    'Bases de Datos Relacionales',
+    'Ciencias Tecnológicas',
+    'Bases de Datos',
+    'Ingeniería en Sistemas',
+    'Modelado de datos',
+    'Bases de Datos I',
+    1, -- ID profesor
+    1, -- ID periodo
+    'Diseñar modelos entidad-relación',
+    'BOA de modelado de datos',
+    '2023-11-15',
+    '2023-11-22',
+    'Crear diagramas ER para problemas reales',
+    'Conceptos de entidades y relaciones',
+    'El estudiante modela escenarios con diagramas ER',
+    'Lluvia de ideas sobre sistemas de información',
+    'Diseño de modelos para casos propuestos',
+    'Presentación de diagramas ER',
+    'Sumativa',
+    'Evaluación de modelos',
+    'Rúbrica de diseño',
+    'Diagramas ER completos',
+    'Normalización adecuada',
+    'Uso correcto de cardinalidades',
+    'Avanzado'),
+    
+    ('PCD-005',
+    'Principios de Seguridad',
+    'Ciencias Tecnológicas',
+    'Seguridad Informática',
+    'Ciberseguridad',
+    'Seguridad básica',
+    'Seguridad Informática',
+    1, -- ID profesor
+    1, -- ID periodo
+    'Identificar vulnerabilidades comunes',
+    'BOA de seguridad básica',
+    '2023-10-25',
+    '2023-10-30',
+    'Reconocer amenazas a sistemas informáticos',
+    'Tipos de ataques informáticos',
+    'El estudiante enumera medidas de protección básicas',
+    'Discusión sobre experiencias con seguridad',
+    'Análisis de casos de estudio',
+    'Propuesta de medidas de protección',
+    'Formativa',
+    'Evaluación por casos prácticos',
+    'Lista de verificación',
+    'Informe de análisis',
+    'Identificación precisa de riesgos',
+    'Propuestas adecuadas al contexto',
+    'Intermedio');
 
 GO

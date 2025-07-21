@@ -102,7 +102,7 @@ namespace capa_presentacion.Controllers
             }
 
             string mensaje;
-            bool resultado = CN_PlanClasesDiario.EditarPlanDiario(model, out mensaje);
+            bool resultado = CN_PlanClasesDiario.Editar(model, out mensaje);
 
             if (resultado)
             {
@@ -120,17 +120,13 @@ namespace capa_presentacion.Controllers
         [HttpPost]
         public JsonResult EliminarPlanClasesDiario(int id_plan_diario)
         {
-            bool respuesta = false;
-            string mensaje = "";
-            try
-            {
-                respuesta = CN_PlanClasesDiario.EliminarPlanClasesDiario(id_plan_diario, out mensaje);
-            }
-            catch (Exception ex)
-            {
-                mensaje = "Error al eliminar el plan de clases: " + ex.Message;
-            }
-            return Json(new { Respuesta = respuesta, Mensaje = mensaje });
+            string mensaje = string.Empty;
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
+
+            int resultado = CN_PlanClasesDiario.Eliminar(id_plan_diario, usuario.id_usuario, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

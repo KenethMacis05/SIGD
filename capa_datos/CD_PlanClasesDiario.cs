@@ -99,31 +99,33 @@ namespace capa_datos
             return plan;
         }
 
-        public bool EliminarPlanClasesDiario(int id_plan_diario, out string mensaje)
+        public bool EliminarPlanClasesDiario(int id_plan, int id_usuario, out string mensaje)
         {
-            mensaje = "";
             bool resultado = false;
+            mensaje = string.Empty;
             try
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
                     SqlCommand cmd = new SqlCommand("usp_EliminarPlanClasesDiario", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("id_plan_diario", id_plan_diario);
+
+                    cmd.Parameters.AddWithValue("IdPlanClasesDiario", id_plan);
+                    cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
 
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
-                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
 
                     conexion.Open();
                     cmd.ExecuteNonQuery();
 
-                    resultado = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
-                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = resultado ? "Plan de clases eliminado correctamente" : "El plan de clases no existe";
                 }
             }
             catch (Exception ex)
             {
-                mensaje = "Error en base de datos: " + ex.Message;
+                resultado = false;
+                mensaje = "Error al eliminar el plan de clases: " + ex.Message;
             }
             return resultado;
         }
