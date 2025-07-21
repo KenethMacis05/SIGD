@@ -20,16 +20,19 @@ namespace capa_negocio
         {
             return CD_PlanClasesDiario.ListarPlanClasesDiario(id_usuario, out resultado, out mensaje);
         }
+        public PLANCLASESDIARIO ObtenerPlanDiarioPorId(int id_plan_diario, int id_usuario)
+        {
+            return CD_PlanClasesDiario.ObtenerPlanDiarioPorId(id_plan_diario, id_usuario);
+        }
 
         public bool EliminarPlanClasesDiario(int id_plan_diario, out string mensaje)
         {
             return CD_PlanClasesDiario.EliminarPlanClasesDiario(id_plan_diario, out mensaje);
         }
 
-        public PLANCLASESDIARIO ObtenerPlanDiarioPorId(int id_plan_diario, int id_usuario)
+        public bool EditarPlanDiario(PLANCLASESDIARIO model, out string mensaje)
         {
-            // Llama a la capa_datos, que consulta por id y usuario propietario
-            return CD_PlanClasesDiario.ObtenerPlanDiarioPorId(id_plan_diario, id_usuario);
+            throw new NotImplementedException();
         }
     }
 }

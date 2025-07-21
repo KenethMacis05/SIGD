@@ -507,3 +507,21 @@ function abrirEnLightGallery(items, indexToOpen = 0) {
 
     lightGalleryInstance.openGallery(indexToOpen);
 }
+
+// Configuración de sommernote
+const summernoteConfig = {
+    height: 150,
+    toolbar: [
+        ['style', ['bold', 'italic', 'underline', 'clear']],
+        ['insert', ['table']],
+        ['color', ['color']],
+        ['para', ['ul', 'ol', 'paragraph']],
+        ['misc', ['fullscreen']]
+    ],
+    tooltip: false,
+    callbacks: {
+        onChange: function (contents, $editable) {
+            $(this).val(contents).trigger('input');
+        }
+    }
+};

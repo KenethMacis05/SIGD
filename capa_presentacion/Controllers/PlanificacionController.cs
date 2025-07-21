@@ -35,19 +35,15 @@ namespace capa_presentacion.Controllers
         [HttpGet]
         public JsonResult ListarPlanesClases()
         {
-            int resultado;
-            string mensaje;
-
             try
             {
-                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-                if (usuario == null)
-                {
-                    return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
-                }
+                var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
 
+                int resultado;
+                string mensaje;
                 List<PLANCLASESDIARIO> lst = new List<PLANCLASESDIARIO>();
-                lst = CN_PlanClasesDiario.ListarPlanesClases(1, out resultado, out mensaje);
+                lst = CN_PlanClasesDiario.ListarPlanesClases(usuario.id_usuario, out resultado, out mensaje);
 
                 return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
             }
@@ -89,24 +85,29 @@ namespace capa_presentacion.Controllers
             return View(plan);
         }
 
-        //[HttpPost]
-        //[AllowAnonymous]
-        //public ActionResult EditarPlanDiario(PLANCLASESDIARIO model)
-        //{
-        //    string mensaje;
-        //    bool resultado = CN_PlanClasesDiario.EditarPlanDiario(model, out mensaje);
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult GuardarPlanDiario(PLANCLASESDIARIO model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
 
-        //    if (resultado)
-        //    {
-        //        TempData["Success"] = "Plan de clases actualizado correctamente.";
-        //        return RedirectToAction("Plan_de_Clases_Diario", new { id = model.id_plan_diario });
-        //    }
-        //    else
-        //    {
-        //        TempData["Error"] = mensaje;
-        //        return View(model);
-        //    }
-        //}
+            string mensaje;
+            bool resultado = CN_PlanClasesDiario.EditarPlanDiario(model, out mensaje);
+
+            if (resultado)
+            {
+                TempData["Success"] = "Plan de clases actualizado correctamente.";
+                return RedirectToAction("Plan_de_Clases_Diario", new { id = model.id_plan_diario });
+            }
+            else
+            {
+                TempData["Error"] = mensaje;
+                return View(model);
+            }
+        }
 
         // Enpoint(POST): Eliminar plan de clases diario
         [HttpPost]

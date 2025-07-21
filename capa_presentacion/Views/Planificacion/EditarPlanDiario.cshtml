@@ -10,17 +10,18 @@
     <h2 class="fs-3">@ViewBag.Title</h2>
 </div>
 
-@using (Html.BeginForm("EditarPlanDiario", "Planificacion", FormMethod.Post, new { @class = "card" }))
+@using (Html.BeginForm("EditarPlanDiario", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "resetForm" }))
 {
+    @Html.AntiForgeryToken()
     @Html.HiddenFor(m => m.id_plan_diario)
     <div class="card-header pb-0 border-bottom-0">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item"><button class="nav-link active esp-link" id="generales-tab" data-bs-toggle="tab" data-bs-target="#generales" type="button" role="tab" aria-controls="generales" aria-selected="true">Datos generales</button></li>
-            <li class="nav-item"><button class="nav-link esp-link" id="competencias-tab" data-bs-toggle="tab" data-bs-target="#competencias" type="button" role="tab" aria-controls="competencias" aria-selected="false">Competencias y Ejes</button></li>
-            <li class="nav-item"><button class="nav-link esp-link" id="objetivos-tab" data-bs-toggle="tab" data-bs-target="#objetivos" type="button" role="tab" aria-controls="objetivos" aria-selected="false">Objetivos y Contenidos</button></li>
-            <li class="nav-item"><button class="nav-link esp-link" id="actividades-tab" data-bs-toggle="tab" data-bs-target="#actividades" type="button" role="tab" aria-controls="actividades" aria-selected="false">Actividades</button></li>
-            <li class="nav-item"><button class="nav-link esp-link" id="evaluacion-tab" data-bs-toggle="tab" data-bs-target="#evaluacion" type="button" role="tab" aria-controls="evaluacion" aria-selected="false">Evaluación</button></li>
-            <li class="nav-item"><button class="nav-link esp-link" id="aprendizaje-tab" data-bs-toggle="tab" data-bs-target="#aprendizaje" type="button" role="tab" aria-controls="aprendizaje" aria-selected="false">Aprendizaje</button></li>
+            <li class="nav-item"><button class="nav-link nav-link-tab active esp-link" id="generales-tab" data-bs-toggle="tab" data-bs-target="#generales" type="button" role="tab" aria-controls="generales" aria-selected="true">Datos generales</button></li>
+            <li class="nav-item"><button class="nav-link nav-link-tab esp-link" id="competencias-tab" data-bs-toggle="tab" data-bs-target="#competencias" type="button" role="tab" aria-controls="competencias" aria-selected="false">Competencias y Ejes</button></li>
+            <li class="nav-item"><button class="nav-link nav-link-tab esp-link" id="objetivos-tab" data-bs-toggle="tab" data-bs-target="#objetivos" type="button" role="tab" aria-controls="objetivos" aria-selected="false">Objetivos y Contenidos</button></li>
+            <li class="nav-item"><button class="nav-link nav-link-tab esp-link" id="actividades-tab" data-bs-toggle="tab" data-bs-target="#actividades" type="button" role="tab" aria-controls="actividades" aria-selected="false">Actividades</button></li>
+            <li class="nav-item"><button class="nav-link nav-link-tab esp-link" id="evaluacion-tab" data-bs-toggle="tab" data-bs-target="#evaluacion" type="button" role="tab" aria-controls="evaluacion" aria-selected="false">Evaluación</button></li>
+            <li class="nav-item"><button class="nav-link nav-link-tab esp-link" id="aprendizaje-tab" data-bs-toggle="tab" data-bs-target="#aprendizaje" type="button" role="tab" aria-controls="aprendizaje" aria-selected="false">Aprendizaje</button></li>
         </ul>
     </div>
     <div class="card-body overflow-auto" style="max-height: 45vh;">
@@ -37,13 +38,27 @@
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Nombre</span>
-                            @Html.TextBoxFor(m => m.nombre, new { @class = "form-control" })
+                            @Html.TextBoxFor(m => m.nombre, new
+                            {
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('El nombre es requerido')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "255"
+                            })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Asignatura</span>
-                            @Html.TextBoxFor(m => m.asignatura, new { @class = "form-control" })
+                            @Html.TextBoxFor(m => m.asignatura, new
+                            {
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('La asignatura es requerida')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "255"
+                            })
                         </div>
                     </div>
                 </div>
@@ -52,21 +67,50 @@
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Profesor</span>
-                            @Html.TextBoxFor(m => m.profesor, new { @class = "form-control", @readonly = "readonly" })
+                            @Html.TextBoxFor(m => m.profesor, new
+                            {
+                                @class = "form-control",
+                                @readonly = "readonly",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('El profesor es requerido')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "255"
+                            })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Periodo</span>
-                            @Html.TextBoxFor(m => m.periodo, new { @class = "form-control" })
+                            @Html.TextBoxFor(m => m.periodo, new
+                            {
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('El periodo es requerido')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "100"
+                            })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Inicio/Fin</span>
-                            @Html.TextBoxFor(m => m.fecha_inicio, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control" })
+                            @Html.TextBoxFor(m => m.fecha_inicio, "{0:yyyy-MM-dd}", new
+                            {
+                                @type = "date",
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('La fecha de inicio es requerida')",
+                                @oninput = "setCustomValidity('')"
+                            })
                             <span class="input-group-text">a</span>
-                            @Html.TextBoxFor(m => m.fecha_fin, "{0:yyyy-MM-dd}", new { @type = "date", @class = "form-control" })
+                            @Html.TextBoxFor(m => m.fecha_fin, "{0:yyyy-MM-dd}", new
+                            {
+                                @type = "date",
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('La fecha de fin es requerida')",
+                                @oninput = "setCustomValidity('')"
+                            })
                         </div>
                     </div>
                 </div>
@@ -75,19 +119,40 @@
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Área de Conocimiento</span>
-                            @Html.TextBoxFor(m => m.area_conocimiento, new { @class = "form-control" })
+                            @Html.TextBoxFor(m => m.area_conocimiento, new
+                            {
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('El área de conocimiento es requerida')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "255"
+                            })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Departamento</span>
-                            @Html.TextBoxFor(m => m.departamento, new { @class = "form-control" })
+                            @Html.TextBoxFor(m => m.departamento, new
+                            {
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('El departamento es requerido')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "255"
+                            })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Carrera</span>
-                            @Html.TextBoxFor(m => m.carrera, new { @class = "form-control" })
+                            @Html.TextBoxFor(m => m.carrera, new
+                            {
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('La carrera es requerida')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "255"
+                            })
                         </div>
                     </div>
                 </div>
@@ -102,7 +167,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Competencias</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.competencias, 5, 50, new { @class = "form-control", id = "competenciasSummernote" })
+                                @Html.TextAreaFor(m => m.competencias, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "competenciasSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las competencias son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
                             </div>
                         </div>
                     </div>
@@ -118,7 +191,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Ejes</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.ejes, 3, 50, new { @class = "form-control", id = "ejesSummernote" })
+                                @Html.TextAreaFor(m => m.ejes, 3, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "ejesSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Los ejes son requeridos')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
                             </div>
                         </div>
                     </div>
@@ -134,12 +215,21 @@
                                 <label class="form-label fs-5 fw-medium mb-0">BOA</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.BOA, 2, 50, new { @class = "form-control", id = "boaSummernote" })
+                                @Html.TextAreaFor(m => m.BOA, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "boaSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El BOA es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <!--Objetivos y Contenidos-->
             <div class="tab-pane fade" id="objetivos" role="tabpanel" aria-labelledby="objetivos-tab">
                 <div class="row">
@@ -150,7 +240,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Objetivo de Aprendizaje</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.objetivo_aprendizaje, 3, 50, new { @class = "form-control", id = "objetivoSummernote" })
+                                @Html.TextAreaFor(m => m.objetivo_aprendizaje, 3, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "objetivoSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El objetivo de aprendizaje es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
                             </div>
                         </div>
                     </div>
@@ -161,7 +259,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Tema / Contenido</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.tema_contenido, 3, 50, new { @class = "form-control", id = "temaSummernote" })
+                                @Html.TextAreaFor(m => m.tema_contenido, 3, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "temaSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El tema/contenido es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
                             </div>
                         </div>
                     </div>
@@ -174,7 +280,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Indicador de Logro</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.indicador_logro, 2, 50, new { @class = "form-control", id = "indicadorSummernote" })
+                                @Html.TextAreaFor(m => m.indicador_logro, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "indicadorSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El indicador de logro es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "300"
+                                })
                             </div>
                         </div>
                     </div>
@@ -194,8 +308,11 @@
                                 @Html.TextAreaFor(m => m.tareas_iniciales, 2, 50, new
                                 {
                                     @class = "form-control",
-                                    id =
-                                "inicialesSummernote"
+                                    id = "inicialesSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las tareas iniciales son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
                                 })
                             </div>
                         </div>
@@ -215,8 +332,11 @@
                                 @Html.TextAreaFor(m => m.tareas_desarrollo, 2, 50, new
                                 {
                                     @class = "form-control",
-                                    id =
-                                                "desarrolloSummernote"
+                                    id = "desarrolloSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las tareas de desarrollo son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
                                 })
                             </div>
                         </div>
@@ -236,8 +356,11 @@
                                 @Html.TextAreaFor(m => m.tareas_sintesis, 2, 50, new
                                 {
                                     @class = "form-control",
-                                    id =
-                                                "sintesisSummernote"
+                                    id = "sintesisSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las tareas de síntesis son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
                                 })
                             </div>
                         </div>
@@ -255,7 +378,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Estrategia de Evaluación</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.estrategia_evaluacion, 2, 50, new { @class = "form-control", id = "estrategiaSummernote" })
+                                @Html.TextAreaFor(m => m.estrategia_evaluacion, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "estrategiaSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La estrategia de evaluación es requerida')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
                             </div>
                         </div>
                     </div>
@@ -266,7 +397,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Instrumento de Evaluación</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.instrumento_evaluacion, 2, 50, new { @class = "form-control", id = "instrumentoSummernote" })
+                                @Html.TextAreaFor(m => m.instrumento_evaluacion, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "instrumentoSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El instrumento de evaluación es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "300"
+                                })
                             </div>
                         </div>
                     </div>
@@ -279,7 +418,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Evidencias de Aprendizaje</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.evidencias_aprendizaje, 2, 50, new { @class = "form-control", id = "evidenciasSummernote" })
+                                @Html.TextAreaFor(m => m.evidencias_aprendizaje, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "evidenciasSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las evidencias de aprendizaje son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
                             </div>
                         </div>
                     </div>
@@ -296,7 +443,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Criterios de Aprendizaje</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.criterios_aprendizaje, 2, 50, new { @class = "form-control", id = "criteriosSummernote" })
+                                @Html.TextAreaFor(m => m.criterios_aprendizaje, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "criteriosSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Los criterios de aprendizaje son requeridos')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
                             </div>
                         </div>
                     </div>
@@ -312,7 +467,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Indicadores de Aprendizaje</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.indicadores_aprendizaje, 2, 50, new { @class = "form-control", id = "indicadoresSummernote" })
+                                @Html.TextAreaFor(m => m.indicadores_aprendizaje, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "indicadoresSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Los indicadores de aprendizaje son requeridos')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
                             </div>
                         </div>
                     </div>
@@ -328,7 +491,15 @@
                                 <label class="form-label fs-5 fw-medium mb-0">Nivel de Aprendizaje</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.nivel_aprendizaje, 2, 50, new { @class = "form-control", id = "nivelSummernote" })
+                                @Html.TextAreaFor(m => m.nivel_aprendizaje, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "nivelSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El nivel de aprendizaje es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "300"
+                                })
                             </div>
                         </div>
                     </div>
@@ -336,9 +507,26 @@
             </div>
         </div>
     </div>
+    <!-- Controles de navegación en el footer -->
     <div class="card-footer text-center">
-        <a href="@Url.Action("Plan_de_Clases_Diario", "Planificacion")" class="btn btn-danger"><i class="fa fa-arrow-left"></i> Volver</a>
-        <button type="submit" class="btn btn-success"><i class="fa fa-save"></i> Guardar cambios</button>
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary" id="btnAnterior">
+                <i class="fa fa-arrow-left"></i> Anterior
+            </button>
+
+            <div>
+                <a href="@Url.Action("Plan_de_Clases_Diario", "Planificacion")" class="btn btn-danger me-2">
+                    <i class="fa fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-success" id="btnGuardar" style="display: none;">
+                    <i class="fa fa-save"></i> Guardar cambios
+                </button>
+            </div>
+
+            <button type="button" class="btn btn-primary" id="btnSiguiente">
+                Siguiente <i class="fa fa-arrow-right"></i>
+            </button>
+        </div>
     </div>
 }
 
