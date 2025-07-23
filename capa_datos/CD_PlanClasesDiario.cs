@@ -62,6 +62,7 @@ namespace capa_datos
                                     tareas_iniciales = dr["tareas_iniciales"].ToString(),
                                     tareas_desarrollo = dr["tareas_desarrollo"].ToString(),
                                     tareas_sintesis = dr["tareas_sintesis"].ToString(),
+                                    tipo_evaluacion = dr["tipo_evaluacion"].ToString(),
                                     estrategia_evaluacion = dr["estrategia_evaluacion"].ToString(),
                                     instrumento_evaluacion = dr["instrumento_evaluacion"].ToString(),
                                     evidencias_aprendizaje = dr["evidencias_aprendizaje"].ToString(),
@@ -174,8 +175,7 @@ namespace capa_datos
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     // Agregar parámetros
-                    cmd.Parameters.AddWithValue("IdUsuario", plan.id_plan_diario);
-                    cmd.Parameters.AddWithValue("Codigo", plan.codigo);
+                    cmd.Parameters.AddWithValue("IdPlanClasesDiario", plan.id_plan_diario);
                     cmd.Parameters.AddWithValue("Nombre", plan.nombre);
                     cmd.Parameters.AddWithValue("AreaConocimiento", plan.area_conocimiento);
                     cmd.Parameters.AddWithValue("Departamento", plan.departamento);

@@ -219,6 +219,7 @@ $(document).ready(function () {
     $('#desarrolloSummernote').summernote(summernoteConfig);
     $('#sintesisSummernote').summernote(summernoteConfig);
     $('#estrategiaSummernote').summernote(summernoteConfig);
+    $('#tipoEvaluacionSummernote').summernote(summernoteConfig);
     $('#instrumentoSummernote').summernote(summernoteConfig);
     $('#evidenciasSummernote').summernote(summernoteConfig);
     $('#criteriosSummernote').summernote(summernoteConfig);

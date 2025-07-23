@@ -13,10 +13,6 @@ namespace capa_negocio
     {
         CD_PlanClasesDiario CD_PlanClasesDiario = new CD_PlanClasesDiario();
         
-        public void Crear(capa_entidad.PLANCLASESDIARIO plan)
-        {
-        }
-        
         public List<PLANCLASESDIARIO> ListarPlanesClases(int id_usuario, out int resultado, out string mensaje)
         {
             return CD_PlanClasesDiario.ListarPlanClasesDiario(id_usuario, out resultado, out mensaje);
@@ -48,6 +44,12 @@ namespace capa_negocio
             if (plan.fk_profesor == 0)
             {
                 mensaje = "Por favor, seleccione un profesor.";
+                return 0;
+            }
+
+            if (plan.fk_periodo == 0)
+            {
+                mensaje = "Por favor, seleccione un periodo.";
                 return 0;
             }
 

@@ -1,6 +1,6 @@
 ﻿@model capa_entidad.PLANCLASESDIARIO
 
-@using (Html.BeginForm("EditarPlanDiario", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "formPlanClasesDiario" }))
+@using (Html.BeginForm("GuardarPlanDiario", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "formPlanClasesDiario", @novalidate = "novalidate" }))
 {
     @Html.AntiForgeryToken()
 
@@ -90,19 +90,16 @@
                         <div class="input-group mb-3">
                             <span class="input-group-text">Profesor</span>
                             @Html.TextBoxFor(m => m.profesor, new
-                            {
-                                @class = "form-control",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('El profesor es requerido')",
-                                @oninput = "setCustomValidity('')",
-                                maxlength = "255"
-                            })
+                           {
+                               @class = "form-control",
+                               @disabled = "disabled"
+                           })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Periodo</span>
-                            @Html.TextBoxFor(m => m.periodo, new
+                            @Html.TextBoxFor(m => m.fk_periodo, new
                             {
                                 @class = "form-control",
                                 required = "required",
@@ -413,6 +410,25 @@
                         </div>
                     </div>
                     <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-danger shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-tasks fa-lg text-danger me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Tipo de Evaluación</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.tipo_evaluacion, 2, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "tipoEvaluacionSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El tipo de evaluación es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12 mb-3">
                         <div class="card border-left-warning shadow-sm">
                             <div class="card-header">
                                 <i class="fa fa-clipboard-list fa-lg text-warning me-2"></i>
@@ -431,9 +447,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row">
-                    <div class="col col-md-12 col-sm-12 mb-3">
+                    <div class="col col-md-6 col-sm-12 mb-3">
                         <div class="card border-left-primary shadow-sm">
                             <div class="card-header">
                                 <i class="fa fa-lightbulb fa-lg text-primary me-2"></i>
@@ -542,7 +556,7 @@
                     <i class="fa fa-times"></i> Cancelar
                 </a>
                 <button type="submit" class="btn btn-primary" id="btnGuardar" style="display: none;">
-                    <i class="fa fa-save"></i> Guardar cambios
+                    <i class="fa fa-save"></i> @(Model.id_plan_diario == 0 ? "Guardar" : "Actualizar")
                 </button>
             </div>
 

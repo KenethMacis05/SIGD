@@ -93,7 +93,8 @@ VALUES
     ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API'),
     ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista'),
     ('Planificacion', 'EditarPlanDiario', 'Vista de edición para los planes de clases diario', 'Vista'),
-    ('Planificacion', 'CrearPlanClasesDiario', 'Vista de creación para los planes de clases diario', 'Vista')
+    ('Planificacion', 'CrearPlanClasesDiario', 'Vista de creación para los planes de clases diario', 'Vista'),
+    ('Planificacion', 'GuardarPlanDiario', 'Crear/Editar plan de clases diario', 'API')
 GO
 --------------------------------------------------------------------------------------------------------------------
 
@@ -560,33 +561,35 @@ VALUES (
     'Uso correcto de terminología', -- indicadores_aprendizaje
     'Básico'), -- nivel_aprendizaje
     
-    ('PCD-002',
-    'Fundamentos de Redes',
-    'Ciencias Tecnológicas',
-    'Tecnologías de la Información',
-    'Ingeniería en Sistemas',
-    'Redes básicas',
-    'Redes de Computadoras',
+    -- PLAN DE CLASES DIARIO 2
+    ('PCD-002', -- codigo
+    'Fundamentos de Redes', -- nombre
+    'Ciencias Tecnológicas',  -- areaConocimiento (Educación, Arte y Humanidades)
+    'Tecnologías de la Información',  -- departamento (Tecnología Educativa)
+    'Ingeniería en Sistemas',  -- carrera (Informática Educativa)
+    'Redes básicas', -- ejes
+    'Redes de Computadoras',  -- fk_asignatura (Redes de Computadoras)
     1, -- ID profesor
     1, -- ID periodo
-    'Configurar redes locales básicas',
-    'BOA de redes básicas',
-    '2023-10-22',
-    '2023-10-27',
-    'Comprender los protocolos básicos de redes',
-    'Introducción a TCP/IP',
-    'El estudiante configura una red local simple',
-    'Discusión sobre experiencias con redes',
-    'Configuración práctica de red LAN',
-    'Presentación de configuraciones realizadas',
-    'Formativa',
-    'Evaluación práctica',
-    'Lista de verificación',
-    'Red configurada funcionalmente',
-    'Correcta configuración de IP',
-    'Uso adecuado de comandos',
-    'Intermedio'),
+    'Configurar redes locales básicas',  -- competencias
+    'BOA de redes básicas',  -- BOA
+    '2023-10-22', -- fecha_inicio
+    '2023-10-27', -- fecha_fin
+    'Comprender los protocolos básicos de redes', -- objetivo_aprendizaje
+    'Introducción a TCP/IP', -- tema_contenido
+    'El estudiante configura una red local simple', -- indicador_logro
+    'Discusión sobre experiencias con redes', -- tareas_iniciales
+    'Configuración práctica de red LAN', -- tareas_desarrollo
+    'Presentación de configuraciones realizadas', -- tareas_sintesis
+    'Formativa',  -- tipo_evaluacion
+    'Evaluación práctica', -- estrategia_evaluacion
+    'Lista de verificación', -- instrumento_evaluacion
+    'Red configurada funcionalmente', -- evidencias_aprendizaje
+    'Correcta configuración de IP', -- criterios_aprendizaje
+    'Uso adecuado de comandos', -- indicadores_aprendizaje
+    'Intermedio'), -- nivel_aprendizaje
     
+    -- PLAN DE CLASES DIARIO 3
     ('PCD-003',
     'Introducción a Python',
     'Ciencias Tecnológicas',
@@ -614,6 +617,7 @@ VALUES (
     'Uso apropiado de sintaxis',
     'Básico'),
     
+    -- PLAN DE CLASES DIARIO 4
     ('PCD-004',
     'Bases de Datos Relacionales',
     'Ciencias Tecnológicas',
@@ -641,6 +645,7 @@ VALUES (
     'Uso correcto de cardinalidades',
     'Avanzado'),
     
+    -- PLAN DE CLASES DIARIO 5
     ('PCD-005',
     'Principios de Seguridad',
     'Ciencias Tecnológicas',

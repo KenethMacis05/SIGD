@@ -94,25 +94,43 @@ namespace capa_presentacion.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult GuardarPlanDiario(PLANCLASESDIARIO model)
+        public ActionResult GuardarPlanDiario(PLANCLASESDIARIO plan)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return View(model);
-            }
+                if (!ModelState.IsValid)
+                {
+                    return View("Plan_de_Clases_Diario", plan);
+                }
 
-            string mensaje;
-            bool resultado = CN_PlanClasesDiario.Editar(model, out mensaje);
+                string mensaje;
+                int resultado;
+                bool esNuevo = plan.id_plan_diario == 0;
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                plan.fk_profesor = usuario.id_usuario;
 
-            if (resultado)
-            {
-                TempData["Success"] = "Plan de clases actualizado correctamente.";
-                return RedirectToAction("Plan_de_Clases_Diario", new { id = model.id_plan_diario });
+                if (esNuevo)
+                {
+                    resultado = CN_PlanClasesDiario.Registra(plan, out mensaje);
+                }
+                else
+                {
+                    resultado = CN_PlanClasesDiario.Editar(plan, out mensaje);
+                }
+
+                if (resultado <= 0)
+                {
+                    TempData["Error"] = $"No se pudo {(esNuevo ? "registrar" : "actualizar")} el plan. {mensaje}";
+                    return View("Plan_de_Clases_Diario", plan);
+                }
+
+                TempData["Success"] = $"Plan de clases {(esNuevo ? "registrado" : "actualizado")} correctamente.";
+                return RedirectToAction("Plan_de_Clases_Diario", new { id = plan.id_plan_diario });
             }
-            else
+            catch (Exception)
             {
-                TempData["Error"] = mensaje;
-                return View(model);
+                TempData["Error"] = "Ocurrió un error inesperado al procesar su solicitud.";
+                return RedirectToAction("Plan_de_Clases_Diario", new { id = plan?.id_plan_diario ?? 0 });
             }
         }
 
