@@ -99,6 +99,132 @@ namespace capa_datos
             return plan;
         }
 
+        public int RegistrarPlanClasesDiario(PLANCLASESDIARIO plan, out string mensaje)
+        {
+            int idautogenerado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_CrearPLanClasesDiario", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parámetros de entrada
+                    cmd.Parameters.AddWithValue("Codigo", plan.codigo);
+                    cmd.Parameters.AddWithValue("Nombre", plan.nombre);
+                    cmd.Parameters.AddWithValue("AreaConocimiento", plan.area_conocimiento);
+                    cmd.Parameters.AddWithValue("Departamento", plan.departamento);
+                    cmd.Parameters.AddWithValue("Carrera", plan.carrera);
+                    cmd.Parameters.AddWithValue("Ejes", plan.ejes);
+                    cmd.Parameters.AddWithValue("Asignatura", plan.asignatura);
+                    cmd.Parameters.AddWithValue("FKProfesor", plan.fk_profesor);
+                    cmd.Parameters.AddWithValue("FKPeriodo", plan.fk_periodo);
+                    cmd.Parameters.AddWithValue("Competencias", plan.competencias);
+                    cmd.Parameters.AddWithValue("BOA", plan.BOA);
+                    cmd.Parameters.AddWithValue("FechaInicio", plan.fecha_inicio);
+                    cmd.Parameters.AddWithValue("FechaFin", plan.fecha_fin);
+                    cmd.Parameters.AddWithValue("ObjetivoAprendizaje", plan.objetivo_aprendizaje);
+                    cmd.Parameters.AddWithValue("TemaContenido", plan.tema_contenido);
+                    cmd.Parameters.AddWithValue("IndicadorLogro", plan.indicador_logro);
+                    cmd.Parameters.AddWithValue("TareasIniciales", plan.tareas_iniciales);
+                    cmd.Parameters.AddWithValue("TareasDesarrollo", plan.tareas_desarrollo);
+                    cmd.Parameters.AddWithValue("TareasSintesis", plan.tareas_sintesis);
+                    cmd.Parameters.AddWithValue("TipoEvaluacion", plan.tipo_evaluacion);
+                    cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
+                    cmd.Parameters.AddWithValue("InstrumentoEvaluacion", plan.instrumento_evaluacion);
+                    cmd.Parameters.AddWithValue("EvidenciasAprendizaje", plan.evidencias_aprendizaje);
+                    cmd.Parameters.AddWithValue("CriteriosAprendizaje", plan.criterios_aprendizaje);
+                    cmd.Parameters.AddWithValue("IndicadoresAprendizaje", plan.indicadores_aprendizaje);
+                    cmd.Parameters.AddWithValue("NivelAprendizaje", plan.nivel_aprendizaje);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    idautogenerado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                idautogenerado = 0;
+                mensaje = "Error al registrar el plan de clases diario: " + ex.Message;
+            }
+
+            return idautogenerado;
+        }
+
+        // Actualizar usuario
+        public bool ActualizarPlanClasesDiario(PLANCLASESDIARIO plan, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarPlanClasesDiario", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetros
+                    cmd.Parameters.AddWithValue("IdUsuario", plan.id_plan_diario);
+                    cmd.Parameters.AddWithValue("Codigo", plan.codigo);
+                    cmd.Parameters.AddWithValue("Nombre", plan.nombre);
+                    cmd.Parameters.AddWithValue("AreaConocimiento", plan.area_conocimiento);
+                    cmd.Parameters.AddWithValue("Departamento", plan.departamento);
+                    cmd.Parameters.AddWithValue("Carrera", plan.carrera);
+                    cmd.Parameters.AddWithValue("Ejes", plan.ejes);
+                    cmd.Parameters.AddWithValue("Asignatura", plan.asignatura);
+                    cmd.Parameters.AddWithValue("FKProfesor", plan.fk_profesor);
+                    cmd.Parameters.AddWithValue("FKPeriodo", plan.fk_periodo);
+                    cmd.Parameters.AddWithValue("Competencias", plan.competencias);
+                    cmd.Parameters.AddWithValue("BOA", plan.BOA);
+                    cmd.Parameters.AddWithValue("FechaInicio", plan.fecha_inicio);
+                    cmd.Parameters.AddWithValue("FechaFin", plan.fecha_fin);
+                    cmd.Parameters.AddWithValue("ObjetivoAprendizaje", plan.objetivo_aprendizaje);
+                    cmd.Parameters.AddWithValue("TemaContenido", plan.tema_contenido);
+                    cmd.Parameters.AddWithValue("IndicadorLogro", plan.indicador_logro);
+                    cmd.Parameters.AddWithValue("TareasIniciales", plan.tareas_iniciales);
+                    cmd.Parameters.AddWithValue("TareasDesarrollo", plan.tareas_desarrollo);
+                    cmd.Parameters.AddWithValue("TareasSintesis", plan.tareas_sintesis);
+                    cmd.Parameters.AddWithValue("TipoEvaluacion", plan.tipo_evaluacion);
+                    cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
+                    cmd.Parameters.AddWithValue("InstrumentoEvaluacion", plan.instrumento_evaluacion);
+                    cmd.Parameters.AddWithValue("EvidenciasAprendizaje", plan.evidencias_aprendizaje);
+                    cmd.Parameters.AddWithValue("CriteriosAprendizaje", plan.criterios_aprendizaje);
+                    cmd.Parameters.AddWithValue("IndicadoresAprendizaje", plan.indicadores_aprendizaje);
+                    cmd.Parameters.AddWithValue("NivelAprendizaje", plan.nivel_aprendizaje);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    // Ejecutar comando
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value != DBNull.Value ? cmd.Parameters["Mensaje"].Value.ToString() : "Mensaje no disponible.";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al actualizar el plan de clases diario: " + ex.Message;
+            }
+            return resultado;
+        }
+
         public bool EliminarPlanClasesDiario(int id_plan, int id_usuario, out string mensaje)
         {
             bool resultado = false;

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace capa_negocio
 {
@@ -32,9 +33,46 @@ namespace capa_negocio
             return eliminado ? 1 : 0;
         }
 
-        public bool Editar(PLANCLASESDIARIO model, out string mensaje)
+        public int Registra(PLANCLASESDIARIO plan, out string mensaje)
         {
-            throw new NotImplementedException();
+            mensaje = string.Empty;
+
+            // Validación de campos obligatorios
+            if (string.IsNullOrEmpty(plan.nombre) ||
+                string.IsNullOrEmpty(plan.codigo))
+            {
+                mensaje = "Por favor, complete todos los campos obligatorios.";
+                return 0;
+            }
+
+            if (plan.fk_profesor == 0)
+            {
+                mensaje = "Por favor, seleccione un profesor.";
+                return 0;
+            }
+
+            return CD_PlanClasesDiario.RegistrarPlanClasesDiario(plan, out mensaje);
+        }
+
+        public int Editar(PLANCLASESDIARIO plan, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            if (string.IsNullOrEmpty(plan.nombre) ||
+                string.IsNullOrEmpty(plan.codigo))
+            {
+                mensaje = "Por favor, complete todos los campos.";
+                return 0;
+            }
+
+            if (plan.fk_profesor == 0)
+            {
+                mensaje = "Por favor, seleccione un profesor.";
+                return 0;
+            }
+
+            bool actualizado = CD_PlanClasesDiario.ActualizarPlanClasesDiario(plan, out mensaje);
+            return actualizado ? 1 : 0;
         }
     }
 }
