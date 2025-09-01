@@ -34,16 +34,24 @@ namespace capa_datos
                                 id_menu = Convert.ToInt32(dr["id_menu"]),
                                 nombre = dr["nombre"].ToString(),
                                 icono = dr["icono"].ToString(),
-                                orden = dr["orden"] != DBNull.Value ? Convert.ToInt32(dr["orden"]) : 0,
+                                orden = dr["orden"] != DBNull.Value ? dr["orden"].ToString() : "0"
                             };
 
                             // Si tiene controlador asociado, cargar sus datos
-                            if (dr["controlador"] != DBNull.Value)
+                            if (dr["controlador"] != DBNull.Value && dr["controlador"].ToString() != "NULL")
                             {
                                 menu.Controller = new CONTROLLER()
                                 {
                                     controlador = dr["controlador"].ToString(),
-                                    accion = dr["vista"].ToString() // Nota: vista = accion en el SP
+                                    accion = dr["vista"].ToString()
+                                };
+                            }
+                            else
+                            {
+                                menu.Controller = new CONTROLLER()
+                                {
+                                    controlador = "#",
+                                    accion = "#",
                                 };
                             }
 
@@ -51,6 +59,10 @@ namespace capa_datos
                         }
                     }
                 }
+
+                // Ordenar la lista por orden numérico
+                lista = lista.OrderBy(m => decimal.Parse(m.orden)).ToList();
+
             }
             catch (Exception ex)
             {
@@ -60,7 +72,7 @@ namespace capa_datos
 
             return lista;
         }
-        
+
         public List<MENU> ObtenerMenusPorRol(int IdRol)
         {
             List<MENU> lista = new List<MENU>();
@@ -82,10 +94,10 @@ namespace capa_datos
                             {
                                 id_menu_rol = Convert.ToInt32(dr["id_menu_rol"]),
                                 id_menu = Convert.ToInt32(dr["id_menu"]),
-                                fk_controlador = Convert.ToInt32(dr["fk_controlador"]),
+                                fk_controlador = dr["fk_controlador"] != DBNull.Value ? Convert.ToInt32(dr["fk_controlador"]) : (int?)null,
                                 nombre = dr["nombre"].ToString(),
                                 icono = dr["icono"].ToString(),
-                                orden = dr["orden"] != DBNull.Value ? Convert.ToInt32(dr["orden"]) : 0,
+                                orden = dr["orden"] != DBNull.Value ? dr["orden"].ToString() : "0"
                             };
 
                             // Si tiene controlador asociado, cargar sus datos
@@ -135,7 +147,7 @@ namespace capa_datos
                                 id_menu = Convert.ToInt32(dr["id_menu"]),
                                 nombre = dr["nombre"].ToString(),
                                 icono = dr["icono"].ToString(),
-                                orden = dr["orden"] != DBNull.Value ? Convert.ToInt32(dr["orden"]) : 0,
+                                orden = dr["orden"] != DBNull.Value ? dr["orden"].ToString() : "0",
                             };
 
                             // Si tiene controlador asociado, cargar sus datos

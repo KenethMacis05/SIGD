@@ -13,7 +13,7 @@ namespace capa_entidad
         public string nombre { get; set; }
         public int? fk_controlador { get; set; }
         public string icono { get; set; }
-        public int orden { get; set; }
+        public string orden { get; set; }
         public bool estado { get; set; } = true;
         public bool is_checked { get; set; }
 

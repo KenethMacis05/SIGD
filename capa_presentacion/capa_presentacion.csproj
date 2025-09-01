@@ -123,6 +123,7 @@
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccesoController.cs" />
     <Compile Include="Controllers\ArchivoController.cs" />
+    <Compile Include="Controllers\CatalogosController.cs" />
     <Compile Include="Controllers\ConfiguracionController.cs" />
     <Compile Include="Controllers\ControladorController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
@@ -598,6 +599,7 @@
     <Content Include="Scripts\sweetalert2.min.js" />
     <Content Include="Scripts\Views\Acceso.js" />
     <Content Include="Scripts\Views\Archivos.js" />
+    <Content Include="Scripts\Views\AreaDeConocimiento.js" />
     <Content Include="Scripts\Views\Menu.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\PlanClasesDiario.js" />
@@ -709,6 +711,11 @@
     <Content Include="Views\Home\Error.cshtml" />
     <Content Include="Views\Planificacion\CrearPlanClasesDiario.cshtml" />
     <Content Include="Views\Planificacion\_FormularioPlanClases.cshtml" />
+    <Content Include="Views\Catalogos\AreaConocimiento.cshtml" />
+    <Content Include="Views\Catalogos\Departamento.cshtml" />
+    <Content Include="Views\Catalogos\Carrera.cshtml" />
+    <Content Include="Views\Catalogos\Componente.cshtml" />
+    <Content Include="Views\Catalogos\Periodo.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

@@ -39,7 +39,7 @@ CREATE TABLE MENU (
     nombre VARCHAR(60) NOT NULL,
     fk_controlador INT NULL, -- Solo para elementos que ejecutan una acción
     icono VARCHAR(60),
-    orden INT DEFAULT 0,
+    orden VARCHAR(60) DEFAULT 0,
     estado BIT DEFAULT 1,	
     fecha_registro DATETIME DEFAULT GETDATE()
     CONSTRAINT FK_MENU_CONTROLLER FOREIGN KEY (fk_controlador) REFERENCES CONTROLLER(id_controlador)
@@ -220,7 +220,7 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PERIO
 CREATE TABLE PERIODO (
 	id_periodo INT PRIMARY KEY IDENTITY(1,1),
 	anio INT NOT NULL,
-	semestre INT NOT NULL,
+	semestre VARCHAR(255) NOT NULL,
 	estado BIT DEFAULT 1,
 );
 

@@ -213,7 +213,7 @@ BEGIN
     WHERE u.id_usuario = @IdUsuario
     AND mr.estado = 1
     AND m.estado = 1
-    AND (c.tipo = 'Vista' OR c.tipo IS NULL) -- Solo vistas o menús padres
+    AND (c.tipo = 'Vista' OR c.tipo IS NULL OR m.fk_controlador = null) -- Solo vistas o menús padres
     AND (
         m.fk_controlador IS NULL 
         OR 
@@ -224,7 +224,7 @@ BEGIN
             AND p.estado = 1
         )
     )
-    ORDER BY m.orden;
+    ORDER BY TRY_CAST(m.orden AS DECIMAL(10,2));
 END
 GO
 
@@ -257,7 +257,7 @@ BEGIN
     WHERE mr.fk_rol = @IdRol  
     AND mr.estado = 1    
     AND m.estado = 1    
-    AND (c.tipo = 'Vista' OR c.tipo IS NULL) -- Solo vistas o menús padres    
+    AND (c.tipo = 'Vista' OR c.tipo IS NULL OR m.fk_controlador = null) -- Solo vistas o menús padres    
     AND (    
         m.fk_controlador IS NULL     
         OR     
@@ -268,7 +268,7 @@ BEGIN
             AND p.estado = 1    
         )    
     )    
-    ORDER BY m.orden;
+    ORDER BY TRY_CAST(m.orden AS DECIMAL(10,2));
 END
 GO
 
@@ -2936,6 +2936,80 @@ BEGIN
     WHERE id_archivo = @IdArchivo AND estado = 1;
 END
 GO
+
+--------------------------------------------------------------------------------------------------------------------
+-- PROCEDIMIENTOS ALMACENADOS CATALOGOS
+
+CREATE OR ALTER PROCEDURE usp_LeerAreasDeConocimiento
+AS
+BEGIN
+    SELECT 
+		id_area,
+        codigo,
+		nombre,
+        fecha_registro,
+        estado
+    FROM AREACONOCIMIENTO
+	ORDER BY id_area DESC
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_LeerDepartamento
+AS
+BEGIN
+    SELECT 
+		id_departamento,
+        codigo,
+		nombre,
+        fecha_registro,
+        estado
+    FROM DEPARTAMENTO
+	ORDER BY id_departamento DESC
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_LeerCarreras
+AS
+BEGIN
+    SELECT 
+		id_carrera,
+        codigo,
+		nombre,
+        fecha_registro,
+        estado
+    FROM CARRERA
+	ORDER BY id_carrera DESC
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_LeerAsignaturas
+AS
+BEGIN
+    SELECT 
+		id_asignatura,
+        codigo,
+		nombre,
+        fecha_registro,
+        estado
+    FROM ASIGNATURA
+	ORDER BY id_asignatura DESC
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_LeerPeriodos
+AS
+BEGIN
+    SELECT 
+		id_periodo,
+        anio,
+		semestre,
+        fecha_registro,
+        estado
+    FROM PERIODO
+	ORDER BY id_periodo DESC
+END
+GO
+
 
 --USE SISTEMA_DE_GESTION_DIDACTICA;
 --GRANT EXECUTE TO [IIS APPPOOL\sigd];

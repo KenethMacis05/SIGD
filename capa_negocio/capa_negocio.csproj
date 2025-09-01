@@ -49,9 +49,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CN_Archivo.cs" />
+    <Compile Include="CN_AreaConocimiento.cs" />
+    <Compile Include="CN_Asignatura.cs" />
     <Compile Include="CN_Carpeta.cs" />
+    <Compile Include="CN_Carrera.cs" />
     <Compile Include="CN_Controlador.cs" />
+    <Compile Include="CN_Departamento.cs" />
     <Compile Include="CN_Menu.cs" />
+    <Compile Include="CN_Periodo.cs" />
     <Compile Include="CN_Permisos.cs" />
     <Compile Include="CN_PlanClasesDiario.cs" />
     <Compile Include="CN_Recursos.cs" />

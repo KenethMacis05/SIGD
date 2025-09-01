@@ -140,6 +140,14 @@ function cargarMenusNoAsignados(IdRol) {
 
             if (data && data.data && Array.isArray(data.data)) {
                 $.each(data.data, function (index, menu) {
+                    var Controlador = 'Menú padre'
+                    var Vista = '-'
+
+                    if (menu.Controller !== null) {
+                            Controlador = menu.Controller.controlador,
+                            Vista = menu.Controller.accion
+                    }
+
                     datatableMenusNoAsignados.row.add([
                         index + 1,
                         `<div class='d-flex flex-row align-items-center esp-link'>
@@ -148,8 +156,8 @@ function cargarMenusNoAsignados(IdRol) {
                             </div>
                             ${menu.nombre}
                         </div>`,
-                        menu.Controller.controlador,
-                        menu.Controller.accion,
+                        Controlador,
+                        Vista,
                         `<div class='d-flex justify-content-center align-items-center'>
                             <span class='badge text-bg-primary'>${menu.orden}</span>
                         </div>`,
@@ -324,8 +332,28 @@ const dataTableOptions = {
                 `;
             }
         },
-        { data: "Controller.controlador", title: "Controlador" },
-        { data: "Controller.accion", title: "Vista" },
+        {
+            data: "Controller.controlador",
+            title: "Controlador",
+            render: function (data, type, row) {
+                if (data === null || data === undefined || data === '' ||
+                    !row.Controller || row.Controller.controlador === null) {
+                    return 'Menú Padre';
+                }
+                return data;
+            }
+        },
+        {
+            data: "Controller.accion",
+            title: "Vista",
+            render: function (data, type, row) {
+                if (data === null || data === undefined || data === '' ||
+                    !row.Controller || row.Controller.accion === null) {
+                    return 'Menú Padre';
+                }
+                return data;
+            }
+        },
         {
             data: "orden",
             title: "Orden",

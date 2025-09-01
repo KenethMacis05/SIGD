@@ -28,6 +28,12 @@ VALUES
     ('Reportes', 'Index', 'Reportes del sistema', 'Vista'),
     ('Usuario', 'Configuraciones', 'Configuración del usuario', 'Vista'),
     
+    ('Catalogos', 'AreaConocimiento', 'Area de conocimiento', 'Vista'),
+    ('Catalogos', 'Departamento', 'Departamento', 'Vista'),
+    ('Catalogos', 'Carrera', 'Carrera', 'Vista'),
+    ('Catalogos', 'Componente', 'Componente', 'Vista'),
+    ('Catalogos', 'Periodo', 'Periodo', 'Vista'),
+    
     -- Acciones API/AJAX
     -- UsuarioController
     ('Usuario', 'ListarUsuarios', 'Listar usuarios', 'API'),
@@ -101,18 +107,24 @@ GO
 -- (3) REGISTROS EN TABLA MENU
 INSERT INTO MENU (nombre, fk_controlador, icono, orden) 
 VALUES
-    ('Dashboard', 1, 'fas fa-tachometer-alt', 1),
-    ('Usuario', 2, 'fa fa-users', 2),
-    ('Menus', 3, 'fas fa-bars', 3),
-    ('Roles', 4, 'fas fa-user-shield', 4),
-    ('Permisos', 5, 'fas fa-key', 5),
-    ('Gestor de archivos', 6, 'fas fa-cloud', 6),
-    ('Carpetas compartidas', 7, 'fas fa-share-square', 7),
-    ('Archivos compartidos', 8, 'fas fa-share-square', 8),
-    ('Matriz de Integracion', 9, 'fas fa-table', 9),
-    ('Plan Didactico Semestral', 10, 'fas fa-bookmark', 10),
-    ('Plan de Clases Diario', 11, 'fas fa-boxes', 11),
-    ('Reportes', 12, 'far fa-file-pdf', 12);
+    ('Dashboard', 1, 'fas fa-tachometer-alt', '1'),
+    ('Usuario', 2, 'fa fa-users', '2'),
+    ('Menus', 3, 'fas fa-bars', '3'),
+    ('Roles', 4, 'fas fa-user-shield', '4'),
+    ('Permisos', 5, 'fas fa-key', '5'),
+    ('Gestor de archivos', 6, 'fas fa-cloud', '6'),
+    ('Carpetas compartidas', 7, 'fas fa-share-square', '7'),
+    ('Archivos compartidos', 8, 'fas fa-share-square', '8'),
+    ('Matriz de Integracion', 9, 'fas fa-table', '9'),
+    ('Plan Didactico Semestral', 10, 'fas fa-book', '10'),
+    ('Plan de Clases Diario', 11, 'fas fa-chalkboard-teacher', '11'),
+    ('Catalogos', null, 'fa fa-bookmark', '12'),
+    ('Área de Conocimiento', 14, 'fa fa-graduation-cap', '12.1'),
+    ('Departamento', 15, 'fa fa-building', '12.2'),
+    ('Carrera', 16, 'fa fa-university', '12.3'),
+    ('Componente', 17, 'fa fa-puzzle-piece', '12.4'),
+    ('Periodo', 18, 'fa fa-calendar-alt', '12.5'),
+    ('Reportes', 12, 'far fa-file-pdf', '13')
 GO
 
 --------------------------------------------------------------------------------------------------------------------
@@ -234,109 +246,8 @@ GO
 
 -----------------------------------------------TABLAS CATALOGOS-----------------------------------------------------
 
--- (6) REGISTROS EN TABLA ASIGNATURA
-INSERT INTO Asignatura (nombre) 
-VALUES 
-	('Hardware'), 
-	('Diseño Web'),
-	('Software'),
-	('Seguridad Informática'),
-	('Diseño de Soluciones Educativas');
-
-GO
---------------------------------------------------------------------------------------------------------------------
-
--- (7) REGISTROS EN LA TABLA CARRERA
-INSERT INTO Carrera (nombre) 
-VALUES 
-	('Informática Educativa'),
-	('Diseño Grafico'),
-	('Administración Turística y Hotelera'),
-	('Ciencias Naturales'),
-	('Ciencias Sociales'),
-	('Física-Matemática'),
-	('Inglés'),
-	('Lengua y Literatura Hispánicas'),
-	('Cultura y Artes'),
-	('Danza'),
-	('Educación Física y Deportes'),
-	('Educación Musical'),
-	('Traducción e Interpretación en Lenguas Extranjeras'),
-	('Turismo Sostenible');
-
-GO
---------------------------------------------------------------------------------------------------------------------
-
--- (8) REGISTROS EN LA TABLA DEPARTAMENTO
-INSERT INTO Departamento (nombre) 
-VALUES 
-	('Tecnología Educativa'),
-	('Multidisciplinario'),
-	('Enseñanza de las Ciencias'),
-	('Español'),
-	('Lenguas Extranjeras'),
-	('Pedagogía'),
-	('Administración de Empresas'),
-	('Contabilidad Pública y Finanzas'),
-	('Economía'),
-	('Derecho'),
-	('Ciencias Sociales y Políticas'),
-	('Ciencias de la Información y Comunicación'),
-	('Psicología y Trabajo Social'),
-	('Ciencias Básicas Biomédicas'),
-	('Ciencias Médico-quirúrgica'),
-	('Salud Materno Infantil'),
-	('Salud Pública'),
-	('Integrador de las Prácticas en Salud'),
-	('Salud Visual'),
-	('Salud Oral'),
-	('Enfermería y Anestesia'),
-	('Fisioterapia'),
-	('Nutrición'),
-	('Bioanálisis clínico'),
-	('Matemáticas'),
-	('Computación'),
-	('Física'),
-	('Biología'),
-	('Química'),
-	('Construcción'),
-	('Tecnología');
-
-GO
---------------------------------------------------------------------------------------------------------------------
-
--- (9) REGISTROS EN LA TABLA AREACONOCIMIENTO
-INSERT INTO AreaConocimiento (nombre) 
-VALUES 
-	('Educación, Arte y Humanidades'),
-	('Ciencias Económicas y Administrativas'),
-	('Ciencias Sociales y Jurídicas'),
-	('Ciencias de la Salud'),
-	('Ciencias Básicas y Tecnología');
-
-GO
---------------------------------------------------------------------------------------------------------------------
-
--- (10) REGISTROS EN LA TABLA COMPONENTECURRICULAR
-INSERT INTO ComponenteCurricular (fk_asignatura, fk_carrera, fk_departamento, fk_area)
-VALUES 
-	(1, 1, 1, 1),
-	(2, 1, 1, 1),
-	(3, 1, 1, 1),
-	(4, 1, 1, 1),
-	(5, 1, 1, 1);
-
-GO
---------------------------------------------------------------------------------------------------------------------
-
--- (11) REGISTROS EN LA TABLA SEMESTRE
-INSERT INTO SEMESTRE (descripcion) VALUES ('Semestre I'), ('Semestre II')
-
-GO
---------------------------------------------------------------------------------------------------------------------
-
 -- (12) REGISTROS EN LA TABLA PERIODO
-INSERT INTO PERIODO (anio, semestre) VALUES ('2025', 1), ('2025', 2), ('2024', 1), ('2024', 2)
+INSERT INTO PERIODO (anio, semestre) VALUES ('2025', 'Semestre I'), ('2025', 'Semestre II')
 
 GO
 --------------------------------------------------------------------------------------------------------------------

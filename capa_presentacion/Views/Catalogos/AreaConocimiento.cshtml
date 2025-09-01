@@ -1,0 +1,51 @@
+﻿
+@{
+    ViewBag.Title = "Área de Conocimiento";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!--Titulo-->
+<div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">@ViewBag.Title</h2></div>
+
+<!--Contenedor-->
+<div class="card">
+
+    <div class="card-body">
+        <div class="tab-content">
+            <!--Contenedor 1-->
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <button type="button" class="btn btn-primary" onclick="abrirModal(null)"><i class="fa fa-plus"></i> Crear Área de Conocimiento</button>
+                <hr />
+                <!--Tabla-->
+                <table class="display cell-border" style="width: 100%" id="datatable">
+                    <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                        <tr>
+                            <th>Código</th>
+                            <th>Nombre</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                    <tfoot>
+
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script type="text/javascript">
+
+       var config = {
+           listarAreasDeConocimientoUrl: '@Url.Action("ListarAreasDeConocimiento", "Catalogos")',
+           guardarAreaDeConocimientoUrl: '@Url.Action("GuardarAreaDeConocimiento", "Catalogos")',
+           eliminarAreaDeConocimientoUrl: '@Url.Action("EliminarAreasDeConocimiento", "Catalogos")'
+        };
+    </script>
+    <script src="@Url.Content("~/Scripts/Views/AreaDeConocimiento.js")" type="text/javascript"></script>
+}

@@ -247,3 +247,22 @@
 .sb-sidenav-light .sb-sidenav-footer {
     background-color: #e9ecef;
 }
+
+.dropdown-menu {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+}
+
+.dropdown-item {
+    color: #495057;
+    padding: 0.5rem 1rem;
+}
+
+.dropdown-item:hover {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.sb-nav-link-icon {
+    margin-right: 0.5rem;
+}
