@@ -4,14 +4,14 @@ const dataTableOptions = {
     ...dataTableConfig,
 
     ajax: {
-        url: config.listarAreasDeConocimientoUrl,
+        url: config.listarPeriodosUrl,
         type: "GET",
         dataType: "json"
     },
 
     columns: [
-        { data: "codigo" },
-        { data: "nombre" },
+        { data: "anio" },
+        { data: "semestre" },
         {
             data: "estado",
             render: function (valor) {

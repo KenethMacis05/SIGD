@@ -57,6 +57,11 @@ namespace capa_negocio
             }
         }
 
+        public List<MENU> ListarTodosLosMenus()
+        {
+            return CD_Menu.ObtenerTodosLosMenus();
+        }
+
         public Dictionary<int, (int Codigo, string Mensaje)> AsignarMenus(int IdRol, List<int> IdsMenu)
         {
             var resultados = new Dictionary<int, (int, string)>();

@@ -1,4 +1,5 @@
-﻿let datatableMenus;
+﻿let datatableMenusXRol;
+let datatableMenus;
 let datatableMenusNoAsignados;
 
 // Cargar roles en el selec
@@ -23,7 +24,7 @@ jQuery.ajax({
     dataType: "json",
     contentType: "application/json; charset=utf-8",
 
-    success: function (response) {        
+    success: function (response) {
         $('#controlador').empty().append('<option value="" disabled selected>Seleccionar...</option>');
         $('#vista').empty().append('<option value="" disabled selected>Seleccionar...</option>').prop('disabled', true);
 
@@ -35,12 +36,15 @@ jQuery.ajax({
                 controladoresSet.add(registro.controlador);
                 $('#controlador').append(`<option value="${registro.controlador}">${registro.controlador}</option>`);
             }
-            
+
             if (registro.tipo === 'Vista') {
                 if (!vistasMap[registro.controlador]) {
                     vistasMap[registro.controlador] = [];
                 }
-                vistasMap[registro.controlador].push({ id: registro.id_controlador, accion: registro.accion });
+                vistasMap[registro.controlador].push({
+                    id_controlador: registro.id_controlador,
+                    accion: registro.accion
+                });
             }
         });
 
@@ -48,12 +52,19 @@ jQuery.ajax({
             const controladorSeleccionado = $(this).val();
 
             $('#vista').empty().append('<option value="" disabled selected>Seleccionar...</option>').prop('disabled', false);
+            $('#fkControlador').val('0'); // Resetear el valor
 
             if (vistasMap[controladorSeleccionado]) {
                 $.each(vistasMap[controladorSeleccionado], function (index, vista) {
-                    $('#vista').append(`<option value="${vista.id}">${vista.accion}</option>`);
+                    $('#vista').append(`<option value="${vista.id_controlador}">${vista.accion}</option>`);
                 });
             }
+        });
+
+        // Capturar el id_controlador cuando se selecciona una vista
+        $('#vista').on('change', function () {
+            const idControlador = $(this).val();
+            $('#fkControlador').val(idControlador);
         });
     },
 
@@ -114,13 +125,13 @@ function cargarMenus(idRol) {
         dataType: "json",
         data: { IdRol: idRol },
         contentType: "application/json; charset=utf-8",
-        beforeSend: () => $("#datatableMenus tbody").LoadingOverlay("show"),
+        beforeSend: () => $("#datatableMenusXRol tbody").LoadingOverlay("show"),
 
         success: function (data) {
-            datatableMenus.clear().rows.add(data.data).draw();
+            datatableMenusXRol.clear().rows.add(data.data).draw();
         },
 
-        complete: () => $("#datatableMenus tbody").LoadingOverlay("hide"),
+        complete: () => $("#datatableMenusXRol tbody").LoadingOverlay("hide"),
         error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
     });
 }
@@ -269,16 +280,70 @@ $('#btnAsignarMenu').click(function () {
 });
 
 //Boton seleccionar menú para editar
-$("#datatableMenus tbody").on("click", '.btn-editar', function () {
+$("#datatableGestionMenus tbody").on("click", '.btn-editar', function () {
     filaSeleccionada = $(this).closest("tr");
     const data = datatableMenus.row(filaSeleccionada).data();    
     abrirModalCreate(data)
 });
 
-//Boton eliminar menu del rol
-$("#datatableMenus tbody").on("click", '.btn-eliminar', function () {
+// Guardar/Editar menú
+function Guardar() {
+    const controladorSeleccionado = $("#controlador").val();
+    const idControlador = $("#fkControlador").val();
+    
+    // Validar: si se seleccionó controlador, debe tener vista seleccionada
+    if (controladorSeleccionado && idControlador === "0") {
+        showAlert("Advertencia", "Debe seleccionar una vista para el controlador elegido", "warning");
+        return false;
+    }
+
+    var Menu = {
+        id_menu: $("#idMenu").val().trim(),
+        nombre: $("#nombre").val().trim(),
+        icono: $("#icono").val().trim(),
+        orden: $("#orden").val().trim(),
+        fk_controlador: idControlador !== "0" ? idControlador : null, // Null para menús padres
+        estado: $("#estado").prop("checked")
+    };
+
+    showLoadingAlert("Procesando", "Guardando datos del menú...");
+
+    jQuery.ajax({
+        url: config.guardarMenuUrl,
+        type: "POST",
+        data: JSON.stringify({ menu: Menu }),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+
+        success: function (data) {
+            Swal.close();
+            $("#createMenu").modal("hide");
+
+            // Menú Nuevo
+            if (Rol.id_rol == 0) {
+                if (data.Resultado != 0) {
+                    Rol.id_rol = data.Resultado;
+                    dataTable.row.add(Rol).draw(false);
+                    showAlert("¡Éxito!", "Menú creado correctamente", "success");
+                } else { showAlert("Error", data.Mensaje || "Error al crear el menú", "error"); }
+            }
+            // Actualizar menú
+            else {
+                if (data.Resultado) {
+                    dataTable.row(filaSeleccionada).data(Rol);
+                    filaSeleccionada = null;
+                    showAlert("¡Éxito!", "Menú actualizado correctamente", "success");
+                } else { showAlert("Error", data.Mensaje || "Error al actualizar el menú", "error"); }
+            }
+        },
+        error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+    });
+}
+
+//Boton quitar menu del rol
+$("#datatableMenusXRol tbody").on("click", '.btn-quitarPermiso', function () {
     const menuSeleccionado = $(this).closest("tr");
-    const data = datatableMenus.row(menuSeleccionado).data();    
+    const data = datatableMenusXRol.row(menuSeleccionado).data();    
     
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
@@ -295,9 +360,9 @@ $("#datatableMenus tbody").on("click", '.btn-eliminar', function () {
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        datatableMenus.row(menuSeleccionado).remove().draw();
-                        showAlert("¡Eliminado!", response.Mensaje || "Menú eliminado correctamente", "success")
-                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el menú", "error") }
+                        datatableMenusXRol.row(menuSeleccionado).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Menú quitado correctamente", "success")
+                    } else { showAlert("Error", response.Mensaje || "No se pudo quitar el menú del rol", "error") }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
             });
@@ -319,7 +384,7 @@ const dataTableOptions = {
 
         },
         {
-            title: "Menu",
+            title: "Menú",
             data: "nombre",
             render: function (data, type, row) {
                 return `
@@ -367,8 +432,7 @@ const dataTableOptions = {
         },
         {
             defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
+                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-quitarPermiso"><i class="fa fa-minus"></i></button>',
             width: "90"
         }
     ],
@@ -390,7 +454,93 @@ const dataTableNoAsignadosOptions = {
     ],
 };
 
+const dataTableMenusOptions = {
+    ...dataTableConfig,
+
+    ajax: {
+        url: config.listarTodosLosMenusUrl,
+        type: "GET",
+        dataType: "json"
+    },
+
+    columns: [
+        {
+
+            data: null,
+            title: "#",
+            render: function (data, type, row, meta) {
+                return meta.row + 1;
+            },
+            orderable: false
+
+        },
+        {
+            title: "Menú",
+            data: "nombre",
+            render: function (data, type, row) {
+                return `
+                    <div class='d-flex flex-row align-items-center esp-link'>
+                        <div class='sb-nav-link-icon me-1'>
+                             <i class='${row.icono}'></i>
+                         </div>
+                             ${data}
+                    </div>
+                `;
+            }
+        },
+        {
+            data: "Controller.controlador",
+            title: "Controlador",
+            render: function (data, type, row) {
+                if (data === null || data === undefined || data === '' ||
+                    !row.Controller || row.Controller.controlador === null) {
+                    return 'Menú Padre';
+                }
+                return data;
+            }
+        },
+        {
+            data: "Controller.accion",
+            title: "Vista",
+            render: function (data, type, row) {
+                if (data === null || data === undefined || data === '' ||
+                    !row.Controller || row.Controller.accion === null) {
+                    return 'Menú Padre';
+                }
+                return data;
+            }
+        },
+        {
+            data: "orden",
+            title: "Orden",
+            render: function (valor) {
+                return `
+                    <div class='d-flex justify-content-center align-items-center'>
+                        <span class='badge text-bg-primary'>${valor}</span>
+                    </div>
+                `;
+            }
+        },
+        {
+            title: "Estado",
+            data: "estado",
+            render: function (valor) {
+                return valor
+                    ? "<div class='d-flex justify-content-center align-items-center'><span class='badge text-bg-success'>ACTIVO</span></div>"
+                    : "<div class='d-flex justify-content-center align-items-center'><span class='badge text-bg-danger'>NO ACTIVO</span></div>";
+            }
+        },
+        {
+            defaultContent:
+                '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
+            width: "90"
+        }
+    ],
+};
+
 $(document).ready(function () {
-    datatableMenus = $("#datatableMenus").DataTable(dataTableOptions);
+    datatableMenusXRol = $("#datatableMenusXRol").DataTable(dataTableOptions);
     datatableMenusNoAsignados = $("#datatableMenusNoAsignados").DataTable(dataTableNoAsignadosOptions);
+    datatableMenus = $("#datatableGestionMenus").DataTable(dataTableMenusOptions);
 });

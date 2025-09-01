@@ -4,7 +4,7 @@ const dataTableOptions = {
     ...dataTableConfig,
 
     ajax: {
-        url: config.listarAreasDeConocimientoUrl,
+        url: config.listarDepartamentosUrl,
         type: "GET",
         dataType: "json"
     },

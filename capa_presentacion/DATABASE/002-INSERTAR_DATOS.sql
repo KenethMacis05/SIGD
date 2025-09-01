@@ -59,6 +59,7 @@ VALUES
     ('Menu', 'GuardarMenu', 'Crear o actualizar menú', 'API'),
     ('Menu', 'EliminarMenu', 'Eliminar menú', 'API'),
     ('Menu', 'EliminarMenuDelRol', 'Quitar menú de rol', 'API'),
+    ('Menu', 'ListarTodosLosMenus', 'Listar todos los menús', 'API'),
 
     -- RolController    
     ('Rol', 'ListarRoles', 'Listar roles', 'API'),
@@ -102,7 +103,7 @@ VALUES
     ('Planificacion', 'GuardarPlanDiario', 'Crear/Editar plan de clases diario', 'API'),
 
     -- CatalogosController
-    ('Catalogos', 'ListarAreasDeConocimientoc', 'Listar áreas de conocimiento', 'API'),
+    ('Catalogos', 'ListarAreasDeConocimiento', 'Listar áreas de conocimiento', 'API'),
     ('Catalogos', 'ListarDepartamentos', 'Listar departamentos', 'API'),
     ('Catalogos', 'ListarCarreras', 'Listar carreras', 'API'),
     ('Catalogos', 'ListarAsignaturas', 'listar asignaturas', 'API'),

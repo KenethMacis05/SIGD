@@ -1,6 +1,6 @@
 ﻿
 @{
-    ViewBag.Title = "Menus";
+    ViewBag.Title = "Menús";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,17 +11,23 @@
 <div class="card">
     <div class="card-header pb-0 border-bottom-0">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <!--Boton 1-->
+            <!--Boton 1 - CORREGIDO -->
             <li class="nav-item" role="presentation">
-                <button class="nav-link active esp-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#modalPermisos" type="button" role="tab" aria-controls="home" aria-selected="true">
-                    Asignar menus
+                <button class="nav-link active esp-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
+                    Asignar menús
+                </button>
+            </li>
+            <!--Boton 2 - CORREGIDO -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link esp-link" id="gestionar-tab" data-bs-toggle="tab" data-bs-target="#gestionar" type="button" role="tab" aria-controls="gestionar" aria-selected="false">
+                    Gestionar menús
                 </button>
             </li>
         </ul>
     </div>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
-            <!--Contenedor 1-->
+            <!--Contenedor 1 - ASIGNAR MENÚS -->
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                 <form class="row g-3">
                     <div class="col-auto">
@@ -36,16 +42,13 @@
                         </button>
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-outline-primary" onclick="abrirModal()"><i class="fa fa-plus"></i> Agregar menu</button>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-secondary" onclick="abrirModalCreate(null)"><i class="fa fa-plus"></i> Crear menu</button>
+                        <button type="button" class="btn btn-outline-primary" onclick="abrirModal()"><i class="fa fa-plus"></i> Asignar menú</button>
                     </div>
                 </form>
 
                 <hr />
                 <!--Tabla-->
-                <table class="display cell-border" style="width: 100%" id="datatableMenus">
+                <table class="display cell-border" style="width: 100%" id="datatableMenusXRol">
                     <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
                         <tr>
                             <th>#</th>
@@ -58,68 +61,91 @@
                     </thead>
                     <tbody class="tbody">
                     </tbody>
-                    <tfoot>
-
-                    </tfoot>
                 </table>
             </div>
-        </div>
-    </div>
 
-    <!-- Modal para agregar menus -->
-    <div class="modal fade" id="modalMenus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header text-white" style="background-color: #0072BB">
-                    <h5 class="modal-title">Agregar Nuevos Menús</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form class="row g-3">
-                        <div class="col-auto">
-                            <button id="selectAll" class="btn btn-outline-primary" type="button">Seleccionar Todo</button>
-                        </div>
-                        <div class="col-auto">
-                            <button id="deselectAll" class="btn btn-outline-secondary" type="button">Deseleccionar Todo</button>
-                        </div>
-                    </form>
-                    <hr />
-                    <div class="table-responsive">
-                        <!--Tabla-->
-                        <table class="display cell-border" style="width: 100%" id="datatableMenusNoAsignados">
-                            <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Menu</th>
-                                    <th>Controlador</th>
-                                    <th>Vista</th>
-                                    <th>Orden</th>
-                                    <th>Seleccionar</th>
-                                </tr>
-                            </thead>
-                            <tbody class="tbody">
-                            </tbody>
-                            <tfoot>
-
-                            </tfoot>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                        <i class="fas fa-times-circle me-2"></i>Cancelar
-                    </button>
-                    <button type="button" style="background: #0072BB" id="btnAsignarMenu" class="btn btn-success w-50">
-                        <i class="fas fa-save me-2"></i>Asignar Menú
+            <!--Contenedor 2 - GESTIONAR MENÚS -->
+            <div class="tab-pane fade" id="gestionar" role="tabpanel" aria-labelledby="gestionar-tab">
+                <div class="col-auto mb-3">
+                    <button type="button" class="btn btn-outline-secondary" onclick="abrirModalCreate(null)">
+                        <i class="fa fa-plus"></i> Crear menu
                     </button>
                 </div>
+
+                <!-- Tabla para gestionar menús -->
+                <table class="display cell-border" style="width: 100%" id="datatableGestionMenus">
+                    <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                        <tr>
+                            <th>#</th>
+                            <th>Menú</th>
+                            <th>Controlador</th>
+                            <th>Vista</th>
+                            <th>Orden</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal -->
+<!-- Modal para agregar menus -->
+<div class="modal fade" id="modalMenus" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background-color: #0072BB">
+                <h5 class="modal-title">Agregar Nuevos Menús</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form class="row g-3">
+                    <div class="col-auto">
+                        <button id="selectAll" class="btn btn-outline-primary" type="button">Seleccionar Todo</button>
+                    </div>
+                    <div class="col-auto">
+                        <button id="deselectAll" class="btn btn-outline-secondary" type="button">Deseleccionar Todo</button>
+                    </div>
+                </form>
+                <hr />
+                <div class="table-responsive">
+                    <!--Tabla-->
+                    <table class="display cell-border" style="width: 100%" id="datatableMenusNoAsignados">
+                        <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                            <tr>
+                                <th>#</th>
+                                <th>Menu</th>
+                                <th>Controlador</th>
+                                <th>Vista</th>
+                                <th>Orden</th>
+                                <th>Seleccionar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbody">
+                        </tbody>
+                        <tfoot>
+
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i>Cancelar
+                </button>
+                <button type="button" style="background: #0072BB" id="btnAsignarMenu" class="btn btn-success w-50">
+                    <i class="fas fa-save me-2"></i>Asignar Menú
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Guardar menú -->
 <div class="modal fade modal-lg" id="createMenu" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -127,10 +153,11 @@
                 <h5 class="modal-title" id="exampleModalLabel">Menú</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body g-2">                
+            <div class="modal-body g-2">
                 <form id="menuForm" autocomplete="off">
 
                     <input type="hidden" name="idMenu" id="idMenu" value="0" autocomplete="off">
+                    <input type="hidden" name="fk_controlador" id="fkControlador" value="0" autocomplete="off">
 
                     <div class="row">
                         <div class="col-lg-3 mb-3">
@@ -192,6 +219,8 @@
             guardarMenusPorRolUrl: '@Url.Action("AsignarMenus", "Menu")',
             eliminarMenuPorRolUrl: '@Url.Action("EliminarMenuDelRol", "Menu")',
             listarControladoresUrl: '@Url.Action("listarControladores", "Controlador")',
+            listarTodosLosMenusUrl: '@Url.Action("ListarTodosLosMenus", "Menu")',
+            guardarMenuUrl: '@Url.Action("GuardarMenu", "Menu")',
         }
     </script>
     <script src="@Url.Content("~/Scripts/Views/Menu.js")" type="text/javascript"></script>

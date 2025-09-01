@@ -600,7 +600,11 @@
     <Content Include="Scripts\Views\Acceso.js" />
     <Content Include="Scripts\Views\Archivos.js" />
     <Content Include="Scripts\Views\AreaDeConocimiento.js" />
+    <Content Include="Scripts\Views\Asignatura.js" />
+    <Content Include="Scripts\Views\Carrera.js" />
+    <Content Include="Scripts\Views\Departamento.js" />
     <Content Include="Scripts\Views\Menu.js" />
+    <Content Include="Scripts\Views\Periodo.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\PlanClasesDiario.js" />
     <Content Include="Scripts\Views\Roles.js" />

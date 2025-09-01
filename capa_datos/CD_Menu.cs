@@ -73,6 +73,67 @@ namespace capa_datos
             return lista;
         }
 
+        public List<MENU> ObtenerTodosLosMenus()
+        {
+            List<MENU> lista = new List<MENU>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_LeerTodosLosMenu", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    conexion.Open();
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            var menu = new MENU()
+                            {
+                                id_menu = Convert.ToInt32(dr["id_menu"]),
+                                nombre = dr["nombre"].ToString(),
+                                icono = dr["icono"].ToString(),
+                                orden = dr["orden"] != DBNull.Value ? dr["orden"].ToString() : "0",
+                                fk_controlador = dr["fk_controlador"] != DBNull.Value ? Convert.ToInt32(dr["fk_controlador"]) : (int?)null,
+                            };
+
+                            // Si tiene controlador asociado, cargar sus datos
+                            if (dr["controlador"] != DBNull.Value && dr["controlador"].ToString() != "NULL")
+                            {
+                                menu.Controller = new CONTROLLER()
+                                {
+                                    controlador = dr["controlador"].ToString(),
+                                    accion = dr["vista"].ToString()
+                                };
+                            }
+                            else
+                            {
+                                menu.Controller = new CONTROLLER()
+                                {
+                                    controlador = "#",
+                                    accion = "#",
+                                };
+                            }
+
+                            lista.Add(menu);
+                        }
+                    }
+                }
+
+                // Ordenar la lista por orden numérico
+                lista = lista.OrderBy(m => decimal.Parse(m.orden)).ToList();
+
+            }
+            catch (Exception ex)
+            {
+                lista = new List<MENU>();
+                throw new Exception("Error al obtener todos los menú: " + ex.Message);
+            }
+
+            return lista;
+        }
+
         public List<MENU> ObtenerMenusPorRol(int IdRol)
         {
             List<MENU> lista = new List<MENU>();

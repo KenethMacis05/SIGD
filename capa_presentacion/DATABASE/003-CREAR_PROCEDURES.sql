@@ -272,6 +272,27 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER TODOS LOS MENÚS
+CREATE OR ALTER PROCEDURE usp_LeerTodosLosMenu
+AS    
+BEGIN    
+    -- Obtener todos los menús
+    SELECT  
+        m.id_menu,    
+        m.nombre,    
+        c.controlador,    
+        c.accion AS vista,    
+        m.icono,    
+        m.orden,
+		m.fk_controlador
+    FROM MENU m    
+    LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador        
+    WHERE m.estado = 1    
+    AND (c.tipo = 'Vista' OR c.tipo IS NULL OR m.fk_controlador = null) -- Solo vistas o menús padres    
+    ORDER BY TRY_CAST(m.orden AS DECIMAL(10,2));
+END
+GO
+
 -- PROCEDIMIENTO PARA OBTENER MENUS NO ASIGNADOS AL ROL  
 CREATE OR ALTER PROCEDURE usp_LeerMenusNoAsignadosPorRol  
     @IdRol INT  

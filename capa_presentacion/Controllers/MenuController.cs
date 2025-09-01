@@ -41,6 +41,17 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        [HttpGet]
+        public JsonResult ListarTodosLosMenus()
+        {
+            List<MENU> lst = new List<MENU>();
+            lst = objMenu.ListarTodosLosMenus();
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
+
+
         // Enpoint(POST): Asignar menus a un rol de usuario
         [HttpPost]
         public JsonResult AsignarMenus(int IdRol, List<int> IdsMenus)
