@@ -319,6 +319,47 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE usp_CrearMenu
+    @Nombre VARCHAR(60),
+	@FkController INT = NULL,
+	@Icono VARCHAR(60),
+	@Orden VARCHAR(30),
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el nombre del menú ya existe
+	IF EXISTS (SELECT * FROM MENU WHERE nombre = @Nombre)
+	BEGIN
+		SET @Mensaje = 'El nombre del Menú ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el controlador ya esta relacionado con otro menú
+	IF EXISTS (SELECT * FROM MENU WHERE fk_controlador = @FkController)
+	BEGIN
+		SET @Mensaje = 'El controlador ya se encuentra relacionado a otro Menú'
+		RETURN
+	END
+
+	-- Verificar si el orden del menú no se encuentra ocupado
+	IF EXISTS (SELECT * FROM MENU WHERE orden = @Orden)
+	BEGIN
+		SET @Mensaje = 'El orden del Menú ya se encuentra en uso'
+		RETURN
+	END
+
+	INSERT INTO MENU(nombre, fk_controlador, icono, orden) 
+			VALUES (@Nombre, NULLIF(@FkController, ''), @Icono, @Orden)
+    
+    SET @Resultado = SCOPE_IDENTITY()
+	SET @Mensaje = 'Menú registrado exitosamente'
+END
+GO
+
 CREATE PROCEDURE usp_EliminarMenuDelRol
     @IdMenuRol INT,
     @Resultado BIT OUTPUT

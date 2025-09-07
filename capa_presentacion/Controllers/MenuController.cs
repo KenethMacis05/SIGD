@@ -6,6 +6,7 @@ using System.Web.Mvc;
 using capa_presentacion.Filters;
 using capa_negocio;
 using capa_entidad;
+using System.Web.UI.WebControls;
 
 namespace capa_presentacion.Controllers
 {
@@ -50,7 +51,24 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        // Metodo para crear o editar menús
+        [HttpPost]
+        public JsonResult GuardarMenu(MENU menu)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
 
+            if (menu.id_menu == 0)
+            {
+                resultado = objMenu.Crear(menu, out mensaje);
+            }
+            else
+            {
+                resultado = objMenu.Editar(menu, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
 
         // Enpoint(POST): Asignar menus a un rol de usuario
         [HttpPost]

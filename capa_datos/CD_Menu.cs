@@ -257,6 +257,53 @@ namespace capa_datos
             }
         }
 
+        public int Crear(MENU menu, out string mensaje)
+        {
+            int idautogenerado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_CrearMenu", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parámetros de entrada
+                    cmd.Parameters.AddWithValue("Nombre", menu.nombre);
+
+                    if (menu.fk_controlador.HasValue && menu.fk_controlador.Value != 0)
+                    {
+                        cmd.Parameters.AddWithValue("FkController", menu.fk_controlador.Value);
+                    }
+                    else
+                    {
+                        cmd.Parameters.AddWithValue("FkController", DBNull.Value);
+                    }
+
+                    cmd.Parameters.AddWithValue("Icono", menu.icono ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("Orden", menu.orden);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    idautogenerado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                idautogenerado = 0;
+                mensaje = "Error al registrar el menú: " + ex.Message;
+            }
+
+            return idautogenerado;
+        }
+
         // Eliminar menu del rol
         public bool EliminarMenuDelRol(int IdMenuRol, out string mensaje)
         {

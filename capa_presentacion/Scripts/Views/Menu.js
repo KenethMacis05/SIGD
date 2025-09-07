@@ -1,6 +1,7 @@
 ﻿let datatableMenusXRol;
 let datatableMenus;
 let datatableMenusNoAsignados;
+var filaSeleccionada;
 
 // Cargar roles en el selec
 jQuery.ajax({
@@ -308,6 +309,8 @@ function Guardar() {
 
     showLoadingAlert("Procesando", "Guardando datos del menú...");
 
+    debugger
+
     jQuery.ajax({
         url: config.guardarMenuUrl,
         type: "POST",
@@ -320,17 +323,17 @@ function Guardar() {
             $("#createMenu").modal("hide");
 
             // Menú Nuevo
-            if (Rol.id_rol == 0) {
+            if (Menu.id_menu == 0) {
                 if (data.Resultado != 0) {
-                    Rol.id_rol = data.Resultado;
-                    dataTable.row.add(Rol).draw(false);
+                    Menu.id_menu = data.Resultado;
                     showAlert("¡Éxito!", "Menú creado correctamente", "success");
+                    dataTable.row.add(Menu).draw(false);
                 } else { showAlert("Error", data.Mensaje || "Error al crear el menú", "error"); }
             }
             // Actualizar menú
             else {
                 if (data.Resultado) {
-                    dataTable.row(filaSeleccionada).data(Rol);
+                    dataTable.row(filaSeleccionada).data(Menu);
                     filaSeleccionada = null;
                     showAlert("¡Éxito!", "Menú actualizado correctamente", "success");
                 } else { showAlert("Error", data.Mensaje || "Error al actualizar el menú", "error"); }

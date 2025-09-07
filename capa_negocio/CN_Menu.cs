@@ -62,6 +62,31 @@ namespace capa_negocio
             return CD_Menu.ObtenerTodosLosMenus();
         }
 
+        public int Crear(MENU menu, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            if (string.IsNullOrEmpty(menu.nombre))
+            {
+                mensaje = "Por favor, complete todos los campos.";
+                return 0;
+            }
+
+            int resultado = CD_Menu.Crear(menu, out mensaje);
+
+            if (resultado == 0)
+            {
+                mensaje = "Error al crear el menú.";
+                return 0;
+            }
+            else
+            {
+                mensaje = "Menú creado correctamente.";
+            }
+
+            return resultado;
+        }
+
         public Dictionary<int, (int Codigo, string Mensaje)> AsignarMenus(int IdRol, List<int> IdsMenu)
         {
             var resultados = new Dictionary<int, (int, string)>();
@@ -102,6 +127,11 @@ namespace capa_negocio
         {
             bool eliminado = CD_Menu.EliminarMenuDelRol(IdMenuRol, out mensaje);
             return eliminado ? 1 : 0;
+        }
+
+        public int Editar(object rol, out string mensaje)
+        {
+            throw new NotImplementedException();
         }
     }
 }
