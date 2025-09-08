@@ -3033,7 +3033,7 @@ BEGIN
         fecha_registro,
         estado
     FROM AREACONOCIMIENTO
-	ORDER BY id_area DESC
+	ORDER BY codigo ASC
 END
 GO
 
@@ -3151,6 +3151,109 @@ BEGIN
         estado
     FROM DEPARTAMENTO
 	ORDER BY id_departamento DESC
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UN DEPARTAMENTO
+CREATE OR ALTER PROCEDURE usp_CrearDepartamento
+    @Nombre VARCHAR(60),    
+	@Codigo VARCHAR(60),
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el nombre del departamento ya existe
+	IF EXISTS (SELECT * FROM DEPARTAMENTO WHERE nombre = @Nombre)
+	BEGIN
+		SET @Mensaje = 'El nombre del departamento ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el codigo del departamento ya existe
+	IF EXISTS (SELECT * FROM DEPARTAMENTO WHERE codigo = @Codigo)
+	BEGIN
+		SET @Mensaje = 'El código del departamento ya está en uso'
+		RETURN
+	END
+
+	INSERT INTO DEPARTAMENTO(nombre, codigo) VALUES (@Nombre, @Codigo)
+    
+    SET @Resultado = SCOPE_IDENTITY()
+	SET @Mensaje = 'Departamento registrado exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UN DEPARTAMENTO
+CREATE PROCEDURE usp_ActualizarDepartamento
+    @IdDepartamento INT,
+    @Nombre VARCHAR(60),
+	@Codigo VARCHAR(60),
+    @Estado BIT,
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el departamento existe
+	IF NOT EXISTS (SELECT 1 FROM DEPARTAMENTO WHERE id_departamento = @IdDepartamento)
+	BEGIN
+		SET @Mensaje = 'El departamento no existe'
+		RETURN
+	END
+
+	-- Verificar si el nombre del departamento ya existe (excluyendo al departamento actual)
+	IF EXISTS (SELECT 1 FROM DEPARTAMENTO WHERE nombre = @Nombre AND id_departamento != @IdDepartamento)
+	BEGIN
+		SET @Mensaje = 'El nombre del departamento ingresada ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el nombre del codigo ya existe (excluyendo al área actual)
+	IF EXISTS (SELECT 1 FROM DEPARTAMENTO WHERE codigo = @Codigo AND id_departamento != @IdDepartamento)
+	BEGIN
+		SET @Mensaje = 'El código del departamento ingresado ya está en uso'
+		RETURN
+	END
+    
+    UPDATE DEPARTAMENTO
+    SET 
+        nombre = @Nombre,
+		codigo = @Codigo,
+        estado = @Estado
+    WHERE id_departamento = @IdDepartamento
+   
+    SET @Resultado = 1
+	SET @Mensaje = 'Departamento actualizado exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ELIMINAR UN DEPARTAMENTO
+CREATE PROCEDURE usp_EliminarDepartamento
+    @IdDepartamento INT,
+    @Resultado INT OUTPUT,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el departamento existe
+    IF NOT EXISTS (SELECT 1 FROM DEPARTAMENTO WHERE id_departamento = @IdDepartamento)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'El departamento no existe.'
+        RETURN
+    END
+    
+    IF EXISTS (SELECT 1 FROM DEPARTAMENTO WHERE id_departamento = @IdDepartamento)
+	BEGIN
+		DELETE FROM DEPARTAMENTO WHERE id_departamento = @IdDepartamento
+		SET @Resultado = 1
+	END
 END
 GO
 

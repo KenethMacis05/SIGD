@@ -84,6 +84,34 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        // Enpoint(POST): Guardar o editar departamento
+        [HttpPost]
+        public JsonResult GuardarDepartamentos(DEPARTAMENTO departamento)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (departamento.id_departamento == 0)
+            {
+                resultado = CN_Departamento.Crear(departamento, out mensaje);
+            }
+            else
+            {
+                resultado = CN_Departamento.Editar(departamento, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Eliminar departamento
+        [HttpPost]
+        public JsonResult EliminarDepartamentos(int idDepartamento)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_Departamento.Eliminar(idDepartamento, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Carrera
