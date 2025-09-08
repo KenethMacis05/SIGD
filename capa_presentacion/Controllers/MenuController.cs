@@ -99,12 +99,21 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Enpoint(POST): Eliminar menú del rol de usuario
+        // Enpoint(POST): Quitar menú del rol de usuario
         [HttpPost]
-        public JsonResult EliminarMenuDelRol(int IdMenuRol)
+        public JsonResult QuitarMenuDelRol(int IdMenuRol)
         {
             string mensaje = string.Empty;
-            int resultado = objMenu.EliminarMenuDelRol(IdMenuRol, out mensaje);
+            int resultado = objMenu.QuitarMenuDelRol(IdMenuRol, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Eliminar menú
+        [HttpPost]
+        public JsonResult EliminarMenu(int IdMenu)
+        {
+            string mensaje = string.Empty;
+            int resultado = objMenu.EliminarMenu(IdMenu, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
     }

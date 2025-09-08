@@ -58,7 +58,7 @@ VALUES
     ('Menu', 'AsignarMenus', 'Asignar menús a rol', 'API'),
     ('Menu', 'GuardarMenu', 'Crear o actualizar menú', 'API'),
     ('Menu', 'EliminarMenu', 'Eliminar menú', 'API'),
-    ('Menu', 'EliminarMenuDelRol', 'Quitar menú de rol', 'API'),
+    ('Menu', 'QuitarMenuDelRol', 'Quitar menú de rol', 'API'),
     ('Menu', 'ListarTodosLosMenus', 'Listar todos los menús', 'API'),
 
     -- RolController    

@@ -304,8 +304,8 @@ namespace capa_datos
             return idautogenerado;
         }
 
-        // Eliminar menu del rol
-        public bool EliminarMenuDelRol(int IdMenuRol, out string mensaje)
+        // Quitar menu del rol
+        public bool QuitarMenuDelRol(int IdMenuRol, out string mensaje)
         {
             bool resultado = false;
             mensaje = string.Empty;
@@ -313,7 +313,7 @@ namespace capa_datos
             {                
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {                 
-                    SqlCommand cmd = new SqlCommand("usp_EliminarMenuDelRol", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_QuitarMenuDelRol", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
                     
                     cmd.Parameters.AddWithValue("IdMenuRol", IdMenuRol);                    
@@ -331,6 +331,55 @@ namespace capa_datos
                 resultado = false;
                 mensaje = "Error al eliminar el menú: " + ex.Message;
             }
+            return resultado;
+        }
+
+        public int EliminarMenu(int IdMenu, out string mensaje)
+        {
+            int resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_EliminarMenu", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdMenu", IdMenu);
+
+                    SqlParameter outputParam = new SqlParameter("Resultado", SqlDbType.Int);
+                    outputParam.Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add(outputParam);
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+
+                    switch (resultado)
+                    {
+                        case 1:
+                            mensaje = "Menú eliminado correctamente";
+                            break;
+                        case 2:
+                            mensaje = "No se puede eliminar el menú porque está asignado a un rol";
+                            break;
+                        case 0:
+                            mensaje = "El menú no existe";
+                            break;
+                        default:
+                            mensaje = "Resultado inesperado";
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = 0;
+                mensaje = "Error al eliminar el menú: " + ex.Message;
+            }
+
             return resultado;
         }
     }

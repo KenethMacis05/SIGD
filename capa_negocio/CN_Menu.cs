@@ -123,10 +123,16 @@ namespace capa_negocio
             }
         }
 
-        public int EliminarMenuDelRol(int IdMenuRol, out string mensaje)
+        public int QuitarMenuDelRol(int IdMenuRol, out string mensaje)
         {
-            bool eliminado = CD_Menu.EliminarMenuDelRol(IdMenuRol, out mensaje);
+            bool eliminado = CD_Menu.QuitarMenuDelRol(IdMenuRol, out mensaje);
             return eliminado ? 1 : 0;
+        }
+
+        public int EliminarMenu(int IdMenu, out string mensaje)
+        {
+            int eliminado = CD_Menu.EliminarMenu(IdMenu, out mensaje);
+            return eliminado;
         }
 
         public int Editar(object rol, out string mensaje)

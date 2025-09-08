@@ -309,8 +309,6 @@ function Guardar() {
 
     showLoadingAlert("Procesando", "Guardando datos del menú...");
 
-    debugger
-
     jQuery.ajax({
         url: config.guardarMenuUrl,
         type: "POST",
@@ -350,11 +348,11 @@ $("#datatableMenusXRol tbody").on("click", '.btn-quitarPermiso', function () {
     
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
-            showLoadingAlert("Eliminando menú", "Por favor espere...")
+            showLoadingAlert("Quitando menú", "Por favor espere...")
 
             // Enviar petición AJAX
             $.ajax({
-                url: config.eliminarMenuPorRolUrl,
+                url: config.quitarMenuPorRolUrl,
                 type: "POST",
                 data: JSON.stringify({ IdMenuRol: data.id_menu_rol }),
                 dataType: "json",
@@ -366,6 +364,36 @@ $("#datatableMenusXRol tbody").on("click", '.btn-quitarPermiso', function () {
                         datatableMenusXRol.row(menuSeleccionado).remove().draw();
                         showAlert("¡Eliminado!", response.Mensaje || "Menú quitado correctamente", "success")
                     } else { showAlert("Error", response.Mensaje || "No se pudo quitar el menú del rol", "error") }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+            });
+        }
+    });
+});
+
+//Boton quitar menu del rol
+$("#datatableGestionMenus tbody").on("click", '.btn-eliminar', function () {
+    const menuSeleccionado = $(this).closest("tr");
+    const data = datatableMenus.row(menuSeleccionado).data();    
+    
+    confirmarEliminacion().then((result) => {
+        if (result.isConfirmed) {
+            showLoadingAlert("Eliminando menú", "Por favor espere...")
+
+            // Enviar petición AJAX
+            $.ajax({
+                url: config.eliminarMenuUrl,
+                type: "POST",
+                data: JSON.stringify({ IdMenu: data.id_menu }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        datatableMenus.row(menuSeleccionado).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Menú eliminado correctamente", "success")
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el menú", "error") }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
             });

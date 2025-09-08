@@ -360,7 +360,7 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_EliminarMenuDelRol
+CREATE PROCEDURE usp_QuitarMenuDelRol
     @IdMenuRol INT,
     @Resultado BIT OUTPUT
 AS
@@ -370,6 +370,27 @@ BEGIN
     IF EXISTS (SELECT 1 FROM MENU_ROL WHERE id_menu_rol = @IdMenuRol)
     BEGIN
         DELETE FROM MENU_ROL WHERE id_menu_rol = @IdMenuRol
+        SET @Resultado = 1
+    END
+END
+GO
+
+CREATE PROCEDURE usp_EliminarMenu
+    @IdMenu INT,
+    @Resultado INT OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    
+    IF EXISTS (SELECT 1 FROM MENU_ROL WHERE fk_menu = @IdMenu)
+    BEGIN
+        SET @Resultado = 2
+        RETURN
+    END
+
+    IF EXISTS (SELECT 1 FROM MENU WHERE id_menu = @IdMenu)
+    BEGIN
+        DELETE FROM MENU WHERE id_menu = @IdMenu
         SET @Resultado = 1
     END
 END
