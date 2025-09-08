@@ -371,7 +371,7 @@ $("#datatableMenusXRol tbody").on("click", '.btn-quitarPermiso', function () {
     });
 });
 
-//Boton quitar menu del rol
+//Boton elimar ménu
 $("#datatableGestionMenus tbody").on("click", '.btn-eliminar', function () {
     const menuSeleccionado = $(this).closest("tr");
     const data = datatableMenus.row(menuSeleccionado).data();    

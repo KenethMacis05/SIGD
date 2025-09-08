@@ -36,6 +36,34 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        // Enpoint(POST): Guardar o editar área de conocimiento
+        [HttpPost]
+        public JsonResult GuardarAreaDeConocimiento(AREACONOCIMIENTO area)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (area.id_area == 0)
+            {
+                resultado = CN_AreaConocimiento.Crear(area, out mensaje);
+            }
+            else
+            {
+                resultado = CN_AreaConocimiento.Editar(area, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Eliminar área de conocimiento
+        [HttpPost]
+        public JsonResult EliminarAreasDeConocimiento(int IdArea)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_AreaConocimiento.Eliminar(IdArea, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Departamento

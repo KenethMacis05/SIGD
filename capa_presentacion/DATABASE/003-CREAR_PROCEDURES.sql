@@ -3037,6 +3037,109 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UNA NUEVA ÁREA DE CONOCIMIENTO
+CREATE OR ALTER PROCEDURE usp_CrearAreaDeConocimiento
+    @Nombre VARCHAR(60),    
+	@Codigo VARCHAR(60),
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el nombre del área ya existe
+	IF EXISTS (SELECT * FROM AREACONOCIMIENTO WHERE nombre = @Nombre)
+	BEGIN
+		SET @Mensaje = 'El nombre del área de conocimiento ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el codigo del área ya existe
+	IF EXISTS (SELECT * FROM AREACONOCIMIENTO WHERE codigo = @Codigo)
+	BEGIN
+		SET @Mensaje = 'El código del área de conocimiento ya está en uso'
+		RETURN
+	END
+
+	INSERT INTO AREACONOCIMIENTO (nombre, codigo) VALUES (@Nombre, @Codigo)
+    
+    SET @Resultado = SCOPE_IDENTITY()
+	SET @Mensaje = 'Área de conocimiento registrada exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UNA ÁREA DE CONOCIMIENTO
+CREATE PROCEDURE usp_ActualizarAreaDeConocimiento
+    @IdArea INT,
+    @Nombre VARCHAR(60),
+	@Codigo VARCHAR(60),
+    @Estado BIT,
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el rol existe
+	IF NOT EXISTS (SELECT 1 FROM AREACONOCIMIENTO WHERE id_area = @IdArea)
+	BEGIN
+		SET @Mensaje = 'El área de conocimiento no existe'
+		RETURN
+	END
+
+	-- Verificar si el nombre del área ya existe (excluyendo al área actual)
+	IF EXISTS (SELECT 1 FROM AREACONOCIMIENTO WHERE nombre = @Nombre AND id_area != @IdArea)
+	BEGIN
+		SET @Mensaje = 'El nombre del área ingresada ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el nombre del codigo ya existe (excluyendo al área actual)
+	IF EXISTS (SELECT 1 FROM AREACONOCIMIENTO WHERE codigo = @Codigo AND id_area != @IdArea)
+	BEGIN
+		SET @Mensaje = 'El código del área ingresada ya está en uso'
+		RETURN
+	END
+    
+    UPDATE AREACONOCIMIENTO
+    SET 
+        nombre = @Nombre,
+		codigo = @Codigo,
+        estado = @Estado
+    WHERE id_area = @IdArea
+   
+    SET @Resultado = 1
+	SET @Mensaje = 'Área de conocimiento actualizada exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ELIMINAR UN ÁREA DE CONOCIMIENTO
+CREATE PROCEDURE usp_EliminarAreaDeConocimiento
+    @IdArea INT,
+    @Resultado INT OUTPUT,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el área existe
+    IF NOT EXISTS (SELECT 1 FROM AREACONOCIMIENTO WHERE id_area = @IdArea)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'El área de conocimiento no existe.'
+        RETURN
+    END
+    
+    IF EXISTS (SELECT 1 FROM AREACONOCIMIENTO WHERE id_area = @IdArea)
+	BEGIN
+		DELETE FROM AREACONOCIMIENTO WHERE id_area = @IdArea
+		SET @Resultado = 1
+	END
+END
+GO
+
 CREATE OR ALTER PROCEDURE usp_LeerDepartamento
 AS
 BEGIN

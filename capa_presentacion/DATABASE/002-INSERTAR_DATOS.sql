@@ -104,10 +104,24 @@ VALUES
 
     -- CatalogosController
     ('Catalogos', 'ListarAreasDeConocimiento', 'Listar áreas de conocimiento', 'API'),
+    ('Catalogos', 'GuardarAreaDeConocimiento', 'Crear/Editar áreas de conocimiento', 'API'),
+    ('Catalogos', 'EliminarAreasDeConocimiento', 'Elimar áreas de conocimiento', 'API'),
+    
     ('Catalogos', 'ListarDepartamentos', 'Listar departamentos', 'API'),
+    ('Catalogos', 'GuardarDepartamentos', 'Crear/Editar departamentos', 'API'),
+    ('Catalogos', 'EliminarDepartamentos', 'Eliminar departamentos', 'API'),
+
     ('Catalogos', 'ListarCarreras', 'Listar carreras', 'API'),
+    ('Catalogos', 'GuardarCarreras', 'Crear/Editar carreras', 'API'),
+    ('Catalogos', 'EliminarCarreras', 'Eliminar carreras', 'API'),
+
     ('Catalogos', 'ListarAsignaturas', 'listar asignaturas', 'API'),
-    ('Catalogos', 'ListarPeriodos', 'listar periodos', 'API')
+    ('Catalogos', 'GuardarAsignaturas', 'Crear/Editar asignaturas', 'API'),
+    ('Catalogos', 'EliminarAsignaturas', 'Eliminar asignaturas', 'API'),
+    
+    ('Catalogos', 'ListarPeriodos', 'listar periodos', 'API'),
+    ('Catalogos', 'GuardarPeriodos', 'Crear/Editar periodos', 'API'),
+    ('Catalogos', 'EliminarPeriodos', 'Eliminar periodos', 'API')
 GO
 --------------------------------------------------------------------------------------------------------------------
 
