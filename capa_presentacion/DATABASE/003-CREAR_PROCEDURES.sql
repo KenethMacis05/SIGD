@@ -3023,6 +3023,7 @@ GO
 --------------------------------------------------------------------------------------------------------------------
 -- PROCEDIMIENTOS ALMACENADOS CATALOGOS
 
+-- PROCEDIMIENTO ALMACENADO PARA LEER LAS AREAS DE CONOCIMIENTO
 CREATE OR ALTER PROCEDURE usp_LeerAreasDeConocimiento
 AS
 BEGIN
@@ -3140,6 +3141,7 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA LEER LOS DEPARTAMENTOS
 CREATE OR ALTER PROCEDURE usp_LeerDepartamento
 AS
 BEGIN
@@ -3150,7 +3152,7 @@ BEGIN
         fecha_registro,
         estado
     FROM DEPARTAMENTO
-	ORDER BY id_departamento DESC
+	ORDER BY id_departamento ASC
 END
 GO
 
@@ -3257,6 +3259,7 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA LEER LAS CARRERAS
 CREATE OR ALTER PROCEDURE usp_LeerCarreras
 AS
 BEGIN
@@ -3267,7 +3270,111 @@ BEGIN
         fecha_registro,
         estado
     FROM CARRERA
-	ORDER BY id_carrera DESC
+	ORDER BY id_carrera ASC
+END
+GO
+
+
+-- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UNA CARRERA	
+CREATE OR ALTER PROCEDURE usp_CrearCarrera
+    @Nombre VARCHAR(60),    
+	@Codigo VARCHAR(60),
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el nombre de la carrera ya existe
+	IF EXISTS (SELECT * FROM CARRERA WHERE nombre = @Nombre)
+	BEGIN
+		SET @Mensaje = 'El nombre de la carrera ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el codigo de la carrera ya existe
+	IF EXISTS (SELECT * FROM CARRERA WHERE codigo = @Codigo)
+	BEGIN
+		SET @Mensaje = 'El código de la carrera ya está en uso'
+		RETURN
+	END
+
+	INSERT INTO CARRERA(nombre, codigo) VALUES (@Nombre, @Codigo)
+    
+    SET @Resultado = SCOPE_IDENTITY()
+	SET @Mensaje = 'Carrera registrado exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UNA CARRERA
+CREATE PROCEDURE usp_ActualizarCarrera
+    @IdCarrera INT,
+    @Nombre VARCHAR(60),
+	@Codigo VARCHAR(60),
+    @Estado BIT,
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si la carrera existe
+	IF NOT EXISTS (SELECT 1 FROM CARRERA WHERE id_carrera = @IdCarrera)
+	BEGIN
+		SET @Mensaje = 'La carrera no existe'
+		RETURN
+	END
+
+	-- Verificar si el nombre de la carrera ya existe (excluyendo la carrera actual)
+	IF EXISTS (SELECT 1 FROM CARRERA WHERE nombre = @Nombre AND id_carrera != @IdCarrera)
+	BEGIN
+		SET @Mensaje = 'El nombre de la carrera ingresada ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el nombre del codigo ya existe (excluyendo la carrera actual)
+	IF EXISTS (SELECT 1 FROM CARRERA WHERE codigo = @Codigo AND id_carrera != @IdCarrera)
+	BEGIN
+		SET @Mensaje = 'El código de la carrera ingresada ya está en uso'
+		RETURN
+	END
+    
+    UPDATE CARRERA
+    SET 
+        nombre = @Nombre,
+		codigo = @Codigo,
+        estado = @Estado
+    WHERE id_carrera = @IdCarrera
+   
+    SET @Resultado = 1
+	SET @Mensaje = 'Carrera actualizada exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ELIMINAR UNA CARRERA
+CREATE PROCEDURE usp_EliminarCarrera
+    @IdCarrera INT,
+    @Resultado INT OUTPUT,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si la carrera existe
+    IF NOT EXISTS (SELECT 1 FROM CARRERA WHERE id_carrera = @IdCarrera)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'La carrera no existe.'
+        RETURN
+    END
+    
+    IF EXISTS (SELECT 1 FROM CARRERA WHERE id_carrera = @IdCarrera)
+	BEGIN
+		DELETE FROM CARRERA WHERE id_carrera = @IdCarrera
+		SET @Resultado = 1
+	END
 END
 GO
 
@@ -3281,7 +3388,7 @@ BEGIN
         fecha_registro,
         estado
     FROM ASIGNATURA
-	ORDER BY id_asignatura DESC
+	ORDER BY id_asignatura ASC
 END
 GO
 
@@ -3295,7 +3402,7 @@ BEGIN
         fecha_registro,
         estado
     FROM PERIODO
-	ORDER BY id_periodo DESC
+	ORDER BY id_periodo ASC
 END
 GO
 

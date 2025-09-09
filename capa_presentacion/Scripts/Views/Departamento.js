@@ -17,7 +17,7 @@ function abrirModal(json) {
     $("#Guardar").modal("show");
 }
 
-//Seleccionar área de conocimiento para editar
+//Seleccionar departamento para editar
 $("#datatable tbody").on("click", '.btn-editar', function () {
     filaSeleccionada = $(this).closest("tr");
     var data = dataTable.row(filaSeleccionada).data()
@@ -46,7 +46,7 @@ function Guardar() {
             Swal.close();
             $("#Guardar").modal("hide");
 
-            // Área Nueva
+            // Carrera Nueva
             if (departamento.id_departamento == 0) {
                 if (data.Resultado != 0) {
                     departamento.id_departamento = data.Resultado;
@@ -96,7 +96,6 @@ $("#datatable tbody").on("click", '.btn-eliminar', function () {
         }
     });
 });
-
 
 const dataTableOptions = {
     ...dataTableConfig,

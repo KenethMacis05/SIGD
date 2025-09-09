@@ -132,6 +132,34 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        // Enpoint(POST): Guardar o editar carreras
+        [HttpPost]
+        public JsonResult GuardarCarreras(CARRERA carrera)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (carrera.id_carrera == 0)
+            {
+                resultado = CN_Carrera.Crear(carrera, out mensaje);
+            }
+            else
+            {
+                resultado = CN_Carrera.Editar(carrera, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Eliminar carrera
+        [HttpPost]
+        public JsonResult EliminarCarreras(int idCarrera)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_Carrera.Eliminar(idCarrera, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Componente
