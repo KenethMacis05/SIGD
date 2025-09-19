@@ -17,5 +17,52 @@ namespace capa_negocio
         {
             return CD_Asignatura.Listar();
         }
+
+        //Crear asignatura
+        public int Crear(ASIGNATURA asignatura, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            if (string.IsNullOrEmpty(asignatura.nombre) || string.IsNullOrEmpty(asignatura.codigo))
+            {
+                mensaje = "Por favor, complete todos los campos.";
+                return 0;
+            }
+
+            int resultado = CD_Asignatura.Crear(asignatura, out mensaje);
+
+            if (resultado == 0)
+            {
+                mensaje = "Error al crear la asignatura.";
+                return 0;
+            }
+            else
+            {
+                mensaje = "Asignatura creada correctamente.";
+            }
+
+            return resultado;
+        }
+
+        //Editar asignatura
+        public int Editar(ASIGNATURA asignatura, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            if (string.IsNullOrEmpty(asignatura.nombre) || string.IsNullOrEmpty(asignatura.codigo))
+            {
+                mensaje = "Por favor, complete todos los campos.";
+                return 0;
+            }
+
+            bool actualizado = CD_Asignatura.Editar(asignatura, out mensaje);
+            return actualizado ? 1 : 0;
+        }
+
+        //Eliminar asignatura
+        public int Eliminar(int idAsignatura, out string mensaje)
+        {
+            return CD_Asignatura.Eliminar(idAsignatura, out mensaje);
+        }
     }
 }

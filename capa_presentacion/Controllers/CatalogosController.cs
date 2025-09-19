@@ -180,6 +180,34 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        // Enpoint(POST): Guardar o editar asignatura
+        [HttpPost]
+        public JsonResult GuardarAsignaturas(ASIGNATURA asignatura)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (asignatura.id_asignatura == 0)
+            {
+                resultado = CN_Asignatura.Crear(asignatura, out mensaje);
+            }
+            else
+            {
+                resultado = CN_Asignatura.Editar(asignatura, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Eliminar asignatura
+        [HttpPost]
+        public JsonResult EliminarAsignaturas(int idAsignatura)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_Asignatura.Eliminar(idAsignatura, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region Periodo
@@ -190,7 +218,7 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
-        // Enpoint(GET): listar los departamentos
+        // Enpoint(GET): listar los periodos
         [HttpGet]
         public JsonResult ListarPeriodos()
         {
@@ -198,6 +226,34 @@ namespace capa_presentacion.Controllers
             lst = CN_Periodo.Listar();
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Guardar o editar periodos
+        [HttpPost]
+        public JsonResult GuardarPeriodos(PERIODO periodo)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (periodo.id_periodo == 0)
+            {
+                resultado = CN_Periodo.Crear(periodo, out mensaje);
+            }
+            else
+            {
+                resultado = CN_Periodo.Editar(periodo, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Eliminar asignatura
+        [HttpPost]
+        public JsonResult EliminarPeriodos(int idPeriodo)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_Periodo.Eliminar(idPeriodo, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

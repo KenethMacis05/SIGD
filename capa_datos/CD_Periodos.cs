@@ -49,5 +49,127 @@ namespace capa_datos
             }
             return lst;
         }
+
+        //Crear periodo
+        public int Crear(PERIODO periodo, out string mensaje)
+        {
+            int idautogenerado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_CrearPeriodo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetros
+                    cmd.Parameters.AddWithValue("Anio", periodo.anio);
+                    cmd.Parameters.AddWithValue("Semestre", periodo.semestre);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    // Ejecutar comando
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    idautogenerado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                idautogenerado = 0;
+                mensaje = "Error al registrar el periodo: " + ex.Message;
+            }
+
+            return idautogenerado;
+        }
+
+        //Editar periodo
+        public bool Editar(PERIODO periodo, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarPeriodo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetros
+                    cmd.Parameters.AddWithValue("IdPeriodo", periodo.id_periodo);
+                    cmd.Parameters.AddWithValue("Anio", periodo.anio);
+                    cmd.Parameters.AddWithValue("Semestre", periodo.semestre ?? (object)DBNull.Value);
+                    cmd.Parameters.AddWithValue("Estado", periodo.estado);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    // Ejecutar comando
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value != DBNull.Value ? cmd.Parameters["Mensaje"].Value.ToString() : "Mensaje no disponible.";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al actualizar el periodo: " + ex.Message;
+            }
+            return resultado;
+        }
+
+        //Eliminar periodo
+        public int Eliminar(int idPeriodo, out string mensaje)
+        {
+            int resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_EliminarPeriodo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parámetro de entrada
+                    cmd.Parameters.AddWithValue("IdPeriodo", idPeriodo);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = 0;
+                mensaje = "Error al eliminar el periodo: " + ex.Message;
+            }
+
+            return resultado;
+        }
     }
 }

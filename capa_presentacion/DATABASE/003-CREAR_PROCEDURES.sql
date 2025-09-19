@@ -1399,7 +1399,6 @@ BEGIN
     END CATCH
 END
 GO
---------------------------------------------------------------------------------------------------------------------
 
 -- (3) PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UNA CARPETA  
 CREATE OR ALTER PROCEDURE usp_ActualizarCarpeta  
@@ -1645,14 +1644,16 @@ BEGIN
     END TRY
     BEGIN CATCH        
         IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION;        
+            ROLLBACK TRANSACTION;
+        
         SET @Resultado = 0;        
         THROW;
     END CATCH
 END
 GO
 
----------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------
+
 -- (6) PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS RECIENTES DEL USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerArchivosRecientes
     @IdUsuario INT,
@@ -1980,7 +1981,10 @@ BEGIN
     DECLARE @fk_id_carpeta INT, @ruta_actual VARCHAR(255), @ruta_nueva VARCHAR(255), @pos INT, @directorio VARCHAR(255);
 
     -- Obtener carpeta actual y ruta actual
-    SELECT @fk_id_carpeta = fk_id_carpeta, @ruta_actual = ruta FROM ARCHIVO WHERE id_archivo = @id_archivo;
+    SELECT 
+        @fk_id_carpeta = fk_id_carpeta, 
+        @ruta_actual = ruta 
+    FROM ARCHIVO WHERE id_archivo = @id_archivo;
 
     -- Validación: ¿Ya existe un archivo con ese nombre en la misma carpeta? (excluyendo el actual)
     IF EXISTS (
@@ -1990,7 +1994,7 @@ BEGIN
           AND id_archivo <> @id_archivo
     )
     BEGIN
-        SET @mensaje = 'Ya existe un archivo con ese nombre en la carpeta actual';
+        SET @mensaje = 'Ya existe un archivo con este nombre en la carpeta actual';
         SET @resultado = 0;
         RETURN;
     END
@@ -2096,7 +2100,7 @@ BEGIN
         -- INSERT INTO AUDITORIA_ELIMINACIONES (tipo, id_elemento, nombre, ruta, usuario, fecha)
         -- VALUES ('Archivo', @IdArchivo, @NombreArchivo, @RutaArchivo, @IdUsuario, GETDATE());
     END TRY
-    BEGIN CATCH
+    BEGIN CATCH        
         IF @@TRANCOUNT > 0
             ROLLBACK TRANSACTION;
         
@@ -2108,7 +2112,8 @@ BEGIN
     END CATCH
 END
 GO
-------------------------------------------------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------------------------------------------
 
 -- (12) PROCEDIMIENTO ALMACENADO PARA RESTABLECER UN ARCHIVO
 CREATE PROCEDURE usp_RestablecerArchivo
@@ -2365,6 +2370,7 @@ BEGIN
     DROP TABLE #RutasAEliminar;
 END
 GO
+
 -----------------------------------------------------------------------------------------------------------------
 
 -- (14) PROCEDIMIENTO ALMACENADO PARA ELIMINAR DIFINITIVAMENTE UNA CARPETA
@@ -2418,7 +2424,7 @@ BEGIN
         SELECT 1
         FROM CARPETA c
         INNER JOIN USUARIOS u ON c.fk_id_usuario = u.id_usuario
-        WHERE fk_id_usuario = @IdUsuario
+        WHERE fk_id_usuario = @IdUsuario 
           AND nombre <> CONCAT('DEFAULT_', u.usuario)
     )
     BEGIN
@@ -2647,29 +2653,31 @@ CREATE PROCEDURE usp_ObtenerArchivosCompartidosPorMi
     @IdUsuarioPropietario INT  
 AS  
 BEGIN  
-    SET NOCOUNT ON;  
-      
-    SELECT   
+    SET NOCOUNT ON;
+    
+    SELECT 
         co.id_compartido,
-        a.nombre AS nombre_archivo,  
-        a.ruta,  
-        a.fecha_subida,  
-        u.correo AS correo_destino,  
-        u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,  
-        co.permisos,  
-        co.fecha_compartido  
-    FROM   
-        COMPARTIDOS co  
-    INNER JOIN   
-        ARCHIVO a ON co.fk_id_archivo = a.id_archivo  
-    LEFT JOIN  
-        USUARIOS u ON co.fk_id_usuario_destino = u.id_usuario  
-    WHERE   
-        co.fk_id_usuario_propietario = @IdUsuarioPropietario  
-        AND co.estado = 1  
-        AND a.estado = 1  
-    ORDER BY   
-        co.fecha_compartido DESC;  
+        a.nombre AS nombre_archivo,
+		a.ruta,
+		a.size,
+		a.tipo,
+		a.fecha_subida,
+        u.correo AS correo_destino,
+        u.pri_nombre + ' ' + u.pri_apellido AS nombre_destinatario,
+        co.permisos,
+        co.fecha_compartido
+    FROM 
+        COMPARTIDOS co
+    INNER JOIN 
+        ARCHIVO a ON co.fk_id_archivo = a.id_archivo
+    LEFT JOIN
+        USUARIOS u ON co.fk_id_usuario_destino = u.id_usuario
+    WHERE 
+        co.fk_id_usuario_propietario = @IdUsuarioPropietario
+        AND co.estado = 1
+        AND a.estado = 1
+    ORDER BY 
+        co.fecha_compartido DESC;
 END  
 GO
 -----------------------------------------------------------------------------------------------------------------
@@ -2720,7 +2728,7 @@ BEGIN
     	INNER JOIN
         	USUARIOS u ON co.fk_id_usuario_propietario = u.id_usuario
     	WHERE 
-        	co.fk_id_usuario_destino = @idUsuario
+        	co.fk_id_usuario_destino = @IdUsuario
         	AND co.estado = 1
         	AND c.estado = 1
     	ORDER BY 
@@ -2748,11 +2756,11 @@ BEGIN
     DECLARE @ExisteCompartido BIT = 0;  
       
     -- Verificar si el usuario existe y está activo  
-	 IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuarioDestino AND estado = 1)  
-	 BEGIN  
-	  RAISERROR('Usuario no encontrado o inactivo', 16, 1);  
-	  RETURN;  
-	 END  
+	IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuarioDestino AND estado = 1)  
+	BEGIN  
+		RAISERROR('Usuario no encontrado o inactivo', 16, 1);  
+		RETURN;  
+	END  
       
     -- Verificar si ya está compartido  
     IF EXISTS (  
@@ -2763,8 +2771,8 @@ BEGIN
     )  
     BEGIN  
         SET @ExisteCompartido = 1;  
-    END  
-      
+    END
+    
     -- Validaciones  
     IF NOT EXISTS (SELECT 1 FROM ARCHIVO WHERE id_archivo = @IdArchivo AND estado = 1)  
     BEGIN  
@@ -2810,7 +2818,8 @@ BEGIN
     END CATCH  
 END
 GO
------------------------------------------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS COMPARTIDOS POR EL USUARIO
 CREATE OR ALTER PROCEDURE usp_ObtenerArchivosCompartidosPorMi
@@ -2844,6 +2853,7 @@ BEGIN
         co.fecha_compartido DESC;
 END
 GO
+
 --------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS ARCHIVOS QUE LE COMPARTIERON AL USUARIO
@@ -3006,6 +3016,7 @@ BEGIN
     WHERE id_carpeta = @IdCarpeta AND estado = 1;
 END
 GO
+
 --------------------------------------------------------------------------------------------------------------------
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER EL NOMBRE DE UN ARCHIVO POR SU ID
@@ -3274,7 +3285,6 @@ BEGIN
 END
 GO
 
-
 -- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UNA CARRERA	
 CREATE OR ALTER PROCEDURE usp_CrearCarrera
     @Nombre VARCHAR(60),    
@@ -3378,6 +3388,7 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA LEER LAS ASIGNATURAS
 CREATE OR ALTER PROCEDURE usp_LeerAsignaturas
 AS
 BEGIN
@@ -3392,6 +3403,110 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UNA ASIGNATURA	
+CREATE OR ALTER PROCEDURE usp_CrearAsignatura
+    @Nombre VARCHAR(60),    
+	@Codigo VARCHAR(60),
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el nombre de la asignatura ya existe
+	IF EXISTS (SELECT * FROM ASIGNATURA WHERE nombre = @Nombre)
+	BEGIN
+		SET @Mensaje = 'El nombre de la asignatura ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el codigo de la asignatura ya existe
+	IF EXISTS (SELECT * FROM ASIGNATURA WHERE codigo = @Codigo)
+	BEGIN
+		SET @Mensaje = 'El código de la asignatura ya está en uso'
+		RETURN
+	END
+
+	INSERT INTO ASIGNATURA(nombre, codigo) VALUES (@Nombre, @Codigo)
+    
+    SET @Resultado = SCOPE_IDENTITY()
+	SET @Mensaje = 'Asignatura registrada exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UNA ASIGNATURA
+CREATE PROCEDURE usp_ActualizarAsignatura
+    @IdAsignatura INT,
+    @Nombre VARCHAR(60),
+	@Codigo VARCHAR(60),
+    @Estado BIT,
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si la asignatura existe
+	IF NOT EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @IdAsignatura)
+	BEGIN
+		SET @Mensaje = 'La asignatura no existe'
+		RETURN
+	END
+
+	-- Verificar si el nombre de la asignatura ya existe (excluyendo la asignatura actual)
+	IF EXISTS (SELECT 1 FROM ASIGNATURA WHERE nombre = @Nombre AND id_asignatura != @IdAsignatura)
+	BEGIN
+		SET @Mensaje = 'El nombre de la asignatura ingresada ya está en uso'
+		RETURN
+	END
+
+	-- Verificar si el nombre del codigo ya existe (excluyendo la asignatura actual)
+	IF EXISTS (SELECT 1 FROM ASIGNATURA WHERE codigo = @Codigo AND id_asignatura != @IdAsignatura)
+	BEGIN
+		SET @Mensaje = 'El código de la asignatura ingresada ya está en uso'
+		RETURN
+	END
+    
+    UPDATE ASIGNATURA
+    SET 
+        nombre = @Nombre,
+		codigo = @Codigo,
+        estado = @Estado
+    WHERE id_asignatura = @IdAsignatura
+   
+    SET @Resultado = 1
+	SET @Mensaje = 'Asignatura actualizada exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ELIMINAR UNA ASIGNATURA
+CREATE PROCEDURE usp_EliminarAsignatura
+    @IdAsignatura INT,
+    @Resultado INT OUTPUT,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si la asignatura existe
+    IF NOT EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @IdAsignatura)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'La asignatura no existe.'
+        RETURN
+    END
+    
+    IF EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @IdAsignatura)
+	BEGIN
+		DELETE FROM ASIGNATURA WHERE id_asignatura = @IdAsignatura
+		SET @Resultado = 1
+	END
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA LEER LOS PERIODOS
 CREATE OR ALTER PROCEDURE usp_LeerPeriodos
 AS
 BEGIN
@@ -3402,11 +3517,123 @@ BEGIN
         fecha_registro,
         estado
     FROM PERIODO
-	ORDER BY id_periodo ASC
+	ORDER BY id_periodo DESC
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UN PERIODO
+CREATE OR ALTER PROCEDURE usp_CrearPeriodo
+    @Anio VARCHAR(4),    
+    @Semestre VARCHAR(10),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    SET @Mensaje = ''
 
---USE SISTEMA_DE_GESTION_DIDACTICA;
---GRANT EXECUTE TO [IIS APPPOOL\sigd];
---GO
+    -- Validar que Anio solo contenga números y tenga longitud 4
+    IF LEN(@Anio) != 4 OR PATINDEX('%[^0-9]%', @Anio) > 0
+    BEGIN
+        SET @Mensaje = 'El año debe ser un valor numérico de 4 dígitos.'
+        RETURN
+    END
+
+    -- Validar que Semestre no esté vacío
+    IF @Semestre IS NULL OR LTRIM(RTRIM(@Semestre)) = ''
+    BEGIN
+        SET @Mensaje = 'El semestre no puede estar vacío.'
+        RETURN
+    END
+
+    -- Verificar si el periodo ya existe
+    IF EXISTS (SELECT * FROM PERIODO WHERE anio = @Anio AND semestre = @Semestre)
+    BEGIN
+        SET @Mensaje = 'El periodo ya está en uso'
+        RETURN
+    END
+
+    INSERT INTO PERIODO (anio, semestre) VALUES (@Anio, @Semestre)
+
+    SET @Resultado = SCOPE_IDENTITY()
+    SET @Mensaje = 'Periodo registrado exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UN PERIODO
+CREATE PROCEDURE usp_ActualizarPeriodo
+    @IdPeriodo INT,
+    @Anio VARCHAR(4),
+    @Semestre VARCHAR(255),
+    @Estado BIT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    SET @Mensaje = ''
+    
+    -- Validar que Anio solo contenga números y tenga longitud 4
+    IF LEN(@Anio) != 4 OR PATINDEX('%[^0-9]%', @Anio) > 0
+    BEGIN
+        SET @Mensaje = 'El año debe ser un valor numérico de 4 dígitos.'
+        RETURN
+    END
+
+    -- Validar que Semestre no esté vacío
+    IF @Semestre IS NULL OR LTRIM(RTRIM(@Semestre)) = ''
+    BEGIN
+        SET @Mensaje = 'El semestre no puede estar vacío.'
+        RETURN
+    END
+
+    -- Verificar si el periodo existe
+    IF NOT EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @IdPeriodo)
+    BEGIN
+        SET @Mensaje = 'El periodo no existe'
+        RETURN
+    END
+    
+    -- Verificar si el periodo ya existe (excluyendo el periodo actual)
+    IF EXISTS (SELECT 1 FROM PERIODO WHERE anio = @Anio AND semestre = @Semestre AND id_periodo != @IdPeriodo)
+    BEGIN
+        SET @Mensaje = 'El periodo ingresado ya está en uso'
+        RETURN
+    END
+    
+    UPDATE PERIODO
+    SET 
+        anio = @Anio,
+        semestre = @Semestre,
+        estado = @Estado
+    WHERE id_periodo = @IdPeriodo
+    
+    SET @Resultado = 1
+    SET @Mensaje = 'Periodo actualizado exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ELIMINAR UN PERIODO
+CREATE PROCEDURE usp_EliminarPeriodo
+    @IdPeriodo INT,
+    @Resultado INT OUTPUT,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el periodo existe
+    IF NOT EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @IdPeriodo)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'El periodo no existe.'
+        RETURN
+    END
+    
+    IF EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @IdPeriodo)
+    BEGIN
+        DELETE FROM PERIODO WHERE id_periodo = @IdPeriodo
+        SET @Resultado = 1
+    END
+END
+GO
