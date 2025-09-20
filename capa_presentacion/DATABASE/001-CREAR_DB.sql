@@ -414,14 +414,21 @@ GO
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PLANCLASESDIARIO')
 CREATE TABLE PLANCLASESDIARIO (
     id_plan_diario INT PRIMARY KEY IDENTITY(1,1),
-	fk_plan_didactico_semestral INT NOT NULL,
-	codigo_documento VARCHAR(255) NOT NULL,	
-	nombre_plan_clases_diario VARCHAR(255) NOT NULL,
+	codigo VARCHAR(255) NOT NULL,	
+	nombre VARCHAR(255) NOT NULL,
+	fecha_registro DATETIME DEFAULT GETDATE(),
+    estado BIT DEFAULT 1,
 
 	-- 1.	Datos Generales
-	-- Carrera (COMPONENTECURRICULAR)
-	fk_componente_curricular INT NOT NULL,
-	
+    -- Area de conocimiento
+    fk_area INT NOT NULL,
+
+    -- Departamento
+    fk_departamento INT NOT NULL,
+
+    -- Carrera
+    fk_carrera INT NOT NULL,
+    
 	-- Eje (s)
 	ejes VARCHAR(255),
 
@@ -462,13 +469,12 @@ CREATE TABLE PLANCLASESDIARIO (
 	criterios_aprendizaje VARCHAR(255),
 	indicadores_aprendizaje VARCHAR(255),
 	nivel_aprendizaje VARCHAR(255),
+	
+    -- 5.	Anexos
 
-	fecha_registro DATETIME DEFAULT GETDATE(),
-
-	-- 5.	Anexos
-
-	CONSTRAINT FK_PCD_PDS FOREIGN KEY (fk_plan_didactico_semestral) REFERENCES PlanDidacticoSemestral(id_plan_didactico_semestral),
-    CONSTRAINT FK_PCD_COMPONENTE FOREIGN KEY (fk_componente_curricular) REFERENCES ComponenteCurricular(id_componente_curricular),
+    CONSTRAINT FK_PCD_AREA FOREIGN KEY (fk_area) REFERENCES AREACONOCIMIENTO(id_area),
+    CONSTRAINT FK_PCD_DEPARTAMENTO FOREIGN KEY (fk_departamento) REFERENCES DEPARTAMENTO(id_departamento),
+    CONSTRAINT FK_PCD_CARRERA FOREIGN KEY (fk_carrera) REFERENCES CARRERA(id_carrera),
     CONSTRAINT FK_PCD_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura),
     CONSTRAINT FK_PCD_USUARIO FOREIGN KEY (fk_profesor) REFERENCES Usuarios(id_usuario),
     CONSTRAINT FK_PCD_PERIODO FOREIGN KEY (fk_periodo) REFERENCES Periodo(id_periodo)

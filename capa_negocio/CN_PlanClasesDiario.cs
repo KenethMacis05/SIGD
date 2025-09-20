@@ -34,8 +34,7 @@ namespace capa_negocio
             mensaje = string.Empty;
 
             // Validación de campos obligatorios
-            if (string.IsNullOrEmpty(plan.nombre) ||
-                string.IsNullOrEmpty(plan.codigo))
+            if (string.IsNullOrEmpty(plan.nombre))
             {
                 mensaje = "Por favor, complete todos los campos obligatorios.";
                 return 0;
@@ -60,8 +59,7 @@ namespace capa_negocio
         {
             mensaje = string.Empty;
 
-            if (string.IsNullOrEmpty(plan.nombre) ||
-                string.IsNullOrEmpty(plan.codigo))
+            if (string.IsNullOrEmpty(plan.nombre))
             {
                 mensaje = "Por favor, complete todos los campos.";
                 return 0;

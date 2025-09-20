@@ -3,17 +3,6 @@ const $tabs = $('.tab-pane');
 const $tabButtons = $('.nav-link-tab');
 let currentTabIndex = 0;
 
-// Validación para fechas
-//document.querySelector('form').addEventListener('submit', function (e) {
-//    const inicio = new Date(document.getElementById('fecha_inicio').value);
-//    const fin = new Date(document.getElementById('fecha_fin').value);
-
-//    if (fin < inicio) {
-//        alert('La fecha final debe ser posterior a la fecha inicial');
-//        e.preventDefault();
-//    }
-//});
-
 // Limpiar mensajes de error al corregir
 document.querySelectorAll('#formPlanClasesDiario input[required]').forEach(function (input) {
     input.addEventListener('input', function () {
@@ -102,7 +91,10 @@ $('#btnSiguiente').click(function () {
 
                 if (currentTabIndex === $tabs.length - 1) {
                     $('#btnSiguiente').hide();
-                    $('#btnGuardar').show();
+                    var idPlan = $('#idPlan').val();
+                    if (idPlan == 0) {
+                        $('#btnGuardar').show();
+                    }
                 }
                 $('#btnAnterior').show();
             });
@@ -190,12 +182,6 @@ const dataTableOptions = {
             }, title: "Inicio/Fin"
         },
         { data: "periodo", title: "Periodo" },
-        {
-            data: "fecha_registro", title: "Fecha",
-            render: function (data) {
-                return data ? formatASPNetDate(data) : "N/A";
-            }
-        },
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +

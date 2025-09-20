@@ -1,10 +1,38 @@
-﻿@model capa_entidad.PLANCLASESDIARIO
+﻿<style>
+    /* CSS personalizado */
+    .select2-hidden {
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+    }
+
+    .input-group .select2-container {
+        flex: 1 1 auto;
+    }
+
+    .input-group .select2-selection {
+        height: 100%;
+    }
+
+        .input-group .select2-selection:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+</style>
+
+@model capa_entidad.PLANCLASESDIARIO
+
 
 @using (Html.BeginForm("GuardarPlanDiario", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "formPlanClasesDiario", @novalidate = "novalidate" }))
 {
     @Html.AntiForgeryToken()
 
-    @Html.HiddenFor(m => m.id_plan_diario)
+    @Html.HiddenFor(m => m.id_plan_diario, new
+    {
+        id = "idPlan"
+    })
 
     <div class="card-header pb-0 border-bottom-0">
         <ul class="nav nav-tabs" id="myTab" role="tablist">
@@ -51,9 +79,7 @@
                             @Html.TextBoxFor(m => m.codigo, new
                             {
                                 @class = "form-control",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('El codigo es requerido')",
-                                @oninput = "setCustomValidity('')"
+                                @disabled = "disabled"
                             })
                         </div>
                     </div>
@@ -72,15 +98,19 @@
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Asignatura</span>
-                            @Html.TextBoxFor(m => m.asignatura, new
-                            {
-                                @class = "form-control",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('La asignatura es requerida')",
-                                @oninput = "setCustomValidity('')",
-                                maxlength = "255"
-                            })
+                            <label for="inputGroupSelectAsignatura" class="input-group-text">Asignatura</label>
+                            <input type="hidden" name="fk_asignatura_activa" id="fk_asignatura_activa" value="@Model.fk_asignatura" />
+                            @Html.DropDownListFor(m => m.fk_asignatura,
+                                new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text"),
+                                "Seleccione una asignatura...",
+                                new
+                                {
+                                    @class = "form-select select2-hidden",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La asignatura es requerida')",
+                                    @oninput = "setCustomValidity('')",
+                                    id = "inputGroupSelectAsignatura"
+                                })
                         </div>
                     </div>
                 </div>
@@ -98,27 +128,46 @@
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Periodo</span>
-                            @Html.TextBoxFor(m => m.fk_periodo, new
-                            {
-                                @class = "form-control",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('El periodo es requerido')",
-                                @oninput = "setCustomValidity('')",
-                                maxlength = "100"
-                            })
+                            <label for="inputGroupSelectPeriodo" class="input-group-text">Periodo</label>
+                            <input type="hidden" name="fk_periodo_activo" id="fk_periodo_activo" value="@Model.fk_periodo" />
+                            @Html.DropDownListFor(m => m.fk_periodo,
+                              new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text"),
+                              "Seleccione un periodo...",
+                              new
+                              {
+                                  @class = "form-select select2-hidden",
+                                  required = "required",
+                                  @oninvalid = "this.setCustomValidity('El periodo es requerido')",
+                                  @oninput = "setCustomValidity('')",
+                                  id = "inputGroupSelectPeriodo"
+                              })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text">Inicio/Fin</span>
+                            @{
+                                var fechaInicioValue = Model?.fecha_inicio.ToString("yyyy-MM-dd");
+                                var fechaFinValue = Model?.fecha_fin.ToString("yyyy-MM-dd");
+
+                                if (fechaInicioValue == "0001-01-01")
+                                {
+                                    fechaInicioValue = DateTime.Today.ToString("yyyy-MM-dd");
+                                }
+                                if (fechaFinValue == "0001-01-01")
+                                {
+                                    fechaFinValue = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+                                }
+                            }
+
                             @Html.TextBoxFor(m => m.fecha_inicio, "{0:yyyy-MM-dd}", new
                             {
                                 @type = "date",
                                 @class = "form-control",
                                 required = "required",
                                 @oninvalid = "this.setCustomValidity('La fecha de inicio es requerida')",
-                                @oninput = "setCustomValidity('')"
+                                @oninput = "setCustomValidity('')",
+                                @Value = fechaInicioValue
                             })
                             <span class="input-group-text">a</span>
                             @Html.TextBoxFor(m => m.fecha_fin, "{0:yyyy-MM-dd}", new
@@ -127,7 +176,8 @@
                                 @class = "form-control",
                                 required = "required",
                                 @oninvalid = "this.setCustomValidity('La fecha de fin es requerida')",
-                                @oninput = "setCustomValidity('')"
+                                @oninput = "setCustomValidity('')",
+                                @Value = fechaFinValue
                             })
                         </div>
                     </div>
@@ -136,41 +186,53 @@
                 <div class="row">
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Área de Conocimiento</span>
-                            @Html.TextBoxFor(m => m.area_conocimiento, new
-                            {
-                                @class = "form-control",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('El área de conocimiento es requerida')",
-                                @oninput = "setCustomValidity('')",
-                                maxlength = "255"
-                            })
+                            <label for="inputGroupSelectArea" class="input-group-text">Área de Conocimiento</label>
+                            <input type="hidden" name="fk_area_activa" id="fk_area_activa" value="@Model.fk_area" />
+                            @Html.DropDownListFor(m => m.fk_area,
+                              new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text"),
+                              "Seleccione una área de conocimiento...",
+                              new
+                              {
+                                  @class = "form-select select2-hidden",
+                                  required = "required",
+                                  @oninvalid = "this.setCustomValidity('El área de conocimiento es requerida')",
+                                  @oninput = "setCustomValidity('')",
+                                  id = "inputGroupSelectArea"
+                              })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Departamento</span>
-                            @Html.TextBoxFor(m => m.departamento, new
-                            {
-                                @class = "form-control",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('El departamento es requerido')",
-                                @oninput = "setCustomValidity('')",
-                                maxlength = "255"
-                            })
+                            <label for="inputGroupSelectDepartamento" class="input-group-text">Departamento</label>
+                            <input type="hidden" name="fk_departamento_activo" id="fk_departamento_activo" value="@Model.fk_departamento" />
+                            @Html.DropDownListFor(m => m.fk_departamento,
+                              new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text"),
+                              "Seleccione un departamento...",
+                              new
+                              {
+                                  @class = "form-select select2-hidden",
+                                  required = "required",
+                                  @oninvalid = "this.setCustomValidity('El departamento es requerida')",
+                                  @oninput = "setCustomValidity('')",
+                                  id = "inputGroupSelectDepartamento"
+                              })
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Carrera</span>
-                            @Html.TextBoxFor(m => m.carrera, new
-                            {
-                                @class = "form-control",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('La carrera es requerida')",
-                                @oninput = "setCustomValidity('')",
-                                maxlength = "255"
-                            })
+                            <label for="inputGroupSelectCarrera" class="input-group-text">Carrera</label>
+                            <input type="hidden" name="fk_carrera_activa" id="fk_carrera_activa" value="@Model.fk_carrera" />
+                            @Html.DropDownListFor(m => m.fk_carrera,
+                              new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text"),
+                              "Seleccione una carrera...",
+                              new
+                              {
+                                  @class = "form-select select2-hidden",
+                                  required = "required",
+                                  @oninvalid = "this.setCustomValidity('La carrera es requerida')",
+                                  @oninput = "setCustomValidity('')",
+                                  id = "inputGroupSelectCarrera"
+                              })
                         </div>
                     </div>
                 </div>
@@ -558,6 +620,13 @@
                 <button type="submit" class="btn btn-primary" id="btnGuardar" style="display: none;">
                     <i class="fa fa-save"></i> @(Model.id_plan_diario == 0 ? "Guardar" : "Actualizar")
                 </button>
+
+                @if (Model.id_plan_diario != 0)
+                {
+                    <button type="submit" class="btn btn-primary" id="btnGuardar2">
+                        <i class="fa fa-save"></i> Actualizar
+                    </button>
+                }
             </div>
 
             <button type="button" class="btn btn-outline-primary" id="btnSiguiente">

@@ -106,7 +106,9 @@ namespace capa_presentacion.Controllers
                 string mensaje;
                 int resultado;
                 bool esNuevo = plan.id_plan_diario == 0;
+
                 USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                
                 plan.fk_profesor = usuario.id_usuario;
 
                 if (esNuevo)
@@ -124,8 +126,8 @@ namespace capa_presentacion.Controllers
                     return View("Plan_de_Clases_Diario", plan);
                 }
 
-                TempData["Success"] = $"Plan de clases {(esNuevo ? "registrado" : "actualizado")} correctamente.";
-                return RedirectToAction("Plan_de_Clases_Diario", new { id = plan.id_plan_diario });
+                TempData["Success"] = mensaje;
+                return RedirectToAction("Plan_de_Clases_Diario");
             }
             catch (Exception)
             {

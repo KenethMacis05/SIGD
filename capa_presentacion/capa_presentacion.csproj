@@ -597,6 +597,11 @@
     <Content Include="Scripts\Summernote\summernote-bs5.min.css" />
     <Content Include="Scripts\Summernote\summernote-bs5.min.js" />
     <Content Include="Scripts\sweetalert2.min.js" />
+    <Content Include="Scripts\Template\Selects\SelectAreas.js" />
+    <Content Include="Scripts\Template\Selects\SelectAsignaturas.js" />
+    <Content Include="Scripts\Template\Selects\SelectCarreras.js" />
+    <Content Include="Scripts\Template\Selects\SelectDepartamentos.js" />
+    <Content Include="Scripts\Template\Selects\SelectPeriodos.js" />
     <Content Include="Scripts\Views\Acceso.js" />
     <Content Include="Scripts\Views\Archivos.js" />
     <Content Include="Scripts\Views\AreaDeConocimiento.js" />

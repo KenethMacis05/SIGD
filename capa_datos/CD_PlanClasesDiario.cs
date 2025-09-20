@@ -45,11 +45,11 @@ namespace capa_datos
                                     codigo = dr["codigo"].ToString(),
                                     nombre = dr["nombre"].ToString(),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
-                                    area_conocimiento = dr["areaConocimiento"].ToString(),
-                                    departamento = dr["departamento"].ToString(),
-                                    carrera = dr["carrera"].ToString(),
+                                    fk_area = Convert.ToInt32(dr["fk_area"]),
+                                    fk_departamento = Convert.ToInt32(dr["fk_departamento"]),
+                                    fk_carrera = Convert.ToInt32(dr["fk_carrera"]),
+                                    fk_asignatura = Convert.ToInt32(dr["fk_asignatura"]),
                                     ejes = dr["ejes"].ToString(),
-                                    asignatura = dr["asignatura"].ToString(),
                                     fk_profesor = Convert.ToInt32(dr["fk_profesor"]),
                                     fk_periodo = Convert.ToInt32(dr["fk_periodo"]),
                                     competencias = dr["competencias"].ToString(),
@@ -70,8 +70,13 @@ namespace capa_datos
                                     indicadores_aprendizaje = dr["indicadores_aprendizaje"].ToString(),
                                     nivel_aprendizaje = dr["nivel_aprendizaje"].ToString(),
                                     estado = Convert.ToBoolean(dr["estado"]),
+                                    
                                     profesor = dr["profesor"].ToString(),
-                                    periodo = dr["periodo"].ToString()
+                                    periodo = dr["periodo"].ToString(),
+                                    area_conocimiento = dr["area_conocimiento"].ToString(),
+                                    departamento = dr["departamento"].ToString(),
+                                    carrera = dr["carrera"].ToString(),
+                                    asignatura = dr["asignatura"].ToString()
                                 }
                             );
                         }
@@ -113,13 +118,12 @@ namespace capa_datos
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     // Parámetros de entrada
-                    cmd.Parameters.AddWithValue("Codigo", plan.codigo);
                     cmd.Parameters.AddWithValue("Nombre", plan.nombre);
-                    cmd.Parameters.AddWithValue("AreaConocimiento", plan.area_conocimiento);
-                    cmd.Parameters.AddWithValue("Departamento", plan.departamento);
-                    cmd.Parameters.AddWithValue("Carrera", plan.carrera);
+                    cmd.Parameters.AddWithValue("FKAreaConocimiento", plan.fk_area);
+                    cmd.Parameters.AddWithValue("FKDepartamento", plan.fk_departamento);
+                    cmd.Parameters.AddWithValue("FKCarrera", plan.fk_carrera);
+                    cmd.Parameters.AddWithValue("FKAsignatura", plan.fk_asignatura);
                     cmd.Parameters.AddWithValue("Ejes", plan.ejes);
-                    cmd.Parameters.AddWithValue("Asignatura", plan.asignatura);
                     cmd.Parameters.AddWithValue("FKProfesor", plan.fk_profesor);
                     cmd.Parameters.AddWithValue("FKPeriodo", plan.fk_periodo);
                     cmd.Parameters.AddWithValue("Competencias", plan.competencias);
@@ -177,11 +181,11 @@ namespace capa_datos
                     // Agregar parámetros
                     cmd.Parameters.AddWithValue("IdPlanClasesDiario", plan.id_plan_diario);
                     cmd.Parameters.AddWithValue("Nombre", plan.nombre);
-                    cmd.Parameters.AddWithValue("AreaConocimiento", plan.area_conocimiento);
-                    cmd.Parameters.AddWithValue("Departamento", plan.departamento);
-                    cmd.Parameters.AddWithValue("Carrera", plan.carrera);
+                    cmd.Parameters.AddWithValue("FKAreaConocimiento", plan.fk_area);
+                    cmd.Parameters.AddWithValue("FKDepartamento", plan.fk_departamento);
+                    cmd.Parameters.AddWithValue("FKCarrera", plan.fk_carrera);
+                    cmd.Parameters.AddWithValue("FKAsignatura", plan.fk_asignatura);
                     cmd.Parameters.AddWithValue("Ejes", plan.ejes);
-                    cmd.Parameters.AddWithValue("Asignatura", plan.asignatura);
                     cmd.Parameters.AddWithValue("FKProfesor", plan.fk_profesor);
                     cmd.Parameters.AddWithValue("FKPeriodo", plan.fk_periodo);
                     cmd.Parameters.AddWithValue("Competencias", plan.competencias);

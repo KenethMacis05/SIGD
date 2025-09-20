@@ -65,5 +65,9 @@ namespace capa_entidad
         public string nivel_aprendizaje { get; set; }
         public string profesor { get; set; }
         public string periodo { get; set; }
+        public int fk_area { get; set; }
+        public int fk_departamento { get; set; }
+        public int fk_carrera { get; set; }
+        public int fk_asignatura { get; set; }
     }
 }

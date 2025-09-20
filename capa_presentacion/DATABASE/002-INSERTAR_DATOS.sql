@@ -49,7 +49,6 @@ VALUES
     ('Archivo', 'GuardarCarpeta', 'Crear o actualizar carpeta', 'API'),
     ('Archivo', 'EliminarCarpeta', 'Eliminar carpeta', 'API'),
     ('Archivo', 'SubirArchivo', 'Subir archivo', 'API'),    
-    ('Planificacion', 'GenerarPlan', 'Generar plan', 'API'),
 
     -- MenuController    
     ('Menu', 'ListarMenusNoAsignadosPorRol', 'Listar menús no asignados', 'API'),
@@ -101,6 +100,7 @@ VALUES
     ('Planificacion', 'EditarPlanDiario', 'Vista de edición para los planes de clases diario', 'Vista'),
     ('Planificacion', 'CrearPlanClasesDiario', 'Vista de creación para los planes de clases diario', 'Vista'),
     ('Planificacion', 'GuardarPlanDiario', 'Crear/Editar plan de clases diario', 'API'),
+    ('Planificacion', 'EliminarPlanClasesDiario', 'Eliminar plan de clases diario', 'API'),
 
     -- CatalogosController
     ('Catalogos', 'ListarAreasDeConocimiento', 'Listar áreas de conocimiento', 'API'),
@@ -549,10 +549,11 @@ GO
 
 -- (18) REGISTROS EN LA TABLA PLANCLASESDIARIO
 INSERT INTO PlanClasesDiario (
-    fk_plan_didactico_semestral,
-    codigo_documento,
-    nombre_plan_clases_diario,
-    fk_componente_curricular,
+    codigo,
+    nombre,
+    fk_area,
+    fk_departamento,
+	fk_carrera,
     ejes,
     fk_asignatura,
     fk_profesor,
@@ -576,10 +577,11 @@ INSERT INTO PlanClasesDiario (
     nivel_aprendizaje
 )
 VALUES (
-    1, -- fk_plan_didactico_semestral
-    'PCD-001', -- codigo_documento
+    'PCD-2025-001', -- codigo_documento
     'Plan de Clases Diario de Hardware', -- nombre_plan_clases_diario
-    1, -- fk_componente_curricular
+    1, -- fk_area
+    1, -- fk_departamento
+    1, -- fk_carrera
     'Ejes de hardware', -- ejes
     1, -- fk_asignatura (Hardware)
     1, -- fk_profesor
@@ -601,6 +603,118 @@ VALUES (
     'Precisión en la identificación', -- criterios_aprendizaje
     'Uso correcto de terminología', -- indicadores_aprendizaje
     'Básico' -- nivel_aprendizaje
+),
+(
+    'PCD-2025-002', -- codigo_documento
+    'Plan de Clases Diario de Software',
+    2, -- fk_area (Software)
+    2, -- fk_departamento
+    1, -- fk_carrera
+    'Ejes de desarrollo de software',
+    2, -- fk_asignatura (Software)
+    1, -- fk_profesor
+    1, -- fk_periodo
+    'Competencias en programación básica',
+    'BOA de software',
+    '2023-10-22',
+    '2023-10-27',
+    'Desarrollar habilidades básicas de programación',
+    'Introducción a la programación con Python',
+    'El estudiante escribe programas simples en Python',
+    'Discutir conceptos de algoritmos',
+    'Escribir código Python básico',
+    'Presentar un programa funcional',
+    'Formativa',
+    'Evaluación por ejercicios prácticos',
+    'Lista de cotejo',
+    'Código fuente de programas',
+    'Correcta sintaxis y lógica',
+    'Uso adecuado de estructuras de control',
+    'Intermedio'
+),
+(
+    'PCD-2025-003', -- codigo_documento
+    'Plan de Clases Diario de Redes',
+    3, -- fk_area (Redes)
+    3, -- fk_departamento
+    1, -- fk_carrera
+    'Ejes de redes de computadoras',
+    3, -- fk_asignatura (Redes)
+    1, -- fk_profesor
+    1, -- fk_periodo
+    'Competencias en configuración de redes',
+    'BOA de redes',
+    '2023-10-29',
+    '2023-11-03',
+    'Comprender los fundamentos de redes de computadoras',
+    'Topologías de red y protocolos TCP/IP',
+    'El estudiante configura una red LAN básica',
+    'Revisar conceptos de comunicación',
+    'Configurar equipos en red',
+    'Demostrar comunicación entre equipos',
+    'Sumativa',
+    'Evaluación por demostración práctica',
+    'Rúbrica de configuración',
+    'Diagramas de red y configuraciones',
+    'Correcta configuración de IP y conectividad',
+    'Resolución de problemas de conexión',
+    'Avanzado'
+),
+(
+    'PCD-2025-004', -- codigo_documento
+    'Plan de Clases Diario de Base de Datos',
+    4, -- fk_area (Base de Datos)
+    4, -- fk_departamento
+    1, -- fk_carrera
+    'Ejes de gestión de datos',
+    4, -- fk_asignatura (Base de Datos)
+    1, -- fk_profesor
+    1, -- fk_periodo
+    'Competencias en diseño de bases de datos',
+    'BOA de base de datos',
+    '2023-11-05',
+    '2023-11-10',
+    'Diseñar e implementar bases de datos relacionales',
+    'Modelo entidad-relación y normalización',
+    'El estudiante diseña un modelo ER correcto',
+    'Discutir necesidades de almacenamiento de datos',
+    'Diseñar diagramas entidad-relación',
+    'Presentar modelo completo de base de datos',
+    'Formativa',
+    'Evaluación por proyecto de diseño',
+    'Rúbrica de diseño',
+    'Diagramas ER y scripts SQL',
+    'Coherencia del modelo y normalización',
+    'Uso correcto de cardinalidades',
+    'Intermedio'
+),
+(
+    'PCD-2025-005', -- codigo_documento
+    'Plan de Clases Diario de Seguridad Informática',
+    5, -- fk_area (Seguridad)
+    5, -- fk_departamento
+    1, -- fk_carrera
+    'Ejes de seguridad de la información',
+    5, -- fk_asignatura (Seguridad Informática)
+    1, -- fk_profesor
+    1, -- fk_periodo
+    'Competencias en protección de sistemas',
+    'BOA de seguridad',
+    '2023-11-12',
+    '2023-11-17',
+    'Aplicar medidas de seguridad en sistemas informáticos',
+    'Criptografía y políticas de seguridad',
+    'El estudiante implementa medidas de seguridad básicas',
+    'Discutir casos de brechas de seguridad',
+    'Configurar firewalls y políticas de acceso',
+    'Presentar un plan de seguridad',
+    'Sumativa',
+    'Evaluación por implementación práctica',
+    'Lista de verificación de seguridad',
+    'Configuraciones de seguridad y documentación',
+    'Efectividad de las medidas implementadas',
+    'Identificación de vulnerabilidades',
+    'Avanzado'
 );
 
 GO
