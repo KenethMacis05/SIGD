@@ -151,7 +151,7 @@ CREATE TABLE COMPARTIDOS (
         (fk_id_archivo IS NULL AND fk_id_carpeta IS NOT NULL)
     )
 )
------------------------------------------------------TABLAS PARA LA PLANIFICACION-----------------------------------------------------
+-----------------------------------------------------TABLAS CATALOGOS -----------------------------------------------------
 
 -- (1) Tabla Asignatura
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ASIGNATURA')
@@ -234,13 +234,24 @@ GO
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZINTEGRACIONCOMPONENTES')
 CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     id_matriz_integracion INT PRIMARY KEY IDENTITY(1,1),
-	codigo_documento VARCHAR(255),
-	fk_profesor INT NOT NULL,
-	nombre_matriz_integracion_componente VARCHAR(255),
+	codigo VARCHAR(255),
+	nombre VARCHAR(255),
 
+    -- 1.	Datos Generales
+    -- Area de conocimiento
+    fk_area INT NOT NULL,
+    -- Departamento
+    fk_departamento INT NOT NULL,
+    -- Carrera
+    fk_carrera INT NOT NULL,
+	-- Componente curricular (as)
+	fk_asignatura INT NOT NULL,
+	-- Profesor
+	fk_profesor INT NOT NULL,
+	-- Año y semestre
+	fk_periodo INT NOT NULL,
 	--Competencias
 	competencias VARCHAR(255),
-
 	--Objetivos
     objetivo_anio VARCHAR(255),
     objetivo_semestre VARCHAR(255),
@@ -248,11 +259,18 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
 
     --Asignaturas / Descripcion (La tiene la tabla MatrizAsignatura)
 	
-	--Estrategia Integradora
-    accion_integradora VARCHAR(255),
-    tipo_evaluacion VARCHAR(50),
+    -- Estrategia integradora
+	estrategia_integradora VARCHAR(255),
+
+    estado BIT DEFAULT 1,
 	fecha_registro DATETIME DEFAULT GETDATE(),
-	CONSTRAINT FK_MIC_USUARIO FOREIGN KEY (fk_profesor) REFERENCES USUARIOS(id_usuario) ON DELETE CASCADE
+
+	CONSTRAINT FK_MIC_AREA FOREIGN KEY (fk_area) REFERENCES AREACONOCIMIENTO(id_area),
+    CONSTRAINT FK_MIC_DEPARTAMENTO FOREIGN KEY (fk_departamento) REFERENCES DEPARTAMENTO(id_departamento),
+    CONSTRAINT FK_MIC_CARRERA FOREIGN KEY (fk_carrera) REFERENCES CARRERA(id_carrera),
+    CONSTRAINT FK_MIC_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura),
+    CONSTRAINT FK_MIC_USUARIO FOREIGN KEY (fk_profesor) REFERENCES Usuarios(id_usuario),
+    CONSTRAINT FK_MIC_PERIODO FOREIGN KEY (fk_periodo) REFERENCES Periodo(id_periodo)
 );
 
 GO
@@ -263,12 +281,27 @@ CREATE TABLE MATRIZASIGNATURA (
     id_matriz_asignatura INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_integracion INT NOT NULL,
     fk_asignatura INT NOT NULL,
-	descripcion VARCHAR(255),
+    fk_profesor_asignado INT,
+    estado VARCHAR(50) NOT NULL CHECK (estado IN ('Iniciado', 'En proceso', 'Finalizado')),
+    fecha_registro DATETIME DEFAULT GETDATE(),
 	CONSTRAINT FK_MATRIZASIGNATURA_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE,
-	CONSTRAINT FK_MATRIZASIGNATURA_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES ASIGNATURA(id_asignatura) ON DELETE CASCADE
+	CONSTRAINT FK_MATRIZASIGNATURA_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES ASIGNATURA(id_asignatura),
+    CONSTRAINT FK_MATRIZASIGNATURA_DOCENTE FOREIGN KEY (fk_profesor_asignado) REFERENCES Usuarios(id_usuario)
 );
 
 GO
+
+-- (3) Tabla MatrizAsignaturaDescripcion
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DESCRIPCIONASIGNATURAMATRIZ')
+CREATE TABLE DESCRIPCIONASIGNATURAMATRIZ (
+    id_descripcion INT PRIMARY KEY IDENTITY(1,1),
+    fk_matriz_asignatura INT NOT NULL,
+    descripcion VARCHAR(255),
+    accion_integradora VARCHAR(255),
+    tipo_evaluacion VARCHAR(50),  
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_DESCRIPCIONASIGNATURA_MATRIZASIGNATURA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE
+);
 
 -----------------------------------------------------Etapa 2: Plan Didactico Semestral-----------------------------------------------------
 -- (1) Tabla PlanDidacticoSemestral

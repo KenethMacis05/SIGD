@@ -171,6 +171,48 @@ VALUES
 	('profesor', 'profesor', 'profesor', 'profesor', 'profesor', 
         '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
         'profesor@gmai', 77654321,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+    ('profesor2', 'profesor2', 'profesor2', 'profesor2', 'profesor2', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor2@gmai', 77654322,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+    ('profesor3', 'profesor3', 'profesor3', 'profesor3', 'profesor3', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor3@gmai', 77654323,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+    ('profesor4', 'profesor4', 'profesor4', 'profesor4', 'profesor4', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor4@gmail.com', 77654324,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+        
+    ('profesor5', 'profesor5', 'profesor5', 'profesor5', 'profesor5', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor5@gmail.com', 77654325,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+        
+    ('profesor6', 'profesor6', 'profesor6', 'profesor6', 'profesor6', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor6@gmail.com', 77654326,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+        
+    ('profesor7', 'profesor7', 'profesor7', 'profesor7', 'profesor7', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor7@gmail.com', 77654327,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+        
+    ('profesor8', 'profesor8', 'profesor8', 'profesor8', 'profesor8', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor8@gmail.com', 77654328,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+        
+    ('profesor9', 'profesor9', 'profesor9', 'profesor9', 'profesor9', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor9@gmail.com', 77654329,
+        (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR')),
+        
+    ('profesor10', 'profesor10', 'profesor10', 'profesor10', 'profesor10', 
+        '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 
+        'profesor10@gmail.com', 77654330,
         (SELECT TOP 1 id_rol FROM ROL WHERE descripcion = 'PROFESOR'));
 
 GO
@@ -272,7 +314,22 @@ VALUES
 	('CDW', 'Diseño Web'),
 	('CSOF', 'Software'),
 	('CSI', 'Seguridad Informática'),
-	('CDSE', 'Diseño de Soluciones Educativas');
+	('CDSE', 'Diseño de Soluciones Educativas'),
+    ('CHAR', 'Hardware'), 
+	('CDW', 'Diseño Web'),
+	('CSOF', 'Software'),
+	('CSI', 'Seguridad Informática'),
+	('CDSE', 'Diseño de Soluciones Educativas'),
+	('CBD', 'Bases de Datos'),
+	('CRED', 'Redes de Computadoras'),
+	('CPRO', 'Programación Orientada a Objetos'),
+	('CIA', 'Inteligencia Artificial'),
+	('CMOV', 'Desarrollo Móvil'),
+	('CSIS', 'Sistemas Operativos'),
+	('CING', 'Ingeniería de Software'),
+	('CWEB', 'Desarrollo Web Avanzado'),
+	('CCLO', 'Computación en la Nube'),
+	('CIOT', 'Internet de las Cosas');
 
 GO
 --------------------------------------------------------------------------------------------------------------------
@@ -368,66 +425,132 @@ GO
 
 --/////////////////////////////////PRUEBAS DE REGISTROS DE LAS TABLAS PRINCIPALES/////////////////////////////////--
 
--- (13) REGISTROS EN LA TABLA MATRIZINTEGRACIONCOMPONENTES
-INSERT INTO MatrizIntegracionComponentes (
-    fk_profesor,    
-    codigo_documento,
-    nombre_matriz_integracion_componente,
+-- REGISTROS EN LA TABLA MATRIZINTEGRACIONCOMPONENTES
+INSERT INTO MATRIZINTEGRACIONCOMPONENTES (
+    codigo,
+    nombre,
+    fk_area,
+    fk_departamento,
+    fk_carrera,
+    fk_asignatura,
+    fk_profesor,
+    fk_periodo,
     competencias,
     objetivo_anio,
     objetivo_semestre,
     objetivo_integrador,
-    accion_integradora,
-    tipo_evaluacion
+    estrategia_integradora
 )
-VALUES (
-    1, -- fk_profesor    
-    'MIC-001', -- codigo_documento
-    'Matriz de Integración de Hardware', -- nombre_matriz_integracion_componente
-    'Competencias en hardware', -- competencias
-    'Integrar conocimientos de hardware y software', -- objetivo_anio
-    'Desarrollar habilidades en hardware', -- objetivo_semestre
-    'Crear soluciones educativas integradas', -- objetivo_integrador
-    'Proyecto final integrador', -- accion_integradora
-    'Sumativa' -- tipo_evaluacion
-);
+VALUES 
+    ('MIC-001', 'Matriz de Integración Hardware y Software', 
+     1, 1, 1, 1, 1, 1,  -- fk_asignatura: Hardware
+     'Integrar componentes físicos y lógicos para soluciones tecnológicas',
+     'Desarrollar sistemas completos hardware-software',
+     'Implementar interfaces entre componentes físicos y aplicaciones',
+     'Crear prototipo funcional integrado hardware-software',
+     'Proyecto de sistema embebido con interfaz software'),
+
+    ('MIC-002', 'Matriz de Desarrollo Web Fullstack', 
+     2, 1, 1, 2, 1, 1,  -- fk_asignatura: Diseño Web
+     'Competencias en desarrollo frontend, backend y bases de datos',
+     'Dominar el stack completo de desarrollo web moderno',
+     'Implementar aplicaciones web escalables y responsivas',
+     'Desarrollar plataforma web empresarial completa',
+     'Proyecto de e-commerce fullstack'),
+
+    ('MIC-003', 'Matriz de Seguridad Integral TI', 
+     3, 1, 1, 4, 1, 1,  -- fk_asignatura: Seguridad Informática
+     'Protección de infraestructura, datos y aplicaciones',
+     'Implementar seguridad en todas las capas tecnológicas',
+     'Configurar sistemas seguros y políticas de acceso',
+     'Desplegar infraestructura TI resiliente a ataques',
+     'Auditoría de seguridad y plan de continuidad'),
+
+    ('MIC-004', 'Matriz de Soluciones Educativas Digitales', 
+     2, 1, 1, 5, 1, 1,  -- fk_asignatura: Diseño de Soluciones Educativas
+     'Diseño e implementación de tecnología educativa',
+     'Crear soluciones digitales innovadoras para educación',
+     'Desarrollar plataformas educativas interactivas',
+     'Implementar LMS con herramientas de gamificación',
+     'Plataforma educativa adaptativa con analytics'),
+
+    ('MIC-005', 'Matriz de Base de Datos y Cloud', 
+     4, 1, 1, 11, 1, 1,  -- fk_asignatura: Bases de Datos
+     'Gestión de datos en entornos on-premise y cloud',
+     'Dominar tecnologías de datos tradicionales y modernas',
+     'Implementar arquitecturas de datos escalables',
+     'Diseñar sistema de datos distribuido en la nube',
+     'Migración y optimización de bases de datos cloud');
 
 GO
---------------------------------------------------------------------------------------------------------------------
 
--- (14) REGISTROS EN LA TABLA MATRIZASIGNATURA
+-- REGISTROS EN LA TABLA MATRIZASIGNATURA
+INSERT INTO MATRIZASIGNATURA (fk_matriz_integracion, fk_asignatura, fk_profesor_asignado, estado)
+VALUES 
+    -- Matriz 1: Hardware y Software (Integración de sistemas)
+    (1, 1, 1, 'En proceso'),   -- Hardware
+    (1, 3, 4, 'Iniciado'),     -- Software
+    (1, 16, 1, 'Iniciado'),    -- Sistemas Operativos
+    (1, 20, 1, 'Iniciado'),    -- Internet de las Cosas
 
--- Asignatura 1: Hardware
-INSERT INTO MatrizAsignatura (fk_matriz_integracion, fk_asignatura, descripcion)
-VALUES (
-    1, -- fk_matriz_integracion
-    1, -- fk_asignatura (Hardware)
-    'Requisitos de hardware para servidores' -- descripcion
-);
+    -- Matriz 2: Desarrollo Web Fullstack
+    (2, 2, 2, 'En proceso'),   -- Diseño Web
+    (2, 3, 4, 'Iniciado'),     -- Software
+    (2, 11, 5, 'Iniciado'),    -- Bases de Datos
+    (2, 18, 2, 'Iniciado'),    -- Desarrollo Web Avanzado
 
--- Asignatura 2: Diseño Web
-INSERT INTO MatrizAsignatura (fk_matriz_integracion, fk_asignatura, descripcion)
-VALUES (
-    1, -- fk_matriz_integracion
-    2, -- fk_asignatura (Diseño Web)
-    'Diseño de páginas web' -- descripcion
-);
+    -- Matriz 3: Seguridad Integral TI
+    (3, 4, 3, 'En proceso'),   -- Seguridad Informática
+    (3, 12, 3, 'Iniciado'),    -- Redes de Computadoras
+    (3, 16, 1, 'Iniciado'),    -- Sistemas Operativos
+    (3, 19, 3, 'Iniciado'),    -- Computación en la Nube
 
--- Asignatura 3: Software
-INSERT INTO MatrizAsignatura (fk_matriz_integracion, fk_asignatura, descripcion)
-VALUES (
-    1, -- fk_matriz_integracion
-    3, -- fk_asignatura (Software)
-    'Desarrollo de software' -- descripcion
-);
+    -- Matriz 4: Soluciones Educativas Digitales
+    (4, 5, 4, 'En proceso'),   -- Diseño de Soluciones Educativas
+    (4, 2, 2, 'Iniciado'),     -- Diseño Web
+    (4, 14, 4, 'Iniciado'),    -- Inteligencia Artificial
+    (4, 15, 4, 'Iniciado'),    -- Desarrollo Móvil
 
--- Asignatura 4: Seguridad Informática
-INSERT INTO MatrizAsignatura (fk_matriz_integracion, fk_asignatura, descripcion)
-VALUES (
-    1, -- fk_matriz_integracion
-    4, -- fk_asignatura (Seguridad Informática)
-    'Seguridad en redes' -- descripcion
-);
+    -- Matriz 5: Base de Datos y Cloud
+    (5, 11, 5, 'En proceso'),  -- Bases de Datos
+    (5, 19, 5, 'Iniciado'),    -- Computación en la Nube
+    (5, 12, 3, 'Iniciado'),    -- Redes de Computadoras
+    (5, 13, 4, 'Iniciado');    -- Programación Orientada a Objetos
+
+GO
+
+-- REGISTROS EN LA TABLA DESCRIPCIONASIGNATURAMATRIZ
+INSERT INTO DESCRIPCIONASIGNATURAMATRIZ (fk_matriz_asignatura, descripcion, accion_integradora, tipo_evaluacion)
+VALUES 
+    -- Descripciones para Matriz 1: Hardware y Software
+    (1, 'Configuración de hardware para sistemas embebidos', 'Selección e instalación de componentes físicos', 'Práctica'),
+    (2, 'Desarrollo de controladores y software de bajo nivel', 'Programación de interfaces hardware-software', 'Proyecto'),
+    (3, 'Configuración de SO para dispositivos IoT', 'Optimización de sistema operativo para hardware específico', 'Técnica'),
+    (4, 'Integración de sensores y actuadores IoT', 'Prototipo de sistema IoT con comunicación wireless', 'Proyecto'),
+
+    -- Descripciones para Matriz 2: Desarrollo Web Fullstack
+    (5, 'Diseño de UI/UX para aplicación web responsive', 'Creación de sistema de diseño y componentes', 'Portafolio'),
+    (6, 'Desarrollo de arquitectura backend escalable', 'Implementación de microservicios y APIs', 'Proyecto'),
+    (7, 'Diseño y optimización de base de datos relacional', 'Modelado ER y consultas optimizadas', 'Técnica'),
+    (8, 'Implementación de features avanzadas frontend', 'SPA con frameworks modernos y state management', 'Proyecto'),
+
+    -- Descripciones para Matriz 3: Seguridad Integral TI
+    (9, 'Análisis de vulnerabilidades y pentesting', 'Auditoría de seguridad y reporte de findings', 'Documental'),
+    (10, 'Seguridad perimetral y configuración de firewalls', 'Implementación de políticas de red seguras', 'Práctica'),
+    (11, 'Hardening de sistemas operativos', 'Configuración segura de SO y servicios', 'Técnica'),
+    (12, 'Seguridad en infraestructura cloud', 'Configuración de IAM y seguridad en la nube', 'Práctica'),
+
+    -- Descripciones para Matriz 4: Soluciones Educativas Digitales
+    (13, 'Diseño de experiencias de aprendizaje digital', 'Metodología para cursos online efectivos', 'Documental'),
+    (14, 'Desarrollo de interfaz educativa intuitiva', 'Prototipo de plataforma educativa', 'Portafolio'),
+    (15, 'Implementación de chatbots educativos con IA', 'Asistente virtual para soporte estudiantil', 'Proyecto'),
+    (16, 'Desarrollo de app móvil educativa', 'Aplicación nativa para aprendizaje en movilidad', 'Proyecto'),
+
+    -- Descripciones para Matriz 5: Base de Datos y Cloud
+    (17, 'Diseño de esquemas de BD para aplicaciones cloud', 'Arquitectura de datos distribuidos', 'Técnica'),
+    (18, 'Migración de bases de datos a entornos cloud', 'Estrategia de migración y optimización', 'Proyecto'),
+    (19, 'Configuración de red segura para BD cloud', 'VPN y conectividad segura para datos', 'Práctica'),
+    (20, 'Desarrollo de aplicaciones con persistencia cloud', 'Software con acceso a BD en la nube', 'Proyecto');
 
 GO
 --------------------------------------------------------------------------------------------------------------------

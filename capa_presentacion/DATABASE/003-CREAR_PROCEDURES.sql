@@ -3638,6 +3638,798 @@ BEGIN
 END
 GO
 
+-- Crear Matriz de Integración
+CREATE PROCEDURE usp_CrearMatrizIntegracion
+    @Nombre VARCHAR(255),
+    @FKArea INT,
+    @FKDepartamento INT,
+    @FKCarrera INT,
+    @FKAsignatura INT,
+    @FKProfesor INT,
+    @FKPeriodo INT,
+    @Competencias VARCHAR(255),
+    @ObjetivoAnio VARCHAR(255),
+    @ObjetivoSemestre VARCHAR(255),
+    @ObjetivoIntegrador VARCHAR(255),
+    @EstrategiaIntegradora VARCHAR(255),    
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    DECLARE @Codigo VARCHAR(20);
+    DECLARE @Contador INT;
+    DECLARE @Anio INT = YEAR(GETDATE());
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- 1. Verificar si el profesor existe y está activo
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @FKProfesor AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El profesor no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Verificar si el área existe
+        IF NOT EXISTS (SELECT 1 FROM AREACONOCIMIENTO WHERE id_area = @FKArea AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El área de conocimiento no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 3. Verificar si el departamento existe
+        IF NOT EXISTS (SELECT 1 FROM DEPARTAMENTO WHERE id_departamento = @FKDepartamento AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El departamento no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 4. Verificar si la carrera existe
+        IF NOT EXISTS (SELECT 1 FROM CARRERA WHERE id_carrera = @FKCarrera AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'La carrera no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 5. Verificar si la asignatura existe
+        IF NOT EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @FKAsignatura)
+        BEGIN
+            SET @Mensaje = 'La asignatura no existe';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 6. Verificar si el periodo seleccionado está activo
+        IF NOT EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @FKPeriodo AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El periodo seleccionado no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 7. Verificar si el nombre existe
+        IF EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE nombre = @Nombre AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El nombre de la Matriz ya está registrado';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 8. Generar código automático (formato: MIC-AÑO-SECUENCIA)
+        SELECT @Contador = ISNULL(MAX(
+            CAST(
+                CASE 
+                    WHEN codigo LIKE 'MIC-' + CAST(@Anio AS VARCHAR(4)) + '-%' 
+                    THEN RIGHT(codigo, 3)
+                    ELSE '0'
+                END
+            AS INT)
+        ), 0)
+        FROM MATRIZINTEGRACIONCOMPONENTES 
+        WHERE codigo LIKE 'MIC-' + CAST(@Anio AS VARCHAR(4)) + '-%'
+        AND estado = 1;
+
+        -- Incrementar el contador
+        SET @Contador = @Contador + 1;
+
+        -- Formatear el código (MIC-2025-001)
+        SET @Codigo = 'MIC-' + CAST(@Anio AS VARCHAR(4)) + '-' + 
+              RIGHT('000' + CAST(@Contador AS VARCHAR(3)), 3);
+
+        -- 9. Insertar la nueva matriz
+        INSERT INTO MATRIZINTEGRACIONCOMPONENTES (
+            codigo, nombre, fk_area, fk_departamento, fk_carrera, 
+            fk_asignatura, fk_profesor, fk_periodo, competencias,
+            objetivo_anio, objetivo_semestre, objetivo_integrador, 
+            estrategia_integradora
+        )
+        VALUES (
+            @Codigo, @Nombre, @FKArea, @FKDepartamento, @FKCarrera,
+            @FKAsignatura, @FKProfesor, @FKPeriodo, @Competencias,
+            @ObjetivoAnio, @ObjetivoSemestre, @ObjetivoIntegrador,
+            @EstrategiaIntegradora
+        );
+    
+        SET @Resultado = SCOPE_IDENTITY();
+
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'La Matriz Integradora se registró exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al crear la Matriz: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- Leer datos generales Matriz de Integración de un usuario
+CREATE PROCEDURE usp_LeerMatrizIntegracion
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        -- Validar si el usuario existe
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El usuario no existe o está inactivo';
+            RETURN;
+        END
+
+        -- Validar si el usuario tiene registros de Matriz de Integración
+        IF NOT EXISTS (
+            SELECT 1 
+            FROM MATRIZINTEGRACIONCOMPONENTES 
+            WHERE fk_profesor = @IdUsuario
+            AND estado = 1
+        )
+        BEGIN
+            SET @Mensaje = 'El usuario aún no ha creado matrices de integración';
+            RETURN;
+        END
+
+        -- Retornar las matrices del usuario
+        SELECT 
+            mic.id_matriz_integracion,
+            mic.codigo,
+            mic.nombre,
+            a.nombre AS area_conocimiento,
+            d.nombre AS departamento,
+            c.nombre AS carrera,
+            asi_principal.nombre AS asignatura,
+            u.pri_nombre + ' ' + u.pri_apellido AS usuario,
+            p.semestre AS periodo,
+            mic.estado,
+            mic.fecha_registro
+        FROM MATRIZINTEGRACIONCOMPONENTES mic
+        INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
+        INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+        INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+        INNER JOIN ASIGNATURA asi_principal ON mic.fk_asignatura = asi_principal.id_asignatura
+        INNER JOIN USUARIOS u ON mic.fk_profesor = u.id_usuario
+        INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+        WHERE mic.fk_profesor = @IdUsuario
+        AND mic.estado = 1
+        ORDER BY mic.fecha_registro DESC;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Matrices Integradoras de Componentes cargadas correctamente';
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al cargar las matrices: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- Actualizar Matriz de Integración
+CREATE PROCEDURE usp_ActualizarMatrizIntegracion
+    @IdMatriz INT,
+    @Nombre VARCHAR(255),
+    @FKArea INT,
+    @FKDepartamento INT,
+    @FKCarrera INT,
+    @FKAsignatura INT,
+    @FKProfesor INT,
+    @FKPeriodo INT,
+    @Competencias VARCHAR(255),
+    @ObjetivoAnio VARCHAR(255),
+    @ObjetivoSemestre VARCHAR(255),
+    @ObjetivoIntegrador VARCHAR(255),
+    @EstrategiaIntegradora VARCHAR(255),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar si la matriz existe
+        IF NOT EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE id_matriz_integracion = @IdMatriz AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'La Matriz seleccionada no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Verificar si el área existe
+        IF NOT EXISTS (SELECT 1 FROM AREACONOCIMIENTO WHERE id_area = @FKArea AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El área de conocimiento no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 3. Verificar si el departamento existe
+        IF NOT EXISTS (SELECT 1 FROM DEPARTAMENTO WHERE id_departamento = @FKDepartamento AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El departamento no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 4. Verificar si la carrera existe
+        IF NOT EXISTS (SELECT 1 FROM CARRERA WHERE id_carrera = @FKCarrera AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'La carrera no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 5. Verificar si la asignatura existe
+        IF NOT EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @FKAsignatura)
+        BEGIN
+            SET @Mensaje = 'La asignatura no existe';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 6. Verificar si el profesor existe y está activo
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @FKProfesor AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El profesor no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 7. Verificar si el periodo seleccionado está activo
+        IF NOT EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @FKPeriodo AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El periodo seleccionado no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 8. Verificar si el nombre ya existe (excluyendo la matriz actual)
+        IF EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE nombre = @Nombre AND id_matriz_integracion != @IdMatriz AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El nombre de la Matriz ya está en uso';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 9. Actualizar la matriz
+        UPDATE MATRIZINTEGRACIONCOMPONENTES
+        SET 
+            nombre = @Nombre,
+            fk_area = @FKArea,
+            fk_departamento = @FKDepartamento,
+            fk_carrera = @FKCarrera,
+            fk_asignatura = @FKAsignatura,
+            fk_profesor = @FKProfesor,
+            fk_periodo = @FKPeriodo,
+            competencias = @Competencias,
+            objetivo_anio = @ObjetivoAnio,
+            objetivo_semestre = @ObjetivoSemestre,
+            objetivo_integrador = @ObjetivoIntegrador,
+            estrategia_integradora = @EstrategiaIntegradora
+        WHERE id_matriz_integracion = @IdMatriz;
+
+        -- Verificar si se actualizó algún registro
+        IF @@ROWCOUNT = 0
+        BEGIN
+            SET @Mensaje = 'No se realizaron cambios en la Matriz de Integración de Componentes';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        COMMIT TRANSACTION;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Matriz Integradora actualizada exitosamente';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al actualizar la Matriz: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- Eliminar (desactivar) Matriz de Integración
+CREATE PROCEDURE usp_EliminarMatrizIntegracion
+    @IdMatriz INT,
+	@IdUsuario INT,
+	@Resultado BIT OUTPUT
+AS
+BEGIN
+	SET @Resultado = 0
+	IF EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE fk_profesor = @IdUsuario)
+	BEGIN
+		UPDATE MATRIZINTEGRACIONCOMPONENTES
+		SET estado = 0
+		WHERE id_matriz_integracion = @IdMatriz;
+		SET @Resultado = 1
+	END
+END;
+GO
+
+-- =============================================
+-- PROCEDIMIENTOS PARA MATRIZASIGNATURA
+-- =============================================
+
+-- Asignar asignatura a matriz con profesor
+CREATE PROCEDURE usp_AsignarAsignaturaMatriz
+    @FKMatrizIntegracion INT,
+    @FKAsignatura INT,
+    @FKProfesorPropietario INT,
+    @FKProfesorAsignado INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    DECLARE @NombreAsignatura VARCHAR(255);
+    DECLARE @NombreProfesorAsignado VARCHAR(255);
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- 1. Verificar si el profesor propietario existe y está activo
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @FKProfesorPropietario AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El docente propietario no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Verificar si el profesor a asignado existe y está activo
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @FKProfesorAsignado AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El docente asignado no existe o está inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 3. Obtener nombre del profesor asignado
+        SELECT @NombreProfesorAsignado = RTRIM(LTRIM(
+                CONCAT(
+                    pri_nombre, 
+                    CASE WHEN NULLIF(seg_nombre, '') IS NOT NULL THEN ' ' + seg_nombre ELSE '' END,
+                    ' ',
+                    pri_apellido,
+                    CASE WHEN NULLIF(seg_apellido, '') IS NOT NULL THEN ' ' + seg_apellido ELSE '' END
+                )
+            )) 
+        FROM USUARIOS 
+        WHERE id_usuario = @FKProfesorAsignado;
+
+        -- 4. Verificar que el profesor a asignado no tenga asignado asignaturas anteriores en la matriz
+        IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE fk_matriz_integracion = @FKMatrizIntegracion AND fk_profesor_asignado = @FKProfesorAsignado)
+        BEGIN
+            SET @Mensaje = 'El docente ya se encuentra asignado a una asignatura en esta matriz';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 5. Verificar que la asignatura no exista en la matriz
+        IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE fk_matriz_integracion = @FKMatrizIntegracion AND fk_asignatura = @FKAsignatura)
+        BEGIN
+            SET @Mensaje = 'La asignatura ya se encuentra registrada en la Matriz';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 6. Obtener nombre de la asignatura
+        SELECT @NombreAsignatura = nombre 
+        FROM ASIGNATURA 
+        WHERE id_asignatura = @FKAsignatura;
+
+        -- 7. Asignar asignatura a la Matriz
+        INSERT INTO MATRIZASIGNATURA (
+            fk_matriz_integracion, 
+            fk_asignatura, 
+            fk_profesor_asignado, 
+            estado
+        )
+        VALUES (
+            @FKMatrizIntegracion,
+            @FKAsignatura,
+            @FKProfesorAsignado,
+            'Iniciado'
+        );
+
+        SET @Resultado = SCOPE_IDENTITY();
+
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'La asignatura: ' + ISNULL(@NombreAsignatura, '') + ', se asignó al docente ' + ISNULL(@NombreProfesorAsignado, '');
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al asignar asignatura a la Matríz: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- Leer asignaturas de una matriz específica
+CREATE PROCEDURE usp_LeerAsignaturasPorMatriz
+    @FKMatrizIntegracion INT
+AS
+BEGIN
+    SELECT 
+        ma.id_matriz_asignatura,
+        ma.fk_matriz_integracion,
+        ma.fk_asignatura,
+        a.codigo ,
+        a.nombre AS asignatura,
+        ma.fk_profesor_asignado,
+        u.pri_nombre + ' ' + u.pri_apellido AS profesor,
+        ma.estado,
+        ma.fecha_registro
+    FROM MATRIZASIGNATURA ma
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
+    WHERE ma.fk_matriz_integracion = @FKMatrizIntegracion
+    ORDER BY a.nombre;
+END;
+GO
+
+-- Leer asignaturas asignadas a un profesor
+CREATE PROCEDURE usp_LeerAsignaturasPorProfesor
+    @FKProfesorAsignado INT
+AS
+BEGIN
+    SELECT 
+        ma.id_matriz_asignatura,
+        ma.fk_matriz_integracion,
+        mic.codigo AS codigo_matriz,
+        mic.nombre AS nombre_matriz,
+        ma.fk_asignatura,
+        a.codigo AS codigo_asignatura,
+        a.nombre AS nombre_asignatura,
+        ma.estado,
+        ma.fecha_registro,
+        (SELECT COUNT(*) 
+         FROM DESCRIPCIONASIGNATURAMATRIZ dam 
+         WHERE dam.fk_matriz_asignatura = ma.id_matriz_asignatura) AS tiene_descripcion
+    FROM MATRIZASIGNATURA ma
+    INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ma.fk_matriz_integracion = mic.id_matriz_integracion
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    WHERE ma.fk_profesor_asignado = @FKProfesorAsignado
+    AND mic.estado = 1
+    ORDER BY ma.estado, ma.fecha_registro DESC;
+END;
+GO
+
+-- Actualizar estado de asignatura en matriz
+CREATE PROCEDURE usp_ActualizarEstadoAsignaturaMatriz
+    @IdMatrizAsignatura INT,
+	@FKProfesorAsignado INT,
+    @estado VARCHAR(50)
+AS
+BEGIN
+    UPDATE MATRIZASIGNATURA
+    SET estado = @estado
+    WHERE id_matriz_asignatura = @IdMatrizAsignatura AND fk_profesor_asignado = @FKProfesorAsignado;
+END;
+GO
+
+-- Reasignar profesor a asignatura en matriz
+CREATE PROCEDURE usp_ReasignarProfesorAsignatura
+    @IdMatrizAsignatura INT,
+    @FKProfesorAsignado INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    DECLARE @ProfesorAsignado VARCHAR(255);
+    DECLARE @AsignaturaNombre VARCHAR(255);
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar que el nuevo docente no sea el mismo docente que ya tiene asignada la asignatura
+        IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura AND fk_profesor_asignado = @FKProfesorAsignado)
+        BEGIN
+            SET @Mensaje = 'El docente ya se encuentra asignado a esta asignatura';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Obtener nombre del nuevo profesor
+        SELECT @ProfesorAsignado = RTRIM(LTRIM(
+                CONCAT(
+                    pri_nombre, 
+                    CASE WHEN NULLIF(seg_nombre, '') IS NOT NULL THEN ' ' + seg_nombre ELSE '' END,
+                    ' ',
+                    pri_apellido,
+                    CASE WHEN NULLIF(seg_apellido, '') IS NOT NULL THEN ' ' + seg_apellido ELSE '' END
+                )
+            )) 
+        FROM USUARIOS 
+        WHERE id_usuario = @FKProfesorAsignado;
+
+        -- 3. Obtener nombre de la asignatura para el mensaje
+        SELECT @AsignaturaNombre = a.nombre
+        FROM MATRIZASIGNATURA ma
+        INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+        WHERE ma.id_matriz_asignatura = @IdMatrizAsignatura;
+
+        -- 4. Actualizar el profesor asignado
+        UPDATE MATRIZASIGNATURA
+        SET fk_profesor_asignado = @FKProfesorAsignado
+        WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+        
+        -- 5. Verificar si se actualizó algún registro
+        IF @@ROWCOUNT = 0
+        BEGIN
+            SET @Mensaje = 'No se encontró la asignatura para reasignar';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        COMMIT TRANSACTION;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Se reasignó la asignatura "' + ISNULL(@AsignaturaNombre, '') + '" al docente: ' + ISNULL(@ProfesorAsignado, '');
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al reasignar la asignatura: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- Remover asignatura de matriz
+CREATE PROCEDURE usp_RemoverAsignaturaMatriz
+    @IdMatrizAsignatura INT,
+	@FKProfesorPropietario INT,
+	@Resultado BIT OUTPUT
+AS
+BEGIN
+	SET @Resultado = 0;
+
+	IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura)
+	BEGIN
+		-- Primero eliminar las descripciones asociadas
+		DELETE FROM DESCRIPCIONASIGNATURAMATRIZ 
+		WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
+    
+		-- Luego eliminar la asignatura de la matriz
+		DELETE FROM MATRIZASIGNATURA 
+		WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+		SET @Resultado = 1
+	END
+END;
+GO
+
+-- =============================================
+-- PROCEDIMIENTOS PARA DESCRIPCIONASIGNATURAMATRIZ
+-- =============================================
+
+-- Crear o actualizar descripción de asignatura en matriz
+CREATE PROCEDURE usp_GuardarDescripcionAsignatura
+    @FKMatrizAsignatura INT,
+    @Descripcion VARCHAR(255),
+    @AccionIntegradora VARCHAR(255),
+    @TipoEvaluacion VARCHAR(50),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    DECLARE @Asignatura VARCHAR(255);
+    DECLARE @Accion VARCHAR(20);
+
+    BEGIN TRY
+        -- Obtener el nombre de la asignatura para el mensaje
+        SELECT @Asignatura = a.nombre 
+        FROM MATRIZASIGNATURA ma
+        INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+        WHERE ma.id_matriz_asignatura = @FKMatrizAsignatura;
+
+        IF EXISTS (SELECT 1 FROM DESCRIPCIONASIGNATURAMATRIZ WHERE fk_matriz_asignatura = @FKMatrizAsignatura)
+        BEGIN
+            -- Actualizar descripción existente
+            UPDATE DESCRIPCIONASIGNATURAMATRIZ
+            SET 
+                descripcion = @Descripcion,
+                accion_integradora = @AccionIntegradora,
+                tipo_evaluacion = @TipoEvaluacion,
+                fecha_registro = GETDATE()
+            WHERE fk_matriz_asignatura = @FKMatrizAsignatura;
+
+            SET @Resultado = 1;
+            SET @Accion = 'actualizada';
+        END
+        ELSE
+        BEGIN
+            -- Insertar nueva descripción
+            INSERT INTO DESCRIPCIONASIGNATURAMATRIZ (
+                fk_matriz_asignatura,
+                descripcion,
+                accion_integradora,
+                tipo_evaluacion
+            )
+            VALUES (
+                @FKMatrizAsignatura,
+                @Descripcion,
+                @AccionIntegradora,
+                @TipoEvaluacion
+            );
+
+            SET @Resultado = SCOPE_IDENTITY();
+            SET @Accion = 'guardada';
+        END
+
+        SET @Mensaje = 'Descripción de la asignatura ' + ISNULL(@Asignatura, '') + ' ' + @Accion + ' exitosamente';
+        
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al guardar la descripción de la asignatura: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- Leer descripción de asignatura en matriz
+CREATE PROCEDURE sp_LeerDescripcionAsignatura
+    @fk_matriz_asignatura INT
+AS
+BEGIN
+    SELECT 
+        id_descripcion,
+        fk_matriz_asignatura,
+        descripcion,
+        accion_integradora,
+        tipo_evaluacion,
+        fecha_registro
+    FROM DESCRIPCIONASIGNATURAMATRIZ
+    WHERE fk_matriz_asignatura = @fk_matriz_asignatura;
+END;
+GO
+
+-- Leer todas las descripciones de una matriz completa
+CREATE PROCEDURE sp_LeerDescripcionesCompletasMatriz
+    @fk_matriz_integracion INT
+AS
+BEGIN
+    SELECT 
+        ma.id_matriz_asignatura,
+        a.codigo AS codigo_asignatura,
+        a.nombre AS nombre_asignatura,
+        u.pri_nombre + ' ' + u.pri_apellido AS nombre_profesor,
+        ma.estado,
+        dam.descripcion,
+        dam.accion_integradora,
+        dam.tipo_evaluacion,
+        dam.fecha_registro AS fecha_descripcion
+    FROM MATRIZASIGNATURA ma
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
+    LEFT JOIN DESCRIPCIONASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
+    WHERE ma.fk_matriz_integracion = @fk_matriz_integracion
+    ORDER BY a.nombre;
+END;
+GO
+
+-- =============================================
+-- PROCEDIMIENTOS ESPECIALES Y REPORTES
+-- =============================================
+
+-- Obtener matriz completa con todas sus relaciones
+CREATE PROCEDURE sp_ObtenerMatrizCompleta
+    @id_matriz_integracion INT
+AS
+BEGIN
+    -- Información general de la matriz
+    SELECT 
+        mic.id_matriz_integracion,
+        mic.codigo,
+        mic.nombre,
+        a.nombre AS area_conocimiento,
+        d.nombre AS departamento,
+        c.nombre AS carrera,
+        asi_principal.nombre AS asignatura_principal,
+        u_responsable.pri_nombre + ' ' + u_responsable.pri_apellido AS profesor_responsable,
+        p.semestre AS periodo,
+        mic.competencias,
+        mic.objetivo_anio,
+        mic.objetivo_semestre,
+        mic.objetivo_integrador,
+        mic.estrategia_integradora,
+        mic.fecha_registro
+    FROM MATRIZINTEGRACIONCOMPONENTES mic
+    INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
+    INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+    INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+    INNER JOIN ASIGNATURA asi_principal ON mic.fk_asignatura = asi_principal.id_asignatura
+    INNER JOIN USUARIOS u_responsable ON mic.fk_profesor = u_responsable.id_usuario
+    INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+    WHERE mic.id_matriz_integracion = @id_matriz_integracion;
+    
+    -- Asignaturas asignadas con sus descripciones
+    SELECT 
+        ma.id_matriz_asignatura,
+        a.id_asignatura,
+        a.codigo AS codigo_asignatura,
+        a.nombre AS nombre_asignatura,
+        u.pri_nombre + ' ' + u.pri_apellido AS profesor_asignado,
+        ma.estado,
+        dam.descripcion,
+        dam.accion_integradora,
+        dam.tipo_evaluacion,
+        dam.fecha_registro AS fecha_descripcion
+    FROM MATRIZASIGNATURA ma
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
+    LEFT JOIN DESCRIPCIONASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
+    WHERE ma.fk_matriz_integracion = @id_matriz_integracion
+    ORDER BY a.nombre;
+END;
+GO
+
+-- Reporte de progreso de matriz
+CREATE PROCEDURE sp_ReporteProgresoMatriz
+    @id_matriz_integracion INT
+AS
+BEGIN
+    SELECT 
+        mic.codigo,
+        mic.nombre,
+        COUNT(ma.id_matriz_asignatura) AS total_asignaturas,
+        SUM(CASE WHEN ma.estado = 'Finalizado' THEN 1 ELSE 0 END) AS asignaturas_finalizadas,
+        SUM(CASE WHEN dam.id_descripcion IS NOT NULL THEN 1 ELSE 0 END) AS asignaturas_con_descripcion,
+        (SUM(CASE WHEN ma.estado = 'Finalizado' THEN 1 ELSE 0 END) * 100.0 / COUNT(ma.id_matriz_asignatura)) AS porcentaje_completado
+    FROM MATRIZINTEGRACIONCOMPONENTES mic
+    LEFT JOIN MATRIZASIGNATURA ma ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+    LEFT JOIN DESCRIPCIONASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
+    WHERE mic.id_matriz_integracion = @id_matriz_integracion
+    GROUP BY mic.codigo, mic.nombre;
+END;
+GO
+
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS PLANES DE CLASES DE UN USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerPlanesDeClases
     @IdUsuario INT,
