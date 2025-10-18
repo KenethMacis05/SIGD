@@ -13,15 +13,136 @@ namespace capa_presentacion.Controllers
     public class PlanificacionController : Controller
     {
         CN_PlanClasesDiario CN_PlanClasesDiario = new CN_PlanClasesDiario();
+        CN_MatrizIntegracionComponentes CN_MatrizIntegradora = new CN_MatrizIntegracionComponentes();
 
+        #region Matriz de Integracion de Componentes
+        
         public ActionResult Matriz_de_Integracion()
         {
             return View();
         }
+
+        //Enpoint(GET): Listar matrices de integracion del usuario
+        [HttpGet]
+        public JsonResult ListarMatricesIntegracion()
+        {
+            try
+            {
+                var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
+                
+                int resultado;
+                string mensaje;
+
+                List<MATRIZINTEGRACIONCOMPONENTES> lst = new List<MATRIZINTEGRACIONCOMPONENTES>();
+                lst = CN_MatrizIntegradora.Listar(usuario.id_usuario, out resultado, out mensaje);
+                
+                return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        //Vista Crear Matriz de Integracion de Componentes
+        [HttpGet]
+        public ActionResult CrearMatrizIntegracion()
+        {
+            return View();
+        }
+
+        //Vista Detalle de la Matriz de Integracion de Componentes
+        [HttpGet]
+        public ActionResult DetalleMatrizIntegracion(int id)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerPorId(id, usuario.id_usuario);
+            if (matriz == null || usuario == null)
+            {
+                ViewBag["Error"] = "La matriz de integración no existe.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+            return View(matriz);
+        }
+
+        //Vista Editar de la Matriz de Integracion de Componentes
+        [HttpGet]
+        public ActionResult EditarMatrizIntegracion(int id)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerPorId(id, usuario.id_usuario);
+            if (matriz == null || usuario == null)
+            {
+                ViewBag["Error"] = "La matriz de integración no existe.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+            return View(matriz);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult GuardarMatrizIntegracion(MATRIZINTEGRACIONCOMPONENTES matriz)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View("Matriz_de_Integracion", matriz);
+                }
+
+                string mensaje;
+                int resultado;
+                bool esNuevo = matriz.id_matriz_integracion == 0;
+                
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                matriz.fk_profesor = usuario.id_usuario;
+                
+                if (esNuevo)
+                {
+                    resultado = CN_MatrizIntegradora.Crear(matriz, out mensaje);
+                }
+                else
+                {
+                    resultado = CN_MatrizIntegradora.Editar(matriz, out mensaje);
+                }
+                if (resultado <= 0)
+                {
+                    TempData["Error"] = $"No se pudo {(esNuevo ? "registrar" : "actualizar")} la matriz. {mensaje}";
+                    return View("Matriz_de_Integracion", matriz);
+                }
+
+                TempData["Success"] = mensaje;
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Ocurrió un error inesperado al procesar su solicitud.";
+                return RedirectToAction("Matriz_de_Integracion", new { id = matriz?.id_matriz_integracion ?? 0 });
+            }
+        }
+
+        //Enpoint(POST): Eliminar matriz de integracion de componentes
+        [HttpPost]
+        public JsonResult EliminarMatrizIntegracion(int id_matriz_integracion)
+        {
+            string mensaje = string.Empty;
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
+            int resultado = CN_MatrizIntegradora.Eliminar(id_matriz_integracion, usuario.id_usuario, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Plan Didactico Semestral
+
         public ActionResult Plan_Didactico_Semestral()
         {
             return View();
         }
+
+        #endregion
 
         #region PLAN DE CLASES DIARIO
 

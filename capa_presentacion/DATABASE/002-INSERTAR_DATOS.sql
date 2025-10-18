@@ -94,14 +94,6 @@ VALUES
     ('Controlador', 'guardarControlador', 'Crear o actualizar controlador', 'API'),
     ('Controlador', 'eliminarControlador', 'Eliminar controlador', 'API'),
     
-    -- PlanificacionController
-    ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API'),
-    ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista'),
-    ('Planificacion', 'EditarPlanDiario', 'Vista de edición para los planes de clases diario', 'Vista'),
-    ('Planificacion', 'CrearPlanClasesDiario', 'Vista de creación para los planes de clases diario', 'Vista'),
-    ('Planificacion', 'GuardarPlanDiario', 'Crear/Editar plan de clases diario', 'API'),
-    ('Planificacion', 'EliminarPlanClasesDiario', 'Eliminar plan de clases diario', 'API'),
-
     -- CatalogosController
     ('Catalogos', 'ListarAreasDeConocimiento', 'Listar áreas de conocimiento', 'API'),
     ('Catalogos', 'GuardarAreaDeConocimiento', 'Crear/Editar áreas de conocimiento', 'API'),
@@ -121,7 +113,34 @@ VALUES
     
     ('Catalogos', 'ListarPeriodos', 'listar periodos', 'API'),
     ('Catalogos', 'GuardarPeriodos', 'Crear/Editar periodos', 'API'),
-    ('Catalogos', 'EliminarPeriodos', 'Eliminar periodos', 'API')
+    ('Catalogos', 'EliminarPeriodos', 'Eliminar periodos', 'API'),
+
+    -- PlanificacionController
+
+    -- 1. Matriz de integración
+    ('Planificacion', 'ListarMatricesIntegracion', 'Listar matrices de integración', 'API'),
+    ('Planificacion', 'DetalleMatrizIntegracion', 'Vista de detalles de matriz de integración', 'Vista'),
+    ('Planificacion', 'EditarMatrizIntegracion', 'Vista de edición para las matrices de integración', 'Vista'),
+    ('Planificacion', 'CrearMatrizIntegracion', 'Vista de creación para las matrices de integración', 'Vista'),
+    ('Planificacion', 'GuardarMatrizIntegracion', 'Crear/Editar matriz de integración', 'API'),
+    ('Planificacion', 'EliminarMatrizIntegracion', 'Eliminar matriz de integración', 'API'),
+
+    -- 2. Plan didáctico semestral
+    ('Planificacion', 'ListarPlanesDidacticos', 'Listar planes didácticos semestrales', 'API'),
+    ('Planificacion', 'DetallePlanDidactico', 'Vista de detalles de planes didácticos semestrales', 'Vista'),
+    ('Planificacion', 'EditarPlanDidactico', 'Vista de edición para los planes didácticos semestrales', 'Vista'),
+    ('Planificacion', 'CrearPlanDidactico', 'Vista de creación para los planes didácticos semestrales', 'Vista'),
+    ('Planificacion', 'GuardarPlanDidactico', 'Crear/Editar plan didáctico semestral', 'API'),
+    ('Planificacion', 'EliminarPlanDidactico', 'Eliminar plan didáctico semestral', 'API'),
+
+    -- 3. Plan de clases diario
+    ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API'),
+    ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista'),
+    ('Planificacion', 'EditarPlanDiario', 'Vista de edición para los planes de clases diario', 'Vista'),
+    ('Planificacion', 'CrearPlanClasesDiario', 'Vista de creación para los planes de clases diario', 'Vista'),
+    ('Planificacion', 'GuardarPlanDiario', 'Crear/Editar plan de clases diario', 'API'),
+    ('Planificacion', 'EliminarPlanClasesDiario', 'Eliminar plan de clases diario', 'API'),
+
 GO
 --------------------------------------------------------------------------------------------------------------------
 
