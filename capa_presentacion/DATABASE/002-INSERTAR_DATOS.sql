@@ -139,7 +139,7 @@ VALUES
     ('Planificacion', 'EditarPlanDiario', 'Vista de edición para los planes de clases diario', 'Vista'),
     ('Planificacion', 'CrearPlanClasesDiario', 'Vista de creación para los planes de clases diario', 'Vista'),
     ('Planificacion', 'GuardarPlanDiario', 'Crear/Editar plan de clases diario', 'API'),
-    ('Planificacion', 'EliminarPlanClasesDiario', 'Eliminar plan de clases diario', 'API'),
+    ('Planificacion', 'EliminarPlanClasesDiario', 'Eliminar plan de clases diario', 'API')
 
 GO
 --------------------------------------------------------------------------------------------------------------------

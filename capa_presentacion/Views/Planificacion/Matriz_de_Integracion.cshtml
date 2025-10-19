@@ -6,3 +6,27 @@
 
 <!--Titulo-->
 <div class="alert text-center" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">@ViewBag.Title</h2></div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: '/Planificacion/ListarMatricesIntegracion',
+                type: 'GET',
+                success: function (response) {
+                    console.log("Respuesta del servidor:", response); // Depurar la respuesta completa
+                    if (response.success) {
+                        console.log('datos obtenidos:', response.data);
+                    } else {
+                        console.warn('Error en la respuesta:', response.message);
+                        alert('Error: ' + response.message);
+                    }
+                },
+                error: function (xhr) {
+                    console.error('Error al conectar con el servidor:', xhr);
+                    alert('Error al conectar con el servidor: ' + xhr.statusText);
+                }
+            });
+        });
+    </script>
+}

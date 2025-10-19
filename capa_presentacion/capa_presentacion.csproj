@@ -608,6 +608,7 @@
     <Content Include="Scripts\Views\Asignatura.js" />
     <Content Include="Scripts\Views\Carrera.js" />
     <Content Include="Scripts\Views\Departamento.js" />
+    <Content Include="Scripts\Views\MatrizIntegradoraComponentes.js" />
     <Content Include="Scripts\Views\Menu.js" />
     <Content Include="Scripts\Views\Periodo.js" />
     <Content Include="Scripts\Views\Permisos.js" />

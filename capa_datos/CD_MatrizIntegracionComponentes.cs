@@ -40,7 +40,7 @@ namespace capa_datos
                             lst.Add(
                                 new MATRIZINTEGRACIONCOMPONENTES
                                 {
-                                    id_matriz_integracion = Convert.ToInt32(dr["id_matriz"]),
+                                    id_matriz_integracion = Convert.ToInt32(dr["id_matriz_integracion"]),
                                     codigo = dr["codigo"].ToString(),
                                     nombre = dr["nombre"].ToString(),
                                     area = dr["area_conocimiento"].ToString(),
