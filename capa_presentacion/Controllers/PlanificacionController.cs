@@ -24,7 +24,6 @@ namespace capa_presentacion.Controllers
 
         //Enpoint(GET): Listar matrices de integracion del usuario
         [HttpGet]
-        [AllowAnonymous]
         public JsonResult ListarMatricesIntegracion()
         {
             try
@@ -48,7 +47,6 @@ namespace capa_presentacion.Controllers
 
         //Vista Crear Matriz de Integracion de Componentes
         [HttpGet]
-        [AllowAnonymous]
         public ActionResult CrearMatrizIntegracion()
         {
             return View();
@@ -56,7 +54,6 @@ namespace capa_presentacion.Controllers
 
         //Vista Detalle de la Matriz de Integracion de Componentes
         [HttpGet]
-        [AllowAnonymous]
         public ActionResult DetalleMatrizIntegracion(int id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
@@ -71,7 +68,6 @@ namespace capa_presentacion.Controllers
 
         //Vista Editar de la Matriz de Integracion de Componentes
         [HttpGet]
-        [AllowAnonymous]
         public ActionResult EditarMatrizIntegracion(int id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
@@ -128,7 +124,6 @@ namespace capa_presentacion.Controllers
 
         //Enpoint(POST): Eliminar matriz de integracion de componentes
         [HttpPost]
-        [AllowAnonymous]
         public JsonResult EliminarMatrizIntegracion(int id_matriz_integracion)
         {
             string mensaje = string.Empty;

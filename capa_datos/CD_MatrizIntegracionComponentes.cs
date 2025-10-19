@@ -48,7 +48,7 @@ namespace capa_datos
                                     carrera = dr["carrera"].ToString(),
                                     asignatura = dr["asignatura"].ToString(),
                                     usuario = dr["usuario"].ToString(),
-                                    periodo = Convert.ToInt32(dr["periodo"]),
+                                    periodo = dr["periodo"].ToString(),
                                     estado = Convert.ToBoolean(dr["estado"]),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
                                 }

@@ -30,6 +30,6 @@ namespace capa_entidad
         public string carrera { get; set; }
         public string asignatura { get; set; }
         public string usuario { get; set; }
-        public int periodo { get; set; }
+        public string periodo { get; set; }
     }
 }

@@ -729,6 +729,7 @@
     <Content Include="Views\Planificacion\CrearMatrizIntegracion.cshtml" />
     <Content Include="Views\Planificacion\DetalleMatrizIntegracion.cshtml" />
     <Content Include="Views\Planificacion\EditarMatrizIntegracion.cshtml" />
+    <Content Include="Views\Planificacion\_FormularioMatrizIntegradora.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

@@ -164,7 +164,7 @@ namespace capa_datos
             return idautogenerado;
         }
 
-        // Actualizar usuario
+        // Actualizar plan de clases diario
         public bool ActualizarPlanClasesDiario(PLANCLASESDIARIO plan, out string mensaje)
         {
             bool resultado = false;
