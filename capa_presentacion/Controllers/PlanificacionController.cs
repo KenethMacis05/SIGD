@@ -14,6 +14,7 @@ namespace capa_presentacion.Controllers
     {
         CN_PlanClasesDiario CN_PlanClasesDiario = new CN_PlanClasesDiario();
         CN_MatrizIntegracionComponentes CN_MatrizIntegradora = new CN_MatrizIntegracionComponentes();
+        CN_MatrizAsignatura CN_MatrizAsignatura = new CN_MatrizAsignatura();
 
         #region Matriz de Integracion de Componentes
         
@@ -82,7 +83,7 @@ namespace capa_presentacion.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult GuardarMatrizIntegracion(MATRIZINTEGRACIONCOMPONENTES matriz)
+        public ActionResult GuardarMatrizIntegracion(MATRIZINTEGRACIONCOMPONENTES matriz, List<MATRIZASIGNATURA> asignaturas)
         {
             try
             {
@@ -94,10 +95,11 @@ namespace capa_presentacion.Controllers
                 string mensaje;
                 int resultado;
                 bool esNuevo = matriz.id_matriz_integracion == 0;
-                
+
                 USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
                 matriz.fk_profesor = usuario.id_usuario;
-                
+
+                // 1. Guardar la matriz principal
                 if (esNuevo)
                 {
                     resultado = CN_MatrizIntegradora.Crear(matriz, out mensaje);
@@ -106,19 +108,93 @@ namespace capa_presentacion.Controllers
                 {
                     resultado = CN_MatrizIntegradora.Editar(matriz, out mensaje);
                 }
+
                 if (resultado <= 0)
                 {
                     TempData["Error"] = $"No se pudo {(esNuevo ? "registrar" : "actualizar")} la matriz. {mensaje}";
                     return View("Matriz_de_Integracion", matriz);
                 }
 
-                TempData["Success"] = mensaje;
+                // 2. Si es nuevo, obtener el ID generado
+                int idMatriz = esNuevo ? resultado : matriz.id_matriz_integracion;
+
+                // 3. Asignar las asignaturas si se proporcionaron
+                if (asignaturas != null && asignaturas.Any())
+                {
+                    // Asignar el ID de la matriz y el propietario a cada asignatura
+                    foreach (var asignatura in asignaturas)
+                    {
+                        asignatura.fk_matriz_integracion = idMatriz;
+                        asignatura.fk_profesor_propietario = usuario.id_usuario;
+                    }
+
+                    // Llamar al método de asignación de asignaturas
+                    bool asignaturasAsignadas = CN_MatrizAsignatura.Asignar(asignaturas, out string mensajeAsignaturas);
+
+                    if (!asignaturasAsignadas)
+                    {
+                        // Si falla la asignación de asignaturas pero la matriz se creó,
+                        // podrías considerar eliminar la matriz o mostrar advertencia
+                        TempData["Warning"] = $"Matriz {(esNuevo ? "creada" : "actualizada")} pero con errores en asignaturas: {mensajeAsignaturas}";
+                    }
+                    else
+                    {
+                        TempData["Success"] = $"{mensaje} | {mensajeAsignaturas}";
+                    }
+                }
+                else
+                {
+                    TempData["Success"] = mensaje;
+                }
+
                 return RedirectToAction("Matriz_de_Integracion");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["Error"] = "Ocurrió un error inesperado al procesar su solicitud.";
+                TempData["Error"] = "Ocurrió un error inesperado al procesar su solicitud: " + ex.Message;
                 return RedirectToAction("Matriz_de_Integracion", new { id = matriz?.id_matriz_integracion ?? 0 });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult GuardarAsignaturasMatriz(int idMatriz, List<MATRIZASIGNATURA> asignaturas)
+        {
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+                if (asignaturas != null && asignaturas.Any())
+                {
+                    // Asignar el ID de la matriz y el propietario a cada asignatura
+                    foreach (var asignatura in asignaturas)
+                    {
+                        asignatura.fk_matriz_integracion = idMatriz;
+                        asignatura.fk_profesor_propietario = usuario.id_usuario;
+                    }
+
+                    bool exito = CN_MatrizAsignatura.Asignar(asignaturas, out string mensaje);
+
+                    if (exito)
+                    {
+                        TempData["Success"] = mensaje;
+                    }
+                    else
+                    {
+                        TempData["Error"] = mensaje;
+                    }
+                }
+                else
+                {
+                    TempData["Warning"] = "No se proporcionaron asignaturas para asignar";
+                }
+
+                return RedirectToAction("Matriz_de_Integracion", new { id = idMatriz });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Ocurrió un error al asignar las asignaturas: " + ex.Message;
+                return RedirectToAction("Matriz_de_Integracion", new { id = idMatriz });
             }
         }
 

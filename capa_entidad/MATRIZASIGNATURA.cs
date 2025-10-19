@@ -11,6 +11,7 @@ namespace capa_entidad
         public int id_matriz_asignatura { get; set; }
         public int fk_matriz_integracion { get; set; }
         public int fk_asignatura { get; set; }
+        public int fk_profesor_propietario { get; set; }
         public int fk_profesor_asignado { get; set; }
         public bool estado { get; set; }
         public DateTime fecha_registro { get; set; }
