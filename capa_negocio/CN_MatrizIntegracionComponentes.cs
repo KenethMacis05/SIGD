@@ -70,9 +70,9 @@ namespace capa_negocio
             return eliminar ? 1 : 0;
         }
 
-        public MATRIZINTEGRACIONCOMPONENTES ObtenerPorId(int id, int id_usuario)
+        public MATRIZINTEGRACIONCOMPONENTES ObtenerMatrizPorId(int id, int id_usuario)
         {
-            throw new NotImplementedException();
+            return CD_MatrizIntegracion.ObtenerMatrizPorId(id, id_usuario);
         }
     }
 }

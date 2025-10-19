@@ -91,7 +91,7 @@ $('#btnSiguiente').click(function () {
 
                 if (currentTabIndex === $tabs.length - 1) {
                     $('#btnSiguiente').hide();
-                    var idPlan = $('#idPlan').val();
+                    var idPlan = $('#idMatriz').val();
                     if (idPlan == 0) {
                         $('#btnGuardar').show();
                     }
@@ -196,4 +196,27 @@ const dataTableOptions = {
 
 $(document).ready(function () {
     dataTable = $("#datatable").DataTable(dataTableOptions);
+    $('#competenciasSummernote').summernote(summernoteConfig);
+    $('#estrategiaIntegradoraSummernote').summernote(summernoteConfig);
+    $('#objetivoAnioSummernote').summernote(summernoteConfig);
+    $('#objetivoSemestreSummernote').summernote(summernoteConfig);
+    $('#objetivoIntegradorSummernote').summernote(summernoteConfig);
+
+    $tabs.not(':first').removeClass('active show');
+    $tabButtons.not(':first').removeClass('active').attr('aria-selected', 'false');
+
+    $('.nav-tabs').on('click', 'button', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+
+    $tabButtons.each(function () {
+        $(this).attr('data-bs-toggle', '');
+        $(this).css('pointer-events', 'none');
+        $(this).css('cursor', 'default');
+    });
+
+    $('#btnAnterior').hide();
+    $('#btnGuardar').hide();
 });

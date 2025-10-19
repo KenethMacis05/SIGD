@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace capa_entidad
 {
@@ -17,11 +18,15 @@ namespace capa_entidad
         public int fk_asignatura { get; set; }
         public int fk_periodo { get; set; }
         public int fk_profesor { get; set; }
+        [AllowHtml]
         public string competencias { get; set; }
+        [AllowHtml]
         public string objetivo_anio { get; set; }
+        [AllowHtml]
         public string objetivo_semestre { get; set; }
+        [AllowHtml]
         public string objetivo_integrador { get; set; }
-        public string accion_integradora { get; set; }
+        [AllowHtml]
         public string estrategia_integradora { get; set; }
         public bool estado { get; set; }
         public DateTime fecha_registro { get; set; }

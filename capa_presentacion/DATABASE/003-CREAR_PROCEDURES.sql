@@ -3762,7 +3762,7 @@ BEGIN
 
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'La Matriz Integradora se registró exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre;
+        SET @Mensaje = 'La Matriz Integradora se registro exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre;
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
@@ -4359,54 +4359,64 @@ GO
 -- =============================================
 
 -- Obtener matriz completa con todas sus relaciones
-CREATE PROCEDURE sp_ObtenerMatrizCompleta
-    @id_matriz_integracion INT
+CREATE PROCEDURE usp_ObtenerMatrizCompleta
+    @IdMatrizIntegracion INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
 AS
 BEGIN
-    -- Información general de la matriz
-    SELECT 
-        mic.id_matriz_integracion,
-        mic.codigo,
-        mic.nombre,
-        a.nombre AS area_conocimiento,
-        d.nombre AS departamento,
-        c.nombre AS carrera,
-        asi_principal.nombre AS asignatura_principal,
-        u_responsable.pri_nombre + ' ' + u_responsable.pri_apellido AS profesor_responsable,
-        p.semestre AS periodo,
-        mic.competencias,
-        mic.objetivo_anio,
-        mic.objetivo_semestre,
-        mic.objetivo_integrador,
-        mic.estrategia_integradora,
-        mic.fecha_registro
-    FROM MATRIZINTEGRACIONCOMPONENTES mic
-    INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
-    INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
-    INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
-    INNER JOIN ASIGNATURA asi_principal ON mic.fk_asignatura = asi_principal.id_asignatura
-    INNER JOIN USUARIOS u_responsable ON mic.fk_profesor = u_responsable.id_usuario
-    INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
-    WHERE mic.id_matriz_integracion = @id_matriz_integracion;
-    
-    -- Asignaturas asignadas con sus descripciones
-    SELECT 
-        ma.id_matriz_asignatura,
-        a.id_asignatura,
-        a.codigo AS codigo_asignatura,
-        a.nombre AS nombre_asignatura,
-        u.pri_nombre + ' ' + u.pri_apellido AS profesor_asignado,
-        ma.estado,
-        dam.descripcion,
-        dam.accion_integradora,
-        dam.tipo_evaluacion,
-        dam.fecha_registro AS fecha_descripcion
-    FROM MATRIZASIGNATURA ma
-    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
-    INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
-    LEFT JOIN DESCRIPCIONASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
-    WHERE ma.fk_matriz_integracion = @id_matriz_integracion
-    ORDER BY a.nombre;
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        -- Verificar si la matriz existe
+        IF NOT EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE id_matriz_integracion = @IdMatrizIntegracion AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'La matriz no existe o está inactiva';
+            RETURN;
+        END
+
+        -- Información general de la matriz
+        SELECT 
+            mic.id_matriz_integracion,
+            mic.codigo,
+            mic.nombre,
+            mic.fk_area,
+            a.nombre AS area_conocimiento,
+            mic.fk_departamento,
+            d.nombre AS departamento,
+            mic.fk_carrera,
+            c.nombre AS carrera,
+            mic.fk_asignatura,
+            asi_principal.nombre AS asignatura_principal,
+            mic.fk_profesor,
+            u_responsable.pri_nombre + ' ' + u_responsable.pri_apellido AS profesor_responsable,
+            mic.fk_periodo,
+            p.semestre AS periodo,
+            mic.competencias,
+            mic.objetivo_anio,
+            mic.objetivo_semestre,
+            mic.objetivo_integrador,
+            mic.estrategia_integradora,
+            mic.estado,
+            mic.fecha_registro
+        FROM MATRIZINTEGRACIONCOMPONENTES mic
+        INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
+        INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+        INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+        INNER JOIN ASIGNATURA asi_principal ON mic.fk_asignatura = asi_principal.id_asignatura
+        INNER JOIN USUARIOS u_responsable ON mic.fk_profesor = u_responsable.id_usuario
+        INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+        WHERE mic.id_matriz_integracion = @IdMatrizIntegracion;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Matriz obtenida exitosamente';
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al obtener la matriz: ' + ERROR_MESSAGE();
+    END CATCH
 END;
 GO
 

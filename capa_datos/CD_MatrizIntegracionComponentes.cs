@@ -67,6 +67,90 @@ namespace capa_datos
             return lst;
         }
 
+        // 1.1 Obtener Matriz por Id
+        public MATRIZINTEGRACIONCOMPONENTES ObtenerMatrizPorId(int id, int id_usuario)
+        {
+            int resultado;
+            string mensaje;
+
+            // Verificar que el usuario tenga permisos sobre esta matriz
+            var matrizResumen = Listar(id_usuario, out resultado, out mensaje);
+            if (matrizResumen.Any(m => m.id_matriz_integracion == id))
+            {
+                // Si el usuario tiene acceso, obtener los datos completos
+                return ObtenerMatrizCompleta(id, out resultado, out mensaje);
+            }
+            else
+            {
+                throw new Exception("No tiene permisos para acceder a esta matriz");
+            }
+        }
+
+        // 1.2 Obtener Matriz Completa por Id
+        public MATRIZINTEGRACIONCOMPONENTES ObtenerMatrizCompleta(int id_matriz_integracion, out int resultado, out string mensaje)
+        {
+            MATRIZINTEGRACIONCOMPONENTES matriz = new MATRIZINTEGRACIONCOMPONENTES();
+            resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerMatrizCompleta", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("IdMatrizIntegracion", id_matriz_integracion);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            matriz = new MATRIZINTEGRACIONCOMPONENTES
+                            {
+                                id_matriz_integracion = Convert.ToInt32(dr["id_matriz_integracion"]),
+                                codigo = dr["codigo"].ToString(),
+                                nombre = dr["nombre"].ToString(),
+                                fk_area = Convert.ToInt32(dr["fk_area"]),
+                                area = dr["area_conocimiento"].ToString(),
+                                fk_departamento = Convert.ToInt32(dr["fk_departamento"]),
+                                departamento = dr["departamento"].ToString(),
+                                fk_carrera = Convert.ToInt32(dr["fk_carrera"]),
+                                carrera = dr["carrera"].ToString(),
+                                fk_asignatura = Convert.ToInt32(dr["fk_asignatura"]),
+                                asignatura = dr["asignatura_principal"].ToString(),
+                                fk_profesor = Convert.ToInt32(dr["fk_profesor"]),
+                                usuario = dr["profesor_responsable"].ToString(),
+                                fk_periodo = Convert.ToInt32(dr["fk_periodo"]),
+                                periodo = dr["periodo"].ToString(),
+                                competencias = dr["competencias"].ToString(),
+                                objetivo_anio = dr["objetivo_anio"].ToString(),
+                                objetivo_semestre = dr["objetivo_semestre"].ToString(),
+                                objetivo_integrador = dr["objetivo_integrador"].ToString(),
+                                estrategia_integradora = dr["estrategia_integradora"].ToString(),
+                                estado = Convert.ToBoolean(dr["estado"]),
+                                fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
+                            };
+                        }
+                    }
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener la matriz completa: " + ex.Message);
+            }
+
+            return matriz;
+        }
+
         // 2. Crerar matriz de integración de componentes
         public int RegistrarMatrizIntegracion(MATRIZINTEGRACIONCOMPONENTES matriz, out string mensaje)
         {

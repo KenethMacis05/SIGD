@@ -57,7 +57,7 @@ namespace capa_presentacion.Controllers
         public ActionResult DetalleMatrizIntegracion(int id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerPorId(id, usuario.id_usuario);
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(id, usuario.id_usuario);
             if (matriz == null || usuario == null)
             {
                 ViewBag["Error"] = "La matriz de integración no existe.";
@@ -71,7 +71,7 @@ namespace capa_presentacion.Controllers
         public ActionResult EditarMatrizIntegracion(int id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerPorId(id, usuario.id_usuario);
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(id, usuario.id_usuario);
             if (matriz == null || usuario == null)
             {
                 ViewBag["Error"] = "La matriz de integración no existe.";

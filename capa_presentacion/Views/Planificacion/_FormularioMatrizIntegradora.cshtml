@@ -43,27 +43,12 @@
             </li>
             <li class="nav-item">
                 <button class="nav-link nav-link-tab esp-link" id="competencias-tab" data-bs-toggle="tab" data-bs-target="#competencias" type="button" role="tab" aria-controls="competencias" aria-selected="false">
-                    Competencias y Ejes
+                    Competencias y objetivos
                 </button>
             </li>
             <li class="nav-item">
                 <button class="nav-link nav-link-tab esp-link" id="objetivos-tab" data-bs-toggle="tab" data-bs-target="#objetivos" type="button" role="tab" aria-controls="objetivos" aria-selected="false">
-                    Objetivos y Contenidos
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link nav-link-tab esp-link" id="actividades-tab" data-bs-toggle="tab" data-bs-target="#actividades" type="button" role="tab" aria-controls="actividades" aria-selected="false">
-                    Actividades
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link nav-link-tab esp-link" id="evaluacion-tab" data-bs-toggle="tab" data-bs-target="#evaluacion" type="button" role="tab" aria-controls="evaluacion" aria-selected="false">
-                    Evaluación
-                </button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link nav-link-tab esp-link" id="aprendizaje-tab" data-bs-toggle="tab" data-bs-target="#aprendizaje" type="button" role="tab" aria-controls="aprendizaje" aria-selected="false">
-                    Aprendizaje
+                    Objetivos
                 </button>
             </li>
         </ul>
@@ -223,8 +208,8 @@
                 </div>
             </div>
 
-            <!--Competencias y Ejes-->
-            @*<div class="tab-pane fade" id="competencias" role="tabpanel" aria-labelledby="competencias-tab">
+            <!--Competencias y Objetivos-->
+            <div class="tab-pane fade" id="competencias" role="tabpanel" aria-labelledby="competencias-tab">
                 <div class="row">
                     <div class="col col-md-12 col-sm-12 mb-3">
                         <div class="card border-left-primary shadow-sm">
@@ -251,18 +236,45 @@
 
                 <div class="row">
                     <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-warning shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-bullseye fa-lg text-warning me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Estrategia integradora</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.estrategia_integradora, 3, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "estrategiaIntegradoraSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El objetivo de aprendizaje es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "500"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                
+            </div>
+
+            <!--objetivos y Contenidos-->
+            <div class="tab-pane fade" id="objetivos" role="tabpanel" aria-labelledby="objetivos-tab">
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
                         <div class="card border-left-success shadow-sm">
                             <div class="card-header">
                                 <i class="fa fa-stream fa-lg text-success me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Ejes</label>
+                                <label class="form-label fs-5 fw-medium mb-0">Objetivos de año</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.ejes, 3, 50, new
+                                @Html.TextAreaFor(m => m.objetivo_anio, 3, 50, new
                                 {
                                     @class = "form-control",
-                                    id = "ejesSummernote",
+                                    id = "objetivoAnioSummernote",
                                     required = "required",
-                                    @oninvalid = "this.setCustomValidity('Los ejes son requeridos')",
+                                    @oninvalid = "this.setCustomValidity('El objetivo del año es requerido')",
                                     @oninput = "setCustomValidity('')",
                                     maxlength = "1000"
                                 })
@@ -278,131 +290,17 @@
                         <div class="card border-left-info shadow-sm">
                             <div class="card-header">
                                 <i class="fa fa-bullseye fa-lg text-info me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">BOA</label>
+                                <label class="form-label fs-5 fw-medium mb-0">Objetivos de semestre</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.BOA, 2, 50, new
+                                @Html.TextAreaFor(m => m.objetivo_semestre, 2, 50, new
                                 {
                                     @class = "form-control",
-                                    id = "boaSummernote",
+                                    id = "objetivoSemestreSummernote",
                                     required = "required",
-                                    @oninvalid = "this.setCustomValidity('El BOA es requerido')",
+                                    @oninvalid = "this.setCustomValidity('El objetivo semestral es requerido')",
                                     @oninput = "setCustomValidity('')",
                                     maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>*@
-
-            <!--Objetivos y Contenidos-->
-            @*<div class="tab-pane fade" id="objetivos" role="tabpanel" aria-labelledby="objetivos-tab">
-                <div class="row">
-                    <div class="col col-md-6 col-sm-12 mb-3">
-                        <div class="card border-left-warning shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-bullseye fa-lg text-warning me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Objetivo de Aprendizaje</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.objetivo_aprendizaje, 3, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "objetivoSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('El objetivo de aprendizaje es requerido')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col col-md-6 col-sm-12 mb-3">
-                        <div class="card border-left-secondary shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-book fa-lg text-secondary me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Tema / Contenido</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.tema_contenido, 3, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "temaSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('El tema/contenido es requerido')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col col-md-12 col-sm-12 mb-3">
-                        <div class="card border-left-dark shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-flag fa-lg text-dark me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Indicador de Logro</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.indicador_logro, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "indicadorSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('El indicador de logro es requerido')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "300"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>*@
-
-            <!--Actividades-->
-            @*<div class="tab-pane fade" id="actividades" role="tabpanel" aria-labelledby="actividades-tab">
-                <div class="row">
-                    <div class="col col-md-12 col-sm-12 mb-3">
-                        <div class="card border-left-success shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-play fa-lg text-success me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Tareas Iniciales</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.tareas_iniciales, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "inicialesSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('Las tareas iniciales son requeridas')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr />
-
-                <div class="row">
-                    <div class="col col-md-12 col-sm-12 mb-3">
-                        <div class="card border-left-primary shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-forward fa-lg text-primary me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Tareas de Desarrollo</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.tareas_desarrollo, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "desarrolloSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('Las tareas de desarrollo son requeridas')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "1000"
                                 })
                             </div>
                         </div>
@@ -415,16 +313,16 @@
                     <div class="col col-md-12 col-sm-12 mb-3">
                         <div class="card border-left-info shadow-sm">
                             <div class="card-header">
-                                <i class="fa fa-check fa-lg text-info me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Tareas de Síntesis</label>
+                                <i class="fa fa-bullseye fa-lg text-info me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Objetivo integrador</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.tareas_sintesis, 2, 50, new
+                                @Html.TextAreaFor(m => m.objetivo_integrador, 2, 50, new
                                 {
                                     @class = "form-control",
-                                    id = "sintesisSummernote",
+                                    id = "objetivoIntegradorSummernote",
                                     required = "required",
-                                    @oninvalid = "this.setCustomValidity('Las tareas de síntesis son requeridas')",
+                                    @oninvalid = "this.setCustomValidity('El objetivo integrador es requerido')",
                                     @oninput = "setCustomValidity('')",
                                     maxlength = "500"
                                 })
@@ -432,162 +330,7 @@
                         </div>
                     </div>
                 </div>
-            </div>*@
-
-            <!--Evaluación-->
-            @*<div class="tab-pane fade" id="evaluacion" role="tabpanel" aria-labelledby="evaluacion-tab">
-                <div class="row">
-                    <div class="col col-md-6 col-sm-12 mb-3">
-                        <div class="card border-left-danger shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-tasks fa-lg text-danger me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Estrategia de Evaluación</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.estrategia_evaluacion, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "estrategiaSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('La estrategia de evaluación es requerida')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col col-md-6 col-sm-12 mb-3">
-                        <div class="card border-left-danger shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-tasks fa-lg text-danger me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Tipo de Evaluación</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.tipo_evaluacion, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "tipoEvaluacionSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('El tipo de evaluación es requerido')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col col-md-6 col-sm-12 mb-3">
-                        <div class="card border-left-warning shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-clipboard-list fa-lg text-warning me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Instrumento de Evaluación</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.instrumento_evaluacion, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "instrumentoSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('El instrumento de evaluación es requerido')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "300"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col col-md-6 col-sm-12 mb-3">
-                        <div class="card border-left-primary shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-lightbulb fa-lg text-primary me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Evidencias de Aprendizaje</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.evidencias_aprendizaje, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "evidenciasSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('Las evidencias de aprendizaje son requeridas')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>*@
-
-            <!--Aprendizaje-->
-            @*<div class="tab-pane fade" id="aprendizaje" role="tabpanel" aria-labelledby="aprendizaje-tab">
-                <div class="row">
-                    <div class="col col-md-12 col-sm-12 mb-3">
-                        <div class="card border-left-info shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-graduation-cap fa-lg text-info me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Criterios de Aprendizaje</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.criterios_aprendizaje, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "criteriosSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('Los criterios de aprendizaje son requeridos')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr />
-
-                <div class="row">
-                    <div class="col col-md-12 col-sm-12 mb-3">
-                        <div class="card border-left-secondary shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-list-alt fa-lg text-secondary me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Indicadores de Aprendizaje</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.indicadores_aprendizaje, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "indicadoresSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('Los indicadores de aprendizaje son requeridos')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "500"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <hr />
-
-                <div class="row">
-                    <div class="col col-md-12 col-sm-12 mb-3">
-                        <div class="card border-left-dark shadow-sm">
-                            <div class="card-header">
-                                <i class="fa fa-chart-line fa-lg text-dark me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Nivel de Aprendizaje</label>
-                            </div>
-                            <div class="card-body">
-                                @Html.TextAreaFor(m => m.nivel_aprendizaje, 2, 50, new
-                                {
-                                    @class = "form-control",
-                                    id = "nivelSummernote",
-                                    required = "required",
-                                    @oninvalid = "this.setCustomValidity('El nivel de aprendizaje es requerido')",
-                                    @oninput = "setCustomValidity('')",
-                                    maxlength = "300"
-                                })
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>*@
+            </div>
         </div>
     </div>
 
