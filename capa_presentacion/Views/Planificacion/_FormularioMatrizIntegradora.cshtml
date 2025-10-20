@@ -51,6 +51,11 @@
                     Objetivos
                 </button>
             </li>
+            <li class="nav-item">
+                <button class="nav-link nav-link-tab esp-link" id="asignatura-tab" data-bs-toggle="tab" data-bs-target="#asignatura" type="button" role="tab" aria-controls="asignatura" aria-selected="false">
+                    Asignaturas
+                </button>
+            </li>
         </ul>
     </div>
     <div class="card-body overflow-auto" style="max-height: 45vh;">
@@ -330,6 +335,29 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!--Asignaturas-->
+            <div class="tab-pane fade" id="asignatura" role="tabpanel" aria-labelledby="asignatura-tab">
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <label for="inputGroupSelectAsignatura" class="input-group-text">Asignatura</label>
+                            <input type="hidden" name="fk_asignatura" id="fk_asignatura" value="@Model.fk_asignatura" />
+                            @Html.DropDownListFor(m => m.fk_asignatura,
+                                new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text"),
+                                "Seleccione una asignatura...",
+                                new
+                                {
+                                    @class = "form-select select2-hidden",
+                                    @oninput = "setCustomValidity('')",
+                                    id = "inputGroupSelectAsignaturaAsignar"
+                                })
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
             </div>
         </div>
     </div>

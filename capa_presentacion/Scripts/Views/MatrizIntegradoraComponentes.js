@@ -194,7 +194,59 @@ const dataTableOptions = {
     ]
 };
 
+function inicializarSelect2Asignatura() {
+    $('#inputGroupSelectAsignaturaAsignar').select2({
+        placeholder: "Buscar asignatura...",
+        allowClear: true,
+        language: {
+            noResults: function () {
+                return "No se encontraron resultados";
+            }
+        }
+    });
+}
+
+function cargarAsignaturas() {
+    var asignaturaAsignar = $("#fk_asignatura").val();
+
+    jQuery.ajax({
+        url: "/Catalogos/ListarAsignaturas",
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+
+        success: function (response) {
+            $('#inputGroupSelectAsignaturaAsignar').empty()
+                .append('<option value="">Seleccione una asignatura...</option>');
+
+            $.each(response.data, function (index, asignatura) {
+                var isSelected = (asignatura.id_asignatura == asignaturaActual);
+                $('#inputGroupSelectAsignaturaAsignar').append(
+                    $('<option>', {
+                        value: asignatura.id_asignatura,
+                        text: asignatura.nombre,
+                        selected: isSelected
+                    })
+                );
+            });
+
+            // Si hay una asignatura actual, seleccionarla
+            if (asignaturaActual && asignaturaActual !== '0') {
+                $('#inputGroupSelectAsignaturaAsignar').val(asignaturaAsignar).trigger('change');
+            }
+
+            $('#inputGroupSelectAsignaturaAsignar').trigger('change.select2');
+        },
+
+        error: (xhr) => {
+            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+        }
+    });
+}
+
 $(document).ready(function () {
+    inicializarSelect2Asignatura();
+    cargarAsignaturas();
     dataTable = $("#datatable").DataTable(dataTableOptions);
     $('#competenciasSummernote').summernote(summernoteConfig);
     $('#estrategiaIntegradoraSummernote').summernote(summernoteConfig);
