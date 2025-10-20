@@ -81,6 +81,50 @@ namespace capa_presentacion.Controllers
             return View(matriz);
         }
 
+        //Vista Asignar asignaturas a la Matriz de Integracion de Componentes
+        [HttpGet]
+        public ActionResult AsignarAsignaturasMatrizIntegracion(int id)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+            // Obtener la matriz principal
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(id, usuario.id_usuario);
+            if (matriz == null || usuario == null)
+            {
+                TempData["Error"] = "La matriz de integración no existe.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+
+            // Obtener las asignaturas asignadas a esta matriz
+            int resultado;
+            string mensaje;
+            var asignaturas = CN_MatrizAsignatura.ListarAsignaturasPorMatriz(id, out resultado, out mensaje);
+
+            ViewBag.Asignaturas = asignaturas;
+            ViewBag.MensajeAsignaturas = mensaje;
+
+            return View(matriz);
+        }
+
+        // Endpoint para cargar asignaturas via AJAX
+        [HttpGet]
+        public JsonResult ListarMatrizAsignaturaPorId(int id)
+        {
+            try
+            {
+                int resultado;
+                string mensaje;
+
+                var asignaturas = CN_MatrizAsignatura.ListarAsignaturasPorMatriz(id, out resultado, out mensaje);
+
+                return Json(new { success = resultado == 1, data = asignaturas, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, data = new List<MATRIZASIGNATURA>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult GuardarMatrizIntegracion(MATRIZINTEGRACIONCOMPONENTES matriz, List<MATRIZASIGNATURA> asignaturas)

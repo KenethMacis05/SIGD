@@ -4099,6 +4099,7 @@ BEGIN
         a.nombre AS asignatura,
         ma.fk_profesor_asignado,
         u.pri_nombre + ' ' + u.pri_apellido AS profesor,
+        u.correo AS correo,
         ma.estado,
         ma.fecha_registro
     FROM MATRIZASIGNATURA ma

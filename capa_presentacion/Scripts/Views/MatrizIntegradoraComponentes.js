@@ -74,6 +74,12 @@ $('#datatable tbody').on('click', '.btn-editar', function () {
     window.location.href = "/Planificacion/EditarMatrizIntegracion?id=" + data.id_matriz_integracion;
 });
 
+// Redirigir a la pantalla de asignar asignaturas
+$('#datatable tbody').on('click', '.btn-viewAsignar', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Planificacion/AsignarAsignaturasMatrizIntegracion?id=" + data.id_matriz_integracion;
+});
+
 // Botón de navegación Siguiente
 $('#btnSiguiente').click(function () {
     if (validarTabActual()) {
@@ -182,71 +188,19 @@ const dataTableOptions = {
         },
         { data: "periodo", title: "Periodo" },
         { data: "carrera", title: "Carrera" },
-        { data: "area", title: "Area" },
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
                 '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
                 '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
+                '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar"><i class="fa fa-user-graduate"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "130"
+            width: "180"
         },
     ]
 };
 
-function inicializarSelect2Asignatura() {
-    $('#inputGroupSelectAsignaturaAsignar').select2({
-        placeholder: "Buscar asignatura...",
-        allowClear: true,
-        language: {
-            noResults: function () {
-                return "No se encontraron resultados";
-            }
-        }
-    });
-}
-
-function cargarAsignaturas() {
-    var asignaturaAsignar = $("#fk_asignatura").val();
-
-    jQuery.ajax({
-        url: "/Catalogos/ListarAsignaturas",
-        type: "GET",
-        dataType: "json",
-        contentType: "application/json; charset=utf-8",
-
-        success: function (response) {
-            $('#inputGroupSelectAsignaturaAsignar').empty()
-                .append('<option value="">Seleccione una asignatura...</option>');
-
-            $.each(response.data, function (index, asignatura) {
-                var isSelected = (asignatura.id_asignatura == asignaturaActual);
-                $('#inputGroupSelectAsignaturaAsignar').append(
-                    $('<option>', {
-                        value: asignatura.id_asignatura,
-                        text: asignatura.nombre,
-                        selected: isSelected
-                    })
-                );
-            });
-
-            // Si hay una asignatura actual, seleccionarla
-            if (asignaturaActual && asignaturaActual !== '0') {
-                $('#inputGroupSelectAsignaturaAsignar').val(asignaturaAsignar).trigger('change');
-            }
-
-            $('#inputGroupSelectAsignaturaAsignar').trigger('change.select2');
-        },
-
-        error: (xhr) => {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
-        }
-    });
-}
-
 $(document).ready(function () {
-    inicializarSelect2Asignatura();
-    cargarAsignaturas();
     dataTable = $("#datatable").DataTable(dataTableOptions);
     $('#competenciasSummernote').summernote(summernoteConfig);
     $('#estrategiaIntegradoraSummernote').summernote(summernoteConfig);

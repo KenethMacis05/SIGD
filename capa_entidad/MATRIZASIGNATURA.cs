@@ -13,7 +13,11 @@ namespace capa_entidad
         public int fk_asignatura { get; set; }
         public int fk_profesor_propietario { get; set; }
         public int fk_profesor_asignado { get; set; }
-        public bool estado { get; set; }
+        public string estado { get; set; }
         public DateTime fecha_registro { get; set; }
+        public string codigo_asignatura { get; set; }
+        public string nombre_asignatura { get; set; }
+        public string nombre_profesor { get; set; }
+        public string correo_profesor { get; set; }
     }
 }

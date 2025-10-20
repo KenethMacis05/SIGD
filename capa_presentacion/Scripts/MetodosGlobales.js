@@ -454,7 +454,6 @@ function generarHtmlArchivo(archivo, permisosHeredados = null) {
     </div>`;
 }
 
-
 // Visualizar imagenes y videos en LightGallery
 let lightGalleryInstance = null;
 

@@ -12,6 +12,11 @@ namespace capa_negocio
     {
         CD_MatrizAsignatura CD_MatrizAsignatura = new CD_MatrizAsignatura();
 
+        public List<MATRIZASIGNATURA> ListarAsignaturasPorMatriz(int fk_matriz_integracion, out int resultado, out string mensaje)
+        {
+            return CD_MatrizAsignatura.ListarAsignaturasPorMatriz(fk_matriz_integracion, out resultado, out mensaje);
+        }
+
         public bool Asignar(List<MATRIZASIGNATURA> asignaturas, out string mensaje)
         {
             mensaje = string.Empty;
