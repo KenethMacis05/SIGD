@@ -190,12 +190,11 @@ const dataTableOptions = {
         { data: "carrera", title: "Carrera" },
         {
             defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
                 '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
                 '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
                 '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar"><i class="fa fa-user-graduate"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "180"
+            width: "130"
         },
     ]
 };

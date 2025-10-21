@@ -127,7 +127,9 @@ VALUES
 
     -- 1.1 Matriz de asignaturas
     ('Planificacion', 'AsignarAsignaturasMatrizIntegracion', 'Vista de asignación de asignaturas', 'Vista'),
+    ('Planificacion', 'GuardarAsignaturasMatriz', 'Crear/Editar asignaturas asignadas', 'API'),
     ('Planificacion', 'ListarMatrizAsignaturaPorId', 'Listar la matriz de asignaturas', 'API'),
+    ('Planificacion', 'EliminarMatrizAsignatura', 'Remover asignatura de la matriz', 'API'),
 
     -- 2. Plan didáctico semestral
     ('Planificacion', 'ListarPlanesDidacticos', 'Listar planes didácticos semestrales', 'API'),

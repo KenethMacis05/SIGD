@@ -4221,6 +4221,184 @@ BEGIN
 END;
 GO
 
+-- Actualizar asignatura o profesor en matriz de asignatura
+CREATE PROCEDURE usp_ActualizarMatrizAsignatura
+    @IdMatrizAsignatura INT,
+    @FKAsignatura INT = NULL,
+    @FKProfesorAsignado INT = NULL,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    
+    DECLARE @ProfesorAsignado VARCHAR(255);
+    DECLARE @AsignaturaNombre VARCHAR(255);
+    DECLARE @AsignaturaActual INT;
+    DECLARE @ProfesorActual INT;
+    DECLARE @CambiosRealizados BIT = 0;
+    DECLARE @FKMatrizIntegracion INT;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar que la matriz de asignatura existe
+        IF NOT EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura)
+        BEGIN
+            SET @Mensaje = 'La asignatura en la matriz no existe';
+            THROW 51005, @Mensaje, 1;
+        END
+
+        -- 2. Obtener valores actuales y FK de la matriz
+        SELECT 
+            @AsignaturaActual = fk_asignatura,
+            @ProfesorActual = fk_profesor_asignado,
+            @FKMatrizIntegracion = fk_matriz_integracion
+        FROM MATRIZASIGNATURA 
+        WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+
+        -- 3. Validar que al menos un campo sea proporcionado para actualizar
+        IF @FKAsignatura IS NULL AND @FKProfesorAsignado IS NULL
+        BEGIN
+            SET @Mensaje = 'Debe proporcionar al menos una asignatura o profesor para actualizar';
+            THROW 51006, @Mensaje, 1;
+        END
+
+        -- 4. Validar asignatura si se proporciona y es diferente a la actual
+        IF @FKAsignatura IS NOT NULL AND @FKAsignatura != @AsignaturaActual
+        BEGIN
+            -- Verificar que la asignatura existe
+            IF NOT EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @FKAsignatura)
+            BEGIN
+                SET @Mensaje = 'La asignatura seleccionada no existe';
+                THROW 51007, @Mensaje, 1;
+            END
+
+            -- Verificar que la asignatura no esté duplicada en la misma matriz
+            IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA 
+                      WHERE fk_matriz_integracion = @FKMatrizIntegracion 
+                      AND fk_asignatura = @FKAsignatura 
+                      AND id_matriz_asignatura != @IdMatrizAsignatura)
+            BEGIN
+                SET @Mensaje = 'La asignatura ya está asignada a esta matriz';
+                THROW 51008, @Mensaje, 1;
+            END
+
+            SET @CambiosRealizados = 1;
+        END
+
+        -- 5. Validar profesor si se proporciona y es diferente al actual
+        IF @FKProfesorAsignado IS NOT NULL AND @FKProfesorAsignado != @ProfesorActual
+        BEGIN
+            -- Verificar que el profesor existe y está activo
+            IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @FKProfesorAsignado AND estado = 1)
+            BEGIN
+                SET @Mensaje = 'El profesor seleccionado no existe o está inactivo';
+                THROW 51009, @Mensaje, 1;
+            END
+
+            -- Verificar que el profesor no tenga otra asignatura en la misma matriz
+            IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA 
+                      WHERE fk_matriz_integracion = @FKMatrizIntegracion 
+                      AND fk_profesor_asignado = @FKProfesorAsignado 
+                      AND id_matriz_asignatura != @IdMatrizAsignatura)
+            BEGIN
+                SET @Mensaje = 'El profesor ya tiene una asignatura en esta matriz';
+                THROW 51010, @Mensaje, 1;
+            END
+
+            SET @CambiosRealizados = 1;
+        END
+
+        -- 6. Verificar que realmente hay cambios por realizar
+        IF @CambiosRealizados = 0
+        BEGIN
+            SET @Mensaje = 'No se detectaron cambios para actualizar';
+            THROW 51011, @Mensaje, 1;
+        END
+
+        -- 7. Obtener nombres para el mensaje
+        IF @FKAsignatura IS NOT NULL AND @FKAsignatura != @AsignaturaActual
+        BEGIN
+            SELECT @AsignaturaNombre = nombre FROM ASIGNATURA WHERE id_asignatura = @FKAsignatura;
+        END
+        ELSE
+        BEGIN
+            SELECT @AsignaturaNombre = nombre FROM ASIGNATURA WHERE id_asignatura = @AsignaturaActual;
+        END
+
+        IF @FKProfesorAsignado IS NOT NULL AND @FKProfesorAsignado != @ProfesorActual
+        BEGIN
+            SELECT @ProfesorAsignado = RTRIM(LTRIM(
+                    CONCAT(
+                        pri_nombre, 
+                        CASE WHEN NULLIF(seg_nombre, '') IS NOT NULL THEN ' ' + seg_nombre ELSE '' END,
+                        ' ',
+                        pri_apellido,
+                        CASE WHEN NULLIF(seg_apellido, '') IS NOT NULL THEN ' ' + seg_apellido ELSE '' END
+                    )
+                )) 
+            FROM USUARIOS 
+            WHERE id_usuario = @FKProfesorAsignado;
+        END
+        ELSE
+        BEGIN
+            SELECT @ProfesorAsignado = RTRIM(LTRIM(
+                    CONCAT(
+                        pri_nombre, 
+                        CASE WHEN NULLIF(seg_nombre, '') IS NOT NULL THEN ' ' + seg_nombre ELSE '' END,
+                        ' ',
+                        pri_apellido,
+                        CASE WHEN NULLIF(seg_apellido, '') IS NOT NULL THEN ' ' + seg_apellido ELSE '' END
+                    )
+                )) 
+            FROM USUARIOS 
+            WHERE id_usuario = @ProfesorActual;
+        END
+
+        -- 8. Actualizar la matriz de asignatura
+        UPDATE MATRIZASIGNATURA
+        SET 
+            fk_asignatura = ISNULL(@FKAsignatura, fk_asignatura),
+            fk_profesor_asignado = ISNULL(@FKProfesorAsignado, fk_profesor_asignado)
+        WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+        
+        -- 9. Verificar si se actualizó algún registro
+        IF @@ROWCOUNT = 0
+        BEGIN
+            SET @Mensaje = 'No se realizaron cambios en la asignatura';
+            THROW 51012, @Mensaje, 1;
+        END
+
+        COMMIT TRANSACTION;
+
+        SET @Resultado = 1;
+        
+        -- Construir mensaje descriptivo
+        DECLARE @MensajeCambios VARCHAR(500) = 'Asignatura actualizada: ';
+        
+        IF @FKAsignatura IS NOT NULL AND @FKAsignatura != @AsignaturaActual AND 
+           @FKProfesorAsignado IS NOT NULL AND @FKProfesorAsignado != @ProfesorActual
+            SET @MensajeCambios += 'asignatura y profesor actualizados';
+        ELSE IF @FKAsignatura IS NOT NULL AND @FKAsignatura != @AsignaturaActual
+            SET @MensajeCambios += 'asignatura actualizada';
+        ELSE IF @FKProfesorAsignado IS NOT NULL AND @FKProfesorAsignado != @ProfesorActual
+            SET @MensajeCambios += 'profesor actualizado';
+            
+        SET @Mensaje = @MensajeCambios + ' - ' + ISNULL(@AsignaturaNombre, '') + ' asignada a ' + ISNULL(@ProfesorAsignado, '');
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        
+        -- Propagar la excepción para que C# la capture
+        THROW;
+    END CATCH
+END;
+GO
+
 -- Remover asignatura de matriz
 CREATE PROCEDURE usp_RemoverAsignaturaMatriz
     @IdMatrizAsignatura INT,

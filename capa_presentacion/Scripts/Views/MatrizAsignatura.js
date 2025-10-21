@@ -199,6 +199,81 @@ $(document).on('click', '.btn-editar-asignatura', function (e) {
         fk_asignatura: $(this).data('asignatura-fk'),
         fk_profesor_asignado: $(this).data('profesor-fk'),
     };
-    console.log(data)
     abrirModal(data);
+});
+
+function asignarAsignatura() {
+
+    var Matriz = {
+        id_matriz_asignatura: $("#idMatrisAsignatura").val().trim(),
+        fk_matriz_integracion: $("#fkMatrisIntegracion").val().trim(),
+        fk_asignatura: $("#asignaturas").val().trim(),
+        fk_profesor_asignado: $("#profesores").val().trim(),
+    };
+
+    showLoadingAlert("Procesando", "Guardando asignaturas a la matriz...");
+
+    jQuery.ajax({
+        url: '/Planificacion/GuardarAsignaturasMatriz',
+        type: "POST",
+        data: JSON.stringify({ matriz: Matriz }),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            Swal.close();
+            $("#asignarAsignatura").modal("hide");
+
+
+            if (data.Resultado || data.Respuesta) {
+                const mensaje = data.Mensaje || (Matriz.id_matriz_asignatura == 0 ? "Asignatura asignada correctamente" : "Asignatura actualizada correctamente");
+                showAlert("¡Éxito!", mensaje, "success");
+
+                cargarAsignaturasMatriz(Matriz.fk_matriz_integracion);
+
+                // Limpiar formulario
+                $("#idMatrisAsignatura").val("0");
+                $("#asignaturas").val(null).trigger('change');
+                $("#profesores").val(null).trigger('change');
+            }
+            else {
+                const mensaje = data.Mensaje || (Matriz.id_matriz_asignatura == 0 ? "No se pudo crear la carpeta" : "No se pudo actualizar la carpeta");
+                showAlert("Error", mensaje, "error");
+            }
+
+        },
+        error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+    });
+}
+
+// Eliminar carpeta
+$(document).on('click', '.btn-eliminar-asignatura', function (e) {
+    e.preventDefault();
+    const idMatriz = $(this).data('id');
+    console.log("ID Matriz Asignatura a eliminar:", idMatriz);
+    confirmarEliminacion().then((result) => {
+
+        if (result.isConfirmed) {
+            showLoadingAlert("Eliminando asignatura", "Por favor espere...")
+
+            // Enviar petición AJAX
+            $.ajax({
+                url: '/Planificacion/EliminarMatrizAsignatura',
+                type: "POST",
+                data: JSON.stringify({ id_matriz: idMatriz }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        showAlert("¡Eliminado!", response.Mensaje || "Asignatura eliminada correctamente", "success", true);
+                        
+                        cargarAsignaturasMatriz($("#fkMatrisIntegracion").val().trim());
+                        
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la asignatura", "error"); }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor Eliminar Asignatura: ${xhr.statusText}`, "error"); }
+            });
+        }
+    });
 });

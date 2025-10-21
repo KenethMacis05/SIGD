@@ -728,7 +728,6 @@
     <Content Include="Views\Catalogos\Componente.cshtml" />
     <Content Include="Views\Catalogos\Periodo.cshtml" />
     <Content Include="Views\Planificacion\CrearMatrizIntegracion.cshtml" />
-    <Content Include="Views\Planificacion\DetalleMatrizIntegracion.cshtml" />
     <Content Include="Views\Planificacion\EditarMatrizIntegracion.cshtml" />
     <Content Include="Views\Planificacion\_FormularioMatrizIntegradora.cshtml" />
     <Content Include="Views\Planificacion\AsignarAsignaturasMatrizIntegracion.cshtml" />

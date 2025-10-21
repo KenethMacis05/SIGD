@@ -53,7 +53,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="idMatrisAsignatura" name="idMatrisAsignatura" value="0" />
+                <input type="text" id="idMatrisAsignatura" name="idMatrisAsignatura" value="0" />
+                <input type="text" id="fkMatrisIntegracion" name="fkMatrisIntegracion" value="@Model.id_matriz_integracion" />
                 <div class="mb-3">
                     <label class="form-label">Docente</label>
                     <select class="form-control" id="profesores" name="profesores" style="width: 100%;" tabindex="-1"></select>
@@ -79,20 +80,6 @@
     <script>
         $(document).ready(function () {
             cargarAsignaturasMatriz(@Model.id_matriz_integracion);
-
-            @if (TempData["Success"] != null)
-            {
-                <text>
-                    showAlert("¡Éxito!", "@TempData["Success"]", "success");
-                </text>
-            }
-
-            @if (TempData["Error"] != null)
-            {
-                <text>
-                    showAlert("¡Error!", "@TempData["Error"]", "error");
-                </text>
-            }
         });
     </script>
     <script src="@Url.Content("~/Scripts/Views/MatrizAsignatura.js")" type="text/javascript"></script>

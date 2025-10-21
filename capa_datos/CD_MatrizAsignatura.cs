@@ -93,10 +93,99 @@ namespace capa_datos
             catch (Exception ex)
             {
                 idautogenerado = 0;
-                throw new Exception("Error al asignar la asignatura: " + ex.Message);
+                mensaje = "Error al asignar la asignatura en la matriz: " + ex.Message;
             }
 
             return idautogenerado;
+        }
+
+        public int ActualizarMatrizAsignatura(MATRIZASIGNATURA matriz, out string mensaje)
+        {
+            int resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarMatrizAsignatura", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parámetros de entrada
+                    cmd.Parameters.AddWithValue("IdMatrizAsignatura", matriz.id_matriz_asignatura);
+
+                    // Parámetros opcionales - usar DBNull.Value si no se proporcionan
+                    if (matriz.fk_asignatura > 0)
+                        cmd.Parameters.AddWithValue("FKAsignatura", matriz.fk_asignatura);
+                    else
+                        cmd.Parameters.AddWithValue("FKAsignatura", DBNull.Value);
+
+                    if (matriz.fk_profesor_asignado > 0)
+                        cmd.Parameters.AddWithValue("FKProfesorAsignado", matriz.fk_profesor_asignado);
+                    else
+                        cmd.Parameters.AddWithValue("FKProfesorAsignado", DBNull.Value);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = 0;
+                mensaje = "Error al actualizar la asignatura en la matriz: " + ex.Message;
+            }
+
+            return resultado;
+        }
+
+        public bool Eliminar(int id_matriz_asignatura, int fk_profesor_propietario, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_RemoverAsignaturaMatriz", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parámetros de entrada
+                    cmd.Parameters.AddWithValue("IdMatrizAsignatura", id_matriz_asignatura);
+                    cmd.Parameters.AddWithValue("FKProfesorPropietario", fk_profesor_propietario);
+
+                    // Parámetro de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    resultado = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+
+                    if (resultado)
+                    {
+                        mensaje = "Asignatura eliminada correctamente de la matriz";
+                    }
+                    else
+                    {
+                        mensaje = "No se pudo eliminar la asignatura. Verifique que exista.";
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al eliminar la asignatura de la matriz: " + ex.Message;
+            }
+
+            return resultado;
         }
     }
 }

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using capa_entidad;
+using capa_negocio;
+using capa_presentacion.Filters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using capa_presentacion.Filters;
-using capa_negocio;
-using capa_entidad;
+using System.Web.Services.Description;
 
 namespace capa_presentacion.Controllers
 {
@@ -51,20 +52,6 @@ namespace capa_presentacion.Controllers
         public ActionResult CrearMatrizIntegracion()
         {
             return View();
-        }
-
-        //Vista Detalle de la Matriz de Integracion de Componentes
-        [HttpGet]
-        public ActionResult DetalleMatrizIntegracion(int id)
-        {
-            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(id, usuario.id_usuario);
-            if (matriz == null || usuario == null)
-            {
-                ViewBag["Error"] = "La matriz de integración no existe.";
-                return RedirectToAction("Matriz_de_Integracion");
-            }
-            return View(matriz);
         }
 
         //Vista Editar de la Matriz de Integracion de Componentes
@@ -159,38 +146,7 @@ namespace capa_presentacion.Controllers
                     return View("Matriz_de_Integracion", matriz);
                 }
 
-                // 2. Si es nuevo, obtener el ID generado
-                int idMatriz = esNuevo ? resultado : matriz.id_matriz_integracion;
-
-                // 3. Asignar las asignaturas si se proporcionaron
-                if (asignaturas != null && asignaturas.Any())
-                {
-                    // Asignar el ID de la matriz y el propietario a cada asignatura
-                    foreach (var asignatura in asignaturas)
-                    {
-                        asignatura.fk_matriz_integracion = idMatriz;
-                        asignatura.fk_profesor_propietario = usuario.id_usuario;
-                    }
-
-                    // Llamar al método de asignación de asignaturas
-                    bool asignaturasAsignadas = CN_MatrizAsignatura.Asignar(asignaturas, out string mensajeAsignaturas);
-
-                    if (!asignaturasAsignadas)
-                    {
-                        // Si falla la asignación de asignaturas pero la matriz se creó,
-                        // podrías considerar eliminar la matriz o mostrar advertencia
-                        TempData["Warning"] = $"Matriz {(esNuevo ? "creada" : "actualizada")} pero con errores en asignaturas: {mensajeAsignaturas}";
-                    }
-                    else
-                    {
-                        TempData["Success"] = $"{mensaje} | {mensajeAsignaturas}";
-                    }
-                }
-                else
-                {
-                    TempData["Success"] = mensaje;
-                }
-
+                TempData["Success"] = mensaje;
                 return RedirectToAction("Matriz_de_Integracion");
             }
             catch (Exception ex)
@@ -201,45 +157,31 @@ namespace capa_presentacion.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult GuardarAsignaturasMatriz(int idMatriz, List<MATRIZASIGNATURA> asignaturas)
+        public JsonResult GuardarAsignaturasMatriz(MATRIZASIGNATURA matriz)
         {
-            try
+
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null)
             {
-                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-
-                if (asignaturas != null && asignaturas.Any())
-                {
-                    // Asignar el ID de la matriz y el propietario a cada asignatura
-                    foreach (var asignatura in asignaturas)
-                    {
-                        asignatura.fk_matriz_integracion = idMatriz;
-                        asignatura.fk_profesor_propietario = usuario.id_usuario;
-                    }
-
-                    bool exito = CN_MatrizAsignatura.Asignar(asignaturas, out string mensaje);
-
-                    if (exito)
-                    {
-                        TempData["Success"] = mensaje;
-                    }
-                    else
-                    {
-                        TempData["Error"] = mensaje;
-                    }
-                }
-                else
-                {
-                    TempData["Warning"] = "No se proporcionaron asignaturas para asignar";
-                }
-
-                return RedirectToAction("Matriz_de_Integracion", new { id = idMatriz });
+                return Json(new { success = false, message = "La sesión ha expirado. Por favor, inicie sesión nuevamente." });
             }
-            catch (Exception ex)
+
+            matriz.fk_profesor_propietario = usuario.id_usuario;
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (matriz.id_matriz_asignatura == 0)
             {
-                TempData["Error"] = "Ocurrió un error al asignar las asignaturas: " + ex.Message;
-                return RedirectToAction("Matriz_de_Integracion", new { id = idMatriz });
+                // Crear nueva asignatura
+                resultado = CN_MatrizAsignatura.Asignar(matriz, out mensaje);
             }
+            else
+            {
+                // Actualizar asignatura existente
+                resultado = CN_MatrizAsignatura.Actualizar(matriz, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         //Enpoint(POST): Eliminar matriz de integracion de componentes
@@ -251,6 +193,29 @@ namespace capa_presentacion.Controllers
             if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
             int resultado = CN_MatrizIntegradora.Eliminar(id_matriz_integracion, usuario.id_usuario, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Endpoint(POST): Eliminar matriz de asignatura
+        [HttpPost]
+        public JsonResult EliminarMatrizAsignatura(int id_matriz)
+        {
+            try
+            {
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null)
+                {
+                    return Json(new { Respuesta = false, Mensaje = "La sesión ha expirado" });
+                }
+
+                string mensaje = string.Empty;
+                int resultado = CN_MatrizAsignatura.Eliminar(id_matriz, usuario.id_usuario, out mensaje);
+
+                return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { Respuesta = false, Mensaje = "Error al eliminar la asignatura: " + ex.Message });
+            }
         }
 
         #endregion
