@@ -3967,21 +3967,80 @@ BEGIN
 END;
 GO
 
--- Eliminar (desactivar) Matriz de Integración
+-- Eliminar Matriz de Integración definitivamente
 CREATE PROCEDURE usp_EliminarMatrizIntegracion
     @IdMatriz INT,
-	@IdUsuario INT,
-	@Resultado BIT OUTPUT
+    @IdUsuario INT,
+    @Resultado BIT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
 AS
 BEGIN
-	SET @Resultado = 0
-	IF EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE fk_profesor = @IdUsuario)
-	BEGIN
-		UPDATE MATRIZINTEGRACIONCOMPONENTES
-		SET estado = 0
-		WHERE id_matriz_integracion = @IdMatriz;
-		SET @Resultado = 1
-	END
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar que la matriz existe y pertenece al usuario
+        IF NOT EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES 
+                      WHERE id_matriz_integracion = @IdMatriz AND fk_profesor = @IdUsuario)
+        BEGIN
+            SET @Mensaje = 'La matriz de integración no existe o no tiene permisos para eliminarla';
+            THROW 51014, @Mensaje, 1;
+        END
+
+        -- 2. Verificar si existen planes didácticos semestrales asociados
+        IF EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE fk_matriz_integracion = @IdMatriz)
+        BEGIN
+            SET @Mensaje = 'No se puede eliminar la matriz porque tiene planes didácticos semestrales asociados. Debe eliminar primero los planes didácticos.';
+            THROW 51016, @Mensaje, 1;
+        END
+
+        -- 3. Verificar si la matriz tiene asignaturas asignadas
+        IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE fk_matriz_integracion = @IdMatriz)
+        BEGIN
+            -- 4. Verificar que todas las asignaturas estén en estado "Iniciado"
+            IF EXISTS (
+                SELECT 1 FROM MATRIZASIGNATURA 
+                WHERE fk_matriz_integracion = @IdMatriz 
+                AND estado IN ('En proceso', 'Finalizado')
+            )
+            BEGIN
+                SET @Mensaje = 'No se puede eliminar la matriz porque tiene asignaturas en estado "En proceso" o "Finalizado". Solo se pueden eliminar matrices con asignaturas en estado "Iniciado" o sin asignaturas.';
+                THROW 51015, @Mensaje, 1;
+            END
+
+            -- 5. Si tiene asignaturas en estado "Iniciado", primero eliminar las descripciones asociadas
+            DELETE dam 
+            FROM DESCRIPCIONASIGNATURAMATRIZ dam
+            INNER JOIN MATRIZASIGNATURA ma ON dam.fk_matriz_asignatura = ma.id_matriz_asignatura
+            WHERE ma.fk_matriz_integracion = @IdMatriz;
+
+            -- 6. Luego eliminar las asignaturas de la matriz
+            DELETE FROM MATRIZASIGNATURA 
+            WHERE fk_matriz_integracion = @IdMatriz;
+        END
+
+        -- 7. Finalmente eliminar la matriz de integración
+        DELETE FROM MATRIZINTEGRACIONCOMPONENTES 
+        WHERE id_matriz_integracion = @IdMatriz;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Matriz de integración eliminada correctamente';
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        
+        -- Si no hay un mensaje específico, usar el mensaje de error de SQL
+        IF @Mensaje = ''
+        BEGIN
+            SET @Mensaje = ERROR_MESSAGE();
+        END
+    END CATCH
 END;
 GO
 

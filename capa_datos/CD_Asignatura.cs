@@ -50,6 +50,33 @@ namespace capa_datos
             return lst;
         }
 
+        public ASIGNATURA ObtenerAsignaturaPorId(int idAsignatura)
+        {
+            using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+            {
+                string query = "select codigo, nombre from ASIGNATURA where id_asignatura = @idAsignatura";
+
+                SqlCommand cmd = new SqlCommand(query, conexion);
+                cmd.CommandType = CommandType.Text;
+                cmd.Parameters.AddWithValue("@idAsignatura", idAsignatura);
+
+                conexion.Open();
+
+                using (SqlDataReader dr = cmd.ExecuteReader())
+                {
+                    if (dr.Read())
+                    {
+                        return new ASIGNATURA
+                        {
+                            nombre = dr["nombre"].ToString(),
+                            codigo = dr["codigo"].ToString(),
+                        };
+                    }
+                }
+            }
+            return null;
+        }
+
         //Crear asignatura
         public int Crear(ASIGNATURA asignatura, out string mensaje)
         {

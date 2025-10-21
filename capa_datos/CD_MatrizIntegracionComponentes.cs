@@ -252,19 +252,21 @@ namespace capa_datos
         {
             bool resultado = false;
             mensaje = string.Empty;
+
             try
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
                     SqlCommand cmd = new SqlCommand("usp_EliminarMatrizIntegracion", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    
+
                     // Parámetros de entrada
                     cmd.Parameters.AddWithValue("IdMatriz", id_matriz);
                     cmd.Parameters.AddWithValue("IdUsuario", id_usuario);
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
 
                     // Abrir conexión
                     conexion.Open();
@@ -273,15 +275,20 @@ namespace capa_datos
                     cmd.ExecuteNonQuery();
 
                     // Obtener valores de los parámetros de salida
-                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
-                    mensaje = resultado ? "Matriz de Integración de Componente eliminada correctamente" : "La Matriz de Integración no existe";
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value &&
+                               Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+
+                    mensaje = cmd.Parameters["Mensaje"].Value != DBNull.Value ?
+                             cmd.Parameters["Mensaje"].Value.ToString() :
+                             "No se pudo determinar el resultado de la operación";
                 }
             }
             catch (Exception ex)
             {
                 resultado = false;
-                throw new Exception("Error al eliminar la matriz de integración de componentes: " + ex.Message);
+                mensaje = "Error al eliminar la matriz de integración de componentes: " + ex.Message;
             }
+
             return resultado;
         }
     }
