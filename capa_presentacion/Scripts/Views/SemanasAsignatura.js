@@ -81,3 +81,144 @@ function generarHtmlSemanasAsignatura(Semana) {
         </div>
     </div>`;
 }
+
+function abrirModal(semanaId) {
+    // Limpiar los campos
+    $("#idSemana").val("0");
+    $('#descripcionSummernote').summernote('code', '');
+    $("#accionIntegradora").val("");
+    $("#tipoEvaluacion").val("");
+    $("#estado").val("Pendiente");
+
+    // Resetear información de la semana
+    $("#numeroSemanaText").text("-");
+    $("#periodoSemanaText").text("-");
+    $("#modalTitulo").text("Nueva Semana");
+
+    // Habilitar todos los campos inicialmente
+    $("#estado").prop("disabled", false);
+    $("#accionIntegradora").prop("disabled", false);
+    $("#tipoEvaluacion").prop("disabled", false);
+    $('#descripcionSummernote').summernote('enable');
+
+    // Si se proporciona un ID, buscar la semana en los datos del ViewBag
+    if (semanaId && window.semanasData) {
+        const semana = window.semanasData.find(s => s.id_semana === semanaId);
+
+        if (semana) {
+            $("#idSemana").val(semana.id_semana);
+            $("#accionIntegradora").val(semana.accion_integradora);
+            $("#tipoEvaluacion").val(semana.tipo_evaluacion);
+            $("#estado").val(semana.estado);
+
+            // Establecer el contenido en Summernote
+            $('#descripcionSummernote').summernote('code', semana.descripcion || '');
+
+            // Mostrar información de la semana
+            $("#numeroSemanaText").text(semana.numero_semana);
+
+            // Formatear fechas
+            const fechaInicio = formatASPNetDate(semana.fecha_inicio, false);
+            const fechaFin = formatASPNetDate(semana.fecha_fin, false);
+            $("#periodoSemanaText").text(`${fechaInicio} - ${fechaFin}`);
+
+            $("#modalTitulo").text(`Editando: ${semana.numero_semana}`);
+
+            aplicarReglasEstado(semana);
+        }
+    }
+    $("#semanas").modal("show");
+}
+
+// Función para aplicar reglas de estado
+function aplicarReglasEstado(semana) {
+    const tieneDescripcion = semana.descripcion && semana.descripcion.trim() !== '' &&
+        semana.descripcion !== '<p><br></p>' && semana.descripcion !== '<p></p>';
+    const tieneAccionIntegradora = semana.accion_integradora && semana.accion_integradora.trim() !== '';
+    const tieneTipoEvaluacion = semana.tipo_evaluacion && semana.tipo_evaluacion.trim() !== '';
+
+    const todosCompletos = tieneDescripcion && tieneAccionIntegradora && tieneTipoEvaluacion;
+
+    // Regla 1: Si está "Pendiente" y sin datos, deshabilitar estado
+    if (semana.estado === 'Pendiente' && !tieneDescripcion && !tieneAccionIntegradora && !tieneTipoEvaluacion) {
+        $("#estado").prop("disabled", true);
+        $("#estado").attr("title", "Complete al menos un campo para habilitar el estado");
+    }
+    // Regla 2: Si está "En proceso" y no tiene todos los campos completos, solo permitir "En proceso"
+    else if (semana.estado === 'En proceso' && !todosCompletos) {
+        // Remover la opción "Finalizado" temporalmente
+        $("#estado option[value='Finalizado']").prop('disabled', true);
+        $("#estado option[value='Pendiente']").prop('disabled', true);
+        $("#estado").attr("title", "Complete todos los campos para poder finalizar");
+    }
+    // Regla 3: Si tiene todos los campos completos, permitir cambiar a "Finalizado"
+    else if (todosCompletos) {
+        $("#estado option[value='Finalizado']").prop('disabled', false);
+        $("#estado option[value='Pendiente']").prop('disabled', true);
+        $("#estado").removeAttr("title");
+    }
+}
+
+function GuardarSemana() {
+    var Semana = {
+        id_semana: $("#idSemana").val().trim(),
+        accion_integradora: $("#accionIntegradora").val().trim(),
+        tipo_evaluacion: $("#tipoEvaluacion").val().trim(),
+        descripcion: $('#descripcionSummernote').summernote('code'),
+        estado: $("#estado").val().trim(),
+    };
+
+    // Validaciones básicas
+    if (!Semana.estado) {
+        showAlert("Error", "Debe seleccionar un estado", "error");
+        return;
+    }
+
+    // Validar que Summernote no esté vacío (elimina etiquetas HTML vacías)
+    const descripcionLimpia = Semana.descripcion.replace(/<[^>]*>/g, '').trim();
+
+    if (!descripcionLimpia && !Semana.accion_integradora && !Semana.tipo_evaluacion) {
+        showAlert("Información", "Debe ingresar al menos un valor en: Descripción, Acción Integradora o Tipo de Evaluación", "info");
+        return;
+    }
+
+    showLoadingAlert("Procesando", "Guardando semana...");
+
+    jQuery.ajax({
+        url: '/Planificacion/GuardarSemanaAsignatura',
+        type: "POST",
+        data: JSON.stringify({ semana: Semana }),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            Swal.close();
+            $("#semanas").modal("hide");
+
+            if (data.Resultado || data.Respuesta) {
+                const mensaje = data.Mensaje || (Semana.id_semana == "0" ? "Semana creada correctamente" : "Semana actualizada correctamente");
+                showAlert("¡Éxito!", mensaje, "success").then((result) => {
+                    location.reload();
+                });
+            }
+            else {
+                const mensaje = data.Mensaje || (Semana.id_semana == "0" ? "No se pudo crear la semana" : "No se pudo actualizar la semana");
+                showAlert("Error", mensaje, "error");
+            }
+        },
+        error: (xhr) => {
+            Swal.close();
+            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+        }
+    });
+}
+
+// Seleccionar los datos para editar
+$(document).on('click', '.btn-editar-semana', function (e) {
+    e.preventDefault();
+    const semanaId = $(this).data('id');
+    abrirModal(semanaId);
+});
+
+$(document).ready(function () {
+    $('#descripcionSummernote').summernote(summernoteConfig);
+});

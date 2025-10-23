@@ -3,6 +3,7 @@ using capa_negocio;
 using capa_presentacion.Filters;
 using System;
 using System.Collections.Generic;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -145,6 +146,12 @@ namespace capa_presentacion.Controllers
                 return RedirectToAction("Matriz_de_Integracion");
             }
 
+            if (matriz.fk_profesor != usuario.id_usuario)
+            {
+                TempData["Error"] = "Usted no tiene permisos en esta Matriz.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+
             // Obtener las asignaturas asignadas a esta matriz
             int resultado;
             string mensaje;
@@ -237,12 +244,19 @@ namespace capa_presentacion.Controllers
 
             // Obtener la asignatura selecionada de la matriz
             MATRIZASIGNATURA asignatura = CN_MatrizAsignatura.ObtenerAsignaturaDelaMatrizPorId(id);
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(asignatura.fk_matriz_integracion, usuario.id_usuario);
+
             if (asignatura == null || usuario == null)
             {
                 TempData["Error"] = "La asignatura no esta asignada a esta matris de integración.";
                 return RedirectToAction("Matriz_de_Integracion");
             }
 
+            if (asignatura.fk_profesor_asignado != usuario.id_usuario && matriz.fk_profesor != usuario.id_usuario)
+            {
+                TempData["Error"] = "Usted no tiene permisos en esta asignatura.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
             // Obtener las semanas de las asignatura asignada a esta matriz
             int resultado;
             string mensaje;
@@ -271,6 +285,32 @@ namespace capa_presentacion.Controllers
             {
                 return Json(new { success = false, data = new List<SEMANASASIGNATURAMATRIZ>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
+        }
+
+        [HttpPost]
+        public JsonResult GuardarSemanaAsignatura(SEMANASASIGNATURAMATRIZ semana)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null)
+            {
+                return Json(new { success = false, message = "La sesión ha expirado. Por favor, inicie sesión nuevamente." });
+            }
+
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (semana.id_semana == 0)
+            {
+                // Crear nueva semana
+                resultado = CN_SemanasAsginaturaMatriz.Crear(semana, out mensaje);
+            }
+            else
+            {
+                // Actualizar semana existente
+                resultado = CN_SemanasAsginaturaMatriz.Actualizar(semana, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

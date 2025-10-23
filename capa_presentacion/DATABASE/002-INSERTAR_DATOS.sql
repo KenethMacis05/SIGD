@@ -134,6 +134,7 @@ VALUES
     -- 1.2 Semanas de la asignatura
     ('Planificacion', 'SemanasAsignatura', 'Vista de las semanas de la asignatura', 'Vista'),
     ('Planificacion', 'ListarSemanasDeAsignaturaPorId', 'Listar las semanas a trabajar de la asignatura', 'API'),
+    ('Planificacion', 'GuardarSemanaAsignatura', 'Crear/Editar semana de la asignatura', 'API'),
 
     -- 2. Plan didáctico semestral
     ('Planificacion', 'ListarPlanesDidacticos', 'Listar planes didácticos semestrales', 'API'),

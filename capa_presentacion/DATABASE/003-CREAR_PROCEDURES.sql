@@ -4230,6 +4230,7 @@ BEGIN
         a.codigo ,
         a.nombre AS asignatura,
         ma.fk_profesor_asignado,
+        ma.fk_profesor_propietario,
         u.pri_nombre + ' ' + u.pri_apellido AS profesor,
         u.correo AS correo,
         ma.estado,
@@ -4543,7 +4544,7 @@ BEGIN
 	IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura)
 	BEGIN
 		-- Primero eliminar las descripciones asociadas
-		DELETE FROM DESCRIPCIONASIGNATURAMATRIZ 
+		DELETE FROM SEMANASASIGNATURAMATRIZ 
 		WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
     
 		-- Luego eliminar la asignatura de la matriz
@@ -4646,6 +4647,167 @@ BEGIN
         fecha_registro
     FROM SEMANASASIGNATURAMATRIZ
     WHERE fk_matriz_asignatura = @FKMatrizAsignatura;
+END;
+GO
+
+-- Actualizar semana de asignatura en matriz con lógica de estados
+CREATE PROCEDURE usp_ActualizarSemana
+    @IdSemana INT,
+    @Descripcion VARCHAR(MAX) = NULL,
+    @AccionIntegradora VARCHAR(255) = NULL,
+    @TipoEvaluacion VARCHAR(50) = NULL,
+    @Estado VARCHAR(50),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    -- Variables para la lógica de estados
+    DECLARE @IdMatrizAsignatura INT;
+    DECLARE @EstadoActualSemana VARCHAR(50);
+    DECLARE @NuevoEstadoSemana VARCHAR(50);
+    DECLARE @EstadoMatrizAsignatura VARCHAR(50);
+    DECLARE @NuevoEstadoMatriz VARCHAR(50);
+    DECLARE @TotalSemanas INT;
+    DECLARE @SemanasEnProceso INT;
+    DECLARE @SemanasFinalizadas INT;
+    DECLARE @DescripcionActual VARCHAR(MAX);
+    DECLARE @AccionIntegradoraActual VARCHAR(255);
+    DECLARE @TipoEvaluacionActual VARCHAR(50);
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Verificar si la semana existe y obtener el id_matriz_asignatura y valores actuales
+        SELECT 
+            @IdMatrizAsignatura = fk_matriz_asignatura,
+            @EstadoActualSemana = estado,
+            @DescripcionActual = descripcion,
+            @AccionIntegradoraActual = accion_integradora,
+            @TipoEvaluacionActual = tipo_evaluacion
+        FROM SEMANASASIGNATURAMATRIZ 
+        WHERE id_semana = @IdSemana;
+
+        IF @IdMatrizAsignatura IS NULL
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'La semana no existe';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Inicializar el nuevo estado de la semana con el estado enviado
+        SET @NuevoEstadoSemana = @Estado;
+
+        -- Lógica para actualización automática del estado de la SEMANA
+        -- Solo cambiar a "En proceso" si actualmente está en "Pendiente" y se está agregando contenido
+        IF @EstadoActualSemana = 'Pendiente' 
+        BEGIN
+            -- Verificar si se está agregando contenido a alguno de los 3 campos principales
+            IF (
+                (@Descripcion IS NOT NULL AND @DescripcionActual IS NULL) OR
+                (@AccionIntegradora IS NOT NULL AND @AccionIntegradoraActual IS NULL) OR
+                (@TipoEvaluacion IS NOT NULL AND @TipoEvaluacionActual IS NULL)
+            )
+            BEGIN
+                SET @NuevoEstadoSemana = 'En proceso';
+            END
+        END
+
+        -- Validación: No se puede cambiar a "Finalizado" si no están completos todos los campos
+        IF @Estado = 'Finalizado' AND @NuevoEstadoSemana != 'Finalizado'
+        BEGIN
+            -- Verificar si todos los campos están completos
+            DECLARE @CamposCompletos BIT = 1;
+            
+            IF (@Descripcion IS NULL OR LTRIM(RTRIM(@Descripcion)) = '' OR @Descripcion = '<p><br></p>' OR @Descripcion = '<p></p>')
+                SET @CamposCompletos = 0;
+            IF (@AccionIntegradora IS NULL OR LTRIM(RTRIM(@AccionIntegradora)) = '')
+                SET @CamposCompletos = 0;
+            IF (@TipoEvaluacion IS NULL OR LTRIM(RTRIM(@TipoEvaluacion)) = '')
+                SET @CamposCompletos = 0;
+
+            IF @CamposCompletos = 0
+            BEGIN
+                SET @Resultado = 0;
+                SET @Mensaje = 'No se puede finalizar la semana. Todos los campos (Descripción, Acción Integradora y Tipo de Evaluación) deben estar completos.';
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+        END
+
+        -- Si el estado actual es "Finalizado", mantenerlo sin cambios
+        IF @EstadoActualSemana = 'Finalizado'
+        BEGIN
+            SET @NuevoEstadoSemana = 'Finalizado';
+        END
+
+        -- Actualizar la semana
+        UPDATE SEMANASASIGNATURAMATRIZ 
+        SET 
+            descripcion = ISNULL(@Descripcion, descripcion),
+            accion_integradora = ISNULL(@AccionIntegradora, accion_integradora),
+            tipo_evaluacion = ISNULL(@TipoEvaluacion, tipo_evaluacion),
+            estado = @NuevoEstadoSemana
+        WHERE id_semana = @IdSemana;
+
+        -- =====================================================
+        -- LÓGICA PARA ACTUALIZAR ESTADO DE MATRIZASIGNATURA
+        -- =====================================================
+
+        -- Obtener el estado actual de la matriz asignatura
+        SELECT @EstadoMatrizAsignatura = estado
+        FROM MATRIZASIGNATURA 
+        WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+
+        -- Contar las semanas por estado
+        SELECT 
+            @TotalSemanas = COUNT(*),
+            @SemanasEnProceso = COUNT(CASE WHEN estado = 'En proceso' THEN 1 END),
+            @SemanasFinalizadas = COUNT(CASE WHEN estado = 'Finalizado' THEN 1 END)
+        FROM SEMANASASIGNATURAMATRIZ 
+        WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
+
+        -- Determinar el nuevo estado para MATRIZASIGNATURA
+        SET @NuevoEstadoMatriz = @EstadoMatrizAsignatura;
+
+        -- Regla 1: Si al menos 1 semana está "En proceso", la matriz va a "En proceso"
+        IF @SemanasEnProceso > 0
+        BEGIN
+            SET @NuevoEstadoMatriz = 'En proceso';
+        END
+
+        -- Regla 2: Si TODAS las semanas están "Finalizado", la matriz va a "Finalizado"
+        IF @SemanasFinalizadas = @TotalSemanas AND @TotalSemanas > 0
+        BEGIN
+            SET @NuevoEstadoMatriz = 'Finalizado';
+        END
+
+        -- Actualizar el estado de MATRIZASIGNATURA si cambió
+        IF @EstadoMatrizAsignatura != @NuevoEstadoMatriz
+        BEGIN
+            UPDATE MATRIZASIGNATURA 
+            SET estado = @NuevoEstadoMatriz
+            WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+        END
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Semana actualizada correctamente. ' +
+                       'Estado semana: ' + @NuevoEstadoSemana + '. ' +
+                       'Estado matriz: ' + @NuevoEstadoMatriz;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+        
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al actualizar la semana: ' + ERROR_MESSAGE();
+    END CATCH
 END;
 GO
 

@@ -39,7 +39,7 @@ namespace capa_datos
                                 numero_semana = dr["numero_semana"].ToString(),
                                 descripcion = dr["descripcion"].ToString(),
                                 accion_integradora = dr["accion_integradora"].ToString(),
-                                tipo_evaluacion = dr["numero_semana"].ToString(),
+                                tipo_evaluacion = dr["tipo_evaluacion"].ToString(),
                                 fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
                                 fecha_fin = Convert.ToDateTime(dr["fecha_fin"]),
                                 estado = dr["estado"].ToString(),
@@ -59,6 +59,45 @@ namespace capa_datos
             }
 
             return lista;
+        }
+
+        public int Actualizar(SEMANASASIGNATURAMATRIZ semana, out string mensaje)
+        {
+            int resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarSemana", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parámetros de entrada
+                    cmd.Parameters.AddWithValue("IdSemana", semana.id_semana);
+                    cmd.Parameters.AddWithValue("Descripcion", semana.descripcion);
+                    cmd.Parameters.AddWithValue("AccionIntegradora", semana.accion_integradora);
+                    cmd.Parameters.AddWithValue("TipoEvaluacion", semana.tipo_evaluacion);
+                    cmd.Parameters.AddWithValue("Estado", semana.estado);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    resultado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = 0;
+                mensaje = "Error al actualizar la asignatura en la matriz: " + ex.Message;
+            }
+
+            return resultado;
         }
     }
 }

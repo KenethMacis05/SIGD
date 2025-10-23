@@ -308,7 +308,7 @@ CREATE TABLE SEMANASASIGNATURAMATRIZ (
     fecha_fin DATE NOT NULL,
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_DESCRIPCIONASIGNATURA_MATRIZASIGNATURA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE
+    CONSTRAINT FK_SEMANASASIGNATURA_MATRIZASIGNATURA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE
 );
 
 -----------------------------------------------------Etapa 2: Plan Didactico Semestral-----------------------------------------------------

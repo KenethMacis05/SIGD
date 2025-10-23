@@ -41,23 +41,65 @@
     </div>
 </div>
 
-<!-- Modal asignar asignatura a la matriz -->
-<div class="modal fade" id="asignarAsignatura" aria-hidden="true">
-    <div class="modal-dialog">
+<!-- Modal semanas de la asignatura de la matriz -->
+<div class="modal fade" id="semanas" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header text-light" style="background-color: #0072BB">
-                <h5 class="modal-title">Asignar asignaturas</h5>
+                <h5 class="modal-title" id="modalTitulo">Nueva Semana</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="text" id="idAsignatura" name="idAsignatura" value="0" />
-                <div class="mb-3">
-                    <label class="form-label">Docente</label>
-                    <select class="form-control" id="profesores" name="profesores" style="width: 100%;" tabindex="-1"></select>
+                <input type="hidden" id="idSemana" name="idSemana" value="0" />
+                <input type="hidden" id="idMatrizAsignatura" value="@Model.id_matriz_asignatura" />
+
+                <!-- Información de la semana (solo lectura) -->
+                <div class="mb-3" id="infoSemana">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <div class="row">
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-tasks me-1"></i> Estado
+                                        </span>
+                                        <select class="form-control" id="estado">
+                                            <option value="Pendiente">Pendiente</option>
+                                            <option value="En proceso">En proceso</option>
+                                            <option value="Finalizado">Finalizado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="fas fa-calendar-alt me-1"></i> Período
+                                        </span>
+                                        <div id="periodoSemanaText" class="form-control bg-light">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Asignatura</label>
-                    <select class="form-control" id="asignaturas" name="asignaturas" style="width: 100%;" tabindex="-1"></select>
+                    <label class="form-label">Acción integradora</label>
+                    <input type="text" class="form-control" id="accionIntegradora" name="accionIntegradora">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Tipo de evaluación</label>
+                    <input type="text" class="form-control" id="tipoEvaluacion" name="tipoEvaluacion">
+                </div>
+                <div class="mb-3">
+                    <div class="card border-left-primary shadow-sm">
+                        <div class="card-header">
+                            <i class="fa fa-lightbulb fa-lg text-primary me-2"></i>
+                            <label class="form-label fs-5 fw-medium mb-0">Descripción</label>
+                        </div>
+                        <div class="card-body">
+                            <textarea class="form-control" id="descripcionSummernote" name="descripcionSummernote"></textarea>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer pe-0 ps-0 flex-nowrap ">
@@ -65,7 +107,7 @@
                     <i class="fas fa-times-circle me-2"></i>Cerrar
                 </button>
                 <button type="button" style="background: #0072BB " onclick="GuardarSemana()" class="btn btn-success w-50">
-                    <i class="fas fa-share me-2"></i>Asignar
+                    <i class="fas fa-save me-2"></i>Guardar
                 </button>
             </div>
         </div>
@@ -76,6 +118,7 @@
     <script>
         $(document).ready(function () {
             cargarSemanasDeLaAsignaturasDeLaMatriz(@Model.id_matriz_asignatura);
+            window.semanasData = @Html.Raw(Json.Encode(ViewBag.Semanas));
         });
     </script>
     <script src="@Url.Content("~/Scripts/Views/SemanasAsignatura.js")" type="text/javascript"></script>
