@@ -6,13 +6,17 @@ using System.Threading.Tasks;
 
 namespace capa_entidad
 {
-    public class DESCRIPCIONASIGNATURAMATRIZ
+    public class SEMANASASIGNATURAMATRIZ
     {
-        public int id_descripcion { get; set; }
+        public int id_semana { get; set; }
         public int fk_matriz_asignatura { get; set; }
+        public string numero_semana { get; set; }
         public string descripcion { get; set; }
         public string accion_integradora { get; set; }
         public string tipo_evaluacion { get; set; }
         public DateTime fecha_registro { get; set; }
+        public DateTime fecha_inicio { get; set; }
+        public DateTime fecha_fin { get; set; }
+        public string estado { get; set; }
     }
 }

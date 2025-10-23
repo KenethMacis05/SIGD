@@ -16,6 +16,7 @@ namespace capa_presentacion.Controllers
         CN_PlanClasesDiario CN_PlanClasesDiario = new CN_PlanClasesDiario();
         CN_MatrizIntegracionComponentes CN_MatrizIntegradora = new CN_MatrizIntegracionComponentes();
         CN_MatrizAsignatura CN_MatrizAsignatura = new CN_MatrizAsignatura();
+        CN_SemanasAsginaturaMatriz CN_SemanasAsginaturaMatriz = new CN_SemanasAsginaturaMatriz();
 
         #region Matriz de Integracion de Componentes
         
@@ -68,6 +69,68 @@ namespace capa_presentacion.Controllers
             return View(matriz);
         }
 
+        // Guardar Matriz de Integracion de Componentes
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult GuardarMatrizIntegracion(MATRIZINTEGRACIONCOMPONENTES matriz, List<MATRIZASIGNATURA> asignaturas)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View("Matriz_de_Integracion", matriz);
+                }
+
+                string mensaje;
+                int resultado;
+                bool esNuevo = matriz.id_matriz_integracion == 0;
+
+                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                matriz.fk_profesor = usuario.id_usuario;
+
+                // 1. Guardar la matriz principal
+                if (esNuevo)
+                {
+                    resultado = CN_MatrizIntegradora.Crear(matriz, out mensaje);
+                }
+                else
+                {
+                    resultado = CN_MatrizIntegradora.Editar(matriz, out mensaje);
+                }
+
+                if (resultado <= 0)
+                {
+                    TempData["Error"] = $"No se pudo {(esNuevo ? "registrar" : "actualizar")} la matriz. {mensaje}";
+                    return View("Matriz_de_Integracion", matriz);
+                }
+
+                TempData["Success"] = mensaje;
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Ocurrió un error inesperado al procesar su solicitud: " + ex.Message;
+                return RedirectToAction("Matriz_de_Integracion", new { id = matriz?.id_matriz_integracion ?? 0 });
+            }
+        }
+
+
+
+        //Enpoint(POST): Eliminar matriz de integracion de componentes
+        [HttpPost]
+        public JsonResult EliminarMatrizIntegracion(int id_matriz_integracion)
+        {
+            string mensaje = string.Empty;
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
+            int resultado = CN_MatrizIntegradora.Eliminar(id_matriz_integracion, usuario.id_usuario, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        //  Asignaturas para la Matriz de Integracion de Componentes  //
+        ///////////////////////////////////////////////////////////////////////////////////
+
         //Vista Asignar asignaturas a la Matriz de Integracion de Componentes
         [HttpGet]
         public ActionResult AsignarAsignaturasMatrizIntegracion(int id)
@@ -113,50 +176,6 @@ namespace capa_presentacion.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult GuardarMatrizIntegracion(MATRIZINTEGRACIONCOMPONENTES matriz, List<MATRIZASIGNATURA> asignaturas)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return View("Matriz_de_Integracion", matriz);
-                }
-
-                string mensaje;
-                int resultado;
-                bool esNuevo = matriz.id_matriz_integracion == 0;
-
-                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-                matriz.fk_profesor = usuario.id_usuario;
-
-                // 1. Guardar la matriz principal
-                if (esNuevo)
-                {
-                    resultado = CN_MatrizIntegradora.Crear(matriz, out mensaje);
-                }
-                else
-                {
-                    resultado = CN_MatrizIntegradora.Editar(matriz, out mensaje);
-                }
-
-                if (resultado <= 0)
-                {
-                    TempData["Error"] = $"No se pudo {(esNuevo ? "registrar" : "actualizar")} la matriz. {mensaje}";
-                    return View("Matriz_de_Integracion", matriz);
-                }
-
-                TempData["Success"] = mensaje;
-                return RedirectToAction("Matriz_de_Integracion");
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = "Ocurrió un error inesperado al procesar su solicitud: " + ex.Message;
-                return RedirectToAction("Matriz_de_Integracion", new { id = matriz?.id_matriz_integracion ?? 0 });
-            }
-        }
-
-        [HttpPost]
         public JsonResult GuardarAsignaturasMatriz(MATRIZASIGNATURA matriz)
         {
 
@@ -184,18 +203,7 @@ namespace capa_presentacion.Controllers
             return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
-        //Enpoint(POST): Eliminar matriz de integracion de componentes
-        [HttpPost]
-        public JsonResult EliminarMatrizIntegracion(int id_matriz_integracion)
-        {
-            string mensaje = string.Empty;
-            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
-            int resultado = CN_MatrizIntegradora.Eliminar(id_matriz_integracion, usuario.id_usuario, out mensaje);
-            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
-        }
-
-        // Endpoint(POST): Eliminar matriz de asignatura
+        // Endpoint(POST): Eliminar asignatura de la asignatura
         [HttpPost]
         public JsonResult EliminarMatrizAsignatura(int id_matriz)
         {
@@ -215,6 +223,53 @@ namespace capa_presentacion.Controllers
             catch (Exception ex)
             {
                 return Json(new { Respuesta = false, Mensaje = "Error al eliminar la asignatura: " + ex.Message });
+            }
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        //  Semanas para las asignaturas de la Matriz de Integracion de Componentes  //
+        ///////////////////////////////////////////////////////////////////////////////////
+
+        [HttpGet]
+        public ActionResult SemanasAsignatura(int id)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+            // Obtener la asignatura selecionada de la matriz
+            MATRIZASIGNATURA asignatura = CN_MatrizAsignatura.ObtenerAsignaturaDelaMatrizPorId(id);
+            if (asignatura == null || usuario == null)
+            {
+                TempData["Error"] = "La asignatura no esta asignada a esta matris de integración.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+
+            // Obtener las semanas de las asignatura asignada a esta matriz
+            int resultado;
+            string mensaje;
+            var semanas = CN_SemanasAsginaturaMatriz.Listar(id, out resultado, out mensaje);
+
+            ViewBag.Semanas = semanas;
+            ViewBag.MensajeSemanas = mensaje;
+
+            return View(asignatura);
+        }
+
+        // Endpoint para cargar asignaturas via AJAX
+        [HttpGet]
+        public JsonResult ListarSemanasDeAsignaturaPorId(int id)
+        {
+            try
+            {
+                int resultado;
+                string mensaje;
+
+                var semanas = CN_SemanasAsginaturaMatriz.Listar(id, out resultado, out mensaje);
+
+                return Json(new { success = resultado == 1, data = semanas, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, data = new List<SEMANASASIGNATURAMATRIZ>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
 

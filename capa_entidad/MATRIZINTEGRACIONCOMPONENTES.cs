@@ -19,8 +19,6 @@ namespace capa_entidad
         public int fk_periodo { get; set; }
         public int fk_profesor { get; set; }
         [AllowHtml]
-        public string competencias { get; set; }
-        [AllowHtml]
         public string objetivo_anio { get; set; }
         [AllowHtml]
         public string objetivo_semestre { get; set; }
@@ -36,5 +34,11 @@ namespace capa_entidad
         public string asignatura { get; set; }
         public string usuario { get; set; }
         public string periodo { get; set; }
+        [AllowHtml]
+        public string competencias_genericas { get; set; }
+        [AllowHtml]
+        public string competencias_especificas { get; set; }
+        public int numero_semanas { get; set; }
+        public DateTime fecha_inicio { get; set; }
     }
 }

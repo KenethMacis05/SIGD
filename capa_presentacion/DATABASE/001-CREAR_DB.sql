@@ -250,13 +250,17 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
 	fk_profesor INT NOT NULL,
 	-- Año y semestre
 	fk_periodo INT NOT NULL,
-	--Competencias
-	competencias VARCHAR(255),
-	--Objetivos
+	-- Competencias
+	competencias_genericas VARCHAR(255),
+	competencias_especificas VARCHAR(255),
+	-- Objetivos
     objetivo_anio VARCHAR(255),
     objetivo_semestre VARCHAR(255),
     objetivo_integrador VARCHAR(255),
-
+    -- Numero de semanas de la Matriz
+    numero_semanas INT,
+    -- Fecha de Inicio
+    fecha_inicio DATE NOT NULL,
     --Asignaturas / Descripcion (La tiene la tabla MatrizAsignatura)
 	
     -- Estrategia integradora
@@ -282,7 +286,7 @@ CREATE TABLE MATRIZASIGNATURA (
     fk_matriz_integracion INT NOT NULL,
     fk_asignatura INT NOT NULL,
     fk_profesor_asignado INT,
-    estado VARCHAR(50) NOT NULL CHECK (estado IN ('Iniciado', 'En proceso', 'Finalizado')),
+    estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
 	CONSTRAINT FK_MATRIZASIGNATURA_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE,
 	CONSTRAINT FK_MATRIZASIGNATURA_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES ASIGNATURA(id_asignatura),
@@ -291,14 +295,18 @@ CREATE TABLE MATRIZASIGNATURA (
 
 GO
 
--- (3) Tabla MatrizAsignaturaDescripcion
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DESCRIPCIONASIGNATURAMATRIZ')
-CREATE TABLE DESCRIPCIONASIGNATURAMATRIZ (
-    id_descripcion INT PRIMARY KEY IDENTITY(1,1),
+-- (3) Tabla MatrizAsignaturaSemanas
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'SEMANASASIGNATURAMATRIZ')
+CREATE TABLE SEMANASASIGNATURAMATRIZ (
+    id_semana INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_asignatura INT NOT NULL,
+    numero_semana VARCHAR(255),
     descripcion VARCHAR(255),
     accion_integradora VARCHAR(255),
-    tipo_evaluacion VARCHAR(50),  
+    tipo_evaluacion VARCHAR(50),
+    fecha_inicio DATE NOT NULL,
+    fecha_fin DATE NOT NULL,
+    estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_DESCRIPCIONASIGNATURA_MATRIZASIGNATURA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE
 );

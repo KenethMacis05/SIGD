@@ -3647,11 +3647,14 @@ CREATE PROCEDURE usp_CrearMatrizIntegracion
     @FKAsignatura INT,
     @FKProfesor INT,
     @FKPeriodo INT,
-    @Competencias VARCHAR(255),
+    @CompetenciasGenericas VARCHAR(255),
+    @CompetenciasEspecificas VARCHAR(255),
     @ObjetivoAnio VARCHAR(255),
     @ObjetivoSemestre VARCHAR(255),
     @ObjetivoIntegrador VARCHAR(255),
     @EstrategiaIntegradora VARCHAR(255),    
+    @NumeroSemanas INT,
+    @FechaInicio DATE,
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -3747,15 +3750,15 @@ BEGIN
         -- 9. Insertar la nueva matriz
         INSERT INTO MATRIZINTEGRACIONCOMPONENTES (
             codigo, nombre, fk_area, fk_departamento, fk_carrera, 
-            fk_asignatura, fk_profesor, fk_periodo, competencias,
+            fk_asignatura, fk_profesor, fk_periodo, competencias_genericas, competencias_especificas,
             objetivo_anio, objetivo_semestre, objetivo_integrador, 
-            estrategia_integradora
+            estrategia_integradora, numero_semanas, fecha_inicio
         )
         VALUES (
             @Codigo, @Nombre, @FKArea, @FKDepartamento, @FKCarrera,
-            @FKAsignatura, @FKProfesor, @FKPeriodo, @Competencias,
+            @FKAsignatura, @FKProfesor, @FKPeriodo, @CompetenciasGenericas, @CompetenciasEspecificas,
             @ObjetivoAnio, @ObjetivoSemestre, @ObjetivoIntegrador,
-            @EstrategiaIntegradora
+            @EstrategiaIntegradora, @NumeroSemanas, @FechaInicio
         );
     
         SET @Resultado = SCOPE_IDENTITY();
@@ -3809,6 +3812,8 @@ BEGIN
             mic.id_matriz_integracion,
             mic.codigo,
             mic.nombre,
+            mic.numero_semanas,
+            mic.fecha_inicio,
             a.nombre AS area_conocimiento,
             d.nombre AS departamento,
             c.nombre AS carrera,
@@ -3848,7 +3853,8 @@ CREATE PROCEDURE usp_ActualizarMatrizIntegracion
     @FKAsignatura INT,
     @FKProfesor INT,
     @FKPeriodo INT,
-    @Competencias VARCHAR(255),
+    @CompetenciasGenericas VARCHAR(255),
+    @CompetenciasEspecificas VARCHAR(255),
     @ObjetivoAnio VARCHAR(255),
     @ObjetivoSemestre VARCHAR(255),
     @ObjetivoIntegrador VARCHAR(255),
@@ -3938,7 +3944,8 @@ BEGIN
             fk_asignatura = @FKAsignatura,
             fk_profesor = @FKProfesor,
             fk_periodo = @FKPeriodo,
-            competencias = @Competencias,
+            competencias_genericas = @CompetenciasGenericas,
+            competencias_especificas = @CompetenciasEspecificas,
             objetivo_anio = @ObjetivoAnio,
             objetivo_semestre = @ObjetivoSemestre,
             objetivo_integrador = @ObjetivoIntegrador,
@@ -4007,13 +4014,13 @@ BEGIN
                 AND estado IN ('En proceso', 'Finalizado')
             )
             BEGIN
-                SET @Mensaje = 'No se puede eliminar la matriz porque tiene asignaturas en estado "En proceso" o "Finalizado". Solo se pueden eliminar matrices con asignaturas en estado "Iniciado" o sin asignaturas.';
+                SET @Mensaje = 'No se puede eliminar la matriz porque tiene asignaturas en estado "En proceso" o "Finalizado". Solo se pueden eliminar matrices con asignaturas en estado "Pendiente" o sin asignaturas.';
                 THROW 51015, @Mensaje, 1;
             END
 
             -- 5. Si tiene asignaturas en estado "Iniciado", primero eliminar las descripciones asociadas
             DELETE dam 
-            FROM DESCRIPCIONASIGNATURAMATRIZ dam
+            FROM SEMANASASIGNATURAMATRIZ dam
             INNER JOIN MATRIZASIGNATURA ma ON dam.fk_matriz_asignatura = ma.id_matriz_asignatura
             WHERE ma.fk_matriz_integracion = @IdMatriz;
 
@@ -4062,6 +4069,13 @@ BEGIN
     SET @Mensaje = '';
     DECLARE @NombreAsignatura VARCHAR(255);
     DECLARE @NombreProfesorAsignado VARCHAR(255);
+    DECLARE @NumeroSemanas INT;
+    DECLARE @FechaInicioMatriz DATE;
+    DECLARE @FechaInicioSemana DATE;
+    DECLARE @FechaFinSemana DATE;
+    DECLARE @IdMatrizAsignatura INT;
+    DECLARE @Contador INT = 1;
+
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -4112,9 +4126,9 @@ BEGIN
         END
 
         -- 6. Obtener nombre de la asignatura
-        SELECT @NombreAsignatura = nombre 
-        FROM ASIGNATURA 
-        WHERE id_asignatura = @FKAsignatura;
+        SELECT @NombreAsignatura = nombre FROM ASIGNATURA WHERE id_asignatura = @FKAsignatura;
+        SELECT @NumeroSemanas = numero_semanas FROM MATRIZINTEGRACIONCOMPONENTES WHERE id_matriz_integracion = @FKMatrizIntegracion;
+        SELECT @FechaInicioMatriz = fecha_inicio FROM MATRIZINTEGRACIONCOMPONENTES WHERE id_matriz_integracion = @FKMatrizIntegracion;
 
         -- 7. Asignar asignatura a la Matriz
         INSERT INTO MATRIZASIGNATURA (
@@ -4127,14 +4141,34 @@ BEGIN
             @FKMatrizIntegracion,
             @FKAsignatura,
             @FKProfesorAsignado,
-            'Iniciado'
+            'Pendiente'
         );
 
-        SET @Resultado = SCOPE_IDENTITY();
+        -- 8. Registros de la tabla SEMANASASIGNATURAMATRIZ según el número de semanas de la matriz de integración
+        SET @IdMatrizAsignatura = SCOPE_IDENTITY();
+
+        -- Generar las semanas automáticamente
+        WHILE @Contador <= @NumeroSemanas
+        BEGIN
+            -- Calcular fecha de inicio de la semana (7 días por cada semana anterior)
+            SET @FechaInicioSemana = DATEADD(DAY, (@Contador - 1) * 7, @FechaInicioMatriz);
+            -- Calcular fecha de fin de la semana (6 días después del inicio)
+            SET @FechaFinSemana = DATEADD(DAY, 6, @FechaInicioSemana);
+
+            INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, fecha_inicio, fecha_fin, estado)
+            VALUES (@IdMatrizAsignatura, 'Semana ' + CAST(@Contador AS VARCHAR(3)), @FechaInicioSemana, @FechaFinSemana, 'Pendiente');
+
+            SET @Contador = @Contador + 1;
+        END
+
+
+        SET @Resultado = @IdMatrizAsignatura;
 
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'La asignatura: ' + ISNULL(@NombreAsignatura, '') + ', se asignó al docente ' + ISNULL(@NombreProfesorAsignado, '');
+        SET @Mensaje = 'La asignatura: ' + ISNULL(@NombreAsignatura, '') + 
+                      ', se asignó al docente ' + ISNULL(@NombreProfesorAsignado, '') +
+                      ' con ' + CAST(@NumeroSemanas AS VARCHAR(3)) + ' semanas generadas'; 
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
@@ -4146,8 +4180,47 @@ END;
 GO
 
 -- Leer asignaturas de una matriz específica
-CREATE PROCEDURE usp_LeerAsignaturasPorMatriz
+CREATE OR ALTER PROCEDURE usp_LeerAsignaturasPorMatriz
     @FKMatrizIntegracion INT
+AS
+BEGIN
+    SELECT 
+        ma.id_matriz_asignatura,
+        ma.fk_matriz_integracion,
+        ma.fk_asignatura,
+        a.codigo,
+        a.nombre AS asignatura,
+        ma.fk_profesor_asignado,
+        u.pri_nombre + ' ' + u.pri_apellido AS profesor,
+        u.correo AS correo,
+        ma.estado,
+        ma.fecha_registro,
+        COUNT(CASE WHEN sam.estado = 'Finalizado' THEN 1 ELSE NULL END) AS semanas_finalizadas,
+		COUNT(sam.id_semana) AS total_semanas
+    FROM MATRIZASIGNATURA ma
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
+    LEFT JOIN SEMANASASIGNATURAMATRIZ sam ON ma.id_matriz_asignatura = sam.fk_matriz_asignatura
+    WHERE ma.fk_matriz_integracion = @FKMatrizIntegracion
+    GROUP BY 
+        ma.id_matriz_asignatura,
+        ma.fk_matriz_integracion,
+        ma.fk_asignatura,
+        a.codigo,
+        a.nombre,
+        ma.fk_profesor_asignado,
+        u.pri_nombre,
+        u.pri_apellido,
+        u.correo,
+        ma.estado,
+        ma.fecha_registro
+    ORDER BY a.nombre;
+END;
+GO
+
+-- Leer asignatura asignada por Id
+CREATE PROCEDURE usp_ObtenerAsignaturaAsignadaPorId
+    @IdMatrizAsignatura INT
 AS
 BEGIN
     SELECT 
@@ -4164,7 +4237,7 @@ BEGIN
     FROM MATRIZASIGNATURA ma
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
     INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
-    WHERE ma.fk_matriz_integracion = @FKMatrizIntegracion
+    WHERE ma.id_matriz_asignatura = @IdMatrizAsignatura
     ORDER BY a.nombre;
 END;
 GO
@@ -4482,12 +4555,13 @@ END;
 GO
 
 -- =============================================
--- PROCEDIMIENTOS PARA DESCRIPCIONASIGNATURAMATRIZ
+-- PROCEDIMIENTOS PARA SEMANASASIGNATURAMATRIZ
 -- =============================================
 
 -- Crear o actualizar descripción de asignatura en matriz
-CREATE PROCEDURE usp_GuardarDescripcionAsignatura
+CREATE PROCEDURE usp_GuardarSemanaAsignatura
     @FKMatrizAsignatura INT,
+    @NombreSemana INT,
     @Descripcion VARCHAR(255),
     @AccionIntegradora VARCHAR(255),
     @TipoEvaluacion VARCHAR(50),
@@ -4507,11 +4581,12 @@ BEGIN
         INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
         WHERE ma.id_matriz_asignatura = @FKMatrizAsignatura;
 
-        IF EXISTS (SELECT 1 FROM DESCRIPCIONASIGNATURAMATRIZ WHERE fk_matriz_asignatura = @FKMatrizAsignatura)
+        IF EXISTS (SELECT 1 FROM SEMANASASIGNATURAMATRIZ WHERE fk_matriz_asignatura = @FKMatrizAsignatura)
         BEGIN
-            -- Actualizar descripción existente
-            UPDATE DESCRIPCIONASIGNATURAMATRIZ
+            -- Actualizar semana existente
+            UPDATE SEMANASASIGNATURAMATRIZ
             SET 
+                numero_semana = @NombreSemana,
                 descripcion = @Descripcion,
                 accion_integradora = @AccionIntegradora,
                 tipo_evaluacion = @TipoEvaluacion,
@@ -4523,15 +4598,17 @@ BEGIN
         END
         ELSE
         BEGIN
-            -- Insertar nueva descripción
-            INSERT INTO DESCRIPCIONASIGNATURAMATRIZ (
+            -- Insertar semana descripción
+            INSERT INTO SEMANASASIGNATURAMATRIZ (
                 fk_matriz_asignatura,
+                numero_semana,
                 descripcion,
                 accion_integradora,
                 tipo_evaluacion
             )
             VALUES (
                 @FKMatrizAsignatura,
+                @NombreSemana,
                 @Descripcion,
                 @AccionIntegradora,
                 @TipoEvaluacion
@@ -4541,35 +4618,39 @@ BEGIN
             SET @Accion = 'guardada';
         END
 
-        SET @Mensaje = 'Descripción de la asignatura ' + ISNULL(@Asignatura, '') + ' ' + @Accion + ' exitosamente';
+        SET @Mensaje = 'Semana de la asignatura ' + ISNULL(@Asignatura, '') + ' ' + @Accion + ' exitosamente';
         
     END TRY
     BEGIN CATCH
         SET @Resultado = -1;
-        SET @Mensaje = 'Error al guardar la descripción de la asignatura: ' + ERROR_MESSAGE();
+        SET @Mensaje = 'Error al guardar la semana de la asignatura: ' + ERROR_MESSAGE();
     END CATCH
 END;
 GO
 
 -- Leer descripción de asignatura en matriz
-CREATE PROCEDURE sp_LeerDescripcionAsignatura
-    @fk_matriz_asignatura INT
+CREATE OR ALTER PROCEDURE sp_LeerSemanasAsignatura
+    @FKMatrizAsignatura INT
 AS
 BEGIN
     SELECT 
-        id_descripcion,
+        id_semana,
         fk_matriz_asignatura,
+        numero_semana,
         descripcion,
         accion_integradora,
         tipo_evaluacion,
+        fecha_inicio,
+        fecha_fin,
+        estado,
         fecha_registro
-    FROM DESCRIPCIONASIGNATURAMATRIZ
-    WHERE fk_matriz_asignatura = @fk_matriz_asignatura;
+    FROM SEMANASASIGNATURAMATRIZ
+    WHERE fk_matriz_asignatura = @FKMatrizAsignatura;
 END;
 GO
 
 -- Leer todas las descripciones de una matriz completa
-CREATE PROCEDURE sp_LeerDescripcionesCompletasMatriz
+CREATE PROCEDURE sp_LeerSemanasCompletasMatriz
     @fk_matriz_integracion INT
 AS
 BEGIN
@@ -4579,6 +4660,7 @@ BEGIN
         a.nombre AS nombre_asignatura,
         u.pri_nombre + ' ' + u.pri_apellido AS nombre_profesor,
         ma.estado,
+        dam.numero_semana,
         dam.descripcion,
         dam.accion_integradora,
         dam.tipo_evaluacion,
@@ -4586,7 +4668,7 @@ BEGIN
     FROM MATRIZASIGNATURA ma
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
     INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
-    LEFT JOIN DESCRIPCIONASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
+    LEFT JOIN SEMANASASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
     WHERE ma.fk_matriz_integracion = @fk_matriz_integracion
     ORDER BY a.nombre;
 END;
@@ -4632,11 +4714,14 @@ BEGIN
             u_responsable.pri_nombre + ' ' + u_responsable.pri_apellido AS profesor_responsable,
             mic.fk_periodo,
             p.semestre AS periodo,
-            mic.competencias,
+            mic.competencias_genericas,
+            mic.competencias_especificas,
             mic.objetivo_anio,
             mic.objetivo_semestre,
             mic.objetivo_integrador,
             mic.estrategia_integradora,
+            mic.numero_semanas,
+            mic.fecha_inicio,
             mic.estado,
             mic.fecha_registro
         FROM MATRIZINTEGRACIONCOMPONENTES mic
@@ -4668,11 +4753,11 @@ BEGIN
         mic.nombre,
         COUNT(ma.id_matriz_asignatura) AS total_asignaturas,
         SUM(CASE WHEN ma.estado = 'Finalizado' THEN 1 ELSE 0 END) AS asignaturas_finalizadas,
-        SUM(CASE WHEN dam.id_descripcion IS NOT NULL THEN 1 ELSE 0 END) AS asignaturas_con_descripcion,
+        SUM(CASE WHEN dam.id_semana IS NOT NULL THEN 1 ELSE 0 END) AS asignaturas_con_descripcion,
         (SUM(CASE WHEN ma.estado = 'Finalizado' THEN 1 ELSE 0 END) * 100.0 / COUNT(ma.id_matriz_asignatura)) AS porcentaje_completado
     FROM MATRIZINTEGRACIONCOMPONENTES mic
     LEFT JOIN MATRIZASIGNATURA ma ON mic.id_matriz_integracion = ma.fk_matriz_integracion
-    LEFT JOIN DESCRIPCIONASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
+    LEFT JOIN SEMANASASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
     WHERE mic.id_matriz_integracion = @id_matriz_integracion
     GROUP BY mic.codigo, mic.nombre;
 END;

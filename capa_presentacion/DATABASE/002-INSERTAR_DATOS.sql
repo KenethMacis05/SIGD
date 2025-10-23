@@ -131,6 +131,10 @@ VALUES
     ('Planificacion', 'ListarMatrizAsignaturaPorId', 'Listar la matriz de asignaturas', 'API'),
     ('Planificacion', 'EliminarMatrizAsignatura', 'Remover asignatura de la matriz', 'API'),
 
+    -- 1.2 Semanas de la asignatura
+    ('Planificacion', 'SemanasAsignatura', 'Vista de las semanas de la asignatura', 'Vista'),
+    ('Planificacion', 'ListarSemanasDeAsignaturaPorId', 'Listar las semanas a trabajar de la asignatura', 'API'),
+
     -- 2. Plan didáctico semestral
     ('Planificacion', 'ListarPlanesDidacticos', 'Listar planes didácticos semestrales', 'API'),
     ('Planificacion', 'DetallePlanDidactico', 'Vista de detalles de planes didácticos semestrales', 'Vista'),
@@ -460,52 +464,65 @@ INSERT INTO MATRIZINTEGRACIONCOMPONENTES (
     fk_asignatura,
     fk_profesor,
     fk_periodo,
-    competencias,
+    competencias_genericas,
+    competencias_especificas,
     objetivo_anio,
     objetivo_semestre,
     objetivo_integrador,
-    estrategia_integradora
+    estrategia_integradora,
+    numero_semanas,
+    fecha_inicio
 )
 VALUES 
     ('MIC-001', 'Matriz de Integración Hardware y Software', 
-     1, 1, 1, 1, 1, 1,  -- fk_asignatura: Hardware
+     1, 1, 1, 1, 1, 1,
+     'Integrar componentes físicos y lógicos para soluciones tecnológicas',
      'Integrar componentes físicos y lógicos para soluciones tecnológicas',
      'Desarrollar sistemas completos hardware-software',
      'Implementar interfaces entre componentes físicos y aplicaciones',
      'Crear prototipo funcional integrado hardware-software',
-     'Proyecto de sistema embebido con interfaz software'),
+     'Proyecto de sistema embebido con interfaz software', 
+     14, '2025-08-11'),
 
     ('MIC-002', 'Matriz de Desarrollo Web Fullstack', 
-     2, 1, 1, 2, 1, 1,  -- fk_asignatura: Diseño Web
+     2, 1, 1, 2, 1, 1,
+     'Competencias en desarrollo frontend, backend y bases de datos',
      'Competencias en desarrollo frontend, backend y bases de datos',
      'Dominar el stack completo de desarrollo web moderno',
      'Implementar aplicaciones web escalables y responsivas',
      'Desarrollar plataforma web empresarial completa',
-     'Proyecto de e-commerce fullstack'),
+     'Proyecto de e-commerce fullstack', 
+     14, '2025-08-11'),
 
     ('MIC-003', 'Matriz de Seguridad Integral TI', 
-     3, 1, 1, 4, 1, 1,  -- fk_asignatura: Seguridad Informática
+     3, 1, 1, 4, 1, 1,
+     'Protección de infraestructura, datos y aplicaciones',
      'Protección de infraestructura, datos y aplicaciones',
      'Implementar seguridad en todas las capas tecnológicas',
      'Configurar sistemas seguros y políticas de acceso',
      'Desplegar infraestructura TI resiliente a ataques',
-     'Auditoría de seguridad y plan de continuidad'),
+     'Auditoría de seguridad y plan de continuidad', 
+     14, '2025-08-11'),
 
     ('MIC-004', 'Matriz de Soluciones Educativas Digitales', 
-     2, 1, 1, 5, 1, 1,  -- fk_asignatura: Diseño de Soluciones Educativas
+     2, 1, 1, 5, 1, 1,
+     'Diseño e implementación de tecnología educativa',
      'Diseño e implementación de tecnología educativa',
      'Crear soluciones digitales innovadoras para educación',
      'Desarrollar plataformas educativas interactivas',
      'Implementar LMS con herramientas de gamificación',
-     'Plataforma educativa adaptativa con analytics'),
+     'Plataforma educativa adaptativa con analytics', 
+     14, '2025-08-11'),
 
     ('MIC-005', 'Matriz de Base de Datos y Cloud', 
-     4, 1, 1, 11, 1, 1,  -- fk_asignatura: Bases de Datos
+     4, 1, 1, 11, 1, 1,
+     'Gestión de datos en entornos on-premise y cloud',
      'Gestión de datos en entornos on-premise y cloud',
      'Dominar tecnologías de datos tradicionales y modernas',
      'Implementar arquitecturas de datos escalables',
      'Diseñar sistema de datos distribuido en la nube',
-     'Migración y optimización de bases de datos cloud');
+     'Migración y optimización de bases de datos cloud', 
+     14, '2025-08-11');
 
 GO
 
@@ -514,68 +531,100 @@ INSERT INTO MATRIZASIGNATURA (fk_matriz_integracion, fk_asignatura, fk_profesor_
 VALUES 
     -- Matriz 1: Hardware y Software (Integración de sistemas)
     (1, 1, 1, 'En proceso'),   -- Hardware
-    (1, 3, 4, 'Iniciado'),     -- Software
-    (1, 16, 1, 'Iniciado'),    -- Sistemas Operativos
-    (1, 20, 1, 'Iniciado'),    -- Internet de las Cosas
+    (1, 3, 4, 'Pendiente'),     -- Software
+    (1, 16, 1, 'Pendiente'),    -- Sistemas Operativos
+    (1, 20, 1, 'Pendiente'),    -- Internet de las Cosas
 
     -- Matriz 2: Desarrollo Web Fullstack
     (2, 2, 2, 'En proceso'),   -- Diseño Web
-    (2, 3, 4, 'Iniciado'),     -- Software
-    (2, 11, 5, 'Iniciado'),    -- Bases de Datos
-    (2, 18, 2, 'Iniciado'),    -- Desarrollo Web Avanzado
+    (2, 3, 4, 'Pendiente'),     -- Software
+    (2, 11, 5, 'Pendiente'),    -- Bases de Datos
+    (2, 18, 2, 'Pendiente'),    -- Desarrollo Web Avanzado
 
     -- Matriz 3: Seguridad Integral TI
     (3, 4, 3, 'En proceso'),   -- Seguridad Informática
-    (3, 12, 3, 'Iniciado'),    -- Redes de Computadoras
-    (3, 16, 1, 'Iniciado'),    -- Sistemas Operativos
-    (3, 19, 3, 'Iniciado'),    -- Computación en la Nube
+    (3, 12, 3, 'Pendiente'),    -- Redes de Computadoras
+    (3, 16, 1, 'Pendiente'),    -- Sistemas Operativos
+    (3, 19, 3, 'Pendiente'),    -- Computación en la Nube
 
     -- Matriz 4: Soluciones Educativas Digitales
     (4, 5, 4, 'En proceso'),   -- Diseño de Soluciones Educativas
-    (4, 2, 2, 'Iniciado'),     -- Diseño Web
-    (4, 14, 4, 'Iniciado'),    -- Inteligencia Artificial
-    (4, 15, 4, 'Iniciado'),    -- Desarrollo Móvil
+    (4, 2, 2, 'Pendiente'),     -- Diseño Web
+    (4, 14, 4, 'Pendiente'),    -- Inteligencia Artificial
+    (4, 15, 4, 'Pendiente'),    -- Desarrollo Móvil
 
     -- Matriz 5: Base de Datos y Cloud
     (5, 11, 5, 'En proceso'),  -- Bases de Datos
-    (5, 19, 5, 'Iniciado'),    -- Computación en la Nube
-    (5, 12, 3, 'Iniciado'),    -- Redes de Computadoras
-    (5, 13, 4, 'Iniciado');    -- Programación Orientada a Objetos
+    (5, 19, 5, 'Pendiente'),    -- Computación en la Nube
+    (5, 12, 3, 'Pendiente'),    -- Redes de Computadoras
+    (5, 13, 4, 'Pendiente');    -- Programación Orientada a Objetos
 
 GO
 
--- REGISTROS EN LA TABLA DESCRIPCIONASIGNATURAMATRIZ
-INSERT INTO DESCRIPCIONASIGNATURAMATRIZ (fk_matriz_asignatura, descripcion, accion_integradora, tipo_evaluacion)
+-- REGISTROS EN LA TABLA SEMANASASIGNATURAMATRIZ
+INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, descripcion, accion_integradora, tipo_evaluacion, fecha_inicio, fecha_fin, estado)
 VALUES 
-    -- Descripciones para Matriz 1: Hardware y Software
-    (1, 'Configuración de hardware para sistemas embebidos', 'Selección e instalación de componentes físicos', 'Práctica'),
-    (2, 'Desarrollo de controladores y software de bajo nivel', 'Programación de interfaces hardware-software', 'Proyecto'),
-    (3, 'Configuración de SO para dispositivos IoT', 'Optimización de sistema operativo para hardware específico', 'Técnica'),
-    (4, 'Integración de sensores y actuadores IoT', 'Prototipo de sistema IoT con comunicación wireless', 'Proyecto'),
+    -- Descripciones para Matriz 1: Hardware y Software (Asignatura 1 - 14 semanas)
+    (1, 'Semana 1', 'Configuración de hardware para sistemas embebidos', 'Selección e instalación de componentes físicos', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (1, 'Semana 2', 'Introducción a los sistemas operativos embebidos', 'Instalación y configuración de SO básico', 'Práctica', '2025-08-18', '2025-08-24', 'Pendiente'),
+    (1, 'Semana 3', 'Comunicación serial y protocolos básicos', 'Configuración de comunicación UART', 'Práctica', '2025-08-25', '2025-08-31', 'Pendiente'),
+    (1, 'Semana 4', 'Sensores y actuadores digitales', 'Interfaz con sensores y actuadores simples', 'Práctica', '2025-09-01', '2025-09-07', 'Pendiente'),
+    (1, 'Semana 5', 'Sensores analógicos y conversión AD', 'Lectura y procesamiento de señales analógicas', 'Práctica', '2025-09-08', '2025-09-14', 'Pendiente'),
+    (1, 'Semana 6', 'Comunicación I2C y SPI', 'Configuración de buses de comunicación avanzados', 'Práctica', '2025-09-15', '2025-09-21', 'Pendiente'),
+    (1, 'Semana 7', 'Interrupciones y manejo de eventos', 'Programación de rutinas de interrupción', 'Práctica', '2025-09-22', '2025-09-28', 'Pendiente'),
+    (1, 'Semana 8', 'Gestión de energía y sleep modes', 'Optimización del consumo energético', 'Práctica', '2025-09-29', '2025-10-05', 'Pendiente'),
+    (1, 'Semana 9', 'Comunicación wireless básica', 'Configuración de módulos RF simples', 'Práctica', '2025-10-06', '2025-10-12', 'Pendiente'),
+    (1, 'Semana 10', 'Protocolos de internet embebidos', 'Implementación de TCP/IP básico', 'Práctica', '2025-10-13', '2025-10-19', 'Pendiente'),
+    (1, 'Semana 11', 'Seguridad en sistemas embebidos', 'Implementación de medidas de seguridad básicas', 'Práctica', '2025-10-20', '2025-10-26', 'Pendiente'),
+    (1, 'Semana 12', 'Pruebas y depuración de sistemas', 'Ejecución de pruebas unitarias y de integración', 'Práctica', '2025-10-27', '2025-11-02', 'Pendiente'),
+    (1, 'Semana 13', 'Optimización de performance', 'Ajuste de parámetros para mejor rendimiento', 'Práctica', '2025-11-03', '2025-11-09', 'Pendiente'),
+    (1, 'Semana 14', 'Proyecto final integrador', 'Desarrollo del prototipo final del sistema', 'Proyecto', '2025-11-10', '2025-11-16', 'Pendiente'),
+
+    -- Asignatura 2 - 14 semanas
+    (2, 'Semana 1', 'Desarrollo de controladores y software de bajo nivel', 'Programación de interfaces hardware-software', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (2, 'Semana 2', 'HTML5 y estructura semántica', 'Desarrollo de estructura HTML5 semántica', 'Práctica', '2025-08-18', '2025-08-24', 'Pendiente'),
+    (2, 'Semana 3', 'CSS3 y estilos avanzados', 'Aplicación de estilos CSS3 modernos', 'Práctica', '2025-08-25', '2025-08-31', 'Pendiente'),
+    (2, 'Semana 4', 'Framework CSS (Bootstrap/Tailwind)', 'Implementación de framework CSS elegido', 'Práctica', '2025-09-01', '2025-09-07', 'Pendiente'),
+    (2, 'Semana 5', 'JavaScript básico y DOM', 'Manipulación del DOM con JavaScript', 'Práctica', '2025-09-08', '2025-09-14', 'Pendiente'),
+    (2, 'Semana 6', 'JavaScript avanzado y ES6+', 'Uso de características modernas de JavaScript', 'Práctica', '2025-09-15', '2025-09-21', 'Pendiente'),
+    (2, 'Semana 7', 'APIs REST y consumo de datos', 'Consumo de APIs REST desde frontend', 'Práctica', '2025-09-22', '2025-09-28', 'Pendiente'),
+    (2, 'Semana 8', 'Framework frontend (React/Vue)', 'Introducción al framework seleccionado', 'Práctica', '2025-09-29', '2025-10-05', 'Pendiente'),
+    (2, 'Semana 9', 'Estado y gestión de datos', 'Implementación de gestión de estado', 'Práctica', '2025-10-06', '2025-10-12', 'Pendiente'),
+    (2, 'Semana 10', 'Routing y navegación SPA', 'Configuración de sistema de rutas', 'Práctica', '2025-10-13', '2025-10-19', 'Pendiente'),
+    (2, 'Semana 11', 'Testing frontend', 'Implementación de pruebas unitarias', 'Práctica', '2025-10-20', '2025-10-26', 'Pendiente'),
+    (2, 'Semana 12', 'Optimización y performance', 'Optimización de carga y rendimiento', 'Práctica', '2025-10-27', '2025-11-02', 'Pendiente'),
+    (2, 'Semana 13', 'Deployment y CI/CD', 'Configuración de pipeline de deployment', 'Práctica', '2025-11-03', '2025-11-09', 'Pendiente'),
+    (2, 'Semana 14', 'Proyecto final frontend', 'Desarrollo de aplicación web completa', 'Proyecto', '2025-11-10', '2025-11-16', 'Pendiente'),
+
+    -- Asignatura 3 - 1 semana
+    (3, 'Semana 1', 'Configuración de SO para dispositivos IoT', 'Optimización de sistema operativo para hardware específico', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
+
+    -- Asignatura 4 - 1 semana
+    (4, 'Semana 1', 'Integración de sensores y actuadores IoT', 'Prototipo de sistema IoT con comunicación wireless', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
 
     -- Descripciones para Matriz 2: Desarrollo Web Fullstack
-    (5, 'Diseño de UI/UX para aplicación web responsive', 'Creación de sistema de diseño y componentes', 'Portafolio'),
-    (6, 'Desarrollo de arquitectura backend escalable', 'Implementación de microservicios y APIs', 'Proyecto'),
-    (7, 'Diseño y optimización de base de datos relacional', 'Modelado ER y consultas optimizadas', 'Técnica'),
-    (8, 'Implementación de features avanzadas frontend', 'SPA con frameworks modernos y state management', 'Proyecto'),
+    (5, 'Semana 1', 'Diseño de UI/UX para aplicación web responsive', 'Creación de sistema de diseño y componentes', 'Portafolio', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (6, 'Semana 1', 'Desarrollo de arquitectura backend escalable', 'Implementación de microservicios y APIs', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (7, 'Semana 1', 'Diseño y optimización de base de datos relacional', 'Modelado ER y consultas optimizadas', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (8, 'Semana 1', 'Implementación de features avanzadas frontend', 'SPA con frameworks modernos y state management', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
 
     -- Descripciones para Matriz 3: Seguridad Integral TI
-    (9, 'Análisis de vulnerabilidades y pentesting', 'Auditoría de seguridad y reporte de findings', 'Documental'),
-    (10, 'Seguridad perimetral y configuración de firewalls', 'Implementación de políticas de red seguras', 'Práctica'),
-    (11, 'Hardening de sistemas operativos', 'Configuración segura de SO y servicios', 'Técnica'),
-    (12, 'Seguridad en infraestructura cloud', 'Configuración de IAM y seguridad en la nube', 'Práctica'),
+    (9,  'Semana 1', 'Análisis de vulnerabilidades y pentesting', 'Auditoría de seguridad y reporte de findings', 'Documental', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (10, 'Semana 1', 'Seguridad perimetral y configuración de firewalls', 'Implementación de políticas de red seguras', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (11, 'Semana 1', 'Hardening de sistemas operativos', 'Configuración segura de SO y servicios', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (12, 'Semana 1', 'Seguridad en infraestructura cloud', 'Configuración de IAM y seguridad en la nube', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
 
     -- Descripciones para Matriz 4: Soluciones Educativas Digitales
-    (13, 'Diseño de experiencias de aprendizaje digital', 'Metodología para cursos online efectivos', 'Documental'),
-    (14, 'Desarrollo de interfaz educativa intuitiva', 'Prototipo de plataforma educativa', 'Portafolio'),
-    (15, 'Implementación de chatbots educativos con IA', 'Asistente virtual para soporte estudiantil', 'Proyecto'),
-    (16, 'Desarrollo de app móvil educativa', 'Aplicación nativa para aprendizaje en movilidad', 'Proyecto'),
+    (13, 'Semana 1', 'Diseño de experiencias de aprendizaje digital', 'Metodología para cursos online efectivos', 'Documental', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (14, 'Semana 1', 'Desarrollo de interfaz educativa intuitiva', 'Prototipo de plataforma educativa', 'Portafolio', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (15, 'Semana 1', 'Implementación de chatbots educativos con IA', 'Asistente virtual para soporte estudiantil', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (16, 'Semana 1', 'Desarrollo de app móvil educativa', 'Aplicación nativa para aprendizaje en movilidad', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
 
     -- Descripciones para Matriz 5: Base de Datos y Cloud
-    (17, 'Diseño de esquemas de BD para aplicaciones cloud', 'Arquitectura de datos distribuidos', 'Técnica'),
-    (18, 'Migración de bases de datos a entornos cloud', 'Estrategia de migración y optimización', 'Proyecto'),
-    (19, 'Configuración de red segura para BD cloud', 'VPN y conectividad segura para datos', 'Práctica'),
-    (20, 'Desarrollo de aplicaciones con persistencia cloud', 'Software con acceso a BD en la nube', 'Proyecto');
+    (17, 'Semana 1', 'Diseño de esquemas de BD para aplicaciones cloud', 'Arquitectura de datos distribuidos', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (18, 'Semana 1', 'Migración de bases de datos a entornos cloud', 'Estrategia de migración y optimización', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (19, 'Semana 1', 'Configuración de red segura para BD cloud', 'VPN y conectividad segura para datos', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (20, 'Semana 1', 'Desarrollo de aplicaciones con persistencia cloud', 'Software con acceso a BD en la nube', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente');
 
 GO
 --------------------------------------------------------------------------------------------------------------------

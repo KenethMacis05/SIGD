@@ -43,6 +43,8 @@ namespace capa_datos
                                 nombre_profesor = dr["profesor"].ToString(),
                                 correo_profesor = dr["correo"].ToString(),
                                 estado = dr["estado"].ToString(),
+                                semanas_finalizadas = dr["semanas_finalizadas"] != DBNull.Value ? Convert.ToInt32(dr["semanas_finalizadas"]) : 0,
+                                total_semanas = dr["total_semanas"] != DBNull.Value ? Convert.ToInt32(dr["total_semanas"]) : 0,
                                 fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                             });
                         }
@@ -186,6 +188,49 @@ namespace capa_datos
             }
 
             return resultado;
+        }
+
+        public MATRIZASIGNATURA ObtenerAsignaturaPorId(int id)
+        {
+            MATRIZASIGNATURA asignatura = new MATRIZASIGNATURA();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerAsignaturaAsignadaPorId", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("IdMatrizAsignatura", id);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        if (dr.Read())
+                        {
+                            asignatura = new MATRIZASIGNATURA()
+                            {
+                                id_matriz_asignatura = Convert.ToInt32(dr["id_matriz_asignatura"]),
+                                fk_matriz_integracion = Convert.ToInt32(dr["fk_matriz_integracion"]),
+                                fk_asignatura = Convert.ToInt32(dr["fk_asignatura"]),
+                                codigo_asignatura = dr["codigo"].ToString(),
+                                nombre_asignatura = dr["asignatura"].ToString(),
+                                fk_profesor_asignado = Convert.ToInt32(dr["fk_profesor_asignado"]),
+                                nombre_profesor = dr["profesor"].ToString(),
+                                correo_profesor = dr["correo"].ToString(),
+                                estado = dr["estado"].ToString(),
+                                fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
+                            };
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener la asignatura por ID: " + ex.Message);
+            }
+
+            return asignatura;
         }
     }
 }

@@ -102,12 +102,41 @@
                 <div class="row">
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Profesor</span>
-                            @Html.TextBoxFor(m => m.usuario, new
-                           {
-                               @class = "form-control",
-                               @disabled = "disabled"
-                           })
+                            <div class="input-group-text">Fecha de inicio</div>
+                            @{
+                                var fechaInicioValue = Model?.fecha_inicio.ToString("yyyy-MM-dd");
+
+                                if (fechaInicioValue == "0001-01-01")
+                                {
+                                    fechaInicioValue = DateTime.Today.ToString("yyyy-MM-dd");
+                                }
+                            }
+
+                            @if (Model.id_matriz_integracion != 0)
+                            {
+                                @Html.TextBoxFor(m => m.fecha_inicio, "{0:yyyy-MM-dd}", new
+                                {
+                                    @type = "date",
+                                    @class = "form-control",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La fecha de inicio es requerida')",
+                                    @oninput = "setCustomValidity('')",
+                                    @Value = fechaInicioValue,
+                                    disabled = "disabled"
+                                })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.fecha_inicio, "{0:yyyy-MM-dd}", new
+                                {
+                                    @type = "date",
+                                    @class = "form-control",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La fecha de inicio es requerida')",
+                                    @oninput = "setCustomValidity('')",
+                                    @Value = fechaInicioValue,
+                                })
+                            }
                         </div>
                     </div>
                     <div class="col col-md-4 col-sm-12">
@@ -129,24 +158,16 @@
                     </div>
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
-                            <span class="input-group-text">Inicio/Fin</span>
-                            @{
-                                var fecha = Model?.fecha_registro.ToString("yyyy-MM-dd");
-
-                                if (fecha == "0001-01-01")
-                                {
-                                    fecha = DateTime.Today.ToString("yyyy-MM-dd");
-                                }
-                            }
-
-                            @Html.TextBoxFor(m => m.fecha_registro, "{0:yyyy-MM-dd}", new
+                            <span class="input-group-text"># de semanas</span>
+                            @Html.TextBoxFor(m => m.numero_semanas, new
                             {
-                                @type = "date",
                                 @class = "form-control",
+                                type = "number",
+                                min = "1",
+                                max = "52",
                                 required = "required",
-                                @oninvalid = "this.setCustomValidity('La fecha de inicio es requerida')",
-                                @oninput = "setCustomValidity('')",
-                                @Value = fecha
+                                @oninvalid = "this.setCustomValidity('El número de semanas es requerido')",
+                                @oninput = "setCustomValidity('')"
                             })
                         </div>
                     </div>
@@ -207,22 +228,46 @@
                 </div>
             </div>
 
-            <!--Competencias y Objetivos-->
+            <!-- Competencias -->
             <div class="tab-pane fade" id="competencias" role="tabpanel" aria-labelledby="competencias-tab">
                 <div class="row">
                     <div class="col col-md-12 col-sm-12 mb-3">
                         <div class="card border-left-primary shadow-sm">
                             <div class="card-header">
                                 <i class="fa fa-lightbulb fa-lg text-primary me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Competencias</label>
+                                <label class="form-label fs-5 fw-medium mb-0">Competencias Genéricas</label>
                             </div>
                             <div class="card-body">
-                                @Html.TextAreaFor(m => m.competencias, 5, 50, new
+                                @Html.TextAreaFor(m => m.competencias_genericas, 5, 50, new
                                 {
                                     @class = "form-control",
-                                    id = "competenciasSummernote",
+                                    id = "competenciasGenericasSummernote",
                                     required = "required",
-                                    @oninvalid = "this.setCustomValidity('Las competencias son requeridas')",
+                                    @oninvalid = "this.setCustomValidity('Las competencias genéricas son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fa fa-lightbulb fa-lg text-primary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Competencias Específica</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.competencias_especificas, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "competenciasEspecificasSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las competencias genéricas son requeridas')",
                                     @oninput = "setCustomValidity('')",
                                     maxlength = "1000"
                                 })
@@ -258,7 +303,7 @@
                 
             </div>
 
-            <!--objetivos y Contenidos-->
+            <!-- Objetivos -->
             <div class="tab-pane fade" id="objetivos" role="tabpanel" aria-labelledby="objetivos-tab">
                 <div class="row">
                     <div class="col col-md-12 col-sm-12 mb-3">

@@ -43,6 +43,8 @@ namespace capa_datos
                                     id_matriz_integracion = Convert.ToInt32(dr["id_matriz_integracion"]),
                                     codigo = dr["codigo"].ToString(),
                                     nombre = dr["nombre"].ToString(),
+                                    numero_semanas = Convert.ToInt32(dr["numero_semanas"]),
+                                    fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
                                     area = dr["area_conocimiento"].ToString(),
                                     departamento = dr["departamento"].ToString(),
                                     carrera = dr["carrera"].ToString(),
@@ -128,11 +130,14 @@ namespace capa_datos
                                 usuario = dr["profesor_responsable"].ToString(),
                                 fk_periodo = Convert.ToInt32(dr["fk_periodo"]),
                                 periodo = dr["periodo"].ToString(),
-                                competencias = dr["competencias"].ToString(),
+                                competencias_genericas = dr["competencias_genericas"].ToString(),
+                                competencias_especificas = dr["competencias_especificas"].ToString(),
                                 objetivo_anio = dr["objetivo_anio"].ToString(),
                                 objetivo_semestre = dr["objetivo_semestre"].ToString(),
                                 objetivo_integrador = dr["objetivo_integrador"].ToString(),
                                 estrategia_integradora = dr["estrategia_integradora"].ToString(),
+                                numero_semanas = Convert.ToInt32(dr["numero_semanas"]),
+                                fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
                                 estado = Convert.ToBoolean(dr["estado"]),
                                 fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                             };
@@ -172,11 +177,14 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("FKAsignatura", matriz.fk_asignatura);
                     cmd.Parameters.AddWithValue("FKPeriodo", matriz.fk_periodo);
                     cmd.Parameters.AddWithValue("FKProfesor", matriz.fk_profesor);
-                    cmd.Parameters.AddWithValue("Competencias", matriz.competencias);
+                    cmd.Parameters.AddWithValue("CompetenciasGenericas", matriz.competencias_genericas);
+                    cmd.Parameters.AddWithValue("CompetenciasEspecificas", matriz.competencias_especificas);
                     cmd.Parameters.AddWithValue("ObjetivoAnio", matriz.objetivo_anio);
                     cmd.Parameters.AddWithValue("ObjetivoSemestre", matriz.objetivo_semestre);
                     cmd.Parameters.AddWithValue("ObjetivoIntegrador", matriz.objetivo_integrador);
                     cmd.Parameters.AddWithValue("EstrategiaIntegradora", matriz.estrategia_integradora);
+                    cmd.Parameters.AddWithValue("NumeroSemanas", matriz.numero_semanas);
+                    cmd.Parameters.AddWithValue("FechaInicio", matriz.fecha_inicio);
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
@@ -218,7 +226,8 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("FKAsignatura", matriz.fk_asignatura);
                     cmd.Parameters.AddWithValue("FKPeriodo", matriz.fk_periodo);
                     cmd.Parameters.AddWithValue("FKProfesor", matriz.fk_profesor);
-                    cmd.Parameters.AddWithValue("Competencias", matriz.competencias);
+                    cmd.Parameters.AddWithValue("CompetenciasGenericas", matriz.competencias_genericas);
+                    cmd.Parameters.AddWithValue("CompetenciasEspecificas", matriz.competencias_especificas);
                     cmd.Parameters.AddWithValue("ObjetivoAnio", matriz.objetivo_anio);
                     cmd.Parameters.AddWithValue("ObjetivoSemestre", matriz.objetivo_semestre);
                     cmd.Parameters.AddWithValue("ObjetivoIntegrador", matriz.objetivo_integrador);

@@ -19,5 +19,7 @@ namespace capa_entidad
         public string nombre_asignatura { get; set; }
         public string nombre_profesor { get; set; }
         public string correo_profesor { get; set; }
+        public int semanas_finalizadas { get; set; }
+        public int total_semanas { get; set; }
     }
 }

@@ -180,12 +180,7 @@ const dataTableOptions = {
         },
         { data: "codigo", title: "Codigo" },
         { data: "nombre", title: "Nombre" },
-        {
-            data: "fecha_registro",
-            render: function (data, type, row) {
-                return formatASPNetDate(data, false);
-            }, title: "Inicio/Fin"
-        },
+        { data: "numero_semanas", title: "# de Semanas" },
         { data: "periodo", title: "Periodo" },
         { data: "carrera", title: "Carrera" },
         {
@@ -201,7 +196,8 @@ const dataTableOptions = {
 
 $(document).ready(function () {
     dataTable = $("#datatable").DataTable(dataTableOptions);
-    $('#competenciasSummernote').summernote(summernoteConfig);
+    $('#competenciasGenericasSummernote').summernote(summernoteConfig);
+    $('#competenciasEspecificasSummernote').summernote(summernoteConfig);
     $('#estrategiaIntegradoraSummernote').summernote(summernoteConfig);
     $('#objetivoAnioSummernote').summernote(summernoteConfig);
     $('#objetivoSemestreSummernote').summernote(summernoteConfig);

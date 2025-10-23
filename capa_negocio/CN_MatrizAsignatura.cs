@@ -199,5 +199,10 @@ namespace capa_negocio
             bool eliminado = CD_MatrizAsignatura.Eliminar(id_matriz_asignatura, fk_profesor_propietario, out mensaje);
             return eliminado ? 1 : 0;
         }
+
+        public MATRIZASIGNATURA ObtenerAsignaturaDelaMatrizPorId(int id)
+        {
+            return CD_MatrizAsignatura.ObtenerAsignaturaPorId(id);
+        }
     }
 }

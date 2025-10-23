@@ -615,6 +615,7 @@
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\PlanClasesDiario.js" />
     <Content Include="Scripts\Views\Roles.js" />
+    <Content Include="Scripts\Views\SemanasAsignatura.js" />
     <Content Include="Scripts\Views\UserConfig.js" />
     <Content Include="Scripts\Views\Usuarios.js" />
     <Content Include="Web.config" />
@@ -731,6 +732,7 @@
     <Content Include="Views\Planificacion\EditarMatrizIntegracion.cshtml" />
     <Content Include="Views\Planificacion\_FormularioMatrizIntegradora.cshtml" />
     <Content Include="Views\Planificacion\AsignarAsignaturasMatrizIntegracion.cshtml" />
+    <Content Include="Views\Planificacion\SemanasAsignatura.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

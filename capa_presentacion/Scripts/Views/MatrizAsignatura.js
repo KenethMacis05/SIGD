@@ -24,8 +24,8 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
     var color = '';
     var icono = '';
 
-    if (matrizAsignatura.estado === 'Iniciado') {
-        color = 'warning';
+    if (matrizAsignatura.estado === 'Pendiente') {
+        color = 'secondary';
         icono = 'fa-play-circle';
     } else if (matrizAsignatura.estado === 'En proceso') {
         color = 'primary';
@@ -35,13 +35,18 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
         icono = 'fa-check-circle';
     }
 
+    // Calcular progreso
+    var porcentajeProgreso = matrizAsignatura.total_semanas > 0
+        ? Math.round((matrizAsignatura.semanas_finalizadas / matrizAsignatura.total_semanas) * 100)
+        : 0;
+
     return `
     <div class="col-sm-12 col-md-6 col-lg-4 mb-3">
         <div class="card h-100 shadow-sm border-1">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
-                <span class="badge bg-secondary">${matrizAsignatura.codigo_asignatura}</span>
+                <span class="badge bg-${color}">${matrizAsignatura.codigo_asignatura}</span>
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                    <button class="btn btn-sm btn-outline-${color} dropdown-toggle" type="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-ellipsis-v"></i>
                     </button>
@@ -66,7 +71,11 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="flex-grow-1 me-3">
-                        <h5 class="card-title text-dark mb-2">${matrizAsignatura.nombre_asignatura}</h5>
+                        <h5 class="card-title text-dark mb-2 btn-titulo-asignatura"
+                            style="cursor: pointer;"
+                            data-id="${matrizAsignatura.id_matriz_asignatura}">
+                            ${matrizAsignatura.nombre_asignatura}
+                        </h5>
                         <div class="d-flex align-items-center">
                             <i class="fas fa-user-graduate text-muted me-2"></i>
                             <small class="text-muted">${matrizAsignatura.nombre_profesor}</small>
@@ -77,6 +86,24 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
                         <div class="small text-${color} fw-bold mt-1">${matrizAsignatura.estado}</div>
                     </div>
                 </div>
+                
+                <!-- Progreso de semanas -->
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted">Progreso de semanas</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar bg-${color}" 
+                             role="progressbar" 
+                             style="width: ${porcentajeProgreso}%;" 
+                             aria-valuenow="${porcentajeProgreso}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted fw-bold"> Semanas finalizadas: ${matrizAsignatura.semanas_finalizadas}/ Total de semanas:${matrizAsignatura.total_semanas} (${porcentajeProgreso}%)</small>
+                </div>
+                
                 <hr>
                 <div class="d-flex align-items-center">
                     <i class="fas fa-envelope text-muted me-2"></i>
@@ -86,6 +113,13 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
         </div>
     </div>`;
 }
+
+// Ir a la pantalla de las semanas de la asignatura:
+$(document).on('click', '.btn-titulo-asignatura', function (e) {
+    e.preventDefault();
+    const idMatrizAsignatura = $(this).data('id');
+    window.location.href = '/Planificacion/SemanasAsignatura/' + idMatrizAsignatura;
+});
 
 // Listar usuarios a asignar en el select2
 $.ajax({
