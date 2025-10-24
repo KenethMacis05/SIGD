@@ -2,7 +2,7 @@
     $.ajax({
         url: '/Planificacion/ListarSemanasDeAsignaturaPorId',
         type: 'GET',
-        data: { id: idAsignatura },
+        data: { idEncriptado: idAsignatura },
         dataType: 'json',
         beforeSend: () => $('#semanasAsignatura').LoadingOverlay("show"),
         success: function (response) {

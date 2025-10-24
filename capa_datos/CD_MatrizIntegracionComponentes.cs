@@ -75,16 +75,22 @@ namespace capa_datos
             int resultado;
             string mensaje;
 
-            // Verificar que el usuario tenga permisos sobre esta matriz
+            // Primero verificar si la matriz existe
+            var matriz = ObtenerMatrizCompleta(id, out resultado, out mensaje);
+            if (matriz == null)
+            {
+                return null; // La matriz no existe
+            }
+
+            // Luego verificar permisos
             var matrizResumen = Listar(id_usuario, out resultado, out mensaje);
             if (matrizResumen.Any(m => m.id_matriz_integracion == id))
             {
-                // Si el usuario tiene acceso, obtener los datos completos
-                return ObtenerMatrizCompleta(id, out resultado, out mensaje);
+                return matriz; // Usuario tiene permisos
             }
             else
             {
-                throw new Exception("No tiene permisos para acceder a esta matriz");
+                return null; // Usuario no tiene permisos
             }
         }
 

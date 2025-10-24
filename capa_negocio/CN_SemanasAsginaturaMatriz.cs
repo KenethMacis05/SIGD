@@ -39,8 +39,9 @@ namespace capa_negocio
         }
 
         // listar semanas de asignatura matriz
-        public List<SEMANASASIGNATURAMATRIZ> Listar(int fk_matriz_asignatura, out int resultado, out string mensaje)
+        public List<SEMANASASIGNATURAMATRIZ> Listar(string fk_matriz_asignatura_encriptada, out int resultado, out string mensaje)
         {
+            var fk_matriz_asignatura = Convert.ToInt32(new CN_Recursos().DecryptValue(fk_matriz_asignatura_encriptada));
             return CD_SemanasAsginaturaMatriz.Listar(fk_matriz_asignatura, out resultado, out mensaje);
         }
 

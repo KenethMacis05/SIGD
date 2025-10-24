@@ -37,6 +37,70 @@ namespace capa_negocio
             }
         }
 
+        private readonly string _iv = "qoeghkaihjolcxmd"; // 16 bytes para AES
+        private readonly string _key = "obiwqxupdhjtwqryexzclfvknmzshypg"; // 32 bytes para AES
+
+        public string EncryptValue(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+
+            try
+            {
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    byte[] clearTextBytes = Encoding.UTF8.GetBytes(value);
+
+                    using (Aes aes = Aes.Create())
+                    {
+                        aes.Key = Encoding.UTF8.GetBytes(_key);
+                        aes.IV = Encoding.UTF8.GetBytes(_iv);
+
+                        using (CryptoStream cs = new CryptoStream(ms, aes.CreateEncryptor(), CryptoStreamMode.Write))
+                        {
+                            cs.Write(clearTextBytes, 0, clearTextBytes.Length);
+                            cs.FlushFinalBlock();
+                        }
+                    }
+                    return Convert.ToBase64String(ms.ToArray());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al encriptar: {ex.Message}");
+            }
+        }
+
+        public string DecryptValue(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+
+            try
+            {
+                value = value.Replace(' ', '+');
+                byte[] encryptedTextBytes = Convert.FromBase64String(value);
+
+                using (MemoryStream ms = new MemoryStream())
+                {
+                    using (Aes aes = Aes.Create())
+                    {
+                        aes.Key = Encoding.UTF8.GetBytes(_key);
+                        aes.IV = Encoding.UTF8.GetBytes(_iv);
+
+                        using (CryptoStream cs = new CryptoStream(ms, aes.CreateDecryptor(), CryptoStreamMode.Write))
+                        {
+                            cs.Write(encryptedTextBytes, 0, encryptedTextBytes.Length);
+                            cs.FlushFinalBlock();
+                        }
+                    }
+                    return Encoding.UTF8.GetString(ms.ToArray());
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error al desencriptar: {ex.Message}");
+            }
+        }
+
         //Enviar correo
         public static bool EnviarCorreo(string correo, string asunto, string mensaje)
         {

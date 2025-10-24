@@ -38,8 +38,7 @@ namespace capa_presentacion.Controllers
                 int resultado;
                 string mensaje;
 
-                List<MATRIZINTEGRACIONCOMPONENTES> lst = new List<MATRIZINTEGRACIONCOMPONENTES>();
-                lst = CN_MatrizIntegradora.Listar(usuario.id_usuario, out resultado, out mensaje);
+                List<MATRIZINTEGRACIONCOMPONENTES> lst = CN_MatrizIntegradora.Listar(usuario.id_usuario, out resultado, out mensaje);
                 
                 return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
             }
@@ -58,10 +57,10 @@ namespace capa_presentacion.Controllers
 
         //Vista Editar de la Matriz de Integracion de Componentes
         [HttpGet]
-        public ActionResult EditarMatrizIntegracion(int id)
+        public ActionResult EditarMatrizIntegracion(string idEncriptado)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(id, usuario.id_usuario);
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(idEncriptado, usuario.id_usuario);
             if (matriz == null || usuario == null)
             {
                 ViewBag["Error"] = "La matriz de integración no existe.";
@@ -134,18 +133,28 @@ namespace capa_presentacion.Controllers
 
         //Vista Asignar asignaturas a la Matriz de Integracion de Componentes
         [HttpGet]
-        public ActionResult AsignarAsignaturasMatrizIntegracion(int id)
+        public ActionResult AsignarAsignaturasMatrizIntegracion(string idEncriptado)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
 
-            // Obtener la matriz principal
-            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(id, usuario.id_usuario);
-            if (matriz == null || usuario == null)
+            // Validar usuario autenticado
+            if (usuario == null)
             {
-                TempData["Error"] = "La matriz de integración no existe.";
+                TempData["Error"] = "Debe iniciar sesión para acceder a esta funcionalidad.";
+                return RedirectToAction("Login", "Autenticacion");
+            }
+
+            // Obtener la matriz principal
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(idEncriptado, usuario.id_usuario);
+
+            // Validar si la matriz existe
+            if (matriz == null)
+            {
+                TempData["Error"] = "La matriz de integración no existe o no tiene permisos para acceder a ella.";
                 return RedirectToAction("Matriz_de_Integracion");
             }
 
+            // Validar permisos específicos (redundante pero segura)
             if (matriz.fk_profesor != usuario.id_usuario)
             {
                 TempData["Error"] = "Usted no tiene permisos en esta Matriz.";
@@ -155,7 +164,7 @@ namespace capa_presentacion.Controllers
             // Obtener las asignaturas asignadas a esta matriz
             int resultado;
             string mensaje;
-            var asignaturas = CN_MatrizAsignatura.ListarAsignaturasPorMatriz(id, out resultado, out mensaje);
+            var asignaturas = CN_MatrizAsignatura.ListarAsignaturasPorMatriz(idEncriptado, out resultado, out mensaje);
 
             ViewBag.Asignaturas = asignaturas;
             ViewBag.MensajeAsignaturas = mensaje;
@@ -165,14 +174,14 @@ namespace capa_presentacion.Controllers
 
         // Endpoint para cargar asignaturas via AJAX
         [HttpGet]
-        public JsonResult ListarMatrizAsignaturaPorId(int id)
+        public JsonResult ListarMatrizAsignaturaPorId(string idEncriptado)
         {
             try
             {
                 int resultado;
                 string mensaje;
 
-                var asignaturas = CN_MatrizAsignatura.ListarAsignaturasPorMatriz(id, out resultado, out mensaje);
+                var asignaturas = CN_MatrizAsignatura.ListarAsignaturasPorMatriz(idEncriptado, out resultado, out mensaje);
 
                 return Json(new { success = resultado == 1, data = asignaturas, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
             }
@@ -238,13 +247,13 @@ namespace capa_presentacion.Controllers
         ///////////////////////////////////////////////////////////////////////////////////
 
         [HttpGet]
-        public ActionResult SemanasAsignatura(int id)
+        public ActionResult SemanasAsignatura(string idEncriptado)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
 
             // Obtener la asignatura selecionada de la matriz
-            MATRIZASIGNATURA asignatura = CN_MatrizAsignatura.ObtenerAsignaturaDelaMatrizPorId(id);
-            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(asignatura.fk_matriz_integracion, usuario.id_usuario);
+            MATRIZASIGNATURA asignatura = CN_MatrizAsignatura.ObtenerAsignaturaDelaMatrizPorId(idEncriptado);
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(asignatura.fk_matriz_integracion_encriptado, usuario.id_usuario);
 
             if (asignatura == null || usuario == null)
             {
@@ -260,7 +269,7 @@ namespace capa_presentacion.Controllers
             // Obtener las semanas de las asignatura asignada a esta matriz
             int resultado;
             string mensaje;
-            var semanas = CN_SemanasAsginaturaMatriz.Listar(id, out resultado, out mensaje);
+            var semanas = CN_SemanasAsginaturaMatriz.Listar(idEncriptado, out resultado, out mensaje);
 
             ViewBag.Semanas = semanas;
             ViewBag.MensajeSemanas = mensaje;
@@ -270,7 +279,7 @@ namespace capa_presentacion.Controllers
 
         // Endpoint para cargar asignaturas via AJAX
         [HttpGet]
-        public JsonResult ListarSemanasDeAsignaturaPorId(int id)
+        public JsonResult ListarSemanasDeAsignaturaPorId(string id)
         {
             try
             {

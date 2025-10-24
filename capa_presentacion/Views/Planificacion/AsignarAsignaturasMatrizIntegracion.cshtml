@@ -79,7 +79,8 @@
 @section scripts{
     <script>
         $(document).ready(function () {
-            cargarAsignaturasMatriz(@Model.id_matriz_integracion);
+            console.log("@Model.id_encriptado")
+            cargarAsignaturasMatriz("@Model.id_encriptado");
         });
     </script>
     <script src="@Url.Content("~/Scripts/Views/MatrizAsignatura.js")" type="text/javascript"></script>

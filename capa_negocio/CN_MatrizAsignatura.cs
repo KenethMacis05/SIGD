@@ -16,10 +16,29 @@ namespace capa_negocio
         CD_Usuarios CD_Usuario = new CD_Usuarios();
         CD_Asignatura CD_Asignatura = new CD_Asignatura();
         CD_MatrizIntegracionComponentes CD_MatrizIntegracion = new CD_MatrizIntegracionComponentes();
+        CN_Recursos CN_Recursos = new CN_Recursos();
 
-        public List<MATRIZASIGNATURA> ListarAsignaturasPorMatriz(int fk_matriz_integracion, out int resultado, out string mensaje)
+        public List<MATRIZASIGNATURA> ListarAsignaturasPorMatriz(string id_encriptado, out int resultado, out string mensaje)
         {
-            return CD_MatrizAsignatura.ListarAsignaturasPorMatriz(fk_matriz_integracion, out resultado, out mensaje);
+
+            int id = Convert.ToInt32(CN_Recursos.DecryptValue(id_encriptado));
+
+            var asignaturasMatriz = CD_MatrizAsignatura.ListarAsignaturasPorMatriz(id, out resultado, out mensaje);
+
+            // Solo agregar la propiedad encriptada a cada objeto existente
+            foreach (var asignatura in asignaturasMatriz)
+            {
+                asignatura.id_matriz_asignatura_encriptado = CN_Recursos.EncryptValue(asignatura.id_matriz_asignatura.ToString());
+                asignatura.fk_matriz_integracion_encriptado = CN_Recursos.EncryptValue(asignatura.fk_matriz_integracion.ToString());
+            }
+
+            return asignaturasMatriz;
+        }
+
+        public MATRIZASIGNATURA ObtenerAsignaturaDelaMatrizPorId(string idEncriptado)
+        {
+            int id = Convert.ToInt32(CN_Recursos.DecryptValue(idEncriptado));
+            return CD_MatrizAsignatura.ObtenerAsignaturaPorId(id);
         }
 
         public int Asignar(MATRIZASIGNATURA matriz, out string mensaje)
@@ -198,11 +217,6 @@ namespace capa_negocio
         {
             bool eliminado = CD_MatrizAsignatura.Eliminar(id_matriz_asignatura, fk_profesor_propietario, out mensaje);
             return eliminado ? 1 : 0;
-        }
-
-        public MATRIZASIGNATURA ObtenerAsignaturaDelaMatrizPorId(int id)
-        {
-            return CD_MatrizAsignatura.ObtenerAsignaturaPorId(id);
         }
     }
 }

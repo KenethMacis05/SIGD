@@ -71,13 +71,13 @@ $('#datatable tbody').on('click', '.btn-detalles', function () {
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
     var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarMatrizIntegracion?id=" + data.id_matriz_integracion;
+    window.location.href = "/Planificacion/EditarMatrizIntegracion?id=" + data.id_encriptado;
 });
 
 // Redirigir a la pantalla de asignar asignaturas
 $('#datatable tbody').on('click', '.btn-viewAsignar', function () {
     var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/AsignarAsignaturasMatrizIntegracion?id=" + data.id_matriz_integracion;
+    window.location.href = "/Planificacion/AsignarAsignaturasMatrizIntegracion?idEncriptado=" + data.id_encriptado;
 });
 
 // Botón de navegación Siguiente

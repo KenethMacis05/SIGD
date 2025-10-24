@@ -2,7 +2,7 @@
     $.ajax({
         url: '/Planificacion/ListarMatrizAsignaturaPorId',
         type: 'GET',
-        data: { id: idMatriz },
+        data: { idEncriptado: idMatriz },
         dataType: 'json',
         beforeSend: () => $('#matrizAsignatura').LoadingOverlay("show"),
         success: function (response) {
@@ -118,7 +118,7 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
 $(document).on('click', '.btn-titulo-asignatura', function (e) {
     e.preventDefault();
     const idMatrizAsignatura = $(this).data('id');
-    window.location.href = '/Planificacion/SemanasAsignatura/' + idMatrizAsignatura;
+    window.location.href = '/Planificacion/SemanasAsignatura/' + idEncriptado;
 });
 
 // Listar usuarios a asignar en el select2

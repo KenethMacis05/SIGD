@@ -4230,7 +4230,6 @@ BEGIN
         a.codigo ,
         a.nombre AS asignatura,
         ma.fk_profesor_asignado,
-        ma.fk_profesor_propietario,
         u.pri_nombre + ' ' + u.pri_apellido AS profesor,
         u.correo AS correo,
         ma.estado,

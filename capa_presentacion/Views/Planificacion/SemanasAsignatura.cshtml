@@ -117,7 +117,7 @@
 @section scripts{
     <script>
         $(document).ready(function () {
-            cargarSemanasDeLaAsignaturasDeLaMatriz(@Model.id_matriz_asignatura);
+            cargarSemanasDeLaAsignaturasDeLaMatriz("@Model.id_matriz_asignatura_encriptado");
             window.semanasData = @Html.Raw(Json.Encode(ViewBag.Semanas));
         });
     </script>

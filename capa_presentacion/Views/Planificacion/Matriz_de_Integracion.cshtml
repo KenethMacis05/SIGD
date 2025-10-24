@@ -47,14 +47,14 @@
             @if (TempData["Success"] != null)
             {
                 <text>
-                    showAlert("¡Éxito!", "@TempData["Success"]", "success");
+                    showAlert("¡Éxito!", "@Html.Raw(TempData["Success"])", "success");
                 </text>
             }
 
             @if (TempData["Error"] != null)
             {
                 <text>
-                    showAlert("¡Error!", "@TempData["Error"]", "error");
+                    showAlert("¡Error!", "@Html.Raw(TempData["Error"])", "error");
                 </text>
             }
         });

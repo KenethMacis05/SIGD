@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace capa_entidad
     public class MATRIZINTEGRACIONCOMPONENTES
     {
         public int id_matriz_integracion { get; set; }
+        [NotMapped] // Para Entity Framework, no mapear a la base de datos
+        public string id_encriptado { get; set; }
         public string nombre { get; set; }
         public string codigo { get; set; }
         public int fk_area { get; set; }
