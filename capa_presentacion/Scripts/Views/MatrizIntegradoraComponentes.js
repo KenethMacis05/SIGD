@@ -62,16 +62,10 @@ function obtenerNombreCampo($elemento) {
         'Campo sin nombre';
 }
 
-// Redirigir a la pantalla de detalles
-$('#datatable tbody').on('click', '.btn-detalles', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/DetalleMatrizIntegracion?id=" + data.id_matriz_integracion;
-});
-
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
     var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarMatrizIntegracion?id=" + data.id_encriptado;
+    window.location.href = "/Planificacion/EditarMatrizIntegracion?idEncriptado=" + data.id_encriptado;
 });
 
 // Redirigir a la pantalla de asignar asignaturas

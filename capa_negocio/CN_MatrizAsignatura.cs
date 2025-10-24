@@ -38,7 +38,13 @@ namespace capa_negocio
         public MATRIZASIGNATURA ObtenerAsignaturaDelaMatrizPorId(string idEncriptado)
         {
             int id = Convert.ToInt32(CN_Recursos.DecryptValue(idEncriptado));
-            return CD_MatrizAsignatura.ObtenerAsignaturaPorId(id);
+
+            var asignaturaMatriz = CD_MatrizAsignatura.ObtenerAsignaturaPorId(id);
+
+            asignaturaMatriz.id_matriz_asignatura_encriptado = CN_Recursos.EncryptValue(asignaturaMatriz.id_matriz_asignatura.ToString());
+            asignaturaMatriz.fk_matriz_integracion_encriptado = CN_Recursos.EncryptValue(asignaturaMatriz.fk_matriz_integracion.ToString());
+
+            return asignaturaMatriz;
         }
 
         public int Asignar(MATRIZASIGNATURA matriz, out string mensaje)

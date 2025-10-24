@@ -73,7 +73,7 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
                     <div class="flex-grow-1 me-3">
                         <h5 class="card-title text-dark mb-2 btn-titulo-asignatura"
                             style="cursor: pointer;"
-                            data-id="${matrizAsignatura.id_matriz_asignatura}">
+                            data-id="${matrizAsignatura.id_matriz_asignatura_encriptado}">
                             ${matrizAsignatura.nombre_asignatura}
                         </h5>
                         <div class="d-flex align-items-center">
@@ -117,8 +117,8 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
 // Ir a la pantalla de las semanas de la asignatura:
 $(document).on('click', '.btn-titulo-asignatura', function (e) {
     e.preventDefault();
-    const idMatrizAsignatura = $(this).data('id');
-    window.location.href = '/Planificacion/SemanasAsignatura/' + idEncriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = '/Planificacion/SemanasAsignatura?idEncriptado=' + idEncriptado;
 });
 
 // Listar usuarios a asignar en el select2
@@ -241,6 +241,7 @@ function asignarAsignatura() {
     var Matriz = {
         id_matriz_asignatura: $("#idMatrisAsignatura").val().trim(),
         fk_matriz_integracion: $("#fkMatrisIntegracion").val().trim(),
+        fk_matriz_integracion_encriptado: $("#fkMatrisIntegracionEncriptada").val().trim(),
         fk_asignatura: $("#asignaturas").val().trim(),
         fk_profesor_asignado: $("#profesores").val().trim(),
     };
@@ -262,7 +263,7 @@ function asignarAsignatura() {
                 const mensaje = data.Mensaje || (Matriz.id_matriz_asignatura == 0 ? "Asignatura asignada correctamente" : "Asignatura actualizada correctamente");
                 showAlert("¡Éxito!", mensaje, "success");
 
-                cargarAsignaturasMatriz(Matriz.fk_matriz_integracion);
+                cargarAsignaturasMatriz(Matriz.fk_matriz_integracion_encriptado);
 
                 // Limpiar formulario
                 $("#idMatrisAsignatura").val("0");
@@ -302,7 +303,7 @@ $(document).on('click', '.btn-eliminar-asignatura', function (e) {
                     if (response.Respuesta) {
                         showAlert("¡Eliminado!", response.Mensaje || "Asignatura eliminada correctamente", "success", true);
                         
-                        cargarAsignaturasMatriz($("#fkMatrisIntegracion").val().trim());
+                        cargarAsignaturasMatriz($("#fkMatrisIntegracionEncriptada").val().trim());
                         
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la asignatura", "error"); }
                 },

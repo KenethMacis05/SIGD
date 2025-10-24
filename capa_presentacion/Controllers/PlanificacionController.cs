@@ -279,14 +279,14 @@ namespace capa_presentacion.Controllers
 
         // Endpoint para cargar asignaturas via AJAX
         [HttpGet]
-        public JsonResult ListarSemanasDeAsignaturaPorId(string id)
+        public JsonResult ListarSemanasDeAsignaturaPorId(string idEncriptado)
         {
             try
             {
                 int resultado;
                 string mensaje;
 
-                var semanas = CN_SemanasAsginaturaMatriz.Listar(id, out resultado, out mensaje);
+                var semanas = CN_SemanasAsginaturaMatriz.Listar(idEncriptado, out resultado, out mensaje);
 
                 return Json(new { success = resultado == 1, data = semanas, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
             }
