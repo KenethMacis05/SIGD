@@ -22,6 +22,7 @@ VALUES
     ('Archivo', 'CarpetasCompartidas', 'Carpetas compartidas', 'Vista'),
     ('Archivo', 'ArchivosCompartidos', 'Archivos compartidos', 'Vista'),
     ('Planificacion', 'Matriz_de_Integracion', 'Matriz de integración', 'Vista'),
+	('Planificacion', 'Asignaturas_Asignadas', 'Asignaturas asignadas', 'Vista'),
     ('Planificacion', 'Plan_Didactico_Semestral', 'Plan didáctico semestral', 'Vista'),
     ('Planificacion', 'Plan_de_Clases_Diario', 'Plan de clases diario', 'Vista'),
     ('Reportes', 'Index', 'Reportes del sistema', 'Vista'),
@@ -159,23 +160,26 @@ GO
 INSERT INTO MENU (nombre, fk_controlador, icono, orden) 
 VALUES
     ('Dashboard', 1, 'fas fa-tachometer-alt', '1'),
-    ('Usuario', 2, 'fa fa-users', '2'),
-    ('Menus', 3, 'fas fa-bars', '3'),
-    ('Roles', 4, 'fas fa-user-shield', '4'),
-    ('Permisos', 5, 'fas fa-key', '5'),
-    ('Gestor de archivos', 6, 'fas fa-cloud', '6'),
-    ('Carpetas compartidas', 7, 'fas fa-share-square', '7'),
-    ('Archivos compartidos', 8, 'fas fa-share-square', '8'),
-    ('Matriz de Integracion', 9, 'fas fa-table', '9'),
-    ('Plan Didactico Semestral', 10, 'fas fa-book', '10'),
-    ('Plan de Clases Diario', 11, 'fas fa-chalkboard-teacher', '11'),
-    ('Catalogos', null, 'fa fa-bookmark', '12'),
-    ('Área de Conocimiento', 14, 'fa fa-graduation-cap', '12.1'),
-    ('Departamento', 15, 'fa fa-building', '12.2'),
-    ('Carrera', 16, 'fa fa-university', '12.3'),
-    ('Componente', 17, 'fa fa-puzzle-piece', '12.4'),
-    ('Periodo', 18, 'fa fa-calendar-alt', '12.5'),
-    ('Reportes', 12, 'far fa-file-pdf', '13')
+    ('Usuario', 2, 'fas fa-users', '2'),
+    ('Expediente academico', null, 'fas fa-folder-open', '3'), -- Menú padre
+        ('Gestor de archivos', 6, 'fas fa-folder', '3.1'),
+        ('Carpetas compartidas', 7, 'fas fa-folder-plus', '3.2'),
+        ('Archivos compartidos', 8, 'fas fa-share-alt', '3.3'),
+    ('Matriz de Integración', null, 'fas fa-project-diagram', '4'), -- Menú padre
+        ('Administrar matriz', 9, 'fas fa-cogs', '4.1'),
+        ('Asignaturas asignadas', 10, 'fas fa-tasks', '4.2'),
+    ('Plan Didactico Semestral', 11, 'fas fa-calendar-alt', '5'),
+    ('Plan de Clases Diario', 12, 'fas fa-chalkboard-teacher', '6'),
+    ('Catalogos', null, 'fas fa-th-list', '7'),  -- Menú padre
+        ('Menus', 3, 'fas fa-bars', '7.1'),
+        ('Roles', 4, 'fas fa-user-tag', '7.2'),
+        ('Permisos', 5, 'fas fa-key', '7.3'),
+        ('Área de Conocimiento', 15, 'fas fa-brain', '7.4'),
+        ('Departamento', 16, 'fas fa-building', '7.5'),
+        ('Carrera', 17, 'fas fa-graduation-cap', '7.6'),
+        ('Componente', 18, 'fas fa-puzzle-piece', '7.7'),
+        ('Periodo', 19, 'fas fa-calendar-week', '7.8'),
+    ('Reportes', 13, 'fas fa-chart-bar', '8')
 GO
 
 --------------------------------------------------------------------------------------------------------------------
@@ -262,23 +266,33 @@ GO
 INSERT INTO PERMISOS (fk_rol, fk_controlador)
 VALUES
     ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 1), -- Home/Index    
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 6), -- Gestor de Archivos
+
+	-- PERMISOS DEL MENÚ PADRE EXPEDIENTE ACADEMICO
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 6), -- Gestor de archivos
     ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 7), -- Carpetas Compartidas
     ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 8), -- Archivos Compartidos
+
+	-- PERMISOS DEL MENÚ PADRE MATRIZ DE INTEGRACIÓN
     ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 9), -- Matriz Integración
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 10), -- Plan Didáctico
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 11); -- Plan Clases
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 10), -- Asignaturas asignadas
+
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 11), -- Plan Didactico Semestral
+	((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 12); -- Plan de Clases Diario
 GO
 
 -- PROFESOR tiene acceso básico
 INSERT INTO PERMISOS (fk_rol, fk_controlador)
 VALUES
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 1), -- Home/Index
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 7), -- Carpetas Compartidas
+
+	-- PERMISOS DEL MENÚ PADRE EXPEDIENTE ACADEMICO
+	((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 7), -- Carpetas Compartidas
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 8), -- Archivos Compartidos
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 9), -- Matriz Integración
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Plan Didáctico
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11); -- Plan Clases
+
+    -- PERMISOS DEL MENÚ PADRE MATRIZ DE INTEGRACIÓN
+	((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Asignaturas asignadas
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11), -- Plan Didáctico
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 12); -- Plan Clases
 GO
 
 --------------------------------------------------------------------------------------------------------------------
@@ -297,23 +311,36 @@ GO
 INSERT INTO MENU_ROL (fk_rol, fk_menu)
 VALUES  
     ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 1), -- Dashboard
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 6), -- Gestor de Archivos
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 7), -- Carpetas Compartidas
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 8), -- Archivos Compartidos
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 9), -- Matriz Integración
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 10), -- Plan Didáctico
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 11); -- Plan Clases
+	-- PERMISOS DEL MENÚ PADRE EXPEDIENTE ACADEMICO
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 3), -- Menú padre
+		((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 4), -- Gestor de archivos
+		((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 5), -- Carpetas Compartidas
+		((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 6), -- Archivos Compartidos
+
+	-- PERMISOS DEL MENÚ PADRE MATRIZ DE INTEGRACIÓN
+	((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 7), -- Menú padre
+		((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 8), -- Matriz Integración
+		((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 9), -- Asignaturas asignadas
+
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 10), -- Plan Didactico Semestral
+	((SELECT id_rol FROM ROL WHERE descripcion = 'INTEGRADOR'), 11); -- Plan Clases
 GO
 
 -- PROFESOR ve solo algunos menús
 INSERT INTO MENU_ROL (fk_rol, fk_menu)
 VALUES  
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 1), -- Dashboard
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 7), -- Carpetas Compartidas
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 8), -- Archivos Compartidos
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 9), -- Matriz Integración
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Plan Didáctico
-    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11); -- Plan Clases
+    -- PERMISOS DEL MENÚ PADRE EXPEDIENTE ACADEMICO
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 3), -- Menú padre
+		((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 5), -- Carpetas Compartidas
+		((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 6), -- Archivos Compartidos
+
+	-- PERMISOS DEL MENÚ PADRE MATRIZ DE INTEGRACIÓN
+	((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 7), -- Menú padre
+		((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 9), -- Asignaturas asignadas
+
+    ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Plan Didactico Semestral
+	((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11); -- Plan Clases
 GO
 --------------------------------------------------------------------------------------------------------------------    
 

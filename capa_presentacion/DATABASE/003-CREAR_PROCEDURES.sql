@@ -4629,7 +4629,7 @@ END;
 GO
 
 -- Leer descripción de asignatura en matriz
-CREATE OR ALTER PROCEDURE sp_LeerSemanasAsignatura
+CREATE PROCEDURE sp_LeerSemanasAsignatura
     @FKMatrizAsignatura INT
 AS
 BEGIN
