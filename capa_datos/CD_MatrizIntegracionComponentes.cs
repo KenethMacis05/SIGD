@@ -80,17 +80,9 @@ namespace capa_datos
             if (matriz == null)
             {
                 return null; // La matriz no existe
-            }
-
-            // Luego verificar permisos
-            var matrizResumen = Listar(id_usuario, out resultado, out mensaje);
-            if (matrizResumen.Any(m => m.id_matriz_integracion == id))
+            } else
             {
-                return matriz; // Usuario tiene permisos
-            }
-            else
-            {
-                return null; // Usuario no tiene permisos
+                return matriz;
             }
         }
 

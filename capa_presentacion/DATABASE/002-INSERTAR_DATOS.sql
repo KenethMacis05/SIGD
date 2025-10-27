@@ -131,6 +131,7 @@ VALUES
     ('Planificacion', 'GuardarAsignaturasMatriz', 'Crear/Editar asignaturas asignadas', 'API'),
     ('Planificacion', 'ListarMatrizAsignaturaPorId', 'Listar la matriz de asignaturas', 'API'),
     ('Planificacion', 'EliminarMatrizAsignatura', 'Remover asignatura de la matriz', 'API'),
+    ('Planificacion', 'ListarAsignaturaAsignadas', 'Listar asignaturas asignadas del profesor', 'API'),
 
     -- 1.2 Semanas de la asignatura
     ('Planificacion', 'SemanasAsignatura', 'Vista de las semanas de la asignatura', 'Vista'),

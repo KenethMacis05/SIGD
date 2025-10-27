@@ -606,6 +606,7 @@
     <Content Include="Scripts\Views\Archivos.js" />
     <Content Include="Scripts\Views\AreaDeConocimiento.js" />
     <Content Include="Scripts\Views\Asignatura.js" />
+    <Content Include="Scripts\Views\AsignaturasAsignadas.js" />
     <Content Include="Scripts\Views\Carrera.js" />
     <Content Include="Scripts\Views\Departamento.js" />
     <Content Include="Scripts\Views\MatrizAsignatura.js" />
@@ -733,6 +734,7 @@
     <Content Include="Views\Planificacion\_FormularioMatrizIntegradora.cshtml" />
     <Content Include="Views\Planificacion\AsignarAsignaturasMatrizIntegracion.cshtml" />
     <Content Include="Views\Planificacion\SemanasAsignatura.cshtml" />
+    <Content Include="Views\Planificacion\Asignaturas_Asignadas.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

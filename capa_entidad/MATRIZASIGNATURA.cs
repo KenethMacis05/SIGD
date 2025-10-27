@@ -26,5 +26,7 @@ namespace capa_entidad
         public string correo_profesor { get; set; }
         public int semanas_finalizadas { get; set; }
         public int total_semanas { get; set; }
+        public string codigo_matriz { get; set; }
+        public string nombre_matriz { get; set; }
     }
 }

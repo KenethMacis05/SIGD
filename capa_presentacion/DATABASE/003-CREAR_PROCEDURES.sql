@@ -4243,32 +4243,49 @@ END;
 GO
 
 -- Leer asignaturas asignadas a un profesor
-CREATE PROCEDURE usp_LeerAsignaturasPorProfesor
+CREATE OR ALTER PROCEDURE usp_LeerAsignaturasPorProfesor
     @FKProfesorAsignado INT
 AS
 BEGIN
     SELECT 
         ma.id_matriz_asignatura,
         ma.fk_matriz_integracion,
+        ma.fk_asignatura,
+        ma.fk_profesor_asignado,
         mic.codigo AS codigo_matriz,
         mic.nombre AS nombre_matriz,
-        ma.fk_asignatura,
-        a.codigo AS codigo_asignatura,
-        a.nombre AS nombre_asignatura,
+        us.pri_nombre + ' ' + us.pri_apellido AS profesor,
+        us.correo,
+        a.codigo AS codigo,
+        a.nombre AS asignatura,
+        COUNT(CASE WHEN sam.estado = 'Finalizado' THEN 1 ELSE NULL END) AS semanas_finalizadas,
+        COUNT(sam.id_semana) AS total_semanas,
         ma.estado,
-        ma.fecha_registro,
-        (SELECT COUNT(*) 
-         FROM DESCRIPCIONASIGNATURAMATRIZ dam 
-         WHERE dam.fk_matriz_asignatura = ma.id_matriz_asignatura) AS tiene_descripcion
+        ma.fecha_registro
     FROM MATRIZASIGNATURA ma
     INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ma.fk_matriz_integracion = mic.id_matriz_integracion
+    INNER JOIN USUARIOS us ON us.id_usuario = mic.fk_profesor
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    LEFT JOIN SEMANASASIGNATURAMATRIZ sam ON ma.id_matriz_asignatura = sam.fk_matriz_asignatura
     WHERE ma.fk_profesor_asignado = @FKProfesorAsignado
     AND mic.estado = 1
-    ORDER BY ma.estado, ma.fecha_registro DESC;
+    GROUP BY 
+        ma.id_matriz_asignatura,
+        ma.fk_matriz_integracion,
+        ma.fk_asignatura,
+        ma.fk_profesor_asignado,
+        mic.codigo,
+        mic.nombre,
+        us.pri_nombre,
+        us.pri_apellido,
+        us.correo,
+        a.codigo,
+        a.nombre,
+        ma.estado,
+        ma.fecha_registro
+    ORDER BY a.nombre;
 END;
 GO
-
 -- Actualizar estado de asignatura en matriz
 CREATE PROCEDURE usp_ActualizarEstadoAsignaturaMatriz
     @IdMatrizAsignatura INT,

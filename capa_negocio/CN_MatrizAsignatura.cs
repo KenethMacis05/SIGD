@@ -35,6 +35,21 @@ namespace capa_negocio
             return asignaturasMatriz;
         }
 
+        public List<MATRIZASIGNATURA> ListarAsignaturasPorProfesor(int id, out int resultado, out string mensaje)
+        {
+
+            var asignaturasMatriz = CD_MatrizAsignatura.ListarAsignaturasPorProfesor(id, out resultado, out mensaje);
+
+            // Solo agregar la propiedad encriptada a cada objeto existente
+            foreach (var asignatura in asignaturasMatriz)
+            {
+                asignatura.id_matriz_asignatura_encriptado = CN_Recursos.EncryptValue(asignatura.id_matriz_asignatura.ToString());
+                asignatura.fk_matriz_integracion_encriptado = CN_Recursos.EncryptValue(asignatura.fk_matriz_integracion.ToString());
+            }
+
+            return asignaturasMatriz;
+        }
+
         public MATRIZASIGNATURA ObtenerAsignaturaDelaMatrizPorId(string idEncriptado)
         {
             int id = Convert.ToInt32(CN_Recursos.DecryptValue(idEncriptado));

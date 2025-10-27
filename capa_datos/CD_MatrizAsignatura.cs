@@ -62,6 +62,59 @@ namespace capa_datos
 
             return lista;
         }
+
+        public List<MATRIZASIGNATURA> ListarAsignaturasPorProfesor(int profesorAsignado, out int resultado, out string mensaje)
+        {
+            List<MATRIZASIGNATURA> lista = new List<MATRIZASIGNATURA>();
+            resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_LeerAsignaturasPorProfesor", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("@FKProfesorAsignado", profesorAsignado);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new MATRIZASIGNATURA()
+                            {
+                                id_matriz_asignatura = Convert.ToInt32(dr["id_matriz_asignatura"]),
+                                fk_matriz_integracion = Convert.ToInt32(dr["fk_matriz_integracion"]),
+                                fk_asignatura = Convert.ToInt32(dr["fk_asignatura"]),
+                                codigo_matriz = dr["codigo_matriz"].ToString(),
+                                nombre_matriz = dr["nombre_matriz"].ToString(),
+                                nombre_profesor = dr["profesor"].ToString(),
+                                correo_profesor = dr["correo"].ToString(),
+                                codigo_asignatura = dr["codigo"].ToString(),
+                                nombre_asignatura = dr["asignatura"].ToString(),
+                                fk_profesor_asignado = Convert.ToInt32(dr["fk_profesor_asignado"]),
+                                estado = dr["estado"].ToString(),
+                                semanas_finalizadas = dr["semanas_finalizadas"] != DBNull.Value ? Convert.ToInt32(dr["semanas_finalizadas"]) : 0,
+                                total_semanas = dr["total_semanas"] != DBNull.Value ? Convert.ToInt32(dr["total_semanas"]) : 0,
+                                fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
+                            });
+                        }
+                    }
+
+                    resultado = 1;
+                    mensaje = "Asignaturas cargadas correctamente";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = 0;
+                mensaje = "Error al listar las asignaturas: " + ex.Message;
+            }
+
+            return lista;
+        }
         
         public int AsignarAsignaturaMatriz(MATRIZASIGNATURA matriz, out string mensaje)
         {

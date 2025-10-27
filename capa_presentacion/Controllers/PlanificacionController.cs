@@ -191,6 +191,26 @@ namespace capa_presentacion.Controllers
             }
         }
 
+        [HttpGet]
+        public JsonResult ListarAsignaturaAsignadas()
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+            try
+            {
+                int resultado;
+                string mensaje;
+
+                var asignaturas = CN_MatrizAsignatura.ListarAsignaturasPorProfesor(usuario.id_usuario, out resultado, out mensaje);
+
+                return Json(new { success = resultado == 1, data = asignaturas, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, data = new List<MATRIZASIGNATURA>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
         [HttpPost]
         public JsonResult GuardarAsignaturasMatriz(MATRIZASIGNATURA matriz)
         {
@@ -266,6 +286,7 @@ namespace capa_presentacion.Controllers
                 TempData["Error"] = "Usted no tiene permisos en esta asignatura.";
                 return RedirectToAction("Matriz_de_Integracion");
             }
+
             // Obtener las semanas de las asignatura asignada a esta matriz
             int resultado;
             string mensaje;
@@ -320,6 +341,15 @@ namespace capa_presentacion.Controllers
             }
 
             return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        //  Asignaturas asignadas al docente  //
+        ///////////////////////////////////////////////////////////////////////////////////
+        
+        public ActionResult Asignaturas_Asignadas()
+        {
+            return View();
         }
 
         #endregion
