@@ -1,0 +1,37 @@
+﻿.btn-titulo-asignatura {
+    transition: color 0.2s ease;
+}
+
+/* Hover para estado Pendiente (secondary) */
+.estado-secondary.btn-titulo-asignatura:hover {
+    color: var(--bs-secondary) !important;
+}
+
+.estado-secondary.groud-asignatura:hover {
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2) !important;
+    border-color: var(--bs-secondary) !important;
+}
+
+/* Hover para estado En proceso (primary) */
+.estado-primary.btn-titulo-asignatura:hover {
+    color: var(--bs-primary) !important;
+}
+
+.estado-primary.groud-asignatura:hover {
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+/* Hover para estado Finalizado (success) */
+.estado-success.btn-titulo-asignatura:hover {
+    color: var(--bs-success) !important;
+}
+
+.estado-success.groud-asignatura:hover {
+    box-shadow: 0 5px 15px rgba(25, 135, 84, 0.2) !important;
+    border-color: var(--bs-success) !important;
+}
+
+.groud-asignatura {
+    transition: all 0.3s ease;
+}

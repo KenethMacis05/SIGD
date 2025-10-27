@@ -5,6 +5,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<link rel="stylesheet" href="@Url.Content("~/Content/Views/MatrizAsignatura.css")" />
+
 <!--Contenedor-->
 <div class="card shadow-sm mt-3">
     <div class="card-body">
@@ -53,9 +55,9 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input type="text" id="idMatrisAsignatura" name="idMatrisAsignatura" value="0" />
-                <input type="text" id="fkMatrisIntegracion" name="fkMatrisIntegracion" value="@Model.id_matriz_integracion" />
-                <input type="text" id="fkMatrisIntegracionEncriptada" name="fkMatrisIntegracionEncriptada" value="@Model.id_encriptado" />
+                <input type="hidden" id="idMatrisAsignatura" name="idMatrisAsignatura" value="0" />
+                <input type="hidden" id="fkMatrisIntegracion" name="fkMatrisIntegracion" value="@Model.id_matriz_integracion" />
+                <input type="hidden" id="fkMatrisIntegracionEncriptada" name="fkMatrisIntegracionEncriptada" value="@Model.id_encriptado" />
                 <div class="mb-3">
                     <label class="form-label">Docente</label>
                     <select class="form-control" id="profesores" name="profesores" style="width: 100%;" tabindex="-1"></select>
