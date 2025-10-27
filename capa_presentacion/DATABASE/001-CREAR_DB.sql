@@ -344,7 +344,7 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 	-- C.	Currículum
 	curriculum VARCHAR(255),
 
-	-- D.	Temas, horas y creditos	(En la tabla: TemaPlanificacionSemestral)
+	-- D.	Matriz del Componente: Temas, horas y creditos	(En la tabla: TemaPlanificacionSemestral)
 
 	-- E.	Competencias con las que va a contribuir
 	competencias VARCHAR(255),
