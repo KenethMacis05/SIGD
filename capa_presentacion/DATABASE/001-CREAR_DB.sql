@@ -229,6 +229,28 @@ CREATE TABLE PERIODO (
 
 GO
 
+-- (8) Tabla modalidad
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MODALIDAD')
+CREATE TABLE MODALIDAD (
+    id_modalidad INT PRIMARY KEY IDENTITY(1,1),
+    nombre VARCHAR(255),
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+);
+
+GO
+
+-- (9) Tabla turno
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TURNO')
+CREATE TABLE TURNO (
+    id_turno INT PRIMARY KEY IDENTITY(1,1),
+    nombre VARCHAR(255),
+    fk_modalidad INT NOT NULL,
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_TURNO_MODALIDAD FOREIGN KEY (fk_modalidad) REFERENCES MODALIDAD(id_modalidad)
+);
+
 -----------------------------------------------------Etapa 1: Matriz de Integracion de Componentes-----------------------------------------------------
 -- (1) Tabla MatrizIntegracionComponentes
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZINTEGRACIONCOMPONENTES')
@@ -244,6 +266,8 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     fk_departamento INT NOT NULL,
     -- Carrera
     fk_carrera INT NOT NULL,
+    -- Modalidad
+    fk_modalidad INT NOT NULL,
 	-- Componente curricular (as)
 	fk_asignatura INT NOT NULL,
 	-- Profesor
@@ -274,7 +298,8 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     CONSTRAINT FK_MIC_CARRERA FOREIGN KEY (fk_carrera) REFERENCES CARRERA(id_carrera),
     CONSTRAINT FK_MIC_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura),
     CONSTRAINT FK_MIC_USUARIO FOREIGN KEY (fk_profesor) REFERENCES Usuarios(id_usuario),
-    CONSTRAINT FK_MIC_PERIODO FOREIGN KEY (fk_periodo) REFERENCES Periodo(id_periodo)
+    CONSTRAINT FK_MIC_PERIODO FOREIGN KEY (fk_periodo) REFERENCES Periodo(id_periodo),
+    CONSTRAINT FK_MIC_MODALIDAD FOREIGN KEY (fk_modalidad) REFERENCES MODALIDAD(id_modalidad)
 );
 
 GO
@@ -295,15 +320,13 @@ CREATE TABLE MATRIZASIGNATURA (
 
 GO
 
--- (3) Tabla MatrizAsignaturaSemanas
+-- (3) Tabla SEMANASASIGNATURAMATRIZ
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'SEMANASASIGNATURAMATRIZ')
 CREATE TABLE SEMANASASIGNATURAMATRIZ (
     id_semana INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_asignatura INT NOT NULL,
     numero_semana VARCHAR(255),
     descripcion VARCHAR(255),
-    accion_integradora VARCHAR(255),
-    tipo_evaluacion VARCHAR(50),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
@@ -315,21 +338,18 @@ CREATE TABLE SEMANASASIGNATURAMATRIZ (
 -- (1) Tabla PlanDidacticoSemestral
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PLANDIDACTICOSEMESTRAL')
 CREATE TABLE PLANDIDACTICOSEMESTRAL (
-    id_plan_didactico_semestral INT PRIMARY KEY IDENTITY(1,1),	
+    id_plan_didactico INT PRIMARY KEY IDENTITY(1,1),	
 	fk_matriz_integracion INT NOT NULL,
     fk_profesor INT NOT NULL,
 	codigo_documento VARCHAR(255),	
-	nombre_plan_didactico_semestral VARCHAR(255),
+	nombre VARCHAR(255),
 
-	-- Datos Generales
+	-- Datos Generales (SE SACAN DE LA RELACIÓN CON LA MATRIZ)
 	-- 1. Area del conocimiento
 	-- 2. Departamento
 	-- 3. Carrera
 	-- 4. Profesor
-    fk_componente_curricular INT FOREIGN KEY REFERENCES ComponenteCurricular(id_componente_curricular),
-
-	-- 5. Año y semestre
-    fk_anio_semestre INT FOREIGN KEY REFERENCES Periodo(id_periodo),
+    -- 5. Año y semestre
 
 	-- 6. Fecha de Inicio / Fecha de Finalizacion
     fecha_inicio DATE NOT NULL,
@@ -344,73 +364,78 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 	-- C.	Currículum
 	curriculum VARCHAR(255),
 
-	-- D.	Temas, horas y creditos	(En la tabla: TemaPlanificacionSemestral)
+	-- D.	Matriz del componente = Temas, horas y creditos	(En la tabla: TemaPlanificacionSemestral)
 
 	-- E.	Competencias con las que va a contribuir
-	competencias VARCHAR(255),
+	competencias_genericas VARCHAR(255),
+	competencias_especificas VARCHAR(255),
 
-	-- F.	Objetivo integrador
+    -- F.	Objetivos de aprendizaje a lograr
+    objetivos_aprendizaje VARCHAR(255),
+
+	-- G.	Objetivo integrador
 	objetivo_integrador VARCHAR(255),
 
-	-- G.	Eje Transversal (En la tabla: EjeTransversal)
-	eje_transversal VARCHAR(255),
+	-- H.	Eje Transversal (En la tabla: EjeTransversal)
 
-	-- TABLA DE MATRIZ DE PLANIFICACIÓN SEMESTRAL (En la tabla: MatrizPlanificacionSemestral)
+    -- I.	Estrategia Metodológica
+    estrategia_metodologica VARCHAR(255),
+    
+    -- J.	Estrategia de Evaluación
+    estrategia_evaluacion VARCHAR(255),
 
-	-- h.	Bases Orientadoras de la Acción (BOA)
-	-- i.	Rúbrica (s) de evaluación
-	-- j.	Recursos
-	-- k.	Bibliografía fundamental
+    -- TABLA DE MATRIZ DE PLANIFICACIÓN SEMESTRAL (En la tabla: MatrizPlanificacionSemestral)
+
+    -- K. Recursos
+    recursos VARCHAR(255),
+
+    -- L. Bibliografía fundamental
 	bibliografia VARCHAR(255),
+
 	fecha_registro DATETIME DEFAULT GETDATE(),
 	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion),
 	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_USUARIO FOREIGN KEY (fk_profesor) REFERENCES USUARIOS(id_usuario),
-	CONSTRAINT FK_PDS_COMPONENTE FOREIGN KEY (fk_componente_curricular) REFERENCES ComponenteCurricular(id_componente_curricular),
 	CONSTRAINT FK_PDS_PERIODO FOREIGN KEY (fk_anio_semestre) REFERENCES Periodo(id_periodo),
 	CONSTRAINT FK_PDS_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura)
 );
 
 GO
 
--- (2) Tabla Temas de Planifiación Semestral (D. TEMAS, HORAS CREDITOS)
+-- (1.1) D.	Matriz del componente = Temas, horas y creditos
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TEMAPLANIFICACIONSEMESTRAL')
 CREATE TABLE TEMAPLANIFICACIONSEMESTRAL (
     id_tema INT PRIMARY KEY IDENTITY(1,1),
-    fk_plan_didactico_semestral INT NOT NULL,
+    fk_plan_didactico INT NOT NULL,
+    numero_tema INT,
     tema VARCHAR(100) NOT NULL,
     horas_teoricas INT,
     horas_laboratorio INT,
     horas_practicas INT,
     horas_investigacion INT,
-	P_LAB_INV INT,
+    CONSTRAINT FK_TEMA_PLANIFICACIONSEMESTRAL FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE
+);
+
+GO
+
+-- (1.1.1) Tabla para Créditos y P. LAB. INV
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CREDITOSTEMA')
+CREATE TABLE CREDITOSTEMA (
+    id_creditos INT PRIMARY KEY IDENTITY(1,1),
+    fk_tema_planificacion INT NOT NULL,
+    p_lab_inv INT,
     creditos INT,
-	CONSTRAINT FK_TEMAL_PLANNIFICACIONSEMESTRAL FOREIGN KEY (fk_plan_didactico_semestral) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico_semestral) ON DELETE CASCADE,
+    CONSTRAINT FK_CREDITOS_TEMAPLANIFICACION FOREIGN KEY (fk_tema_planificacion) REFERENCES TEMAPLANIFICACIONSEMESTRAL(id_tema) ON DELETE CASCADE
 );
 
-GO
-
--- (3) Tabla Competencia (E. COMPETENCIAS CON LAS QUE VA A CONTRIBUIR)
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'COMPETENCIAS')
-CREATE TABLE COMPETENCIA (
-    id_competencia INT PRIMARY KEY IDENTITY(1,1),    
-	fk_plan_didactico_semestral INT NOT NULL,
-    tipo VARCHAR(50) NOT NULL, -- Genérica o Específica
-    descripcion VARCHAR(255) NOT NULL
-	CONSTRAINT FK_COMPETENCIA_PDS FOREIGN KEY (fk_plan_didactico_semestral) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico_semestral) ON DELETE CASCADE,
-);
-
-GO
-
--- (4) Tabla Eje Transversal
+-- (1.2) H.	Eje Transversal
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'EJESTRANSVERSAL')
 CREATE TABLE EJESTRANSVERSAL (
     id_eje INT PRIMARY KEY IDENTITY(1,1),
-    fk_plan_didactico_semestral INT NOT NULL,
-    nombre VARCHAR(100) NOT NULL,
-    objetivo VARCHAR(255),
-    estrategia_metodologica VARCHAR(255),
-    estrategia_evaluacion VARCHAR(255),
-	CONSTRAINT FK_EJESTRANSVERSAL_PDS FOREIGN KEY (fk_plan_didactico_semestral) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico_semestral) ON DELETE CASCADE
+    fk_plan_didactico INT NOT NULL,
+    competencia_generica VARCHAR(100) NOT NULL,
+    tema_transversal VARCHAR(255),
+    valores_transversales VARCHAR(255),
+	CONSTRAINT FK_EJESTRANSVERSAL_PDS FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico_semestral) ON DELETE CASCADE
 );
 
 GO

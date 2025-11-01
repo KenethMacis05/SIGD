@@ -3638,6 +3638,223 @@ BEGIN
 END
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA LEER LAS MODALIDADES
+CREATE OR ALTER PROCEDURE usp_LeerModalidad
+AS
+BEGIN
+    SELECT 
+		id_modalidad,
+		nombre,
+        estado,
+        fecha_registro
+    FROM MODALIDAD
+	ORDER BY id_modalidad DESC
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UNA NUEVA MODALIDAD
+CREATE OR ALTER PROCEDURE usp_CrearModalidad
+    @Nombre VARCHAR(60),    
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si el nombre del área ya existe
+	IF EXISTS (SELECT * FROM MODALIDAD WHERE nombre = @Nombre)
+	BEGIN
+		SET @Mensaje = 'El nombre de la modalidada ya está en uso'
+		RETURN
+	END
+
+	INSERT INTO MODALIDAD (nombre) VALUES (@Nombre)
+    
+    SET @Resultado = SCOPE_IDENTITY()
+	SET @Mensaje = 'Modalidad registrada exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA MODIFICAR UNA MODALIDAD
+CREATE PROCEDURE usp_ActualizarModalidad
+    @IdModalidad INT,
+    @Nombre VARCHAR(60),
+    @Estado BIT,
+    @Resultado INT OUTPUT,
+	@Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+	SET @Mensaje = ''
+
+	-- Verificar si la modalidad existe
+	IF NOT EXISTS (SELECT 1 FROM MODALIDAD WHERE id_modalidad = @IdModalidad)
+	BEGIN
+		SET @Mensaje = 'La modalidad no existe'
+		RETURN
+	END
+
+	-- Verificar si el nombre de la modalidad ya existe (excluyendo al área actual)
+	IF EXISTS (SELECT 1 FROM MODALIDAD WHERE nombre = @Nombre AND id_modalidad != @IdModalidad)
+	BEGIN
+		SET @Mensaje = 'El nombre de la modalidad ingresada ya está en uso'
+		RETURN
+	END
+
+	UPDATE MODALIDAD
+    SET 
+        nombre = @Nombre,
+        estado = @Estado
+    WHERE id_modalidad = @IdModalidad
+   
+    SET @Resultado = 1
+	SET @Mensaje = 'Modalidad actualizada exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ELIMINAR UNA MODALIDAD
+CREATE PROCEDURE usp_EliminarModalidad
+    @IdModalidad INT,
+    @Resultado INT OUTPUT,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el área existe
+    IF NOT EXISTS (SELECT 1 FROM MODALIDAD WHERE id_modalidad = @IdModalidad)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'La modalidad no existe.'
+        RETURN
+    END
+
+    IF EXISTS (SELECT 1 FROM TURNO WHERE fk_modalidad = @IdModalidad)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'No se puede eliminar la modalidad porque está asociada a uno o más turnos.'
+        RETURN
+    END
+    
+    IF EXISTS (SELECT 1 FROM MODALIDAD WHERE id_modalidad = @IdModalidad)
+	BEGIN
+		DELETE FROM MODALIDAD WHERE id_modalidad = @IdModalidad
+		SET @Resultado = 1
+	END
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA LOS TURNOS
+CREATE OR ALTER PROCEDURE usp_LeerTurnos
+AS
+BEGIN
+    SELECT 
+        id_turno,
+        nombre,
+        estado,
+        fecha_registro
+    FROM TURNO
+    ORDER BY id_turno DESC
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA CREAR UN TURNO
+CREATE OR ALTER PROCEDURE usp_CrearTurno
+    @Nombre VARCHAR(60),  
+    @FKModalidad INT NOT NULL,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    SET @Mensaje = ''
+    -- Verificar si la modalidad existe
+    IF NOT EXISTS (SELECT 1 FROM MODALIDAD WHERE id_modalidad = @FKModalidad AND estado = 1)
+    BEGIN
+        SET @Mensaje = 'La modalidad no existe o está inactiva'
+        RETURN
+    END
+    -- Verificar si el nombre del turno ya existe
+    IF EXISTS (SELECT * FROM TURNO WHERE nombre = @Nombre)
+    BEGIN
+        SET @Mensaje = 'El nombre del turno ya está en uso'
+        RETURN
+    END
+    INSERT INTO TURNO (nombre, fk_modalidad) VALUES (@Nombre, @FKModalidad)
+    SET @Resultado = SCOPE_IDENTITY()
+    SET @Mensaje = 'Turno registrado exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ACTUALIZAR UN TURNO
+CREATE PROCEDURE usp_ActualizarTurno
+    @IdTurno INT,
+    @Nombre VARCHAR(60),
+    @FKModalidad INT NOT NULL,
+    @Estado BIT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    SET @Mensaje = ''
+    -- Verificar si la modalidad existe
+    IF NOT EXISTS (SELECT 1 FROM MODALIDAD WHERE id_modalidad = @FKModalidad AND estado = 1)
+    BEGIN
+        SET @Mensaje = 'La modalidad no existe o está inactiva'
+        RETURN
+    END
+    -- Verificar si el turno existe
+    IF NOT EXISTS (SELECT 1 FROM TURNO WHERE id_turno = @IdTurno)
+    BEGIN
+        SET @Mensaje = 'El turno no existe'
+        RETURN
+    END
+    -- Verificar si el nombre del turno ya existe (excluyendo el turno actual)
+    IF EXISTS (SELECT 1 FROM TURNO WHERE nombre = @Nombre AND id_turno != @IdTurno)
+    BEGIN
+        SET @Mensaje = 'El nombre del turno ingresado ya está en uso'
+        RETURN
+    END
+    UPDATE TURNO
+    SET 
+        nombre = @Nombre,
+        fk_modalidad = @FKModalidad,
+        estado = @Estado
+    WHERE id_turno = @IdTurno
+    SET @Resultado = 1
+    SET @Mensaje = 'Turno actualizado exitosamente'
+END
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA ELIMINAR UN TURNO
+CREATE PROCEDURE usp_EliminarTurno
+    @IdTurno INT,
+    @Resultado INT OUTPUT,
+    @Mensaje NVARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Verificar si el turno existe
+    IF NOT EXISTS (SELECT 1 FROM TURNO WHERE id_turno = @IdTurno)
+    BEGIN
+        SET @Resultado = 0 -- No se pudo realizar la operación
+        SET @Mensaje = 'El turno no existe.'
+        RETURN
+    END
+    
+    IF EXISTS (SELECT 1 FROM TURNO WHERE id_turno = @IdTurno)
+    BEGIN
+        DELETE FROM TURNO WHERE id_turno = @IdTurno
+        SET @Resultado = 1
+    END
+END
+GO
+
+----------------------------------------------------------------------------
+
 -- Crear Matriz de Integración
 CREATE PROCEDURE usp_CrearMatrizIntegracion
     @Nombre VARCHAR(255),

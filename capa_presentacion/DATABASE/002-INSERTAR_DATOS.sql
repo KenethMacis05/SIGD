@@ -479,6 +479,20 @@ GO
 INSERT INTO PERIODO (anio, semestre) VALUES ('2025', 'Semestre I'), ('2025', 'Semestre II')
 
 GO
+
+-- REGISTROS EN LA TABLA MODALIDAD
+INSERT INTO MODALIDAD (nombre) VALUES ('Presencial'), ('Encuentro'), ('A distancia')
+
+GO
+
+-- REGISTROS EN LA TABLA TURNO
+INSERT INTO TURNO (nombre, fk_modalidad) 
+VALUES ('Matutino', 1), ('Vespertino', 1), 
+        ('Sabatino', 2), ('Profecionalización', 2),
+        ('En linea', 2);
+
+GO
+
 --------------------------------------------------------------------------------------------------------------------
 
 --/////////////////////////////////PRUEBAS DE REGISTROS DE LAS TABLAS PRINCIPALES/////////////////////////////////--
@@ -591,10 +605,10 @@ VALUES
 GO
 
 -- REGISTROS EN LA TABLA SEMANASASIGNATURAMATRIZ
-INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, descripcion, accion_integradora, tipo_evaluacion, fecha_inicio, fecha_fin, estado)
+INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, descripcion, fecha_inicio, fecha_fin, estado)
 VALUES 
     -- Descripciones para Matriz 1: Hardware y Software (Asignatura 1 - 14 semanas)
-    (1, 'Semana 1', 'Configuración de hardware para sistemas embebidos', 'Selección e instalación de componentes físicos', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (1, 'Semana 1', 'Configuración de hardware para sistemas embebidos', '2025-08-11', '2025-08-17', 'Pendiente'),
     (1, 'Semana 2', 'Introducción a los sistemas operativos embebidos', 'Instalación y configuración de SO básico', 'Práctica', '2025-08-18', '2025-08-24', 'Pendiente'),
     (1, 'Semana 3', 'Comunicación serial y protocolos básicos', 'Configuración de comunicación UART', 'Práctica', '2025-08-25', '2025-08-31', 'Pendiente'),
     (1, 'Semana 4', 'Sensores y actuadores digitales', 'Interfaz con sensores y actuadores simples', 'Práctica', '2025-09-01', '2025-09-07', 'Pendiente'),
