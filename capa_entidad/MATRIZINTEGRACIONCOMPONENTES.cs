@@ -18,6 +18,7 @@ namespace capa_entidad
         public int fk_area { get; set; }
         public int fk_departamento { get; set; }
         public int fk_carrera { get; set; }
+        public int fk_modalidad { get; set; }
         public int fk_asignatura { get; set; }
         public int fk_periodo { get; set; }
         public int fk_profesor { get; set; }
@@ -34,6 +35,7 @@ namespace capa_entidad
         public string area { get; set; }
         public string departamento { get; set; }
         public string carrera { get; set; }
+        public string modalidad { get; set; }
         public string asignatura { get; set; }
         public string usuario { get; set; }
         public string periodo { get; set; }

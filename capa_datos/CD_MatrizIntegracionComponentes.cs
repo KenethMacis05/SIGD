@@ -48,6 +48,7 @@ namespace capa_datos
                                     area = dr["area_conocimiento"].ToString(),
                                     departamento = dr["departamento"].ToString(),
                                     carrera = dr["carrera"].ToString(),
+                                    modalidad = dr["modalidad"].ToString(),
                                     asignatura = dr["asignatura"].ToString(),
                                     usuario = dr["usuario"].ToString(),
                                     periodo = dr["periodo"].ToString(),
@@ -122,6 +123,8 @@ namespace capa_datos
                                 departamento = dr["departamento"].ToString(),
                                 fk_carrera = Convert.ToInt32(dr["fk_carrera"]),
                                 carrera = dr["carrera"].ToString(),
+                                fk_modalidad = Convert.ToInt32(dr["fk_modalidad"]),
+                                modalidad = dr["modalidad"].ToString(),
                                 fk_asignatura = Convert.ToInt32(dr["fk_asignatura"]),
                                 asignatura = dr["asignatura_principal"].ToString(),
                                 fk_profesor = Convert.ToInt32(dr["fk_profesor"]),
@@ -172,6 +175,7 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("FKArea", matriz.fk_area);
                     cmd.Parameters.AddWithValue("FKDepartamento", matriz.fk_departamento);
                     cmd.Parameters.AddWithValue("FKCarrera", matriz.fk_carrera);
+                    cmd.Parameters.AddWithValue("FKModalidad", matriz.fk_modalidad);
                     cmd.Parameters.AddWithValue("FKAsignatura", matriz.fk_asignatura);
                     cmd.Parameters.AddWithValue("FKPeriodo", matriz.fk_periodo);
                     cmd.Parameters.AddWithValue("FKProfesor", matriz.fk_profesor);
@@ -221,6 +225,7 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("FKArea", matriz.fk_area);
                     cmd.Parameters.AddWithValue("FKDepartamento", matriz.fk_departamento);
                     cmd.Parameters.AddWithValue("FKCarrera", matriz.fk_carrera);
+                    cmd.Parameters.AddWithValue("FKModalidad", matriz.fk_modalidad);
                     cmd.Parameters.AddWithValue("FKAsignatura", matriz.fk_asignatura);
                     cmd.Parameters.AddWithValue("FKPeriodo", matriz.fk_periodo);
                     cmd.Parameters.AddWithValue("FKProfesor", matriz.fk_profesor);

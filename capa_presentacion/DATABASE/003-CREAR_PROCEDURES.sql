@@ -4915,6 +4915,7 @@ BEGIN
         descripcion,
         fecha_inicio,
         fecha_fin,
+        tipo_semana,
         estado,
         fecha_registro
     FROM SEMANASASIGNATURAMATRIZ
@@ -4927,6 +4928,7 @@ CREATE PROCEDURE usp_ActualizarSemana
     @IdSemana INT,
     @Descripcion VARCHAR(MAX) = NULL,
     @Estado VARCHAR(50),
+    @TipoSemana VARCHAR(50) = NULL,
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -5009,6 +5011,7 @@ BEGIN
         UPDATE SEMANASASIGNATURAMATRIZ 
         SET 
             descripcion = ISNULL(@Descripcion, descripcion),
+            tipo_semana = ISNULL(@TipoSemana, tipo_semana),
             estado = @NuevoEstadoSemana
         WHERE id_semana = @IdSemana;
 
@@ -5413,6 +5416,8 @@ BEGIN
             d.nombre AS departamento,
             mic.fk_carrera,
             c.nombre AS carrera,
+            mic.fk_modalidad,
+            m.nombre AS modalidad,
             mic.fk_asignatura,
             asi_principal.nombre AS asignatura_principal,
             mic.fk_profesor,
@@ -5432,6 +5437,7 @@ BEGIN
         FROM MATRIZINTEGRACIONCOMPONENTES mic
         INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
         INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+        INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
         INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
         INNER JOIN ASIGNATURA asi_principal ON mic.fk_asignatura = asi_principal.id_asignatura
         INNER JOIN USUARIOS u_responsable ON mic.fk_profesor = u_responsable.id_usuario

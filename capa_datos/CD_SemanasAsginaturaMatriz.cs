@@ -38,10 +38,9 @@ namespace capa_datos
                                 fk_matriz_asignatura = Convert.ToInt32(dr["fk_matriz_asignatura"]),
                                 numero_semana = dr["numero_semana"].ToString(),
                                 descripcion = dr["descripcion"].ToString(),
-                                accion_integradora = dr["accion_integradora"].ToString(),
-                                tipo_evaluacion = dr["tipo_evaluacion"].ToString(),
                                 fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
                                 fecha_fin = Convert.ToDateTime(dr["fecha_fin"]),
+                                tipo_semana = dr["tipo_semana"].ToString(),
                                 estado = dr["estado"].ToString(),
                                 fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                             });
@@ -76,8 +75,7 @@ namespace capa_datos
                     // Parámetros de entrada
                     cmd.Parameters.AddWithValue("IdSemana", semana.id_semana);
                     cmd.Parameters.AddWithValue("Descripcion", semana.descripcion);
-                    cmd.Parameters.AddWithValue("AccionIntegradora", semana.accion_integradora);
-                    cmd.Parameters.AddWithValue("TipoEvaluacion", semana.tipo_evaluacion);
+                    cmd.Parameters.AddWithValue("TipoSemana", semana.tipo_semana);
                     cmd.Parameters.AddWithValue("Estado", semana.estado);
 
                     // Parámetros de salida
