@@ -507,6 +507,7 @@ INSERT INTO MATRIZINTEGRACIONCOMPONENTES (
     fk_asignatura,
     fk_profesor,
     fk_periodo,
+    fk_modalidad,
     competencias_genericas,
     competencias_especificas,
     objetivo_anio,
@@ -518,7 +519,7 @@ INSERT INTO MATRIZINTEGRACIONCOMPONENTES (
 )
 VALUES 
     ('MIC-001', 'Matriz de Integración Hardware y Software', 
-     1, 1, 1, 1, 1, 1,
+     1, 1, 1, 1, 1, 1, 1,
      'Integrar componentes físicos y lógicos para soluciones tecnológicas',
      'Integrar componentes físicos y lógicos para soluciones tecnológicas',
      'Desarrollar sistemas completos hardware-software',
@@ -528,7 +529,7 @@ VALUES
      14, '2025-08-11'),
 
     ('MIC-002', 'Matriz de Desarrollo Web Fullstack', 
-     2, 1, 1, 2, 1, 1,
+     2, 1, 1, 2, 1, 1, 1,
      'Competencias en desarrollo frontend, backend y bases de datos',
      'Competencias en desarrollo frontend, backend y bases de datos',
      'Dominar el stack completo de desarrollo web moderno',
@@ -538,7 +539,7 @@ VALUES
      14, '2025-08-11'),
 
     ('MIC-003', 'Matriz de Seguridad Integral TI', 
-     3, 1, 1, 4, 1, 1,
+     3, 1, 1, 4, 1, 1, 1,
      'Protección de infraestructura, datos y aplicaciones',
      'Protección de infraestructura, datos y aplicaciones',
      'Implementar seguridad en todas las capas tecnológicas',
@@ -548,7 +549,7 @@ VALUES
      14, '2025-08-11'),
 
     ('MIC-004', 'Matriz de Soluciones Educativas Digitales', 
-     2, 1, 1, 5, 1, 1,
+     2, 1, 1, 5, 1, 1, 1,
      'Diseño e implementación de tecnología educativa',
      'Diseño e implementación de tecnología educativa',
      'Crear soluciones digitales innovadoras para educación',
@@ -558,7 +559,7 @@ VALUES
      14, '2025-08-11'),
 
     ('MIC-005', 'Matriz de Base de Datos y Cloud', 
-     4, 1, 1, 11, 1, 1,
+     4, 1, 1, 11, 1, 1, 1,
      'Gestión de datos en entornos on-premise y cloud',
      'Gestión de datos en entornos on-premise y cloud',
      'Dominar tecnologías de datos tradicionales y modernas',
@@ -605,186 +606,269 @@ VALUES
 GO
 
 -- REGISTROS EN LA TABLA SEMANASASIGNATURAMATRIZ
-INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, descripcion, fecha_inicio, fecha_fin, estado)
+INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, descripcion, fecha_inicio, fecha_fin, estado, tipo_semana)
 VALUES 
     -- Descripciones para Matriz 1: Hardware y Software (Asignatura 1 - 14 semanas)
-    (1, 'Semana 1', 'Configuración de hardware para sistemas embebidos', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (1, 'Semana 2', 'Introducción a los sistemas operativos embebidos', 'Instalación y configuración de SO básico', 'Práctica', '2025-08-18', '2025-08-24', 'Pendiente'),
-    (1, 'Semana 3', 'Comunicación serial y protocolos básicos', 'Configuración de comunicación UART', 'Práctica', '2025-08-25', '2025-08-31', 'Pendiente'),
-    (1, 'Semana 4', 'Sensores y actuadores digitales', 'Interfaz con sensores y actuadores simples', 'Práctica', '2025-09-01', '2025-09-07', 'Pendiente'),
-    (1, 'Semana 5', 'Sensores analógicos y conversión AD', 'Lectura y procesamiento de señales analógicas', 'Práctica', '2025-09-08', '2025-09-14', 'Pendiente'),
-    (1, 'Semana 6', 'Comunicación I2C y SPI', 'Configuración de buses de comunicación avanzados', 'Práctica', '2025-09-15', '2025-09-21', 'Pendiente'),
-    (1, 'Semana 7', 'Interrupciones y manejo de eventos', 'Programación de rutinas de interrupción', 'Práctica', '2025-09-22', '2025-09-28', 'Pendiente'),
-    (1, 'Semana 8', 'Gestión de energía y sleep modes', 'Optimización del consumo energético', 'Práctica', '2025-09-29', '2025-10-05', 'Pendiente'),
-    (1, 'Semana 9', 'Comunicación wireless básica', 'Configuración de módulos RF simples', 'Práctica', '2025-10-06', '2025-10-12', 'Pendiente'),
-    (1, 'Semana 10', 'Protocolos de internet embebidos', 'Implementación de TCP/IP básico', 'Práctica', '2025-10-13', '2025-10-19', 'Pendiente'),
-    (1, 'Semana 11', 'Seguridad en sistemas embebidos', 'Implementación de medidas de seguridad básicas', 'Práctica', '2025-10-20', '2025-10-26', 'Pendiente'),
-    (1, 'Semana 12', 'Pruebas y depuración de sistemas', 'Ejecución de pruebas unitarias y de integración', 'Práctica', '2025-10-27', '2025-11-02', 'Pendiente'),
-    (1, 'Semana 13', 'Optimización de performance', 'Ajuste de parámetros para mejor rendimiento', 'Práctica', '2025-11-03', '2025-11-09', 'Pendiente'),
-    (1, 'Semana 14', 'Proyecto final integrador', 'Desarrollo del prototipo final del sistema', 'Proyecto', '2025-11-10', '2025-11-16', 'Pendiente'),
+    (1, 'Semana 1', 'Configuración de hardware para sistemas embebidos', '2025-08-11', '2025-08-17', 'Pendiente', 'Normal'),
+    (1, 'Semana 2', 'Introducción a los sistemas operativos embebidos', '2025-08-18', '2025-08-24', 'Pendiente', 'Normal'),
+    (1, 'Semana 3', 'Comunicación serial y protocolos básicos', '2025-08-25', '2025-08-31', 'Pendiente', 'Normal'),
+    (1, 'Semana 4', 'Sensores y actuadores digitales', '2025-09-01', '2025-09-07', 'Pendiente', 'Normal'),
+    (1, 'Semana 5', 'Sensores analógicos y conversión AD', '2025-09-08', '2025-09-14', 'Pendiente', 'Corte Evaluacion'),
+    (1, 'Semana 6', 'Comunicación I2C y SPI', '2025-09-15', '2025-09-21', 'Pendiente', 'Normal'),
+    (1, 'Semana 7', 'Interrupciones y manejo de eventos', '2025-09-22', '2025-09-28', 'Pendiente', 'Normal'),
+    (1, 'Semana 8', 'Gestión de energía y sleep modes', '2025-09-29', '2025-10-05', 'Pendiente', 'Normal'),
+    (1, 'Semana 9', 'Comunicación wireless básica', '2025-10-06', '2025-10-12', 'Pendiente', 'Corte Evaluacion'),
+    (1, 'Semana 10', 'Protocolos de internet embebidos', '2025-10-13', '2025-10-19', 'Pendiente', 'Normal'),
+    (1, 'Semana 11', 'Seguridad en sistemas embebidos', '2025-10-20', '2025-10-26', 'Pendiente', 'Normal'),
+    (1, 'Semana 12', 'Pruebas y depuración de sistemas', '2025-10-27', '2025-11-02', 'Pendiente', 'Normal'),
+    (1, 'Semana 13', 'Optimización de performance', '2025-11-03', '2025-11-09', 'Pendiente', 'Normal'),
+    (1, 'Semana 14', 'Proyecto final integrador', '2025-11-10', '2025-11-16', 'Pendiente', 'Corte Final'),
 
     -- Asignatura 2 - 14 semanas
-    (2, 'Semana 1', 'Desarrollo de controladores y software de bajo nivel', 'Programación de interfaces hardware-software', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (2, 'Semana 2', 'HTML5 y estructura semántica', 'Desarrollo de estructura HTML5 semántica', 'Práctica', '2025-08-18', '2025-08-24', 'Pendiente'),
-    (2, 'Semana 3', 'CSS3 y estilos avanzados', 'Aplicación de estilos CSS3 modernos', 'Práctica', '2025-08-25', '2025-08-31', 'Pendiente'),
-    (2, 'Semana 4', 'Framework CSS (Bootstrap/Tailwind)', 'Implementación de framework CSS elegido', 'Práctica', '2025-09-01', '2025-09-07', 'Pendiente'),
-    (2, 'Semana 5', 'JavaScript básico y DOM', 'Manipulación del DOM con JavaScript', 'Práctica', '2025-09-08', '2025-09-14', 'Pendiente'),
-    (2, 'Semana 6', 'JavaScript avanzado y ES6+', 'Uso de características modernas de JavaScript', 'Práctica', '2025-09-15', '2025-09-21', 'Pendiente'),
-    (2, 'Semana 7', 'APIs REST y consumo de datos', 'Consumo de APIs REST desde frontend', 'Práctica', '2025-09-22', '2025-09-28', 'Pendiente'),
-    (2, 'Semana 8', 'Framework frontend (React/Vue)', 'Introducción al framework seleccionado', 'Práctica', '2025-09-29', '2025-10-05', 'Pendiente'),
-    (2, 'Semana 9', 'Estado y gestión de datos', 'Implementación de gestión de estado', 'Práctica', '2025-10-06', '2025-10-12', 'Pendiente'),
-    (2, 'Semana 10', 'Routing y navegación SPA', 'Configuración de sistema de rutas', 'Práctica', '2025-10-13', '2025-10-19', 'Pendiente'),
-    (2, 'Semana 11', 'Testing frontend', 'Implementación de pruebas unitarias', 'Práctica', '2025-10-20', '2025-10-26', 'Pendiente'),
-    (2, 'Semana 12', 'Optimización y performance', 'Optimización de carga y rendimiento', 'Práctica', '2025-10-27', '2025-11-02', 'Pendiente'),
-    (2, 'Semana 13', 'Deployment y CI/CD', 'Configuración de pipeline de deployment', 'Práctica', '2025-11-03', '2025-11-09', 'Pendiente'),
-    (2, 'Semana 14', 'Proyecto final frontend', 'Desarrollo de aplicación web completa', 'Proyecto', '2025-11-10', '2025-11-16', 'Pendiente'),
+    (2, 'Semana 1', 'Desarrollo de controladores y software de bajo nivel', '2025-08-11', '2025-08-17', 'Pendiente', 'Normal'),
+    (2, 'Semana 2', 'HTML5 y estructura semántica', '2025-08-18', '2025-08-24', 'Pendiente', 'Normal'),
+    (2, 'Semana 3', 'CSS3 y estilos avanzados', '2025-08-25', '2025-08-31', 'Pendiente', 'Normal'),
+    (2, 'Semana 4', 'Framework CSS (Bootstrap/Tailwind)', '2025-09-01', '2025-09-07', 'Pendiente', 'Normal'),
+    (2, 'Semana 5', 'JavaScript básico y DOM', '2025-09-08', '2025-09-14', 'Pendiente', 'Corte Evaluacion'),
+    (2, 'Semana 6', 'JavaScript avanzado y ES6+', '2025-09-15', '2025-09-21', 'Pendiente', 'Normal'),
+    (2, 'Semana 7', 'APIs REST y consumo de datos', '2025-09-22', '2025-09-28', 'Pendiente', 'Normal'),
+    (2, 'Semana 8', 'Framework frontend (React/Vue)', '2025-09-29', '2025-10-05', 'Pendiente', 'Normal'),
+    (2, 'Semana 9', 'Estado y gestión de datos', '2025-10-06', '2025-10-12', 'Pendiente', 'Corte Evaluacion'),
+    (2, 'Semana 10', 'Routing y navegación SPA', '2025-10-13', '2025-10-19', 'Pendiente', 'Normal'),
+    (2, 'Semana 11', 'Testing frontend', '2025-10-20', '2025-10-26', 'Pendiente', 'Normal'),
+    (2, 'Semana 12', 'Optimización y performance', '2025-10-27', '2025-11-02', 'Pendiente', 'Normal'),
+    (2, 'Semana 13', 'Deployment y CI/CD', '2025-11-03', '2025-11-09', 'Pendiente', 'Normal'),
+    (2, 'Semana 14', 'Proyecto final frontend', '2025-11-10', '2025-11-16', 'Pendiente', 'Corte Final'),
 
     -- Asignatura 3 - 1 semana
-    (3, 'Semana 1', 'Configuración de SO para dispositivos IoT', 'Optimización de sistema operativo para hardware específico', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (3, 'Semana 1', 'Configuración de SO para dispositivos IoT', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
 
     -- Asignatura 4 - 1 semana
-    (4, 'Semana 1', 'Integración de sensores y actuadores IoT', 'Prototipo de sistema IoT con comunicación wireless', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (4, 'Semana 1', 'Integración de sensores y actuadores IoT', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
 
     -- Descripciones para Matriz 2: Desarrollo Web Fullstack
-    (5, 'Semana 1', 'Diseño de UI/UX para aplicación web responsive', 'Creación de sistema de diseño y componentes', 'Portafolio', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (6, 'Semana 1', 'Desarrollo de arquitectura backend escalable', 'Implementación de microservicios y APIs', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (7, 'Semana 1', 'Diseño y optimización de base de datos relacional', 'Modelado ER y consultas optimizadas', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (8, 'Semana 1', 'Implementación de features avanzadas frontend', 'SPA con frameworks modernos y state management', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (5, 'Semana 1', 'Diseño de UI/UX para aplicación web responsive', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (6, 'Semana 1', 'Desarrollo de arquitectura backend escalable', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (7, 'Semana 1', 'Diseño y optimización de base de datos relacional', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (8, 'Semana 1', 'Implementación de features avanzadas frontend', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
 
     -- Descripciones para Matriz 3: Seguridad Integral TI
-    (9,  'Semana 1', 'Análisis de vulnerabilidades y pentesting', 'Auditoría de seguridad y reporte de findings', 'Documental', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (10, 'Semana 1', 'Seguridad perimetral y configuración de firewalls', 'Implementación de políticas de red seguras', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (11, 'Semana 1', 'Hardening de sistemas operativos', 'Configuración segura de SO y servicios', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (12, 'Semana 1', 'Seguridad en infraestructura cloud', 'Configuración de IAM y seguridad en la nube', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (9, 'Semana 1', 'Análisis de vulnerabilidades y pentesting', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (10, 'Semana 1', 'Seguridad perimetral y configuración de firewalls', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (11, 'Semana 1', 'Hardening de sistemas operativos', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (12, 'Semana 1', 'Seguridad en infraestructura cloud', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
 
     -- Descripciones para Matriz 4: Soluciones Educativas Digitales
-    (13, 'Semana 1', 'Diseño de experiencias de aprendizaje digital', 'Metodología para cursos online efectivos', 'Documental', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (14, 'Semana 1', 'Desarrollo de interfaz educativa intuitiva', 'Prototipo de plataforma educativa', 'Portafolio', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (15, 'Semana 1', 'Implementación de chatbots educativos con IA', 'Asistente virtual para soporte estudiantil', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (16, 'Semana 1', 'Desarrollo de app móvil educativa', 'Aplicación nativa para aprendizaje en movilidad', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
+    (13, 'Semana 1', 'Diseño de experiencias de aprendizaje digital', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (14, 'Semana 1', 'Desarrollo de interfaz educativa intuitiva', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (15, 'Semana 1', 'Implementación de chatbots educativos con IA', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (16, 'Semana 1', 'Desarrollo de app móvil educativa', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
 
     -- Descripciones para Matriz 5: Base de Datos y Cloud
-    (17, 'Semana 1', 'Diseño de esquemas de BD para aplicaciones cloud', 'Arquitectura de datos distribuidos', 'Técnica', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (18, 'Semana 1', 'Migración de bases de datos a entornos cloud', 'Estrategia de migración y optimización', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (19, 'Semana 1', 'Configuración de red segura para BD cloud', 'VPN y conectividad segura para datos', 'Práctica', '2025-08-11', '2025-08-17', 'Pendiente'),
-    (20, 'Semana 1', 'Desarrollo de aplicaciones con persistencia cloud', 'Software con acceso a BD en la nube', 'Proyecto', '2025-08-11', '2025-08-17', 'Pendiente');
+    (17, 'Semana 1', 'Diseño de esquemas de BD para aplicaciones cloud', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (18, 'Semana 1', 'Migración de bases de datos a entornos cloud', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (19, 'Semana 1', 'Configuración de red segura para BD cloud', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final'),
+    (20, 'Semana 1', 'Desarrollo de aplicaciones con persistencia cloud', '2025-08-11', '2025-08-17', 'Pendiente', 'Corte Final');
 
 GO
+
+-- REGISTROS EN LA TABLA ACCIONINTEGRADORA_TIPOEVALUACION
+INSERT INTO ACCIONINTEGRADORA_TIPOEVALUACION (fk_matriz_integracion, numero_semana, accion_integradora, tipo_evaluacion)
+VALUES 
+    -- Matriz 1: Hardware y Software (14 semanas)
+    (1, 'Semana 1', 'Configuración inicial de prototipo hardware-software', 'Práctica de laboratorio'),
+    (1, 'Semana 2', 'Desarrollo de interfaz básica de comunicación', 'Ejercicio aplicado'),
+    (1, 'Semana 3', 'Implementación de protocolos de comunicación serial', 'Prueba técnica'),
+    (1, 'Semana 4', 'Integración de sensores y actuadores', 'Proyecto parcial'),
+    (1, 'Semana 5', 'Procesamiento de señales analógicas', 'Informe técnico'),
+    (1, 'Semana 6', 'Comunicación con buses I2C/SPI', 'Demostración práctica'),
+    (1, 'Semana 7', 'Manejo de interrupciones y eventos', 'Evaluación de procedimientos'),
+    (1, 'Semana 8', 'Optimización de consumo energético', 'Análisis de resultados'),
+    (1, 'Semana 9', 'Comunicación wireless básica', 'Prototipo funcional'),
+    (1, 'Semana 10', 'Implementación de stack TCP/IP', 'Prueba de conectividad'),
+    (1, 'Semana 11', 'Aplicación de medidas de seguridad', 'Auditoría de seguridad'),
+    (1, 'Semana 12', 'Pruebas de integración del sistema', 'Reporte de testing'),
+    (1, 'Semana 13', 'Optimización de performance', 'Benchmark y métricas'),
+    (1, 'Semana 14', 'Presentación de prototipo final', 'Proyecto integrador'),
+
+    -- Matriz 2: Desarrollo Web Fullstack (14 semanas)
+    (2, 'Semana 1', 'Diseño de arquitectura fullstack', 'Diagrama de arquitectura'),
+    (2, 'Semana 2', 'Maquetación responsive con HTML5/CSS3', 'Portafolio de componentes'),
+    (2, 'Semana 3', 'Estilización avanzada con frameworks', 'Ejercicio de implementación'),
+    (2, 'Semana 4', 'Desarrollo de componentes UI reutilizables', 'Biblioteca de componentes'),
+    (2, 'Semana 5', 'Lógica frontend con JavaScript', 'Pruebas de funcionalidad'),
+    (2, 'Semana 6', 'Implementación de características ES6+', 'Código review'),
+    (2, 'Semana 7', 'Consumo de APIs REST', 'Prueba de integración API'),
+    (2, 'Semana 8', 'Desarrollo con framework frontend', 'Prototipo SPA'),
+    (2, 'Semana 9', 'Gestión de estado de aplicación', 'Demostración de flujos'),
+    (2, 'Semana 10', 'Implementación de routing', 'Prueba de navegación'),
+    (2, 'Semana 11', 'Testing de componentes frontend', 'Suite de pruebas'),
+    (2, 'Semana 12', 'Optimización de performance web', 'Auditoría de performance'),
+    (2, 'Semana 13', 'Configuración de deployment', 'Proceso de deployment'),
+    (2, 'Semana 14', 'Presentación aplicación completa', 'Proyecto final'),
+
+    -- Matriz 3: Seguridad Integral TI (14 semanas)
+    (3, 'Semana 1', 'Análisis de riesgos inicial', 'Reporte de vulnerabilidades'),
+    (3, 'Semana 2', 'Configuración de políticas de seguridad', 'Documento de políticas'),
+    (3, 'Semana 3', 'Implementación de controles de acceso', 'Auditoría de accesos'),
+    (3, 'Semana 4', 'Seguridad en comunicaciones', 'Prueba de encriptación'),
+    (3, 'Semana 5', 'Hardening de sistemas', 'Checklist de seguridad'),
+    (3, 'Semana 6', 'Monitorización de seguridad', 'Reporte de monitorización'),
+    (3, 'Semana 7', 'Respuesta a incidentes', 'Simulación de incidente'),
+    (3, 'Semana 8', 'Seguridad en aplicaciones', 'Análisis de código seguro'),
+    (3, 'Semana 9', 'Protección perimetral', 'Configuración de firewall'),
+    (3, 'Semana 10', 'Seguridad en cloud', 'Evaluación de configuración cloud'),
+    (3, 'Semana 11', 'Criptografía aplicada', 'Implementación criptográfica'),
+    (3, 'Semana 12', 'Auditoría de seguridad integral', 'Informe de auditoría'),
+    (3, 'Semana 13', 'Plan de continuidad del negocio', 'Documento de continuidad'),
+    (3, 'Semana 14', 'Presentación de estrategia de seguridad', 'Proyecto final'),
+
+    -- Matriz 4: Soluciones Educativas Digitales (14 semanas)
+    (4, 'Semana 1', 'Diseño de experiencia de aprendizaje', 'Documento de diseño instruccional'),
+    (4, 'Semana 2', 'Prototipado de interfaz educativa', 'Mockups y wireframes'),
+    (4, 'Semana 3', 'Desarrollo de contenido interactivo', 'Contenido multimedia'),
+    (4, 'Semana 4', 'Implementación de gamificación', 'Mecánicas de juego'),
+    (4, 'Semana 5', 'Integración de herramientas colaborativas', 'Prueba de colaboración'),
+    (4, 'Semana 6', 'Desarrollo de evaluación automatizada', 'Sistema de quizzes'),
+    (4, 'Semana 7', 'Analytics y seguimiento estudiantil', 'Dashboard de analytics'),
+    (4, 'Semana 8', 'Accesibilidad y diseño universal', 'Evaluación de accesibilidad'),
+    (4, 'Semana 9', 'Mobile learning', 'Versión móvil responsive'),
+    (4, 'Semana 10', 'Integración de IA educativa', 'Chatbot o recomendaciones'),
+    (4, 'Semana 11', 'Testing con usuarios reales', 'Feedback de usuarios'),
+    (4, 'Semana 12', 'Optimización basada en datos', 'Análisis de métricas'),
+    (4, 'Semana 13', 'Preparación para deployment', 'Plan de implementación'),
+    (4, 'Semana 14', 'Presentación de plataforma educativa', 'Proyecto final'),
+
+    -- Matriz 5: Base de Datos y Cloud (14 semanas)
+    (5, 'Semana 1', 'Diseño de arquitectura de datos cloud', 'Diagrama de arquitectura'),
+    (5, 'Semana 2', 'Modelado de bases de datos distribuidas', 'Modelo entidad-relación'),
+    (5, 'Semana 3', 'Implementación de BD en cloud', 'Configuración de instancias'),
+    (5, 'Semana 4', 'Optimización de consultas cloud', 'Benchmark de performance'),
+    (5, 'Semana 5', 'Seguridad en bases de datos cloud', 'Políticas de seguridad'),
+    (5, 'Semana 6', 'Backup y recovery en cloud', 'Plan de contingencia'),
+    (5, 'Semana 7', 'Migración de datos on-premise a cloud', 'Estrategia de migración'),
+    (5, 'Semana 8', 'Escalabilidad automática', 'Pruebas de escalabilidad'),
+    (5, 'Semana 9', 'Integración con servicios cloud', 'APIs y servicios'),
+    (5, 'Semana 10', 'Monitorización y alertas', 'Dashboard de monitorización'),
+    (5, 'Semana 11', 'Optimización de costos cloud', 'Análisis de costos'),
+    (5, 'Semana 12', 'High availability y disaster recovery', 'Plan DR'),
+    (5, 'Semana 13', 'Governance y compliance', 'Documento de governance'),
+    (5, 'Semana 14', 'Presentación de solución cloud completa', 'Proyecto final');
 --------------------------------------------------------------------------------------------------------------------
 
 -- (15) REGISTROS EN LA TABLA PLANIFICACIONSEMESTRAL
-INSERT INTO PlanDidacticoSemestral (
-    fk_matriz_integracion,
-    fk_profesor,
-    codigo_documento,
-    nombre_plan_didactico_semestral,
-    fk_componente_curricular,
-    fk_anio_semestre,
-    fecha_inicio,
-    fecha_fin,
-    eje_disiplinar,
-    fk_asignatura,
-    curriculum,
-    competencias,
-    objetivo_integrador,
-    eje_transversal,
-    bibliografia
-)
-VALUES (
-    1, -- fk_matriz_integracion
-    1, -- fk_profesor
-    'PDS-001', -- codigo_documento
-    'Plan Didáctico de Hardware', -- nombre_plan_didactico_semestral
-    1, -- fk_componente_curricular
-    1, -- fk_anio_semestre
-    '2023-08-01', -- fecha_inicio
-    '2023-12-15', -- fecha_fin
-    'Integración de hardware y software', -- eje_disiplinar
-    1, -- fk_asignatura (Hardware)
-    'Currículum de hardware', -- curriculum
-    'Competencias en hardware', -- competencias
-    'Crear soluciones educativas integradas', -- objetivo_integrador
-    'Eje transversal de hardware', -- eje_transversal
-    'Bibliografía de hardware' -- bibliografia
-);
+--INSERT INTO PlanDidacticoSemestral (
+--    fk_matriz_integracion,
+--    fk_profesor,
+--    codigo_documento,
+--    nombre_plan_didactico_semestral,
+--    fk_componente_curricular,
+--    fk_anio_semestre,
+--    fecha_inicio,
+--    fecha_fin,
+--    eje_disiplinar,
+--    fk_asignatura,
+--    curriculum,
+--    competencias,
+--    objetivo_integrador,
+--    eje_transversal,
+--    bibliografia
+--)
+--VALUES (
+--    1, -- fk_matriz_integracion
+--    1, -- fk_profesor
+--    'PDS-001', -- codigo_documento
+--    'Plan Didáctico de Hardware', -- nombre_plan_didactico_semestral
+--    1, -- fk_componente_curricular
+--    1, -- fk_anio_semestre
+--    '2023-08-01', -- fecha_inicio
+--    '2023-12-15', -- fecha_fin
+--    'Integración de hardware y software', -- eje_disiplinar
+--    1, -- fk_asignatura (Hardware)
+--    'Currículum de hardware', -- curriculum
+--    'Competencias en hardware', -- competencias
+--    'Crear soluciones educativas integradas', -- objetivo_integrador
+--    'Eje transversal de hardware', -- eje_transversal
+--    'Bibliografía de hardware' -- bibliografia
+--);
 
-GO
---------------------------------------------------------------------------------------------------------------------
+--GO
+----------------------------------------------------------------------------------------------------------------------
 
--- (16) REGISTROS EN LA TABLA TEMPLANIFICACIONSEMESTRAL
+---- (16) REGISTROS EN LA TABLA TEMPLANIFICACIONSEMESTRAL
 
--- Tema 1: Introducción al Hardware
-INSERT INTO TemaPlanificacionSemestral (
-    fk_plan_didactico_semestral,
-    tema,
-    horas_teoricas,
-    horas_laboratorio,
-    horas_practicas,
-    horas_investigacion,
-    P_LAB_INV,
-    creditos
-)
-VALUES (
-    1, -- fk_plan_didactico_semestral (ID del Plan Didáctico Semestral)
-    'Introducción al Hardware', -- tema
-    10, -- horas_teoricas
-    5, -- horas_laboratorio
-    5, -- horas_practicas
-    2, -- horas_investigacion
-    1, -- P_LAB_INV
-    3 -- creditos
-);
+---- Tema 1: Introducción al Hardware
+--INSERT INTO TemaPlanificacionSemestral (
+--    fk_plan_didactico_semestral,
+--    tema,
+--    horas_teoricas,
+--    horas_laboratorio,
+--    horas_practicas,
+--    horas_investigacion,
+--    P_LAB_INV,
+--    creditos
+--)
+--VALUES (
+--    1, -- fk_plan_didactico_semestral (ID del Plan Didáctico Semestral)
+--    'Introducción al Hardware', -- tema
+--    10, -- horas_teoricas
+--    5, -- horas_laboratorio
+--    5, -- horas_practicas
+--    2, -- horas_investigacion
+--    1, -- P_LAB_INV
+--    3 -- creditos
+--);
 
--- Tema 2: Componentes de Hardware
-INSERT INTO TemaPlanificacionSemestral (
-    fk_plan_didactico_semestral,
-    tema,
-    horas_teoricas,
-    horas_laboratorio,
-    horas_practicas,
-    horas_investigacion,
-    P_LAB_INV,
-    creditos
-)
-VALUES (
-    1, -- fk_plan_didactico_semestral
-    'Componentes de Hardware', -- tema
-    8, -- horas_teoricas
-    4, -- horas_laboratorio
-    4, -- horas_practicas
-    2, -- horas_investigacion
-    1, -- P_LAB_INV
-    2 -- creditos
-);
+---- Tema 2: Componentes de Hardware
+--INSERT INTO TemaPlanificacionSemestral (
+--    fk_plan_didactico_semestral,
+--    tema,
+--    horas_teoricas,
+--    horas_laboratorio,
+--    horas_practicas,
+--    horas_investigacion,
+--    P_LAB_INV,
+--    creditos
+--)
+--VALUES (
+--    1, -- fk_plan_didactico_semestral
+--    'Componentes de Hardware', -- tema
+--    8, -- horas_teoricas
+--    4, -- horas_laboratorio
+--    4, -- horas_practicas
+--    2, -- horas_investigacion
+--    1, -- P_LAB_INV
+--    2 -- creditos
+--);
 
-GO
---------------------------------------------------------------------------------------------------------------------
+--GO
+----------------------------------------------------------------------------------------------------------------------
 
--- (17) REGISTROS EN LA TABLA MATRIZPLANIFICACIONSEMESTRAL
-INSERT INTO MatrizPlanificacionSemestral (
-    fk_plan_didactico_semestral,
-    numero_semana,
-    objetivo_aprendizaje,
-    contenidos_esenciales,
-    estrategias_aprendizaje,
-    estrategias_evaluacion,
-    tipo_evaluacion,
-    instrumento_evaluacion,
-    evidencias_aprendizaje
-)
-VALUES (
-    1, -- fk_plan_didactico_semestral (ID del Plan Didáctico Semestral)
-    1, -- numero_semana
-    'Comprender los conceptos básicos de hardware', -- objetivo_aprendizaje
-    'Introducción al hardware y sus componentes', -- contenidos_esenciales
-    'Clases teóricas y prácticas', -- estrategias_aprendizaje
-    'Evaluación por proyecto', -- estrategias_evaluacion
-    'Sumativa', -- tipo_evaluacion
-    'Rúbrica', -- instrumento_evaluacion
-    'Lista de componentes identificados' -- evidencias_aprendizaje
-);
+---- (17) REGISTROS EN LA TABLA MATRIZPLANIFICACIONSEMESTRAL
+--INSERT INTO MatrizPlanificacionSemestral (
+--    fk_plan_didactico_semestral,
+--    numero_semana,
+--    objetivo_aprendizaje,
+--    contenidos_esenciales,
+--    estrategias_aprendizaje,
+--    estrategias_evaluacion,
+--    tipo_evaluacion,
+--    instrumento_evaluacion,
+--    evidencias_aprendizaje
+--)
+--VALUES (
+--    1, -- fk_plan_didactico_semestral (ID del Plan Didáctico Semestral)
+--    1, -- numero_semana
+--    'Comprender los conceptos básicos de hardware', -- objetivo_aprendizaje
+--    'Introducción al hardware y sus componentes', -- contenidos_esenciales
+--    'Clases teóricas y prácticas', -- estrategias_aprendizaje
+--    'Evaluación por proyecto', -- estrategias_evaluacion
+--    'Sumativa', -- tipo_evaluacion
+--    'Rúbrica', -- instrumento_evaluacion
+--    'Lista de componentes identificados' -- evidencias_aprendizaje
+--);
 
-GO
+--GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- (18) REGISTROS EN LA TABLA PLANCLASESDIARIO

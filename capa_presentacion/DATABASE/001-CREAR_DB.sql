@@ -262,27 +262,37 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     -- 1.	Datos Generales
     -- Area de conocimiento
     fk_area INT NOT NULL,
+
     -- Departamento
     fk_departamento INT NOT NULL,
+
     -- Carrera
     fk_carrera INT NOT NULL,
+
     -- Modalidad
     fk_modalidad INT NOT NULL,
+
 	-- Componente curricular (as)
 	fk_asignatura INT NOT NULL,
+
 	-- Profesor
 	fk_profesor INT NOT NULL,
+
 	-- Año y semestre
 	fk_periodo INT NOT NULL,
+
 	-- Competencias
 	competencias_genericas VARCHAR(255),
 	competencias_especificas VARCHAR(255),
-	-- Objetivos
+	
+    -- Objetivos
     objetivo_anio VARCHAR(255),
     objetivo_semestre VARCHAR(255),
     objetivo_integrador VARCHAR(255),
+    
     -- Numero de semanas de la Matriz
     numero_semanas INT,
+    
     -- Fecha de Inicio
     fecha_inicio DATE NOT NULL,
     --Asignaturas / Descripcion (La tiene la tabla MatrizAsignatura)
@@ -329,9 +339,24 @@ CREATE TABLE SEMANASASIGNATURAMATRIZ (
     descripcion VARCHAR(255),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
+    tipo_semana VARCHAR(50) NOT NULL CHECK (tipo_semana IN ('Normal', 'Corte Evaluacion', 'Corte Final')),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_SEMANASASIGNATURA_MATRIZASIGNATURA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE
+);
+
+GO
+
+-- (4) Tabla Acción Integradora y Tipo de Evaluación (VERSIÓN CORRECTA)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ACCIONINTEGRADORA_TIPOEVALUACION')
+CREATE TABLE ACCIONINTEGRADORA_TIPOEVALUACION (
+    id_accion_tipo INT PRIMARY KEY IDENTITY(1,1),
+    fk_matriz_integracion INT NOT NULL,
+    numero_semana VARCHAR(255) NOT NULL,
+    accion_integradora VARCHAR(255),
+    tipo_evaluacion VARCHAR(50),
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_ACCIONTIPO_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE
 );
 
 -----------------------------------------------------Etapa 2: Plan Didactico Semestral-----------------------------------------------------
@@ -355,8 +380,7 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
 
-	-- A.	Eje disiplinar
-	eje_disiplinar VARCHAR(255),
+	-- A.	Eje disiplinar (En la tabla EJESTRANSVERSAL)
 
 	-- B.	Nombre del Componente Curricular
 	fk_asignatura INT NOT NULL,
@@ -395,7 +419,6 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 	fecha_registro DATETIME DEFAULT GETDATE(),
 	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion),
 	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_USUARIO FOREIGN KEY (fk_profesor) REFERENCES USUARIOS(id_usuario),
-	CONSTRAINT FK_PDS_PERIODO FOREIGN KEY (fk_anio_semestre) REFERENCES Periodo(id_periodo),
 	CONSTRAINT FK_PDS_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura)
 );
 
@@ -435,12 +458,12 @@ CREATE TABLE EJESTRANSVERSAL (
     competencia_generica VARCHAR(100) NOT NULL,
     tema_transversal VARCHAR(255),
     valores_transversales VARCHAR(255),
-	CONSTRAINT FK_EJESTRANSVERSAL_PDS FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico_semestral) ON DELETE CASCADE
+	CONSTRAINT FK_EJESTRANSVERSAL_PDS FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE
 );
 
 GO
 
--- (5) Tabla Matriz de Planifiacion Semestral
+-- (1.3) Tabla Matriz de Planifiacion Semestral
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZPLANIFICACIONSEMESTRAL')
 CREATE TABLE MATRIZPLANIFICACIONSEMESTRAL (
     id_matriz INT PRIMARY KEY IDENTITY(1,1),  
@@ -449,11 +472,9 @@ CREATE TABLE MATRIZPLANIFICACIONSEMESTRAL (
 	--Numero de semanas
 	numero_semana INT,
 
-	--Objetivos de aprendizaje a lograr en el semestre
-    objetivo_aprendizaje VARCHAR(255),
+	--Contenidos escenciales (SE EXTRAE DE LA MATRIZ)
 
-	--Contenidos escenciales
-    contenidos_esenciales VARCHAR(255),
+    --Objetivos de aprendizaje a lograr en el semestre (SE EXTRAE DE LOS DATOS GENERALES)
 
 	--Estrategias de aprendizaje (Integradoras)
     estrategias_aprendizaje VARCHAR(255),
@@ -470,7 +491,7 @@ CREATE TABLE MATRIZPLANIFICACIONSEMESTRAL (
 	--Evidencias de aprendizaje
     evidencias_aprendizaje VARCHAR(255),
 
-	CONSTRAINT FK_MATRIZPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_plan_didactico_semestral) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico_semestral) ON DELETE CASCADE
+	CONSTRAINT FK_MATRIZPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_plan_didactico_semestral) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE
 );
 
 GO

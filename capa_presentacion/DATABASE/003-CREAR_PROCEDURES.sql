@@ -3762,7 +3762,7 @@ GO
 -- PROCEDIMIENTO ALMACENADO PARA CREAR UN TURNO
 CREATE OR ALTER PROCEDURE usp_CrearTurno
     @Nombre VARCHAR(60),  
-    @FKModalidad INT NOT NULL,
+    @FKModalidad INT,
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -3791,7 +3791,7 @@ GO
 CREATE PROCEDURE usp_ActualizarTurno
     @IdTurno INT,
     @Nombre VARCHAR(60),
-    @FKModalidad INT NOT NULL,
+    @FKModalidad INT,
     @Estado BIT,
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
@@ -3864,6 +3864,7 @@ CREATE PROCEDURE usp_CrearMatrizIntegracion
     @FKAsignatura INT,
     @FKProfesor INT,
     @FKPeriodo INT,
+    @FkModalidad INT,
     @CompetenciasGenericas VARCHAR(255),
     @CompetenciasEspecificas VARCHAR(255),
     @ObjetivoAnio VARCHAR(255),
@@ -3883,6 +3884,7 @@ BEGIN
     DECLARE @Codigo VARCHAR(20);
     DECLARE @Contador INT;
     DECLARE @Anio INT = YEAR(GETDATE());
+    DECLARE @IdMatrizIntegracion INT;
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -3919,7 +3921,15 @@ BEGIN
             RETURN;
         END
 
-        -- 5. Verificar si la asignatura existe
+        -- 5. Verificar si la modalidad existe
+        IF NOT EXISTS (SELECT 1 FROM MODALIDAD WHERE id_modalidad = @FkModalidad AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'La modalidad no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 6. Verificar si la asignatura existe
         IF NOT EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @FKAsignatura)
         BEGIN
             SET @Mensaje = 'La asignatura no existe';
@@ -3927,7 +3937,7 @@ BEGIN
             RETURN;
         END
 
-        -- 6. Verificar si el periodo seleccionado está activo
+        -- 7. Verificar si el periodo seleccionado está activo
         IF NOT EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @FKPeriodo AND estado = 1)
         BEGIN
             SET @Mensaje = 'El periodo seleccionado no existe o está inactivo';
@@ -3935,7 +3945,7 @@ BEGIN
             RETURN;
         END
 
-        -- 7. Verificar si el nombre existe
+        -- 8. Verificar si el nombre existe
         IF EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE nombre = @Nombre AND estado = 1)
         BEGIN
             SET @Mensaje = 'El nombre de la Matriz ya está registrado';
@@ -3943,7 +3953,7 @@ BEGIN
             RETURN;
         END
 
-        -- 8. Generar código automático (formato: MIC-AÑO-SECUENCIA)
+        -- 9. Generar código automático (formato: MIC-AÑO-SECUENCIA)
         SELECT @Contador = ISNULL(MAX(
             CAST(
                 CASE 
@@ -3964,25 +3974,45 @@ BEGIN
         SET @Codigo = 'MIC-' + CAST(@Anio AS VARCHAR(4)) + '-' + 
               RIGHT('000' + CAST(@Contador AS VARCHAR(3)), 3);
 
-        -- 9. Insertar la nueva matriz
+        -- 10. Insertar la nueva matriz
         INSERT INTO MATRIZINTEGRACIONCOMPONENTES (
-            codigo, nombre, fk_area, fk_departamento, fk_carrera, 
+            codigo, nombre, fk_area, fk_departamento, fk_carrera, fk_modalidad,
             fk_asignatura, fk_profesor, fk_periodo, competencias_genericas, competencias_especificas,
             objetivo_anio, objetivo_semestre, objetivo_integrador, 
             estrategia_integradora, numero_semanas, fecha_inicio
         )
         VALUES (
-            @Codigo, @Nombre, @FKArea, @FKDepartamento, @FKCarrera,
+            @Codigo, @Nombre, @FKArea, @FKDepartamento, @FKCarrera, @FkModalidad,
             @FKAsignatura, @FKProfesor, @FKPeriodo, @CompetenciasGenericas, @CompetenciasEspecificas,
             @ObjetivoAnio, @ObjetivoSemestre, @ObjetivoIntegrador,
             @EstrategiaIntegradora, @NumeroSemanas, @FechaInicio
         );
     
-        SET @Resultado = SCOPE_IDENTITY();
+        SET @IdMatrizIntegracion = SCOPE_IDENTITY();
+        SET @Resultado = @IdMatrizIntegracion;
+
+        -- 11. Crear registros en ACCIONINTEGRADORA_TIPOEVALUACION para cada semana
+        SET @Contador = 1;
+        WHILE @Contador <= @NumeroSemanas
+        BEGIN
+            
+            -- Insertar en ACCIONINTEGRADORA_TIPOEVALUACION
+            INSERT INTO ACCIONINTEGRADORA_TIPOEVALUACION (
+                fk_matriz_integracion,
+                numero_semana
+            )
+            VALUES (
+                @IdMatrizIntegracion,
+                'Semana ' + CAST(@Contador AS VARCHAR(3))
+            );
+
+            SET @Contador = @Contador + 1;
+        END
 
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'La Matriz Integradora se registro exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre;
+        SET @Mensaje = 'La Matriz Integradora se registró exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre + 
+                      ' con ' + CAST(@NumeroSemanas AS VARCHAR(3)) + ' evaluaciones creadas';
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
@@ -4034,6 +4064,7 @@ BEGIN
             a.nombre AS area_conocimiento,
             d.nombre AS departamento,
             c.nombre AS carrera,
+            m.nombre AS modalidad,
             asi_principal.nombre AS asignatura,
             u.pri_nombre + ' ' + u.pri_apellido AS usuario,
             p.semestre AS periodo,
@@ -4043,6 +4074,7 @@ BEGIN
         INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
         INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
         INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+        INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
         INNER JOIN ASIGNATURA asi_principal ON mic.fk_asignatura = asi_principal.id_asignatura
         INNER JOIN USUARIOS u ON mic.fk_profesor = u.id_usuario
         INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
@@ -4067,6 +4099,7 @@ CREATE PROCEDURE usp_ActualizarMatrizIntegracion
     @FKArea INT,
     @FKDepartamento INT,
     @FKCarrera INT,
+    @FKModalidad INT,
     @FKAsignatura INT,
     @FKProfesor INT,
     @FKPeriodo INT,
@@ -4119,6 +4152,14 @@ BEGIN
             RETURN;
         END
 
+        -- Verificar si la modalidad existe
+        IF NOT EXISTS (SELECT 1 FROM MODALIDAD WHERE id_modalidad = @FKModalidad AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'La modalidad no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
         -- 5. Verificar si la asignatura existe
         IF NOT EXISTS (SELECT 1 FROM ASIGNATURA WHERE id_asignatura = @FKAsignatura)
         BEGIN
@@ -4158,6 +4199,7 @@ BEGIN
             fk_area = @FKArea,
             fk_departamento = @FKDepartamento,
             fk_carrera = @FKCarrera,
+            fk_modalidad = @FKModalidad,
             fk_asignatura = @FKAsignatura,
             fk_profesor = @FKProfesor,
             fk_periodo = @FKPeriodo,
@@ -4246,7 +4288,14 @@ BEGIN
             WHERE fk_matriz_integracion = @IdMatriz;
         END
 
-        -- 7. Finalmente eliminar la matriz de integración
+        -- 7. Verificar si existen registros en la tabla de ACCIONINTEGRADORA_TIPOEVALUACION
+        IF EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION WHERE fk_matriz_integracion = @IdMatriz)
+        BEGIN
+            SET @Mensaje = 'No se puede eliminar la matriz porque tiene registros en la tabla ACCIONINTEGRADORA_TIPOEVALUACION. Debe eliminar primero los planes didácticos.';
+            THROW 51017, @Mensaje, 1;
+        END
+
+        -- 8. Finalmente eliminar la matriz de integración
         DELETE FROM MATRIZINTEGRACIONCOMPONENTES 
         WHERE id_matriz_integracion = @IdMatriz;
 
@@ -4372,12 +4421,11 @@ BEGIN
             -- Calcular fecha de fin de la semana (6 días después del inicio)
             SET @FechaFinSemana = DATEADD(DAY, 6, @FechaInicioSemana);
 
-            INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, fecha_inicio, fecha_fin, estado)
-            VALUES (@IdMatrizAsignatura, 'Semana ' + CAST(@Contador AS VARCHAR(3)), @FechaInicioSemana, @FechaFinSemana, 'Pendiente');
+            INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, fecha_inicio, fecha_fin, estado, tipo_semana)
+            VALUES (@IdMatrizAsignatura, 'Semana ' + CAST(@Contador AS VARCHAR(3)), @FechaInicioSemana, @FechaFinSemana, 'Pendiente', 'Normal');
 
             SET @Contador = @Contador + 1;
         END
-
 
         SET @Resultado = @IdMatrizAsignatura;
 
@@ -4503,6 +4551,7 @@ BEGIN
     ORDER BY a.nombre;
 END;
 GO
+
 -- Actualizar estado de asignatura en matriz
 CREATE PROCEDURE usp_ActualizarEstadoAsignaturaMatriz
     @IdMatrizAsignatura INT,
@@ -4797,8 +4846,6 @@ CREATE PROCEDURE usp_GuardarSemanaAsignatura
     @FKMatrizAsignatura INT,
     @NombreSemana INT,
     @Descripcion VARCHAR(255),
-    @AccionIntegradora VARCHAR(255),
-    @TipoEvaluacion VARCHAR(50),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -4822,8 +4869,6 @@ BEGIN
             SET 
                 numero_semana = @NombreSemana,
                 descripcion = @Descripcion,
-                accion_integradora = @AccionIntegradora,
-                tipo_evaluacion = @TipoEvaluacion,
                 fecha_registro = GETDATE()
             WHERE fk_matriz_asignatura = @FKMatrizAsignatura;
 
@@ -4836,16 +4881,12 @@ BEGIN
             INSERT INTO SEMANASASIGNATURAMATRIZ (
                 fk_matriz_asignatura,
                 numero_semana,
-                descripcion,
-                accion_integradora,
-                tipo_evaluacion
+                descripcion
             )
             VALUES (
                 @FKMatrizAsignatura,
                 @NombreSemana,
-                @Descripcion,
-                @AccionIntegradora,
-                @TipoEvaluacion
+                @Descripcion
             );
 
             SET @Resultado = SCOPE_IDENTITY();
@@ -4872,8 +4913,6 @@ BEGIN
         fk_matriz_asignatura,
         numero_semana,
         descripcion,
-        accion_integradora,
-        tipo_evaluacion,
         fecha_inicio,
         fecha_fin,
         estado,
@@ -4887,8 +4926,6 @@ GO
 CREATE PROCEDURE usp_ActualizarSemana
     @IdSemana INT,
     @Descripcion VARCHAR(MAX) = NULL,
-    @AccionIntegradora VARCHAR(255) = NULL,
-    @TipoEvaluacion VARCHAR(50) = NULL,
     @Estado VARCHAR(50),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
@@ -4908,9 +4945,7 @@ BEGIN
     DECLARE @SemanasEnProceso INT;
     DECLARE @SemanasFinalizadas INT;
     DECLARE @DescripcionActual VARCHAR(MAX);
-    DECLARE @AccionIntegradoraActual VARCHAR(255);
-    DECLARE @TipoEvaluacionActual VARCHAR(50);
-
+    
     BEGIN TRY
         BEGIN TRANSACTION;
 
@@ -4918,9 +4953,7 @@ BEGIN
         SELECT 
             @IdMatrizAsignatura = fk_matriz_asignatura,
             @EstadoActualSemana = estado,
-            @DescripcionActual = descripcion,
-            @AccionIntegradoraActual = accion_integradora,
-            @TipoEvaluacionActual = tipo_evaluacion
+            @DescripcionActual = descripcion
         FROM SEMANASASIGNATURAMATRIZ 
         WHERE id_semana = @IdSemana;
 
@@ -4941,9 +4974,7 @@ BEGIN
         BEGIN
             -- Verificar si se está agregando contenido a alguno de los 3 campos principales
             IF (
-                (@Descripcion IS NOT NULL AND @DescripcionActual IS NULL) OR
-                (@AccionIntegradora IS NOT NULL AND @AccionIntegradoraActual IS NULL) OR
-                (@TipoEvaluacion IS NOT NULL AND @TipoEvaluacionActual IS NULL)
+                @Descripcion IS NOT NULL AND @DescripcionActual IS NULL
             )
             BEGIN
                 SET @NuevoEstadoSemana = 'En proceso';
@@ -4958,15 +4989,11 @@ BEGIN
             
             IF (@Descripcion IS NULL OR LTRIM(RTRIM(@Descripcion)) = '' OR @Descripcion = '<p><br></p>' OR @Descripcion = '<p></p>')
                 SET @CamposCompletos = 0;
-            IF (@AccionIntegradora IS NULL OR LTRIM(RTRIM(@AccionIntegradora)) = '')
-                SET @CamposCompletos = 0;
-            IF (@TipoEvaluacion IS NULL OR LTRIM(RTRIM(@TipoEvaluacion)) = '')
-                SET @CamposCompletos = 0;
-
+            
             IF @CamposCompletos = 0
             BEGIN
                 SET @Resultado = 0;
-                SET @Mensaje = 'No se puede finalizar la semana. Todos los campos (Descripción, Acción Integradora y Tipo de Evaluación) deben estar completos.';
+                SET @Mensaje = 'No se puede finalizar la semana. el campo Descripción debe estar completo.';
                 ROLLBACK TRANSACTION;
                 RETURN;
             END
@@ -4982,8 +5009,6 @@ BEGIN
         UPDATE SEMANASASIGNATURAMATRIZ 
         SET 
             descripcion = ISNULL(@Descripcion, descripcion),
-            accion_integradora = ISNULL(@AccionIntegradora, accion_integradora),
-            tipo_evaluacion = ISNULL(@TipoEvaluacion, tipo_evaluacion),
             estado = @NuevoEstadoSemana
         WHERE id_semana = @IdSemana;
 
@@ -5057,8 +5082,6 @@ BEGIN
         ma.estado,
         dam.numero_semana,
         dam.descripcion,
-        dam.accion_integradora,
-        dam.tipo_evaluacion,
         dam.fecha_registro AS fecha_descripcion
     FROM MATRIZASIGNATURA ma
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
@@ -5066,6 +5089,293 @@ BEGIN
     LEFT JOIN SEMANASASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
     WHERE ma.fk_matriz_integracion = @fk_matriz_integracion
     ORDER BY a.nombre;
+END;
+GO
+
+-- =============================================
+-- PROCEDIMIENTOS PARA ACCIONINTEGRADORA_TIPOEVALUACION
+-- =============================================
+
+-- CREAR registro en ACCIONINTEGRADORA_TIPOEVALUACION
+CREATE PROCEDURE usp_CrearAccionIntegradoraTipoEvaluacion
+    @FKMatrizIntegracion INT,
+    @NumeroSemana VARCHAR(20),
+    @AccionIntegradora VARCHAR(255) = NULL,
+    @TipoEvaluacion VARCHAR(50) = NULL,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Verificar si la matriz de integración existe
+        IF NOT EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE id_matriz_integracion = @FKMatrizIntegracion AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'La matriz de integración no existe o está inactiva';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Verificar si ya existe un registro para esta semana en la matriz
+        IF EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION 
+                  WHERE fk_matriz_integracion = @FKMatrizIntegracion 
+                  AND numero_semana = @NumeroSemana)
+        BEGIN
+            SET @Mensaje = 'Ya existe un registro para esta semana en la matriz de integración';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Insertar el nuevo registro
+        INSERT INTO ACCIONINTEGRADORA_TIPOEVALUACION (
+            fk_matriz_integracion,
+            numero_semana,
+            accion_integradora,
+            tipo_evaluacion,
+            fecha_registro
+        )
+        VALUES (
+            @FKMatrizIntegracion,
+            @NumeroSemana,
+            @AccionIntegradora,
+            @TipoEvaluacion,
+            GETDATE()
+        );
+
+        SET @Resultado = SCOPE_IDENTITY();
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'Registro creado exitosamente en ACCIONINTEGRADORA_TIPOEVALUACION';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al crear el registro: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- LEER registros de ACCIONINTEGRADORA_TIPOEVALUACION
+CREATE PROCEDURE usp_LeerAccionIntegradoraTipoEvaluacion
+    @IdAccionTipo INT = NULL,
+    @FKMatrizIntegracion INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @IdAccionTipo IS NOT NULL
+    BEGIN
+        -- Leer un registro específico
+        SELECT 
+            ait.id_accion_tipo,
+            ait.fk_matriz_integracion,
+            mic.nombre AS nombre_matriz,
+            mic.codigo AS codigo_matriz,
+            ait.numero_semana,
+            ait.accion_integradora,
+            ait.tipo_evaluacion,
+            ait.fecha_registro
+        FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
+        INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
+        WHERE ait.id_accion_tipo = @IdAccionTipo;
+    END
+    ELSE IF @FKMatrizIntegracion IS NOT NULL
+    BEGIN
+        -- Leer todos los registros de una matriz específica
+        SELECT 
+            ait.id_accion_tipo,
+            ait.fk_matriz_integracion,
+            mic.nombre AS nombre_matriz,
+            mic.codigo AS codigo_matriz,
+            ait.numero_semana,
+            ait.accion_integradora,
+            ait.tipo_evaluacion,
+            ait.fecha_registro
+        FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
+        INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
+        WHERE ait.fk_matriz_integracion = @FKMatrizIntegracion
+        ORDER BY ait.numero_semana;
+    END
+    ELSE
+    BEGIN
+        -- Leer todos los registros
+        SELECT 
+            ait.id_accion_tipo,
+            ait.fk_matriz_integracion,
+            mic.nombre AS nombre_matriz,
+            mic.codigo AS codigo_matriz,
+            ait.numero_semana,
+            ait.accion_integradora,
+            ait.tipo_evaluacion,
+            ait.fecha_registro
+        FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
+        INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
+        ORDER BY mic.codigo, ait.numero_semana;
+    END
+END;
+GO
+
+-- ACTUALIZAR registro en ACCIONINTEGRADORA_TIPOEVALUACION
+CREATE PROCEDURE usp_ActualizarAccionIntegradoraTipoEvaluacion
+    @IdAccionTipo INT,
+    @AccionIntegradora VARCHAR(255) = NULL,
+    @TipoEvaluacion VARCHAR(50) = NULL,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Verificar si el registro existe
+        IF NOT EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION WHERE id_accion_tipo = @IdAccionTipo)
+        BEGIN
+            SET @Mensaje = 'El registro no existe en ACCIONINTEGRADORA_TIPOEVALUACION';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Actualizar el registro
+        UPDATE ACCIONINTEGRADORA_TIPOEVALUACION 
+        SET 
+            accion_integradora = ISNULL(@AccionIntegradora, accion_integradora),
+            tipo_evaluacion = ISNULL(@TipoEvaluacion, tipo_evaluacion)
+        WHERE id_accion_tipo = @IdAccionTipo;
+
+        SET @Resultado = 1;
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'Registro actualizado exitosamente en ACCIONINTEGRADORA_TIPOEVALUACION';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al actualizar el registro: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- ELIMINAR registro en ACCIONINTEGRADORA_TIPOEVALUACION
+CREATE PROCEDURE usp_EliminarAccionIntegradoraTipoEvaluacion
+    @IdAccionTipo INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Verificar si el registro existe
+        IF NOT EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION WHERE id_accion_tipo = @IdAccionTipo)
+        BEGIN
+            SET @Mensaje = 'El registro no existe en ACCIONINTEGRADORA_TIPOEVALUACION';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Eliminar el registro
+        DELETE FROM ACCIONINTEGRADORA_TIPOEVALUACION 
+        WHERE id_accion_tipo = @IdAccionTipo;
+
+        SET @Resultado = 1;
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'Registro eliminado exitosamente de ACCIONINTEGRADORA_TIPOEVALUACION';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al eliminar el registro: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- ASIGNAR ACCIÓN INTEGRADORA Y TIPO DE EVALUACIÓN
+CREATE PROCEDURE usp_AsignarAccionYTipoEvaluacion
+    @IdAccionTipo INT,
+    @AccionIntegradora VARCHAR(255),
+    @TipoEvaluacion VARCHAR(50),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Verificar si el registro existe
+        IF NOT EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION WHERE id_accion_tipo = @IdAccionTipo)
+        BEGIN
+            SET @Mensaje = 'El registro no existe en ACCIONINTEGRADORA_TIPOEVALUACION';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Asignar acción integradora y tipo de evaluación
+        UPDATE ACCIONINTEGRADORA_TIPOEVALUACION 
+        SET 
+            accion_integradora = @AccionIntegradora,
+            tipo_evaluacion = @TipoEvaluacion
+        WHERE id_accion_tipo = @IdAccionTipo;
+
+        SET @Resultado = 1;
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'Acción integradora y tipo de evaluación asignados exitosamente';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al asignar acción y tipo de evaluación: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+-- OBTENER ACCIONES INTEGRADORAS POR MATRIZ
+CREATE PROCEDURE usp_ObtenerAccionesIntegradorasPorMatriz
+    @FKMatrizIntegracion INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        ait.id_accion_tipo,
+        ait.fk_matriz_integracion,
+        mic.nombre AS nombre_matriz,
+        mic.codigo AS codigo_matriz,
+        ait.numero_semana,
+        ait.accion_integradora,
+        ait.tipo_evaluacion,
+        ait.fecha_registro
+    FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
+    INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
+    WHERE ait.fk_matriz_integracion = @FKMatrizIntegracion
+    ORDER BY 
+        CASE 
+            WHEN ait.numero_semana LIKE 'Semana %' 
+            THEN CAST(REPLACE(ait.numero_semana, 'Semana ', '') AS INT)
+            ELSE 999
+        END;
 END;
 GO
 
