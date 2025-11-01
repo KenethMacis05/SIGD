@@ -1,5 +1,20 @@
 ﻿//Métodos Globales
 
+// Regresar a la pagina anterior y recargar
+function Recargar() {
+    // Intentar regresar
+    if (history.length > 1) {
+        history.back();
+        // Forzar recarga después de un breve tiempo
+        setTimeout(() => {
+            location.reload(true);
+        }, 50);
+    } else {
+        // Si no hay historia, redirigir a una página por defecto
+        window.location.href = '@Url.Action("Index", "Home")';
+    }
+}
+
 // Limpiar filtro
 function limpiarFiltro(texto) {
     return texto

@@ -42,7 +42,7 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
 
     return `
     <div class="col-sm-12 col-md-6 col-lg-4 mb-3">
-        <div class="card h-100 shadow-sm border-1">
+        <div class="card h-100 shadow-sm border-1 groud-asignatura estado-${color}">
             <div class="card-header bg-light d-flex justify-content-between align-items-center">
                 <span class="badge bg-${color}">${matrizAsignatura.codigo_asignatura}</span>
                 <div class="dropdown">
@@ -71,7 +71,7 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-start mb-3">
                     <div class="flex-grow-1 me-3">
-                        <h5 class="card-title text-dark mb-2 btn-titulo-asignatura"
+                        <h5 class="card-title text-dark mb-2 btn-titulo-asignatura estado-${color}"
                             style="cursor: pointer;"
                             data-id="${matrizAsignatura.id_matriz_asignatura_encriptado}">
                             ${matrizAsignatura.nombre_asignatura}

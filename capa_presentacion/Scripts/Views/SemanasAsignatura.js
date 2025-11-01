@@ -42,13 +42,13 @@ function generarHtmlSemanasAsignatura(Semana) {
             colorEstado = 'secondary';
             iconoEstado = 'fa-circle';
     }
-    console.log(Semana);
+
     return `
     <div class="col-sm-12 col-md-6 col-lg-4 mb-3">
-        <div class="card h-100 shadow-sm border-0">
+        <div class="card h-100 shadow-sm groud-semana estado-${colorEstado}">
             <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
                 <div class="d-flex align-items-center">
-                    <span class="fw-bold text-${colorEstado} me-2">${Semana.numero_semana}</span>
+                    <span class="fw-bold text-${colorEstado} me-2 btn-titulo-semana estado-${colorEstado}">${Semana.numero_semana}</span>
                 </div>
                 <button class="btn btn-sm btn-outline-${colorEstado} btn-editar-semana" 
                         data-id="${Semana.id_semana}">
@@ -81,7 +81,6 @@ function generarHtmlSemanasAsignatura(Semana) {
         </div>
     </div>`;
 }
-
 function abrirModal(semanaId) {
     // Limpiar los campos
     $("#idSemana").val("0");

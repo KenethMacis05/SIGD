@@ -5,6 +5,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<link rel="stylesheet" href="@Url.Content("~/Content/Views/SemanasAsignatura.css")" />
+
 <!--Contenedor-->
 <div class="card shadow-sm mt-3">
     <div class="card-body">
@@ -118,7 +120,6 @@
     <script>
         $(document).ready(function () {
             cargarSemanasDeLaAsignaturasDeLaMatriz("@Model.id_matriz_asignatura_encriptado");
-            console.log("@Model.id_matriz_asignatura_encriptado")
             window.semanasData = @Html.Raw(Json.Encode(ViewBag.Semanas));
         });
     </script>
