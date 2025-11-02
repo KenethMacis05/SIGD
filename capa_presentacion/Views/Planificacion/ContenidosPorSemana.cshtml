@@ -2,6 +2,9 @@
 @{
     ViewBag.Title = "Contenidos";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    // Convertir ViewBag a lista tipada para mejor manejo
+    var contenidos = ViewBag.Contenidos as List<capa_entidad.SEMANASASIGNATURAMATRIZ>;
 }
 
 <!--Contenedor-->
@@ -14,13 +17,13 @@
                     <div class="breadcrumb mb-0 shadow-sm rounded bg-light p-3 align-items-center flex-grow-1 me-md-3 w-100">
                         <div class="breadcrumb-item text-truncate">
                             <span class="text-primary fw-bold">
-                                <i class="fas fa-layer-group me-2"></i>@Model.nombre || @Model.codigo
+                                <i class="fas fa-layer-group me-2"></i>Contenidos de la @ViewBag.Semana, @Model.nombre || @Model.codigo || @Model.periodo
                             </span>
                         </div>
                     </div>
                     <div class="d-flex align-items-center flex-shrink-0 gap-2">
                         <button type="button" class="btn btn-secondary" onclick="abrirModal(null)">
-                            <i class="fas fa-book-medical me-2"></i>Agregar Asignatura
+                            <i class="fas fa-book-medical me-2"></i>Agregar Acción Integradora y Tipo de Evaluación
                         </button>
                         <a href="@Url.Action("Matriz_de_Integracion", "Planificacion")" class="btn btn-danger">
                             <i class="fa fa-times me-2"></i>Regresar
@@ -28,13 +31,80 @@
                     </div>
                 </div>
 
-
                 <hr />
 
                 <!-- Asignaturas de la Matriz -->
                 <div class="container-fluid mb-3">
-                    <div class="row g-3" id="matrizAsignatura">
-                        <!-- Las asignaturas se cargarán aquí via AJAX -->
+                    <div class="row g-3">
+                        @if (contenidos != null && contenidos.Any())
+                        {
+                            foreach (var contenido in contenidos)
+                            {
+                                <div class="col-md-6 col-lg-4 mb-3">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-header py-2 bg-light">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <h6 class="card-title mb-0 text-truncate">@contenido.asignatura</h6>
+                                                @{
+                                                    var badgeClass = contenido.estado switch
+                                                    {
+                                                        "Pendiente" => "bg-secondary",
+                                                        "En proceso" => "bg-warning",
+                                                        "Finalizado" => "bg-success",
+                                                        _ => "bg-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @badgeClass">@contenido.estado</span>
+                                            </div>
+                                            <small class="text-muted">@contenido.codigo_asignatura</small>
+                                        </div>
+                                        <div class="card-body">
+                                            <p class="card-text">
+                                                @if (!string.IsNullOrEmpty(contenido.descripcion) && contenido.descripcion != "Sin descripción")
+                                                {
+                                                    @contenido.descripcion
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted fst-italic">Sin contenido definido</span>
+                                                }
+                                            </p>
+                                            <div class="border-top pt-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-user me-1"></i>
+                                                    @(string.IsNullOrEmpty(contenido.profesor) ? "Sin asignar" : contenido.profesor)
+                                                    <br>
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    @if (contenido.fecha_inicio != DateTime.MinValue && contenido.fecha_fin != DateTime.MinValue)
+                                                    {
+                                                        @contenido.fecha_inicio.ToString("dd/MM/yyyy")<text> - </text>@contenido.fecha_fin.ToString("dd/MM/yyyy")
+                                                    }
+                                                    else
+                                                    {
+                                                        <text>Fechas no definidas</text>
+                                                    }
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="card-footer bg-transparent">
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag me-1"></i>@contenido.tipo_semana
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <div class="alert alert-light text-center py-5">
+                                    <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                                    <h4 class="text-muted">No hay contenidos definidos</h4>
+                                    <p class="text-muted mb-0">No se han definido contenidos para las asignaturas en esta semana.</p>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
 
@@ -45,9 +115,5 @@
 
 @section scripts{
     <script>
-        $(document).ready(function () {
-            window.contenidosData = @Html.Raw(Json.Encode(ViewBag.Contenidos));
-            console.log(window.contenidosData);
-        });
     </script>
 }

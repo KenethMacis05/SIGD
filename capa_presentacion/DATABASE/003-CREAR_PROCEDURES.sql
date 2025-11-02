@@ -5430,7 +5430,7 @@ BEGIN
             mic.fk_profesor,
             u_responsable.pri_nombre + ' ' + u_responsable.pri_apellido AS profesor_responsable,
             mic.fk_periodo,
-            p.semestre AS periodo,
+            CONCAT(p.anio, ' ',p.semestre) AS periodo,
             mic.competencias_genericas,
             mic.competencias_especificas,
             mic.objetivo_anio,

@@ -319,6 +319,7 @@ namespace capa_presentacion.Controllers
             var contenidos = CN_SemanasAsginaturaMatriz.ObtenerContenidosPorSemana(idEncriptado, semana, out resultado, out mensaje);
 
             ViewBag.Contenidos = contenidos;
+            ViewBag.Semana = semana;
             ViewBag.MensajeContenidos = mensaje;
 
             return View(matriz);
