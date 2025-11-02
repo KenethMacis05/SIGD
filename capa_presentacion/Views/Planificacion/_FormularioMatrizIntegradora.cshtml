@@ -226,6 +226,26 @@
                         </div>
                     </div>
                 </div>
+                <hr />
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <label for="inputGroupSelectModalidad" class="input-group-text">Modalidad</label>
+                            <input type="hidden" name="fk_modalidad_activa" id="fk_modalidad_activa" value="@Model.fk_modalidad" />
+                            @Html.DropDownListFor(m => m.fk_modalidad,
+                              new SelectList(Enumerable.Empty<SelectListItem>(), "Value", "Text"),
+                              "Seleccione una modalidad...",
+                              new
+                              {
+                                  @class = "form-select select2-hidden",
+                                  required = "required",
+                                  @oninvalid = "this.setCustomValidity('La modalidad es requerida')",
+                                  @oninput = "setCustomValidity('')",
+                                  id = "inputGroupSelectModalidad"
+                              })
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Competencias -->

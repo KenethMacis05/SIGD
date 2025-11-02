@@ -16,6 +16,9 @@ namespace capa_entidad
         public DateTime fecha_fin { get; set; }
         public string tipo_semana { get; set; }
         public string estado { get; set; }
+        public string asignatura { get; set; }
+        public string codigo_asignatura { get; set; }
+        public string profesor { get; set; }
         public DateTime fecha_registro { get; set; }
     }
 }

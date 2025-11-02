@@ -603,8 +603,10 @@
     <Content Include="Scripts\Template\Selects\SelectAsignaturas.js" />
     <Content Include="Scripts\Template\Selects\SelectCarreras.js" />
     <Content Include="Scripts\Template\Selects\SelectDepartamentos.js" />
+    <Content Include="Scripts\Template\Selects\SelectModalidad.js" />
     <Content Include="Scripts\Template\Selects\SelectPeriodos.js" />
     <Content Include="Scripts\Views\Acceso.js" />
+    <Content Include="Scripts\Views\AccionIntegradora_TipoEvaluacion.js" />
     <Content Include="Scripts\Views\Archivos.js" />
     <Content Include="Scripts\Views\AreaDeConocimiento.js" />
     <Content Include="Scripts\Views\Asignatura.js" />
@@ -737,6 +739,8 @@
     <Content Include="Views\Planificacion\AsignarAsignaturasMatrizIntegracion.cshtml" />
     <Content Include="Views\Planificacion\SemanasAsignatura.cshtml" />
     <Content Include="Views\Planificacion\Asignaturas_Asignadas.cshtml" />
+    <Content Include="Views\Planificacion\AccionIntegradoraTipoEvaluacion.cshtml" />
+    <Content Include="Views\Planificacion\ContenidosPorSemana.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

@@ -74,6 +74,24 @@ $('#datatable tbody').on('click', '.btn-viewAsignar', function () {
     window.location.href = "/Planificacion/AsignarAsignaturasMatrizIntegracion?idEncriptado=" + data.id_encriptado;
 });
 
+// Redirigir a la pantalla Acción Integradora Tipo Evaluacion
+$('#datatable tbody').on('click', '.btn-viewAccionIntegradoraTipoEvaluacion', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Planificacion/AccionIntegradoraTipoEvaluacion?idEncriptado=" + data.id_encriptado;
+});
+
+//Boton seleccionar matriz para ver las semanas de la matriz
+$("#datatable tbody").on("click", '.btn-semanas', function () {
+    filaSeleccionada = $(this).closest("tr");
+    var data = dataTable.row(filaSeleccionada).data()
+    abrirModal(data)
+});
+
+function abrirModal(json) {
+  
+    $("#createUser").modal("show");
+}
+
 // Botón de navegación Siguiente
 $('#btnSiguiente').click(function () {
     if (validarTabActual()) {
@@ -177,13 +195,16 @@ const dataTableOptions = {
         { data: "numero_semanas", title: "# de Semanas" },
         { data: "periodo", title: "Periodo" },
         { data: "carrera", title: "Carrera" },
+        { data: "modalidad", title: "Modalidad" },
         {
             defaultContent:
                 '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
                 '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
                 '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar"><i class="fa fa-user-graduate"></i></button>' +
+                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-semanas"><i class="fa fa-calendar"></i></button>' +
+                '<button type="button" class="btn btn-dark btn-sm ms-1 btn-viewAccionIntegradoraTipoEvaluacion"><i class="fa fa-tasks"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "130"
+            width: "200"
         },
     ]
 };

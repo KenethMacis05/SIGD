@@ -45,5 +45,10 @@ namespace capa_negocio
             return CD_SemanasAsginaturaMatriz.Listar(fk_matriz_asignatura, out resultado, out mensaje);
         }
 
+        public List<SEMANASASIGNATURAMATRIZ> ObtenerContenidosPorSemana(string fk_matriz_integracion_encriptada, string numero_semana, out int resultado, out string mensaje)
+        {
+            var fk_matriz_integracion = Convert.ToInt32(new CN_Recursos().DecryptValue(fk_matriz_integracion_encriptada));
+            return CD_SemanasAsginaturaMatriz.ObtenerContenidosPorSemana(fk_matriz_integracion, numero_semana, out resultado, out mensaje);
+        }
     }
 }

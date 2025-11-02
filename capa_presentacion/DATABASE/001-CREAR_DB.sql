@@ -339,7 +339,7 @@ CREATE TABLE SEMANASASIGNATURAMATRIZ (
     descripcion VARCHAR(255),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    tipo_semana VARCHAR(50) NOT NULL CHECK (tipo_semana IN ('Normal', 'Corte Evaluacion', 'Corte Final')),
+    tipo_semana VARCHAR(50) NOT NULL CHECK (tipo_semana IN ('Normal', 'Corte Evaluativo', 'Corte Final')),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_SEMANASASIGNATURA_MATRIZASIGNATURA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE
@@ -355,6 +355,7 @@ CREATE TABLE ACCIONINTEGRADORA_TIPOEVALUACION (
     numero_semana VARCHAR(255) NOT NULL,
     accion_integradora VARCHAR(255),
     tipo_evaluacion VARCHAR(50),
+    estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_ACCIONTIPO_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE
 );

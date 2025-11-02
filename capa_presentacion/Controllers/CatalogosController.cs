@@ -17,6 +17,7 @@ namespace capa_presentacion.Controllers
         CN_Carrera CN_Carrera = new CN_Carrera();
         CN_Asignatura CN_Asignatura = new CN_Asignatura();
         CN_Periodo CN_Periodo = new CN_Periodo();
+        CN_Modalidad CN_Modalidad = new CN_Modalidad();
 
         #region Areas de Conocimiento
 
@@ -254,6 +255,19 @@ namespace capa_presentacion.Controllers
             string mensaje = string.Empty;
             int resultado = CN_Periodo.Eliminar(idPeriodo, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Modalidad
+
+        [HttpGet]
+        public JsonResult ListarModalidad()
+        {
+            List<MODALIDAD> lst = new List<MODALIDAD>();
+            lst = CN_Modalidad.Listar();
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

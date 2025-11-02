@@ -60,6 +60,56 @@ namespace capa_datos
             return lista;
         }
 
+        public List<SEMANASASIGNATURAMATRIZ> ObtenerContenidosPorSemana(int fk_matriz_integracion, string numero_semana, out int resultado, out string mensaje)
+        {
+            List<SEMANASASIGNATURAMATRIZ> lista = new List<SEMANASASIGNATURAMATRIZ>();
+            resultado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_ObtenerContenidosPorSemana", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("FKMatrizIntegracion", fk_matriz_integracion);
+                    cmd.Parameters.AddWithValue("NumeroSemana", numero_semana);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lista.Add(new SEMANASASIGNATURAMATRIZ()
+                            {
+                                numero_semana = dr["numero_semana"].ToString(),
+                                asignatura = dr["asignatura"].ToString(),
+                                codigo_asignatura = dr["codigo_asignatura"].ToString(),
+                                profesor = dr["profesor"] != DBNull.Value ? dr["profesor"].ToString() : "Sin asignar",
+                                descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "Sin descripción",
+                                fecha_inicio = dr["fecha_inicio"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_inicio"]) : DateTime.MinValue,
+                                fecha_fin = dr["fecha_fin"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_fin"]) : DateTime.MinValue,
+                                tipo_semana = dr["tipo_semana"] != DBNull.Value ? dr["tipo_semana"].ToString() : "Normal",
+                                estado = dr["estado"] != DBNull.Value ? dr["estado"].ToString() : "Pendiente",
+                                fecha_registro = dr["fecha_registro"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_registro"]) : DateTime.MinValue
+                            });
+                        }
+                    }
+
+                    resultado = 1;
+                    mensaje = "Contenidos cargados correctamente";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = 0;
+                mensaje = "Error al listar los contenidos de las asignaturas: " + ex.Message;
+            }
+
+            return lista;
+        }
+
         public int Actualizar(SEMANASASIGNATURAMATRIZ semana, out string mensaje)
         {
             int resultado = 0;

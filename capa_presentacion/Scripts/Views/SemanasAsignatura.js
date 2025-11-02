@@ -81,12 +81,11 @@ function generarHtmlSemanasAsignatura(Semana) {
         </div>
     </div>`;
 }
+
 function abrirModal(semanaId) {
     // Limpiar los campos
     $("#idSemana").val("0");
     $('#descripcionSummernote').summernote('code', '');
-    $("#accionIntegradora").val("");
-    $("#tipoEvaluacion").val("");
     $("#estado").val("Pendiente");
 
     // Resetear información de la semana
@@ -96,8 +95,6 @@ function abrirModal(semanaId) {
 
     // Habilitar todos los campos inicialmente
     $("#estado").prop("disabled", false);
-    $("#accionIntegradora").prop("disabled", false);
-    $("#tipoEvaluacion").prop("disabled", false);
     $('#descripcionSummernote').summernote('enable');
 
     // Si se proporciona un ID, buscar la semana en los datos del ViewBag
@@ -106,8 +103,6 @@ function abrirModal(semanaId) {
 
         if (semana) {
             $("#idSemana").val(semana.id_semana);
-            $("#accionIntegradora").val(semana.accion_integradora);
-            $("#tipoEvaluacion").val(semana.tipo_evaluacion);
             $("#estado").val(semana.estado);
 
             // Establecer el contenido en Summernote
@@ -131,29 +126,32 @@ function abrirModal(semanaId) {
 
 // Función para aplicar reglas de estado
 function aplicarReglasEstado(semana) {
-    const tieneDescripcion = semana.descripcion && semana.descripcion.trim() !== '' &&
-        semana.descripcion !== '<p><br></p>' && semana.descripcion !== '<p></p>';
-    const tieneAccionIntegradora = semana.accion_integradora && semana.accion_integradora.trim() !== '';
-    const tieneTipoEvaluacion = semana.tipo_evaluacion && semana.tipo_evaluacion.trim() !== '';
+    const tieneDescripcion = semana.descripcion &&
+        semana.descripcion.trim() !== '' &&
+        semana.descripcion !== '<p><br></p>' &&
+        semana.descripcion !== '<p></p>';
 
-    const todosCompletos = tieneDescripcion && tieneAccionIntegradora && tieneTipoEvaluacion;
-
-    // Regla 1: Si está "Pendiente" y sin datos, deshabilitar estado
-    if (semana.estado === 'Pendiente' && !tieneDescripcion && !tieneAccionIntegradora && !tieneTipoEvaluacion) {
+    // Regla 1: Si está "Pendiente" y sin descripción, deshabilitar estado
+    if (semana.estado === 'Pendiente' && !tieneDescripcion) {
         $("#estado").prop("disabled", true);
-        $("#estado").attr("title", "Complete al menos un campo para habilitar el estado");
+        $("#estado").attr("title", "Complete la descripción para habilitar el estado");
     }
-    // Regla 2: Si está "En proceso" y no tiene todos los campos completos, solo permitir "En proceso"
-    else if (semana.estado === 'En proceso' && !todosCompletos) {
-        // Remover la opción "Finalizado" temporalmente
+    // Regla 2: Si está "En proceso" y no tiene descripción, solo permitir "En proceso"
+    else if (semana.estado === 'En proceso' && !tieneDescripcion) {
         $("#estado option[value='Finalizado']").prop('disabled', true);
         $("#estado option[value='Pendiente']").prop('disabled', true);
-        $("#estado").attr("title", "Complete todos los campos para poder finalizar");
+        $("#estado").attr("title", "Complete la descripción para poder finalizar");
     }
-    // Regla 3: Si tiene todos los campos completos, permitir cambiar a "Finalizado"
-    else if (todosCompletos) {
+    // Regla 3: Si tiene descripción completa, permitir cambiar a "Finalizado"
+    else if (tieneDescripcion) {
         $("#estado option[value='Finalizado']").prop('disabled', false);
         $("#estado option[value='Pendiente']").prop('disabled', true);
+        $("#estado").removeAttr("title");
+        $("#estado").prop("disabled", false);
+    }
+    // Regla 4: Habilitar el control si hay algún cambio
+    else {
+        $("#estado").prop("disabled", false);
         $("#estado").removeAttr("title");
     }
 }
@@ -161,8 +159,6 @@ function aplicarReglasEstado(semana) {
 function GuardarSemana() {
     var Semana = {
         id_semana: $("#idSemana").val().trim(),
-        accion_integradora: $("#accionIntegradora").val().trim(),
-        tipo_evaluacion: $("#tipoEvaluacion").val().trim(),
         descripcion: $('#descripcionSummernote').summernote('code'),
         estado: $("#estado").val().trim(),
     };
@@ -177,7 +173,7 @@ function GuardarSemana() {
     const descripcionLimpia = Semana.descripcion.replace(/<[^>]*>/g, '').trim();
 
     if (!descripcionLimpia && !Semana.accion_integradora && !Semana.tipo_evaluacion) {
-        showAlert("Información", "Debe ingresar al menos un valor en: Descripción, Acción Integradora o Tipo de Evaluación", "info");
+        showAlert("Información", "Debe ingresar al menos un valor en: Descripción", "info");
         return;
     }
 

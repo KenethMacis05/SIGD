@@ -48,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CN_AccionIntegradoraTipoEvaluaciona.cs" />
     <Compile Include="CN_Archivo.cs" />
     <Compile Include="CN_AreaConocimiento.cs" />
     <Compile Include="CN_Asignatura.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="CN_MatrizAsignatura.cs" />
     <Compile Include="CN_MatrizIntegracionComponentes.cs" />
     <Compile Include="CN_Menu.cs" />
+    <Compile Include="CN_Modalidad.cs" />
     <Compile Include="CN_Periodo.cs" />
     <Compile Include="CN_Permisos.cs" />
     <Compile Include="CN_PlanClasesDiario.cs" />

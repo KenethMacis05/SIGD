@@ -18,6 +18,7 @@ namespace capa_presentacion.Controllers
         CN_MatrizIntegracionComponentes CN_MatrizIntegradora = new CN_MatrizIntegracionComponentes();
         CN_MatrizAsignatura CN_MatrizAsignatura = new CN_MatrizAsignatura();
         CN_SemanasAsginaturaMatriz CN_SemanasAsginaturaMatriz = new CN_SemanasAsginaturaMatriz();
+        CN_AccionIntegradoraTipoEvaluaciona CN_AccionIntegradoraTipoEvaluaciona = new CN_AccionIntegradoraTipoEvaluaciona();
 
         #region Matriz de Integracion de Componentes
         
@@ -298,6 +299,31 @@ namespace capa_presentacion.Controllers
             return View(asignatura);
         }
 
+        public ActionResult ContenidosPorSemana(string idEncriptado, string semana)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+            // Validar usuario autenticado
+            if (usuario == null)
+            {
+                TempData["Error"] = "Debe iniciar sesión para acceder a esta funcionalidad.";
+                return RedirectToAction("Login", "Autenticacion");
+            }
+
+            // Obtener la matriz principal
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(idEncriptado, usuario.id_usuario);
+
+            // Obtener contenidos de las asignaturas por semana
+            int resultado;
+            string mensaje;
+            var contenidos = CN_SemanasAsginaturaMatriz.ObtenerContenidosPorSemana(idEncriptado, semana, out resultado, out mensaje);
+
+            ViewBag.Contenidos = contenidos;
+            ViewBag.MensajeContenidos = mensaje;
+
+            return View(matriz);
+        }
+
         // Endpoint para cargar asignaturas via AJAX
         [HttpGet]
         public JsonResult ListarSemanasDeAsignaturaPorId(string idEncriptado)
@@ -350,6 +376,69 @@ namespace capa_presentacion.Controllers
         public ActionResult Asignaturas_Asignadas()
         {
             return View();
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        //  Acción integradora y tipo de evaluación  //
+        ///////////////////////////////////////////////////////////////////////////////////
+
+        //Vista acción integradora y tipo de evaluación
+        [HttpGet]
+        public ActionResult AccionIntegradoraTipoEvaluacion(string idEncriptado)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+
+            // Validar usuario autenticado
+            if (usuario == null)
+            {
+                TempData["Error"] = "Debe iniciar sesión para acceder a esta funcionalidad.";
+                return RedirectToAction("Login", "Autenticacion");
+            }
+
+            // Obtener la matriz principal
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(idEncriptado, usuario.id_usuario);
+
+            // Validar si la matriz existe
+            if (matriz == null)
+            {
+                TempData["Error"] = "La matriz de integración no existe o no tiene permisos para acceder a ella.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+
+            // Validar permisos específicos (redundante pero segura)
+            if (matriz.fk_profesor != usuario.id_usuario)
+            {
+                TempData["Error"] = "Usted no tiene permisos en esta Matriz.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+
+            // Obtener las acción integradora y tipo de evaluación
+            int resultado;
+            string mensaje;
+            var accionIntegradoraTipoEvaluacion = CN_AccionIntegradoraTipoEvaluaciona.ListarPorMatriz(idEncriptado, out resultado, out mensaje);
+
+            ViewBag.accionIntegradoraTipoEvaluacion = accionIntegradoraTipoEvaluacion;
+            ViewBag.Mensaje = mensaje;
+
+            return View(matriz);
+        }
+
+        [HttpGet]
+        public JsonResult ListarAccionIntegradoraTipoEvaluacionPorId(string idEncriptado)
+        {
+            try
+            {
+                int resultado;
+                string mensaje;
+
+                var accionIntegradoraTipoEvaluacion = CN_AccionIntegradoraTipoEvaluaciona.ListarPorMatriz(idEncriptado, out resultado, out mensaje);
+
+                return Json(new { success = resultado == 1, data = accionIntegradoraTipoEvaluacion, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, data = new List<ACCIONINTEGRADORA_TIPOEVALUACION>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         #endregion

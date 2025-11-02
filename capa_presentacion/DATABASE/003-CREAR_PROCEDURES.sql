@@ -3648,7 +3648,7 @@ BEGIN
         estado,
         fecha_registro
     FROM MODALIDAD
-	ORDER BY id_modalidad DESC
+	ORDER BY id_modalidad ASC
 END
 GO
 
@@ -3999,11 +3999,13 @@ BEGIN
             -- Insertar en ACCIONINTEGRADORA_TIPOEVALUACION
             INSERT INTO ACCIONINTEGRADORA_TIPOEVALUACION (
                 fk_matriz_integracion,
-                numero_semana
+                numero_semana,
+                estado
             )
             VALUES (
                 @IdMatrizIntegracion,
-                'Semana ' + CAST(@Contador AS VARCHAR(3))
+                'Semana ' + CAST(@Contador AS VARCHAR(3)),
+                'Pendiente'
             );
 
             SET @Contador = @Contador + 1;
@@ -5183,6 +5185,7 @@ BEGIN
             ait.numero_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
+            ait.estado,
             ait.fecha_registro
         FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
         INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
@@ -5199,11 +5202,12 @@ BEGIN
             ait.numero_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
+            ait.estado,
             ait.fecha_registro
         FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
         INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
         WHERE ait.fk_matriz_integracion = @FKMatrizIntegracion
-        ORDER BY ait.numero_semana;
+        ORDER BY ait.id_accion_tipo ASC;
     END
     ELSE
     BEGIN
@@ -5216,6 +5220,7 @@ BEGIN
             ait.numero_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
+            ait.estado,
             ait.fecha_registro
         FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
         INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
@@ -5229,6 +5234,7 @@ CREATE PROCEDURE usp_ActualizarAccionIntegradoraTipoEvaluacion
     @IdAccionTipo INT,
     @AccionIntegradora VARCHAR(255) = NULL,
     @TipoEvaluacion VARCHAR(50) = NULL,
+    @Estado VARCHAR(50),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -5252,7 +5258,8 @@ BEGIN
         UPDATE ACCIONINTEGRADORA_TIPOEVALUACION 
         SET 
             accion_integradora = ISNULL(@AccionIntegradora, accion_integradora),
-            tipo_evaluacion = ISNULL(@TipoEvaluacion, tipo_evaluacion)
+            tipo_evaluacion = ISNULL(@TipoEvaluacion, tipo_evaluacion),
+            estado = @Estado
         WHERE id_accion_tipo = @IdAccionTipo;
 
         SET @Resultado = 1;
@@ -5817,6 +5824,94 @@ BEGIN
         SET @Mensaje = 'Error al actualizar el plan de clases: ' + ERROR_MESSAGE();
     END CATCH
 END
+GO
+
+CREATE PROCEDURE usp_ActualizarTipoSemanaMatriz
+    @FKMatrizIntegracion INT,
+    @NumeroSemana VARCHAR(255),
+    @NuevoTipoSemana VARCHAR(50),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Actualizar SEMANASASIGNATURAMATRIZ para todas las asignaturas de esta matriz
+        UPDATE sam
+        SET sam.tipo_semana = @NuevoTipoSemana
+        FROM SEMANASASIGNATURAMATRIZ sam
+        INNER JOIN MATRIZASIGNATURA ma ON sam.fk_matriz_asignatura = ma.id_matriz_asignatura
+        WHERE ma.fk_matriz_integracion = @FKMatrizIntegracion
+        AND sam.numero_semana = @NumeroSemana;
+
+        -- Actualizar ACCIONINTEGRADORA_TIPOEVALUACION si existe
+        UPDATE aite
+        SET aite.tipo_evaluacion = 
+            CASE 
+                WHEN @NuevoTipoSemana = 'Corte Evaluacion' THEN 'Evaluación Parcial'
+                WHEN @NuevoTipoSemana = 'Corte Final' THEN 'Evaluación Final'
+                ELSE aite.tipo_evaluacion
+            END
+        FROM ACCIONINTEGRADORA_TIPOEVALUACION aite
+        WHERE aite.fk_matriz_integracion = @FKMatrizIntegracion
+        AND aite.numero_semana = @NumeroSemana;
+
+        SET @Resultado = 1;
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'Tipo de semana actualizado exitosamente para todas las asignaturas';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al actualizar tipo de semana: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+CREATE OR ALTER PROCEDURE usp_ObtenerContenidosPorSemana
+    @FKMatrizIntegracion INT,
+    @NumeroSemana VARCHAR(255)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        -- Información de la Semana
+        @NumeroSemana AS numero_semana,
+        
+        -- Información de cada Asignatura con su contenido
+        a.nombre AS asignatura,
+        a.codigo AS codigo_asignatura,
+        CONCAT(u.pri_nombre, ' ', 
+               CASE WHEN NULLIF(u.seg_nombre, '') IS NOT NULL THEN ' ' + u.seg_nombre ELSE '' END,
+               ' ',
+               u.pri_apellido,
+               CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
+        ) AS profesor,
+        sam.descripcion AS descripcion,
+        sam.estado AS estado,
+        sam.tipo_semana,
+        sam.fecha_inicio,
+        sam.fecha_fin
+        
+    FROM MATRIZINTEGRACIONCOMPONENTES mic
+    INNER JOIN MATRIZASIGNATURA ma ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    LEFT JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
+    LEFT JOIN SEMANASASIGNATURAMATRIZ sam ON ma.id_matriz_asignatura = sam.fk_matriz_asignatura 
+        AND sam.numero_semana = @NumeroSemana
+    WHERE mic.id_matriz_integracion = @FKMatrizIntegracion
+        AND mic.estado = 1
+        AND ma.estado IN ('Pendiente', 'En proceso', 'Finalizado')
+    ORDER BY a.nombre;
+END;
 GO
 
 GRANT EXECUTE ON SCHEMA::dbo TO [IIS APPPOOL\sigd];
