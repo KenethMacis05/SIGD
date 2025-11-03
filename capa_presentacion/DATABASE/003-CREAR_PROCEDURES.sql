@@ -3885,6 +3885,9 @@ BEGIN
     DECLARE @Contador INT;
     DECLARE @Anio INT = YEAR(GETDATE());
     DECLARE @IdMatrizIntegracion INT;
+    DECLARE @FechaInicioSemana DATE;
+    DECLARE @FechaFinSemana DATE;
+    DECLARE @IdSemana INT;
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -3991,20 +3994,52 @@ BEGIN
         SET @IdMatrizIntegracion = SCOPE_IDENTITY();
         SET @Resultado = @IdMatrizIntegracion;
 
-        -- 11. Crear registros en ACCIONINTEGRADORA_TIPOEVALUACION para cada semana
+        -- 11. Crear registros en SEMANAS y ACCIONINTEGRADORA_TIPOEVALUACION
         SET @Contador = 1;
         WHILE @Contador <= @NumeroSemanas
         BEGIN
-            
-            -- Insertar en ACCIONINTEGRADORA_TIPOEVALUACION
-            INSERT INTO ACCIONINTEGRADORA_TIPOEVALUACION (
-                fk_matriz_integracion,
-                numero_semana,
+            -- Calcular fecha de inicio de la semana (7 días por cada semana anterior)
+            SET @FechaInicioSemana = DATEADD(DAY, (@Contador - 1) * 7, @FechaInicio);
+            -- Calcular fecha de fin de la semana (6 días después del inicio)
+            SET @FechaFinSemana = DATEADD(DAY, 6, @FechaInicioSemana);
+
+            DECLARE @TipoSemana VARCHAR(50) = 'Normal';
+
+            IF @Contador = @NumeroSemanas 
+                SET @TipoSemana = 'Corte Final';
+
+            -- Insertar en SEMANAS
+            INSERT INTO SEMANAS (
+                fk_matriz_integracion, 
+                numero_semana, 
+                descripcion, 
+                fecha_inicio, 
+                fecha_fin, 
+                tipo_semana, 
                 estado
             )
             VALUES (
-                @IdMatrizIntegracion,
-                'Semana ' + CAST(@Contador AS VARCHAR(3)),
+                @IdMatrizIntegracion, 
+                @Contador, 
+                'Semana ' + CAST(@Contador AS VARCHAR(3)), 
+                @FechaInicioSemana, 
+                @FechaFinSemana, 
+                @TipoSemana, 
+                'Pendiente'
+            );
+
+            -- Obtener el ID de la semana recién creada
+            SET @IdSemana = SCOPE_IDENTITY();
+
+            -- Insertar en ACCIONINTEGRADORA_TIPOEVALUACION
+            INSERT INTO ACCIONINTEGRADORA_TIPOEVALUACION (
+                fk_matriz_integracion, 
+                fk_semana, 
+                estado
+            )
+            VALUES (
+                @IdMatrizIntegracion, 
+                @IdSemana, 
                 'Pendiente'
             );
 
@@ -4014,7 +4049,7 @@ BEGIN
         COMMIT TRANSACTION;
 
         SET @Mensaje = 'La Matriz Integradora se registró exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre + 
-                      ' con ' + CAST(@NumeroSemanas AS VARCHAR(3)) + ' evaluaciones creadas';
+                      ' con ' + CAST(@NumeroSemanas AS VARCHAR(3)) + ' semanas creadas';
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
@@ -4323,7 +4358,7 @@ GO
 -- PROCEDIMIENTOS PARA MATRIZASIGNATURA
 -- =============================================
 
--- Asignar asignatura a matriz con profesor
+-- Asignar asignatura a una matriz de integración
 CREATE PROCEDURE usp_AsignarAsignaturaMatriz
     @FKMatrizIntegracion INT,
     @FKAsignatura INT,
@@ -4339,11 +4374,7 @@ BEGIN
     DECLARE @NombreProfesorAsignado VARCHAR(255);
     DECLARE @NumeroSemanas INT;
     DECLARE @FechaInicioMatriz DATE;
-    DECLARE @FechaInicioSemana DATE;
-    DECLARE @FechaFinSemana DATE;
     DECLARE @IdMatrizAsignatura INT;
-    DECLARE @Contador INT = 1;
-
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -4412,22 +4443,24 @@ BEGIN
             'Pendiente'
         );
 
-        -- 8. Registros de la tabla SEMANASASIGNATURAMATRIZ según el número de semanas de la matriz de integración
+        -- 8. Crear contenidos para cada semana de la matriz (ENFOQUE SET-BASED)
         SET @IdMatrizAsignatura = SCOPE_IDENTITY();
 
-        -- Generar las semanas automáticamente
-        WHILE @Contador <= @NumeroSemanas
-        BEGIN
-            -- Calcular fecha de inicio de la semana (7 días por cada semana anterior)
-            SET @FechaInicioSemana = DATEADD(DAY, (@Contador - 1) * 7, @FechaInicioMatriz);
-            -- Calcular fecha de fin de la semana (6 días después del inicio)
-            SET @FechaFinSemana = DATEADD(DAY, 6, @FechaInicioSemana);
-
-            INSERT INTO SEMANASASIGNATURAMATRIZ (fk_matriz_asignatura, numero_semana, fecha_inicio, fecha_fin, estado, tipo_semana)
-            VALUES (@IdMatrizAsignatura, 'Semana ' + CAST(@Contador AS VARCHAR(3)), @FechaInicioSemana, @FechaFinSemana, 'Pendiente', 'Normal');
-
-            SET @Contador = @Contador + 1;
-        END
+        -- Insertar todos los contenidos en una sola operación
+        INSERT INTO CONTENIDOS (
+            fk_matriz_asignatura, 
+            fk_semana, 
+            contenido, 
+            estado
+        )
+        SELECT 
+            @IdMatrizAsignatura,
+            id_semana,
+            'Contenido pendiente para ' + @NombreAsignatura,
+            'Pendiente'
+        FROM SEMANAS 
+        WHERE fk_matriz_integracion = @FKMatrizIntegracion
+        ORDER BY numero_semana;
 
         SET @Resultado = @IdMatrizAsignatura;
 
@@ -4435,7 +4468,7 @@ BEGIN
 
         SET @Mensaje = 'La asignatura: ' + ISNULL(@NombreAsignatura, '') + 
                       ', se asignó al docente ' + ISNULL(@NombreProfesorAsignado, '') +
-                      ' con ' + CAST(@NumeroSemanas AS VARCHAR(3)) + ' semanas generadas'; 
+                      ' con ' + CAST(@NumeroSemanas AS VARCHAR(3)) + ' contenidos generados'; 
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
@@ -4458,16 +4491,21 @@ BEGIN
         a.codigo,
         a.nombre AS asignatura,
         ma.fk_profesor_asignado,
-        u.pri_nombre + ' ' + u.pri_apellido AS profesor,
+        CONCAT(u.pri_nombre, ' ', 
+               CASE WHEN NULLIF(u.seg_nombre, '') IS NOT NULL THEN ' ' + u.seg_nombre ELSE '' END,
+               ' ',
+               u.pri_apellido,
+               CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
+        ) AS profesor,
         u.correo AS correo,
         ma.estado,
         ma.fecha_registro,
-        COUNT(CASE WHEN sam.estado = 'Finalizado' THEN 1 ELSE NULL END) AS semanas_finalizadas,
-		COUNT(sam.id_semana) AS total_semanas
+        COUNT(CASE WHEN c.estado = 'Finalizado' THEN 1 ELSE NULL END) AS contenidos_finalizados,
+        COUNT(c.id_contenido) AS total_contenidos
     FROM MATRIZASIGNATURA ma
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
-    INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
-    LEFT JOIN SEMANASASIGNATURAMATRIZ sam ON ma.id_matriz_asignatura = sam.fk_matriz_asignatura
+    LEFT JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
+    LEFT JOIN CONTENIDOS c ON ma.id_matriz_asignatura = c.fk_matriz_asignatura
     WHERE ma.fk_matriz_integracion = @FKMatrizIntegracion
     GROUP BY 
         ma.id_matriz_asignatura,
@@ -4477,7 +4515,9 @@ BEGIN
         a.nombre,
         ma.fk_profesor_asignado,
         u.pri_nombre,
+        u.seg_nombre,
         u.pri_apellido,
+        u.seg_apellido,
         u.correo,
         ma.estado,
         ma.fecha_registro
@@ -4486,7 +4526,7 @@ END;
 GO
 
 -- Leer asignatura asignada por Id
-CREATE PROCEDURE usp_ObtenerAsignaturaAsignadaPorId
+CREATE OR ALTER PROCEDURE usp_ObtenerAsignaturaAsignadaPorId
     @IdMatrizAsignatura INT
 AS
 BEGIN
@@ -4494,18 +4534,22 @@ BEGIN
         ma.id_matriz_asignatura,
         ma.fk_matriz_integracion,
         ma.fk_asignatura,
-        a.codigo ,
+        a.codigo,
         a.nombre AS asignatura,
         ma.fk_profesor_asignado,
-        u.pri_nombre + ' ' + u.pri_apellido AS profesor,
+        CONCAT(u.pri_nombre, ' ', 
+               CASE WHEN NULLIF(u.seg_nombre, '') IS NOT NULL THEN ' ' + u.seg_nombre ELSE '' END,
+               ' ',
+               u.pri_apellido,
+               CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
+        ) AS profesor,
         u.correo AS correo,
         ma.estado,
         ma.fecha_registro
     FROM MATRIZASIGNATURA ma
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
     INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
-    WHERE ma.id_matriz_asignatura = @IdMatrizAsignatura
-    ORDER BY a.nombre;
+    WHERE ma.id_matriz_asignatura = @IdMatrizAsignatura;
 END;
 GO
 
@@ -4521,19 +4565,24 @@ BEGIN
         ma.fk_profesor_asignado,
         mic.codigo AS codigo_matriz,
         mic.nombre AS nombre_matriz,
-        us.pri_nombre + ' ' + us.pri_apellido AS profesor,
+        CONCAT(us.pri_nombre, ' ', 
+               CASE WHEN NULLIF(us.seg_nombre, '') IS NOT NULL THEN ' ' + us.seg_nombre ELSE '' END,
+               ' ',
+               us.pri_apellido,
+               CASE WHEN NULLIF(us.seg_apellido, '') IS NOT NULL THEN ' ' + us.seg_apellido ELSE '' END
+        ) AS profesor,
         us.correo,
         a.codigo AS codigo,
         a.nombre AS asignatura,
-        COUNT(CASE WHEN sam.estado = 'Finalizado' THEN 1 ELSE NULL END) AS semanas_finalizadas,
-        COUNT(sam.id_semana) AS total_semanas,
+        COUNT(CASE WHEN c.estado = 'Finalizado' THEN 1 ELSE NULL END) AS contenidos_finalizados,
+        COUNT(c.id_contenido) AS total_contenidos,
         ma.estado,
         ma.fecha_registro
     FROM MATRIZASIGNATURA ma
     INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ma.fk_matriz_integracion = mic.id_matriz_integracion
     INNER JOIN USUARIOS us ON us.id_usuario = mic.fk_profesor
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
-    LEFT JOIN SEMANASASIGNATURAMATRIZ sam ON ma.id_matriz_asignatura = sam.fk_matriz_asignatura
+    LEFT JOIN CONTENIDOS c ON ma.id_matriz_asignatura = c.fk_matriz_asignatura
     WHERE ma.fk_profesor_asignado = @FKProfesorAsignado
     AND mic.estado = 1
     GROUP BY 
@@ -4544,7 +4593,9 @@ BEGIN
         mic.codigo,
         mic.nombre,
         us.pri_nombre,
+        us.seg_nombre,
         us.pri_apellido,
+        us.seg_apellido,
         us.correo,
         a.codigo,
         a.nombre,
@@ -4817,37 +4868,72 @@ END;
 GO
 
 -- Remover asignatura de matriz
-CREATE PROCEDURE usp_RemoverAsignaturaMatriz
+CREATE OR ALTER PROCEDURE usp_RemoverAsignaturaMatriz
     @IdMatrizAsignatura INT,
-	@FKProfesorPropietario INT,
-	@Resultado BIT OUTPUT
+    @FKProfesorPropietario INT,
+    @Resultado BIT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
 AS
 BEGIN
-	SET @Resultado = 0;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
 
-	IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura)
-	BEGIN
-		-- Primero eliminar las descripciones asociadas
-		DELETE FROM SEMANASASIGNATURAMATRIZ 
-		WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
-    
-		-- Luego eliminar la asignatura de la matriz
-		DELETE FROM MATRIZASIGNATURA 
-		WHERE id_matriz_asignatura = @IdMatrizAsignatura;
-		SET @Resultado = 1
-	END
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- Verificar si la asignatura de matriz existe
+        IF NOT EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura)
+        BEGIN
+            SET @Mensaje = 'La asignatura no existe en la matriz';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Verificar si el profesor propietario tiene permisos (opcional)
+        IF NOT EXISTS (
+            SELECT 1 
+            FROM MATRIZASIGNATURA ma
+            INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ma.fk_matriz_integracion = mic.id_matriz_integracion
+            WHERE ma.id_matriz_asignatura = @IdMatrizAsignatura 
+            AND mic.fk_profesor = @FKProfesorPropietario
+        )
+        BEGIN
+            SET @Mensaje = 'No tiene permisos para eliminar esta asignatura';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Primero eliminar los contenidos asociados (nueva estructura)
+        DELETE FROM CONTENIDOS 
+        WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
+
+        -- Luego eliminar la asignatura de la matriz
+        DELETE FROM MATRIZASIGNATURA 
+        WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Asignatura removida exitosamente de la matriz';
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al remover la asignatura: ' + ERROR_MESSAGE();
+    END CATCH
 END;
 GO
 
 -- =============================================
--- PROCEDIMIENTOS PARA SEMANASASIGNATURAMATRIZ
+-- PROCEDIMIENTOS PARA CONTENIDOS
 -- =============================================
 
--- Crear o actualizar descripción de asignatura en matriz
-CREATE PROCEDURE usp_GuardarSemanaAsignatura
+-- Crear o actualizar contenido de asignatura en matriz
+CREATE OR ALTER PROCEDURE usp_GuardarContenido
     @FKMatrizAsignatura INT,
-    @NombreSemana INT,
-    @Descripcion VARCHAR(255),
+    @FKSemana INT,
+    @Contenido VARCHAR(255),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -4855,80 +4941,103 @@ BEGIN
     SET @Resultado = 0;
     SET @Mensaje = '';
     DECLARE @Asignatura VARCHAR(255);
+    DECLARE @NumeroSemana INT;
     DECLARE @Accion VARCHAR(20);
 
     BEGIN TRY
-        -- Obtener el nombre de la asignatura para el mensaje
-        SELECT @Asignatura = a.nombre 
+        BEGIN TRANSACTION;
+
+        -- Obtener el nombre de la asignatura y número de semana para el mensaje
+        SELECT 
+            @Asignatura = a.nombre,
+            @NumeroSemana = s.numero_semana
         FROM MATRIZASIGNATURA ma
         INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
-        WHERE ma.id_matriz_asignatura = @FKMatrizAsignatura;
+        INNER JOIN SEMANAS s ON s.fk_matriz_integracion = ma.fk_matriz_integracion
+        WHERE ma.id_matriz_asignatura = @FKMatrizAsignatura
+        AND s.id_semana = @FKSemana;
 
-        IF EXISTS (SELECT 1 FROM SEMANASASIGNATURAMATRIZ WHERE fk_matriz_asignatura = @FKMatrizAsignatura)
+        -- Verificar si ya existe un contenido para esta asignatura y semana
+        IF EXISTS (
+            SELECT 1 FROM CONTENIDOS 
+            WHERE fk_matriz_asignatura = @FKMatrizAsignatura 
+            AND fk_semana = @FKSemana
+        )
         BEGIN
-            -- Actualizar semana existente
-            UPDATE SEMANASASIGNATURAMATRIZ
+            -- Actualizar contenido existente
+            UPDATE CONTENIDOS
             SET 
-                numero_semana = @NombreSemana,
-                descripcion = @Descripcion,
+                contenido = @Contenido,
                 fecha_registro = GETDATE()
-            WHERE fk_matriz_asignatura = @FKMatrizAsignatura;
+            WHERE fk_matriz_asignatura = @FKMatrizAsignatura
+            AND fk_semana = @FKSemana;
 
             SET @Resultado = 1;
-            SET @Accion = 'actualizada';
+            SET @Accion = 'actualizado';
         END
         ELSE
         BEGIN
-            -- Insertar semana descripción
-            INSERT INTO SEMANASASIGNATURAMATRIZ (
+            -- Insertar nuevo contenido
+            INSERT INTO CONTENIDOS (
                 fk_matriz_asignatura,
-                numero_semana,
-                descripcion
+                fk_semana,
+                contenido,
+                estado
             )
             VALUES (
                 @FKMatrizAsignatura,
-                @NombreSemana,
-                @Descripcion
+                @FKSemana,
+                @Contenido,
+                'Pendiente'
             );
 
             SET @Resultado = SCOPE_IDENTITY();
-            SET @Accion = 'guardada';
+            SET @Accion = 'guardado';
         END
 
-        SET @Mensaje = 'Semana de la asignatura ' + ISNULL(@Asignatura, '') + ' ' + @Accion + ' exitosamente';
+        SET @Mensaje = 'Contenido de la asignatura ' + ISNULL(@Asignatura, '') + 
+                      ' para la semana ' + CAST(ISNULL(@NumeroSemana, 0) AS VARCHAR(3)) + 
+                      ' ' + @Accion + ' exitosamente';
+
+        COMMIT TRANSACTION;
         
     END TRY
     BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
         SET @Resultado = -1;
-        SET @Mensaje = 'Error al guardar la semana de la asignatura: ' + ERROR_MESSAGE();
+        SET @Mensaje = 'Error al guardar el contenido: ' + ERROR_MESSAGE();
     END CATCH
 END;
 GO
 
--- Leer descripción de asignatura en matriz
-CREATE PROCEDURE sp_LeerSemanasAsignatura
+-- Leer contenidos de asignatura en matriz
+CREATE OR ALTER PROCEDURE sp_LeerContenidosAsignatura
     @FKMatrizAsignatura INT
 AS
 BEGIN
     SELECT 
-        id_semana,
-        fk_matriz_asignatura,
-        numero_semana,
-        descripcion,
-        fecha_inicio,
-        fecha_fin,
-        tipo_semana,
-        estado,
-        fecha_registro
-    FROM SEMANASASIGNATURAMATRIZ
-    WHERE fk_matriz_asignatura = @FKMatrizAsignatura;
+        c.id_contenido,
+        c.fk_matriz_asignatura,
+        s.numero_semana,
+        s.descripcion_semana,
+        c.contenido,
+        s.fecha_inicio,
+        s.fecha_fin,
+        s.tipo_semana,
+        c.estado,
+        c.fecha_registro
+    FROM CONTENIDOS c
+    INNER JOIN SEMANAS s ON c.fk_semana = s.id_semana
+    WHERE c.fk_matriz_asignatura = @FKMatrizAsignatura
+    ORDER BY s.numero_semana;
 END;
 GO
 
--- Actualizar semana de asignatura en matriz con lógica de estados
-CREATE PROCEDURE usp_ActualizarSemana
-    @IdSemana INT,
-    @Descripcion VARCHAR(MAX) = NULL,
+-- Actualizar contenido de asignatura en matriz con lógica de estados
+CREATE OR ALTER PROCEDURE usp_ActualizarContenido
+    @IdContenido INT,
+    @Contenido VARCHAR(MAX) = NULL,
     @Estado VARCHAR(50),
     @TipoSemana VARCHAR(50) = NULL,
     @Resultado INT OUTPUT,
@@ -4941,81 +5050,90 @@ BEGIN
 
     -- Variables para la lógica de estados
     DECLARE @IdMatrizAsignatura INT;
-    DECLARE @EstadoActualSemana VARCHAR(50);
-    DECLARE @NuevoEstadoSemana VARCHAR(50);
+    DECLARE @IdSemana INT;
+    DECLARE @EstadoActualContenido VARCHAR(50);
+    DECLARE @NuevoEstadoContenido VARCHAR(50);
     DECLARE @EstadoMatrizAsignatura VARCHAR(50);
     DECLARE @NuevoEstadoMatriz VARCHAR(50);
-    DECLARE @TotalSemanas INT;
-    DECLARE @SemanasEnProceso INT;
-    DECLARE @SemanasFinalizadas INT;
-    DECLARE @DescripcionActual VARCHAR(MAX);
+    DECLARE @TotalContenidos INT;
+    DECLARE @ContenidosEnProceso INT;
+    DECLARE @ContenidosFinalizados INT;
+    DECLARE @ContenidoActual VARCHAR(MAX);
     
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Verificar si la semana existe y obtener el id_matriz_asignatura y valores actuales
+        -- Verificar si el contenido existe y obtener valores actuales
         SELECT 
             @IdMatrizAsignatura = fk_matriz_asignatura,
-            @EstadoActualSemana = estado,
-            @DescripcionActual = descripcion
-        FROM SEMANASASIGNATURAMATRIZ 
-        WHERE id_semana = @IdSemana;
+            @IdSemana = fk_semana,
+            @EstadoActualContenido = estado,
+            @ContenidoActual = contenido
+        FROM CONTENIDOS 
+        WHERE id_contenido = @IdContenido;
 
         IF @IdMatrizAsignatura IS NULL
         BEGIN
             SET @Resultado = 0;
-            SET @Mensaje = 'La semana no existe';
+            SET @Mensaje = 'El contenido no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- Inicializar el nuevo estado de la semana con el estado enviado
-        SET @NuevoEstadoSemana = @Estado;
+        -- Inicializar el nuevo estado del contenido con el estado enviado
+        SET @NuevoEstadoContenido = @Estado;
 
-        -- Lógica para actualización automática del estado de la SEMANA
+        -- Lógica para actualización automática del estado del CONTENIDO
         -- Solo cambiar a "En proceso" si actualmente está en "Pendiente" y se está agregando contenido
-        IF @EstadoActualSemana = 'Pendiente' 
+        IF @EstadoActualContenido = 'Pendiente' 
         BEGIN
-            -- Verificar si se está agregando contenido a alguno de los 3 campos principales
+            -- Verificar si se está agregando contenido
             IF (
-                @Descripcion IS NOT NULL AND @DescripcionActual IS NULL
+                @Contenido IS NOT NULL AND @ContenidoActual IS NULL
             )
             BEGIN
-                SET @NuevoEstadoSemana = 'En proceso';
+                SET @NuevoEstadoContenido = 'En proceso';
             END
         END
 
-        -- Validación: No se puede cambiar a "Finalizado" si no están completos todos los campos
-        IF @Estado = 'Finalizado' AND @NuevoEstadoSemana != 'Finalizado'
+        -- Validación: No se puede cambiar a "Finalizado" si no está completo el campo contenido
+        IF @Estado = 'Finalizado' AND @NuevoEstadoContenido != 'Finalizado'
         BEGIN
-            -- Verificar si todos los campos están completos
-            DECLARE @CamposCompletos BIT = 1;
+            -- Verificar si el campo contenido está completo
+            DECLARE @CampoCompleto BIT = 1;
             
-            IF (@Descripcion IS NULL OR LTRIM(RTRIM(@Descripcion)) = '' OR @Descripcion = '<p><br></p>' OR @Descripcion = '<p></p>')
-                SET @CamposCompletos = 0;
+            IF (@Contenido IS NULL OR LTRIM(RTRIM(@Contenido)) = '' OR @Contenido = '<p><br></p>' OR @Contenido = '<p></p>')
+                SET @CampoCompleto = 0;
             
-            IF @CamposCompletos = 0
+            IF @CampoCompleto = 0
             BEGIN
                 SET @Resultado = 0;
-                SET @Mensaje = 'No se puede finalizar la semana. el campo Descripción debe estar completo.';
+                SET @Mensaje = 'No se puede finalizar el contenido. El campo Contenido debe estar completo.';
                 ROLLBACK TRANSACTION;
                 RETURN;
             END
         END
 
         -- Si el estado actual es "Finalizado", mantenerlo sin cambios
-        IF @EstadoActualSemana = 'Finalizado'
+        IF @EstadoActualContenido = 'Finalizado'
         BEGIN
-            SET @NuevoEstadoSemana = 'Finalizado';
+            SET @NuevoEstadoContenido = 'Finalizado';
         END
 
-        -- Actualizar la semana
-        UPDATE SEMANASASIGNATURAMATRIZ 
+        -- Actualizar el contenido
+        UPDATE CONTENIDOS 
         SET 
-            descripcion = ISNULL(@Descripcion, descripcion),
-            tipo_semana = ISNULL(@TipoSemana, tipo_semana),
-            estado = @NuevoEstadoSemana
-        WHERE id_semana = @IdSemana;
+            contenido = ISNULL(@Contenido, contenido),
+            estado = @NuevoEstadoContenido
+        WHERE id_contenido = @IdContenido;
+
+        -- Actualizar tipo_semana en SEMANAS si se proporciona
+        IF @TipoSemana IS NOT NULL
+        BEGIN
+            UPDATE SEMANAS 
+            SET tipo_semana = @TipoSemana
+            WHERE id_semana = @IdSemana;
+        END
 
         -- =====================================================
         -- LÓGICA PARA ACTUALIZAR ESTADO DE MATRIZASIGNATURA
@@ -5026,25 +5144,25 @@ BEGIN
         FROM MATRIZASIGNATURA 
         WHERE id_matriz_asignatura = @IdMatrizAsignatura;
 
-        -- Contar las semanas por estado
+        -- Contar los contenidos por estado
         SELECT 
-            @TotalSemanas = COUNT(*),
-            @SemanasEnProceso = COUNT(CASE WHEN estado = 'En proceso' THEN 1 END),
-            @SemanasFinalizadas = COUNT(CASE WHEN estado = 'Finalizado' THEN 1 END)
-        FROM SEMANASASIGNATURAMATRIZ 
+            @TotalContenidos = COUNT(*),
+            @ContenidosEnProceso = COUNT(CASE WHEN estado = 'En proceso' THEN 1 END),
+            @ContenidosFinalizados = COUNT(CASE WHEN estado = 'Finalizado' THEN 1 END)
+        FROM CONTENIDOS 
         WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
 
         -- Determinar el nuevo estado para MATRIZASIGNATURA
         SET @NuevoEstadoMatriz = @EstadoMatrizAsignatura;
 
-        -- Regla 1: Si al menos 1 semana está "En proceso", la matriz va a "En proceso"
-        IF @SemanasEnProceso > 0
+        -- Regla 1: Si al menos 1 contenido está "En proceso", la matriz va a "En proceso"
+        IF @ContenidosEnProceso > 0
         BEGIN
             SET @NuevoEstadoMatriz = 'En proceso';
         END
 
-        -- Regla 2: Si TODAS las semanas están "Finalizado", la matriz va a "Finalizado"
-        IF @SemanasFinalizadas = @TotalSemanas AND @TotalSemanas > 0
+        -- Regla 2: Si TODOS los contenidos están "Finalizado", la matriz va a "Finalizado"
+        IF @ContenidosFinalizados = @TotalContenidos AND @TotalContenidos > 0
         BEGIN
             SET @NuevoEstadoMatriz = 'Finalizado';
         END
@@ -5058,8 +5176,8 @@ BEGIN
         END
 
         SET @Resultado = 1;
-        SET @Mensaje = 'Semana actualizada correctamente. ' +
-                       'Estado semana: ' + @NuevoEstadoSemana + '. ' +
+        SET @Mensaje = 'Contenido actualizado correctamente. ' +
+                       'Estado contenido: ' + @NuevoEstadoContenido + '. ' +
                        'Estado matriz: ' + @NuevoEstadoMatriz;
 
         COMMIT TRANSACTION;
@@ -5069,13 +5187,12 @@ BEGIN
             ROLLBACK TRANSACTION;
         
         SET @Resultado = 0;
-        SET @Mensaje = 'Error al actualizar la semana: ' + ERROR_MESSAGE();
+        SET @Mensaje = 'Error al actualizar el contenido: ' + ERROR_MESSAGE();
     END CATCH
 END;
 GO
 
--- Leer todas las descripciones de una matriz completa
-CREATE PROCEDURE sp_LeerSemanasCompletasMatriz
+CREATE OR ALTER PROCEDURE usp_LeerSemanasCompletasMatriz
     @fk_matriz_integracion INT
 AS
 BEGIN
@@ -5083,17 +5200,23 @@ BEGIN
         ma.id_matriz_asignatura,
         a.codigo AS codigo_asignatura,
         a.nombre AS nombre_asignatura,
-        u.pri_nombre + ' ' + u.pri_apellido AS nombre_profesor,
+        CONCAT(u.pri_nombre, ' ', 
+               CASE WHEN NULLIF(u.seg_nombre, '') IS NOT NULL THEN ' ' + u.seg_nombre ELSE '' END,
+               ' ',
+               u.pri_apellido,
+               CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
+        ) AS nombre_profesor,
         ma.estado,
-        dam.numero_semana,
-        dam.descripcion,
-        dam.fecha_registro AS fecha_descripcion
+        s.numero_semana,
+        c.contenido,
+        c.fecha_registro AS fecha_descripcion
     FROM MATRIZASIGNATURA ma
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
     INNER JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
-    LEFT JOIN SEMANASASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
+    LEFT JOIN CONTENIDOS c ON ma.id_matriz_asignatura = c.fk_matriz_asignatura
+    LEFT JOIN SEMANAS s ON c.fk_semana = s.id_semana
     WHERE ma.fk_matriz_integracion = @fk_matriz_integracion
-    ORDER BY a.nombre;
+    ORDER BY a.nombre, s.numero_semana;
 END;
 GO
 
@@ -5102,9 +5225,9 @@ GO
 -- =============================================
 
 -- CREAR registro en ACCIONINTEGRADORA_TIPOEVALUACION
-CREATE PROCEDURE usp_CrearAccionIntegradoraTipoEvaluacion
+CREATE OR ALTER PROCEDURE usp_CrearAccionIntegradoraTipoEvaluacion
     @FKMatrizIntegracion INT,
-    @NumeroSemana VARCHAR(20),
+    @FKSemana INT,
     @AccionIntegradora VARCHAR(255) = NULL,
     @TipoEvaluacion VARCHAR(50) = NULL,
     @Resultado INT OUTPUT,
@@ -5126,10 +5249,18 @@ BEGIN
             RETURN;
         END
 
+        -- Verificar si la semana existe y pertenece a la matriz
+        IF NOT EXISTS (SELECT 1 FROM SEMANAS WHERE id_semana = @FKSemana AND fk_matriz_integracion = @FKMatrizIntegracion)
+        BEGIN
+            SET @Mensaje = 'La semana no existe o no pertenece a esta matriz';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
         -- Verificar si ya existe un registro para esta semana en la matriz
         IF EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION 
                   WHERE fk_matriz_integracion = @FKMatrizIntegracion 
-                  AND numero_semana = @NumeroSemana)
+                  AND fk_semana = @FKSemana)
         BEGIN
             SET @Mensaje = 'Ya existe un registro para esta semana en la matriz de integración';
             ROLLBACK TRANSACTION;
@@ -5139,16 +5270,18 @@ BEGIN
         -- Insertar el nuevo registro
         INSERT INTO ACCIONINTEGRADORA_TIPOEVALUACION (
             fk_matriz_integracion,
-            numero_semana,
+            fk_semana,
             accion_integradora,
             tipo_evaluacion,
+            estado,
             fecha_registro
         )
         VALUES (
             @FKMatrizIntegracion,
-            @NumeroSemana,
+            @FKSemana,
             @AccionIntegradora,
             @TipoEvaluacion,
+            'Pendiente',
             GETDATE()
         );
 
@@ -5167,7 +5300,7 @@ END;
 GO
 
 -- LEER registros de ACCIONINTEGRADORA_TIPOEVALUACION
-CREATE PROCEDURE usp_LeerAccionIntegradoraTipoEvaluacion
+CREATE OR ALTER PROCEDURE usp_LeerAccionIntegradoraTipoEvaluacion
     @IdAccionTipo INT = NULL,
     @FKMatrizIntegracion INT = NULL
 AS
@@ -5182,13 +5315,14 @@ BEGIN
             ait.fk_matriz_integracion,
             mic.nombre AS nombre_matriz,
             mic.codigo AS codigo_matriz,
-            ait.numero_semana,
+            s.numero_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
             ait.estado,
             ait.fecha_registro
         FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
         INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
+        INNER JOIN SEMANAS s ON ait.fk_semana = s.id_semana
         WHERE ait.id_accion_tipo = @IdAccionTipo;
     END
     ELSE IF @FKMatrizIntegracion IS NOT NULL
@@ -5199,15 +5333,16 @@ BEGIN
             ait.fk_matriz_integracion,
             mic.nombre AS nombre_matriz,
             mic.codigo AS codigo_matriz,
-            ait.numero_semana,
+            s.numero_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
             ait.estado,
             ait.fecha_registro
         FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
         INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
+        INNER JOIN SEMANAS s ON ait.fk_semana = s.id_semana
         WHERE ait.fk_matriz_integracion = @FKMatrizIntegracion
-        ORDER BY ait.id_accion_tipo ASC;
+        ORDER BY s.numero_semana ASC;
     END
     ELSE
     BEGIN
@@ -5217,15 +5352,41 @@ BEGIN
             ait.fk_matriz_integracion,
             mic.nombre AS nombre_matriz,
             mic.codigo AS codigo_matriz,
-            ait.numero_semana,
+            ait.fk_semana,
+            s.numero_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
             ait.estado,
             ait.fecha_registro
         FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
         INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
-        ORDER BY mic.codigo, ait.numero_semana;
+        INNER JOIN SEMANAS s ON ait.fk_semana = s.id_semana
+        ORDER BY mic.codigo, s.numero_semana;
     END
+END;
+GO
+
+-- OBTENER ACCIONES INTEGRADORAS POR MATRIZ
+CREATE OR ALTER PROCEDURE usp_ObtenerAccionesIntegradorasPorMatriz
+    @FKMatrizIntegracion INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        ait.id_accion_tipo,
+        ait.fk_matriz_integracion,
+        mic.nombre AS nombre_matriz,
+        mic.codigo AS codigo_matriz,
+        s.numero_semana,
+        ait.accion_integradora,
+        ait.tipo_evaluacion,
+        ait.fecha_registro
+    FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
+    INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
+    INNER JOIN SEMANAS s ON ait.fk_semana = s.id_semana
+    WHERE ait.fk_matriz_integracion = @FKMatrizIntegracion
+    ORDER BY s.numero_semana;
 END;
 GO
 
@@ -5316,79 +5477,6 @@ BEGIN
 END;
 GO
 
--- ASIGNAR ACCIÓN INTEGRADORA Y TIPO DE EVALUACIÓN
-CREATE PROCEDURE usp_AsignarAccionYTipoEvaluacion
-    @IdAccionTipo INT,
-    @AccionIntegradora VARCHAR(255),
-    @TipoEvaluacion VARCHAR(50),
-    @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SET @Resultado = 0;
-    SET @Mensaje = '';
-
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        -- Verificar si el registro existe
-        IF NOT EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION WHERE id_accion_tipo = @IdAccionTipo)
-        BEGIN
-            SET @Mensaje = 'El registro no existe en ACCIONINTEGRADORA_TIPOEVALUACION';
-            ROLLBACK TRANSACTION;
-            RETURN;
-        END
-
-        -- Asignar acción integradora y tipo de evaluación
-        UPDATE ACCIONINTEGRADORA_TIPOEVALUACION 
-        SET 
-            accion_integradora = @AccionIntegradora,
-            tipo_evaluacion = @TipoEvaluacion
-        WHERE id_accion_tipo = @IdAccionTipo;
-
-        SET @Resultado = 1;
-        COMMIT TRANSACTION;
-
-        SET @Mensaje = 'Acción integradora y tipo de evaluación asignados exitosamente';
-    END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0 
-            ROLLBACK TRANSACTION;
-        SET @Resultado = -1;
-        SET @Mensaje = 'Error al asignar acción y tipo de evaluación: ' + ERROR_MESSAGE();
-    END CATCH
-END;
-GO
-
--- OBTENER ACCIONES INTEGRADORAS POR MATRIZ
-CREATE PROCEDURE usp_ObtenerAccionesIntegradorasPorMatriz
-    @FKMatrizIntegracion INT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    SELECT 
-        ait.id_accion_tipo,
-        ait.fk_matriz_integracion,
-        mic.nombre AS nombre_matriz,
-        mic.codigo AS codigo_matriz,
-        ait.numero_semana,
-        ait.accion_integradora,
-        ait.tipo_evaluacion,
-        ait.fecha_registro
-    FROM ACCIONINTEGRADORA_TIPOEVALUACION ait
-    INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON ait.fk_matriz_integracion = mic.id_matriz_integracion
-    WHERE ait.fk_matriz_integracion = @FKMatrizIntegracion
-    ORDER BY 
-        CASE 
-            WHEN ait.numero_semana LIKE 'Semana %' 
-            THEN CAST(REPLACE(ait.numero_semana, 'Semana ', '') AS INT)
-            ELSE 999
-        END;
-END;
-GO
-
 -- =============================================
 -- PROCEDIMIENTOS ESPECIALES Y REPORTES
 -- =============================================
@@ -5458,11 +5546,11 @@ BEGIN
         SET @Resultado = -1;
         SET @Mensaje = 'Error al obtener la matriz: ' + ERROR_MESSAGE();
     END CATCH
-END;
+END
 GO
 
 -- Reporte de progreso de matriz
-CREATE PROCEDURE sp_ReporteProgresoMatriz
+CREATE OR ALTER PROCEDURE usp_ReporteProgresoMatriz
     @id_matriz_integracion INT
 AS
 BEGIN
@@ -5471,14 +5559,14 @@ BEGIN
         mic.nombre,
         COUNT(ma.id_matriz_asignatura) AS total_asignaturas,
         SUM(CASE WHEN ma.estado = 'Finalizado' THEN 1 ELSE 0 END) AS asignaturas_finalizadas,
-        SUM(CASE WHEN dam.id_semana IS NOT NULL THEN 1 ELSE 0 END) AS asignaturas_con_descripcion,
-        (SUM(CASE WHEN ma.estado = 'Finalizado' THEN 1 ELSE 0 END) * 100.0 / COUNT(ma.id_matriz_asignatura)) AS porcentaje_completado
+        SUM(CASE WHEN c.id_contenido IS NOT NULL THEN 1 ELSE 0 END) AS asignaturas_con_contenido,
+        (SUM(CASE WHEN ma.estado = 'Finalizado' THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(ma.id_matriz_asignatura), 0)) AS porcentaje_completado
     FROM MATRIZINTEGRACIONCOMPONENTES mic
     LEFT JOIN MATRIZASIGNATURA ma ON mic.id_matriz_integracion = ma.fk_matriz_integracion
-    LEFT JOIN SEMANASASIGNATURAMATRIZ dam ON ma.id_matriz_asignatura = dam.fk_matriz_asignatura
+    LEFT JOIN CONTENIDOS c ON ma.id_matriz_asignatura = c.fk_matriz_asignatura
     WHERE mic.id_matriz_integracion = @id_matriz_integracion
     GROUP BY mic.codigo, mic.nombre;
-END;
+END
 GO
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS PLANES DE CLASES DE UN USUARIO
@@ -5826,67 +5914,19 @@ BEGIN
 END
 GO
 
-CREATE PROCEDURE usp_ActualizarTipoSemanaMatriz
-    @FKMatrizIntegracion INT,
-    @NumeroSemana VARCHAR(255),
-    @NuevoTipoSemana VARCHAR(50),
-    @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-    SET @Resultado = 0;
-    SET @Mensaje = '';
-
-    BEGIN TRY
-        BEGIN TRANSACTION;
-
-        -- Actualizar SEMANASASIGNATURAMATRIZ para todas las asignaturas de esta matriz
-        UPDATE sam
-        SET sam.tipo_semana = @NuevoTipoSemana
-        FROM SEMANASASIGNATURAMATRIZ sam
-        INNER JOIN MATRIZASIGNATURA ma ON sam.fk_matriz_asignatura = ma.id_matriz_asignatura
-        WHERE ma.fk_matriz_integracion = @FKMatrizIntegracion
-        AND sam.numero_semana = @NumeroSemana;
-
-        -- Actualizar ACCIONINTEGRADORA_TIPOEVALUACION si existe
-        UPDATE aite
-        SET aite.tipo_evaluacion = 
-            CASE 
-                WHEN @NuevoTipoSemana = 'Corte Evaluacion' THEN 'Evaluación Parcial'
-                WHEN @NuevoTipoSemana = 'Corte Final' THEN 'Evaluación Final'
-                ELSE aite.tipo_evaluacion
-            END
-        FROM ACCIONINTEGRADORA_TIPOEVALUACION aite
-        WHERE aite.fk_matriz_integracion = @FKMatrizIntegracion
-        AND aite.numero_semana = @NumeroSemana;
-
-        SET @Resultado = 1;
-        COMMIT TRANSACTION;
-
-        SET @Mensaje = 'Tipo de semana actualizado exitosamente para todas las asignaturas';
-    END TRY
-    BEGIN CATCH
-        IF @@TRANCOUNT > 0 
-            ROLLBACK TRANSACTION;
-        SET @Resultado = -1;
-        SET @Mensaje = 'Error al actualizar tipo de semana: ' + ERROR_MESSAGE();
-    END CATCH
-END;
-GO
-
 CREATE OR ALTER PROCEDURE usp_ObtenerContenidosPorSemana
     @FKMatrizIntegracion INT,
-    @NumeroSemana VARCHAR(255)
+    @NumeroSemana INT
 AS
 BEGIN
     SET NOCOUNT ON;
 
     SELECT 
         -- Información de la Semana
-        @NumeroSemana AS numero_semana,
-        
-        -- Información de cada Asignatura con su contenido
+        s.numero_semana,
+        s.descripcion AS descripcion_semana,
+
+        -- Información de cada Asignatura
         a.nombre AS asignatura,
         a.codigo AS codigo_asignatura,
         CONCAT(u.pri_nombre, ' ', 
@@ -5895,23 +5935,23 @@ BEGIN
                u.pri_apellido,
                CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
         ) AS profesor,
-        sam.descripcion AS descripcion,
-        sam.estado AS estado,
-        sam.tipo_semana,
-        sam.fecha_inicio,
-        sam.fecha_fin
-        
+        -- Información del Contenido
+        c.contenido,
+        c.estado AS estado,
+        s.tipo_semana,
+        s.fecha_inicio,
+        s.fecha_fin
     FROM MATRIZINTEGRACIONCOMPONENTES mic
     INNER JOIN MATRIZASIGNATURA ma ON mic.id_matriz_integracion = ma.fk_matriz_integracion
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
     LEFT JOIN USUARIOS u ON ma.fk_profesor_asignado = u.id_usuario
-    LEFT JOIN SEMANASASIGNATURAMATRIZ sam ON ma.id_matriz_asignatura = sam.fk_matriz_asignatura 
-        AND sam.numero_semana = @NumeroSemana
+    INNER JOIN SEMANAS s ON mic.id_matriz_integracion = s.fk_matriz_integracion AND s.numero_semana = @NumeroSemana
+    LEFT JOIN CONTENIDOS c ON ma.id_matriz_asignatura = c.fk_matriz_asignatura AND s.id_semana = c.fk_semana
+    LEFT JOIN ACCIONINTEGRADORA_TIPOEVALUACION ait ON mic.id_matriz_integracion = ait.fk_matriz_integracion AND s.id_semana = ait.fk_semana
     WHERE mic.id_matriz_integracion = @FKMatrizIntegracion
         AND mic.estado = 1
         AND ma.estado IN ('Pendiente', 'En proceso', 'Finalizado')
     ORDER BY a.nombre;
-END;
-GO
+END
 
-GRANT EXECUTE ON SCHEMA::dbo TO [IIS APPPOOL\sigd];
+GO

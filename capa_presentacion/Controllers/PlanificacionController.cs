@@ -17,7 +17,7 @@ namespace capa_presentacion.Controllers
         CN_PlanClasesDiario CN_PlanClasesDiario = new CN_PlanClasesDiario();
         CN_MatrizIntegracionComponentes CN_MatrizIntegradora = new CN_MatrizIntegracionComponentes();
         CN_MatrizAsignatura CN_MatrizAsignatura = new CN_MatrizAsignatura();
-        CN_SemanasAsginaturaMatriz CN_SemanasAsginaturaMatriz = new CN_SemanasAsginaturaMatriz();
+        CN_Contenidos CN_Contenidos = new CN_Contenidos();
         CN_AccionIntegradoraTipoEvaluaciona CN_AccionIntegradoraTipoEvaluaciona = new CN_AccionIntegradoraTipoEvaluaciona();
 
         #region Matriz de Integracion de Componentes
@@ -264,11 +264,11 @@ namespace capa_presentacion.Controllers
         }
 
         ////////////////////////////////////////////////////////////////////////////////////
-        //  Semanas para las asignaturas de la Matriz de Integracion de Componentes  //
+        //  Contenidos para las asignaturas de la Matriz de Integracion de Componentes  //
         ///////////////////////////////////////////////////////////////////////////////////
 
         [HttpGet]
-        public ActionResult SemanasAsignatura(string idEncriptado)
+        public ActionResult Contenidos(string idEncriptado)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
 
@@ -291,15 +291,15 @@ namespace capa_presentacion.Controllers
             // Obtener las semanas de las asignatura asignada a esta matriz
             int resultado;
             string mensaje;
-            var semanas = CN_SemanasAsginaturaMatriz.Listar(idEncriptado, out resultado, out mensaje);
+            var contenido = CN_Contenidos.Listar(idEncriptado, out resultado, out mensaje);
 
-            ViewBag.Semanas = semanas;
+            ViewBag.Contenidos = contenido;
             ViewBag.MensajeSemanas = mensaje;
 
             return View(asignatura);
         }
 
-        public ActionResult ContenidosPorSemana(string idEncriptado, string semana)
+        public ActionResult ContenidosPorSemana(string idEncriptado, int semana)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
 
@@ -316,7 +316,7 @@ namespace capa_presentacion.Controllers
             // Obtener contenidos de las asignaturas por semana
             int resultado;
             string mensaje;
-            var contenidos = CN_SemanasAsginaturaMatriz.ObtenerContenidosPorSemana(idEncriptado, semana, out resultado, out mensaje);
+            var contenidos = CN_Contenidos.ObtenerContenidosPorSemana(idEncriptado, semana, out resultado, out mensaje);
 
             ViewBag.Contenidos = contenidos;
             ViewBag.Semana = semana;
@@ -327,25 +327,25 @@ namespace capa_presentacion.Controllers
 
         // Endpoint para cargar asignaturas via AJAX
         [HttpGet]
-        public JsonResult ListarSemanasDeAsignaturaPorId(string idEncriptado)
+        public JsonResult ListarContenidosPorId(string idEncriptado)
         {
             try
             {
                 int resultado;
                 string mensaje;
 
-                var semanas = CN_SemanasAsginaturaMatriz.Listar(idEncriptado, out resultado, out mensaje);
+                var contenido = CN_Contenidos.Listar(idEncriptado, out resultado, out mensaje);
 
-                return Json(new { success = resultado == 1, data = semanas, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = resultado == 1, data = contenido, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, data = new List<SEMANASASIGNATURAMATRIZ>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+                return Json(new { success = false, data = new List<CONTENIDOS>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
 
         [HttpPost]
-        public JsonResult GuardarSemanaAsignatura(SEMANASASIGNATURAMATRIZ semana)
+        public JsonResult GuardarContenido(CONTENIDOS contenido)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
             if (usuario == null)
@@ -356,15 +356,15 @@ namespace capa_presentacion.Controllers
             string mensaje = string.Empty;
             int resultado = 0;
 
-            if (semana.id_semana == 0)
+            if (contenido.id_contenido == 0)
             {
                 // Crear nueva semana
-                resultado = CN_SemanasAsginaturaMatriz.Crear(semana, out mensaje);
+                resultado = CN_Contenidos.Crear(contenido, out mensaje);
             }
             else
             {
                 // Actualizar semana existente
-                resultado = CN_SemanasAsginaturaMatriz.Actualizar(semana, out mensaje);
+                resultado = CN_Contenidos.Actualizar(contenido, out mensaje);
             }
 
             return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);

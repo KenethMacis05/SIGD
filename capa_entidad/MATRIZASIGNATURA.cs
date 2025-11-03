@@ -9,23 +9,30 @@ namespace capa_entidad
 {
     public class MATRIZASIGNATURA
     {
+        // Datos de la tabla MATRIZASIGNATURA
         public int id_matriz_asignatura { get; set; }
-        [NotMapped] // Para Entity Framework, no mapear a la base de datos
+        
+        [NotMapped] 
         public string id_matriz_asignatura_encriptado { get; set; }
+        
         public int fk_matriz_integracion { get; set; }
-        [NotMapped] // Para Entity Framework, no mapear a la base de datos
+        
+        [NotMapped]
         public string fk_matriz_integracion_encriptado { get; set; }
+
         public int fk_asignatura { get; set; }
-        public int fk_profesor_propietario { get; set; }
-        public int fk_profesor_asignado { get; set; }
         public string estado { get; set; }
         public DateTime fecha_registro { get; set; }
+
+        // Datos para consultas
+        public int fk_profesor_propietario { get; set; }
+        public int fk_profesor_asignado { get; set; }
         public string codigo_asignatura { get; set; }
         public string nombre_asignatura { get; set; }
         public string nombre_profesor { get; set; }
         public string correo_profesor { get; set; }
-        public int semanas_finalizadas { get; set; }
-        public int total_semanas { get; set; }
+        public int contenidos_finalizados { get; set; }
+        public int total_contenidos { get; set; }
         public string codigo_matriz { get; set; }
         public string nombre_matriz { get; set; }
     }

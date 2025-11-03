@@ -1,31 +1,31 @@
-﻿function cargarSemanasDeLaAsignaturasDeLaMatriz(idAsignatura) {
+﻿function cargarContenidos(idAsignatura) {
     $.ajax({
-        url: '/Planificacion/ListarSemanasDeAsignaturaPorId',
+        url: '/Planificacion/ListarContenidosPorId',
         type: 'GET',
         data: { idEncriptado: idAsignatura },
         dataType: 'json',
-        beforeSend: () => $('#semanasAsignatura').LoadingOverlay("show"),
+        beforeSend: () => $('#contenidosAsignatura').LoadingOverlay("show"),
         success: function (response) {
             if (response.success && response.data && response.data.length > 0) {
-                const html = response.data.map(generarHtmlSemanasAsignatura).join("");
-                $('#semanasAsignatura').html(html);
+                const html = response.data.map(generarHtmlContenidosAsignatura).join("");
+                $('#contenidosAsignatura').html(html);
             } else {
-                $('#semanasAsignatura').html('<div class="alert alert-light text-center">No hay semanas asignadas a esta asignatura</div>');
+                $('#contenidosAsignatura').html('<div class="alert alert-light text-center">No hay semanas asignadas a esta asignatura</div>');
             }
         },
         error: function () {
-            $('#semanasAsignatura').html('<div class="alert alert-danger text-center">Error al cargar las semanas de la asignatura</div>');
+            $('#contenidosAsignatura').html('<div class="alert alert-danger text-center">Error al cargar las semanas de la asignatura</div>');
         },
-        complete: () => $('#semanasAsignatura').LoadingOverlay("hide")
+        complete: () => $('#contenidosAsignatura').LoadingOverlay("hide")
     });
 }
 
-function generarHtmlSemanasAsignatura(Semana) {
+function generarHtmlContenidosAsignatura(Contenido) {
     // Determinar color y icono según el estado
     var colorEstado = '';
     var iconoEstado = '';
 
-    switch (Semana.estado) {
+    switch (Contenido.estado) {
         case 'Pendiente':
             colorEstado = 'secondary';
             iconoEstado = 'fa-play-circle';
@@ -45,13 +45,13 @@ function generarHtmlSemanasAsignatura(Semana) {
 
     return `
     <div class="col-sm-12 col-md-6 col-lg-4 mb-3">
-        <div class="card h-100 shadow-sm groud-semana estado-${colorEstado}">
+        <div class="card h-100 shadow-sm groud-Contenido estado-${colorEstado}">
             <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
                 <div class="d-flex align-items-center">
-                    <span class="fw-bold text-${colorEstado} me-2 btn-titulo-semana estado-${colorEstado}">${Semana.numero_semana}</span>
+                    <span class="fw-bold text-${colorEstado} me-2 btn-titulo-Contenido estado-${colorEstado}">${Contenido.descripcion_semana}</span>
                 </div>
-                <button class="btn btn-sm btn-outline-${colorEstado} btn-editar-semana" 
-                        data-id="${Semana.id_semana}">
+                <button class="btn btn-sm btn-outline-${colorEstado} btn-editar-contenido" 
+                        data-id="${Contenido.id_contenido}">
                     <i class="fas fa-edit"></i>
                 </button>
             </div>
@@ -61,30 +61,30 @@ function generarHtmlSemanasAsignatura(Semana) {
                     <div class="mb-3">
                         <div class="d-flex align-items-center mb-1">
                             <i class="fas fa-calendar-day text-muted me-2 small"></i>
-                            <small class="text-muted">Inicio: <strong>${formatASPNetDate(Semana.fecha_inicio, false)}</strong></small>
+                            <small class="text-muted">Inicio: <strong>${formatASPNetDate(Contenido.fecha_inicio, false)}</strong></small>
                         </div>
                         <div class="d-flex align-items-center">
                             <i class="fas fa-calendar-check text-muted me-2 small"></i>
-                            <small class="text-muted">Fin: <strong>${formatASPNetDate(Semana.fecha_fin, false)}</strong></small>
+                            <small class="text-muted">Fin: <strong>${formatASPNetDate(Contenido.fecha_fin, false)}</strong></small>
                         </div>
                     </div>
 
                     <div class="text-center">
-                        <i class="fas ${iconoEstado} fa-lg fa-2x text-${colorEstado}" title="${Semana.estado}"></i>
-                        <div class="small text-${colorEstado} fw-bold mt-1">${Semana.estado}</div>
+                        <i class="fas ${iconoEstado} fa-lg fa-2x text-${colorEstado}" title="${Contenido.estado}"></i>
+                        <div class="small text-${colorEstado} fw-bold mt-1">${Contenido.estado}</div>
                     </div>
                 </div>
-                ${Semana.descripcion ? `
-                    <p class="card-text small text-muted mb-2">${Semana.descripcion}</p>
+                ${Contenido.contenido ? `
+                    <p class="card-text small text-muted mb-2">${Contenido.contenido}</p>
                 ` : ''}
             </div>
         </div>
     </div>`;
 }
 
-function abrirModal(semanaId) {
+function abrirModal(contenidoId) {
     // Limpiar los campos
-    $("#idSemana").val("0");
+    $("#idContenido").val("0");
     $('#descripcionSummernote').summernote('code', '');
     $("#estado").val("Pendiente");
 
@@ -98,52 +98,52 @@ function abrirModal(semanaId) {
     $('#descripcionSummernote').summernote('enable');
 
     // Si se proporciona un ID, buscar la semana en los datos del ViewBag
-    if (semanaId && window.semanasData) {
-        const semana = window.semanasData.find(s => s.id_semana === semanaId);
+    if (contenidoId && window.contenidosData) {
+        const contenido = window.contenidosData.find(c => c.id_contenido === contenidoId);
 
-        if (semana) {
-            $("#idSemana").val(semana.id_semana);
-            $("#estado").val(semana.estado);
+        if (contenido) {
+            $("#idContenido").val(contenido.id_contenido);
+            $("#estado").val(contenido.estado);
 
             // Establecer el contenido en Summernote
-            $('#descripcionSummernote').summernote('code', semana.descripcion || '');
+            $('#descripcionSummernote').summernote('code', contenido.contenido || '');
 
-            // Mostrar información de la semana
-            $("#numeroSemanaText").text(semana.numero_semana);
+            // Mostrar información de la contenido
+            $("#numeroSemanaText").text(contenido.descripcion_semana);
 
             // Formatear fechas
-            const fechaInicio = formatASPNetDate(semana.fecha_inicio, false);
-            const fechaFin = formatASPNetDate(semana.fecha_fin, false);
+            const fechaInicio = formatASPNetDate(contenido.fecha_inicio, false);
+            const fechaFin = formatASPNetDate(contenido.fecha_fin, false);
             $("#periodoSemanaText").text(`${fechaInicio} - ${fechaFin}`);
 
-            $("#modalTitulo").text(`Editando: ${semana.numero_semana}`);
+            $("#modalTitulo").text(`Editando: ${contenido.descripcion_semana}`);
 
-            aplicarReglasEstado(semana);
+            aplicarReglasEstado(contenido);
         }
     }
-    $("#semanas").modal("show");
+    $("#contenido").modal("show");
 }
 
 // Función para aplicar reglas de estado
-function aplicarReglasEstado(semana) {
-    const tieneDescripcion = semana.descripcion &&
-        semana.descripcion.trim() !== '' &&
-        semana.descripcion !== '<p><br></p>' &&
-        semana.descripcion !== '<p></p>';
+function aplicarReglasEstado(contenido) {
+    const tieneContenido = contenido.contenido &&
+        contenido.contenido.trim() !== '' &&
+        contenido.contenido !== '<p><br></p>' &&
+        contenido.contenido !== '<p></p>';
 
     // Regla 1: Si está "Pendiente" y sin descripción, deshabilitar estado
-    if (semana.estado === 'Pendiente' && !tieneDescripcion) {
+    if (contenido.estado === 'Pendiente' && !tieneContenido) {
         $("#estado").prop("disabled", true);
-        $("#estado").attr("title", "Complete la descripción para habilitar el estado");
+        $("#estado").attr("title", "Complete el estado para habilitar el estado");
     }
     // Regla 2: Si está "En proceso" y no tiene descripción, solo permitir "En proceso"
-    else if (semana.estado === 'En proceso' && !tieneDescripcion) {
+    else if (contenido.estado === 'En proceso' && !tieneContenido) {
         $("#estado option[value='Finalizado']").prop('disabled', true);
         $("#estado option[value='Pendiente']").prop('disabled', true);
-        $("#estado").attr("title", "Complete la descripción para poder finalizar");
+        $("#estado").attr("title", "Complete el contenido para poder finalizar");
     }
     // Regla 3: Si tiene descripción completa, permitir cambiar a "Finalizado"
-    else if (tieneDescripcion) {
+    else if (tieneContenido) {
         $("#estado option[value='Finalizado']").prop('disabled', false);
         $("#estado option[value='Pendiente']").prop('disabled', true);
         $("#estado").removeAttr("title");
@@ -157,46 +157,46 @@ function aplicarReglasEstado(semana) {
 }
 
 function GuardarSemana() {
-    var Semana = {
-        id_semana: $("#idSemana").val().trim(),
-        descripcion: $('#descripcionSummernote').summernote('code'),
+    var Contenido = {
+        id_contenido: $("#idContenido").val().trim(),
+        contenido: $('#descripcionSummernote').summernote('code'),
         estado: $("#estado").val().trim(),
     };
 
     // Validaciones básicas
-    if (!Semana.estado) {
+    if (!Contenido.estado) {
         showAlert("Error", "Debe seleccionar un estado", "error");
         return;
     }
 
     // Validar que Summernote no esté vacío (elimina etiquetas HTML vacías)
-    const descripcionLimpia = Semana.descripcion.replace(/<[^>]*>/g, '').trim();
+    const descripcionLimpia = Contenido.contenido.replace(/<[^>]*>/g, '').trim();
 
-    if (!descripcionLimpia && !Semana.accion_integradora && !Semana.tipo_evaluacion) {
-        showAlert("Información", "Debe ingresar al menos un valor en: Descripción", "info");
+    if (!descripcionLimpia) {
+        showAlert("Información", "Debe ingresar al menos un valor en el contenido", "info");
         return;
     }
 
-    showLoadingAlert("Procesando", "Guardando semana...");
+    showLoadingAlert("Procesando", "Guardando contenido...");
 
     jQuery.ajax({
-        url: '/Planificacion/GuardarSemanaAsignatura',
+        url: '/Planificacion/GuardarContenido',
         type: "POST",
-        data: JSON.stringify({ semana: Semana }),
+        data: JSON.stringify({ contenido: Contenido }),
         dataType: "json",
         contentType: "application/json; charset=utf-8",
         success: function (data) {
             Swal.close();
-            $("#semanas").modal("hide");
+            $("#contenido").modal("hide");
 
             if (data.Resultado || data.Respuesta) {
-                const mensaje = data.Mensaje || (Semana.id_semana == "0" ? "Semana creada correctamente" : "Semana actualizada correctamente");
+                const mensaje = data.Mensaje || (Contenido.id_contenido == "0" ? "Contenido creado correctamente" : "Contenido actualizado correctamente");
                 showAlert("¡Éxito!", mensaje, "success").then((result) => {
                     location.reload();
                 });
             }
             else {
-                const mensaje = data.Mensaje || (Semana.id_semana == "0" ? "No se pudo crear la semana" : "No se pudo actualizar la semana");
+                const mensaje = data.Mensaje || (Contenido.id_contenido == "0" ? "No se pudo crear el contenido" : "No se pudo actualizar el contenido");
                 showAlert("Error", mensaje, "error");
             }
         },
@@ -208,10 +208,10 @@ function GuardarSemana() {
 }
 
 // Seleccionar los datos para editar
-$(document).on('click', '.btn-editar-semana', function (e) {
+$(document).on('click', '.btn-editar-contenido', function (e) {
     e.preventDefault();
-    const semanaId = $(this).data('id');
-    abrirModal(semanaId);
+    const contenidoId = $(this).data('id');
+    abrirModal(contenidoId);
 });
 
 $(document).ready(function () {

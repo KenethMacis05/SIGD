@@ -256,10 +256,10 @@ CREATE TABLE TURNO (
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZINTEGRACIONCOMPONENTES')
 CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     id_matriz_integracion INT PRIMARY KEY IDENTITY(1,1),
-	codigo VARCHAR(255),
-	nombre VARCHAR(255),
+    codigo VARCHAR(255),
+    nombre VARCHAR(255),
 
-    -- 1.	Datos Generales
+    -- 1. Datos Generales
     -- Area de conocimiento
     fk_area INT NOT NULL,
 
@@ -272,19 +272,19 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     -- Modalidad
     fk_modalidad INT NOT NULL,
 
-	-- Componente curricular (as)
-	fk_asignatura INT NOT NULL,
+    -- Componente curricular (as)
+    fk_asignatura INT NOT NULL,
 
-	-- Profesor
-	fk_profesor INT NOT NULL,
+    -- Profesor
+    fk_profesor INT NOT NULL,
 
-	-- Año y semestre
-	fk_periodo INT NOT NULL,
+    -- Año y semestre
+    fk_periodo INT NOT NULL,
 
-	-- Competencias
-	competencias_genericas VARCHAR(255),
-	competencias_especificas VARCHAR(255),
-	
+    -- Competencias
+    competencias_genericas VARCHAR(255),
+    competencias_especificas VARCHAR(255),
+    
     -- Objetivos
     objetivo_anio VARCHAR(255),
     objetivo_semestre VARCHAR(255),
@@ -295,26 +295,24 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     
     -- Fecha de Inicio
     fecha_inicio DATE NOT NULL,
-    --Asignaturas / Descripcion (La tiene la tabla MatrizAsignatura)
-	
+    
     -- Estrategia integradora
-	estrategia_integradora VARCHAR(255),
+    estrategia_integradora VARCHAR(255),
 
     estado BIT DEFAULT 1,
-	fecha_registro DATETIME DEFAULT GETDATE(),
+    fecha_registro DATETIME DEFAULT GETDATE(),
 
-	CONSTRAINT FK_MIC_AREA FOREIGN KEY (fk_area) REFERENCES AREACONOCIMIENTO(id_area),
+    CONSTRAINT FK_MIC_AREA FOREIGN KEY (fk_area) REFERENCES AREACONOCIMIENTO(id_area),
     CONSTRAINT FK_MIC_DEPARTAMENTO FOREIGN KEY (fk_departamento) REFERENCES DEPARTAMENTO(id_departamento),
     CONSTRAINT FK_MIC_CARRERA FOREIGN KEY (fk_carrera) REFERENCES CARRERA(id_carrera),
-    CONSTRAINT FK_MIC_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura),
-    CONSTRAINT FK_MIC_USUARIO FOREIGN KEY (fk_profesor) REFERENCES Usuarios(id_usuario),
-    CONSTRAINT FK_MIC_PERIODO FOREIGN KEY (fk_periodo) REFERENCES Periodo(id_periodo),
+    CONSTRAINT FK_MIC_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES ASIGNATURA(id_asignatura),
+    CONSTRAINT FK_MIC_USUARIO FOREIGN KEY (fk_profesor) REFERENCES USUARIOS(id_usuario),
+    CONSTRAINT FK_MIC_PERIODO FOREIGN KEY (fk_periodo) REFERENCES PERIODO(id_periodo),
     CONSTRAINT FK_MIC_MODALIDAD FOREIGN KEY (fk_modalidad) REFERENCES MODALIDAD(id_modalidad)
 );
-
 GO
 
--- (2) Tabla MatrizAsignatura
+-- (2) Tabla ASIGNATURAMATRIZ (Asignatura asignadas a la Matriz)
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZASIGNATURA')
 CREATE TABLE MATRIZASIGNATURA (
     id_matriz_asignatura INT PRIMARY KEY IDENTITY(1,1),
@@ -327,38 +325,52 @@ CREATE TABLE MATRIZASIGNATURA (
 	CONSTRAINT FK_MATRIZASIGNATURA_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES ASIGNATURA(id_asignatura),
     CONSTRAINT FK_MATRIZASIGNATURA_DOCENTE FOREIGN KEY (fk_profesor_asignado) REFERENCES Usuarios(id_usuario)
 );
-
 GO
 
--- (3) Tabla SEMANASASIGNATURAMATRIZ
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'SEMANASASIGNATURAMATRIZ')
-CREATE TABLE SEMANASASIGNATURAMATRIZ (
+-- (3) Tabla SEMANAS (Las semanas a trabajar en la Matriz)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'SEMANAS')
+CREATE TABLE SEMANAS (
     id_semana INT PRIMARY KEY IDENTITY(1,1),
-    fk_matriz_asignatura INT NOT NULL,
-    numero_semana VARCHAR(255),
+    fk_matriz_integracion INT NOT NULL,
+    numero_semana INT,
     descripcion VARCHAR(255),
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
     tipo_semana VARCHAR(50) NOT NULL CHECK (tipo_semana IN ('Normal', 'Corte Evaluativo', 'Corte Final')),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_SEMANASASIGNATURA_MATRIZASIGNATURA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE
+    CONSTRAINT FK_SEMANAS_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE
 );
-
 GO
 
--- (4) Tabla Acción Integradora y Tipo de Evaluación (VERSIÓN CORRECTA)
+-- (4) Tabla CONTENIDOS (Los contenidos de las asignaturas de la matriz por semanas)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'CONTENIDOS')
+CREATE TABLE CONTENIDOS (
+    id_contenido INT PRIMARY KEY IDENTITY(1,1),
+    fk_matriz_asignatura INT NOT NULL,
+    fk_semana INT NOT NULL,
+    contenido VARCHAR(255),
+    estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_CONTENIDOS_ASIGNATURAMATRIZ FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE,
+    CONSTRAINT FK_CONTENIDOS_SEMANA FOREIGN KEY (fk_semana) REFERENCES SEMANAS(id_semana)
+);
+GO
+
+-- (5) Tabla Acción Integradora y Tipo de Evaluación por Semana
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ACCIONINTEGRADORA_TIPOEVALUACION')
 CREATE TABLE ACCIONINTEGRADORA_TIPOEVALUACION (
     id_accion_tipo INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_integracion INT NOT NULL,
-    numero_semana VARCHAR(255) NOT NULL,
+    fk_semana INT NOT NULL,
     accion_integradora VARCHAR(255),
     tipo_evaluacion VARCHAR(50),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
-    CONSTRAINT FK_ACCIONTIPO_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE
+    CONSTRAINT FK_ACCIONTIPO_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE,
+    CONSTRAINT FK_ACCIONTIPO_SEMANA FOREIGN KEY (fk_semana) REFERENCES SEMANAS(id_semana)
 );
+GO
 
 -----------------------------------------------------Etapa 2: Plan Didactico Semestral-----------------------------------------------------
 -- (1) Tabla PlanDidacticoSemestral

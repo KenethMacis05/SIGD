@@ -36,8 +36,8 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
     }
 
     // Calcular progreso
-    var porcentajeProgreso = matrizAsignatura.total_semanas > 0
-        ? Math.round((matrizAsignatura.semanas_finalizadas / matrizAsignatura.total_semanas) * 100)
+    var porcentajeProgreso = matrizAsignatura.total_contenidos > 0
+        ? Math.round((matrizAsignatura.contenidos_finalizados / matrizAsignatura.total_contenidos) * 100)
         : 0;
 
     return `
@@ -101,7 +101,7 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
                              aria-valuemax="100">
                         </div>
                     </div>
-                    <small class="text-muted fw-bold"> Semanas finalizadas: ${matrizAsignatura.semanas_finalizadas}/ Total de semanas:${matrizAsignatura.total_semanas} (${porcentajeProgreso}%)</small>
+                    <small class="text-muted fw-bold"> Contenidos finalizados: ${matrizAsignatura.contenidos_finalizados}/ Total de contenidos:${matrizAsignatura.total_contenidos} (${porcentajeProgreso}%)</small>
                 </div>
                 
                 <hr>
@@ -114,11 +114,11 @@ function generarHtmlMatrizAsignatura(matrizAsignatura) {
     </div>`;
 }
 
-// Ir a la pantalla de las semanas de la asignatura:
+// Ir a la pantalla de los contenidos de la asignatura:
 $(document).on('click', '.btn-titulo-asignatura', function (e) {
     e.preventDefault();
     const idEncriptado = $(this).data('id');
-    window.location.href = '/Planificacion/SemanasAsignatura?idEncriptado=' + idEncriptado;
+    window.location.href = '/Planificacion/Contenidos?idEncriptado=' + idEncriptado;
 });
 
 // Listar usuarios a asignar en el select2

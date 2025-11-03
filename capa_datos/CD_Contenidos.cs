@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace capa_datos
 {
-    public class CD_SemanasAsginaturaMatriz
+    public class CD_Contenidos
     {
         // Listar semanas de asignatura matriz
-        public List<SEMANASASIGNATURAMATRIZ> Listar(int fk_matriz_asignatura, out int resultado, out string mensaje)
+        public List<CONTENIDOS> Listar(int fk_matriz_asignatura, out int resultado, out string mensaje)
         {
-            List<SEMANASASIGNATURAMATRIZ> lista = new List<SEMANASASIGNATURAMATRIZ>();
+            List<CONTENIDOS> lista = new List<CONTENIDOS>();
             resultado = 0;
             mensaje = string.Empty;
 
@@ -22,7 +22,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("sp_LeerSemanasAsignatura", conexion);
+                    SqlCommand cmd = new SqlCommand("sp_LeerContenidosAsignatura", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("FKMatrizAsignatura", fk_matriz_asignatura);
 
@@ -32,12 +32,13 @@ namespace capa_datos
                     {
                         while (dr.Read())
                         {
-                            lista.Add(new SEMANASASIGNATURAMATRIZ()
+                            lista.Add(new CONTENIDOS()
                             {
-                                id_semana = Convert.ToInt32(dr["id_semana"]),
+                                id_contenido = Convert.ToInt32(dr["id_contenido"]),
                                 fk_matriz_asignatura = Convert.ToInt32(dr["fk_matriz_asignatura"]),
-                                numero_semana = dr["numero_semana"].ToString(),
-                                descripcion = dr["descripcion"].ToString(),
+                                numero_semana = Convert.ToInt32(dr["numero_semana"]),
+                                descripcion_semana = dr["descripcion_semana"].ToString(),
+                                contenido = dr["contenido"].ToString(),
                                 fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
                                 fecha_fin = Convert.ToDateTime(dr["fecha_fin"]),
                                 tipo_semana = dr["tipo_semana"].ToString(),
@@ -60,9 +61,9 @@ namespace capa_datos
             return lista;
         }
 
-        public List<SEMANASASIGNATURAMATRIZ> ObtenerContenidosPorSemana(int fk_matriz_integracion, string numero_semana, out int resultado, out string mensaje)
+        public List<CONTENIDOS> ObtenerContenidosPorSemana(int fk_matriz_integracion, int numero_semana, out int resultado, out string mensaje)
         {
-            List<SEMANASASIGNATURAMATRIZ> lista = new List<SEMANASASIGNATURAMATRIZ>();
+            List<CONTENIDOS> lista = new List<CONTENIDOS>();
             resultado = 0;
             mensaje = string.Empty;
 
@@ -81,18 +82,18 @@ namespace capa_datos
                     {
                         while (dr.Read())
                         {
-                            lista.Add(new SEMANASASIGNATURAMATRIZ()
+                            lista.Add(new CONTENIDOS()
                             {
-                                numero_semana = dr["numero_semana"].ToString(),
+                                numero_semana = Convert.ToInt32(dr["numero_semana"]),
+                                descripcion_semana = dr["descripcion_semana"].ToString(),
                                 asignatura = dr["asignatura"].ToString(),
                                 codigo_asignatura = dr["codigo_asignatura"].ToString(),
                                 profesor = dr["profesor"] != DBNull.Value ? dr["profesor"].ToString() : "Sin asignar",
-                                descripcion = dr["descripcion"] != DBNull.Value ? dr["descripcion"].ToString() : "Sin descripción",
+                                contenido = dr["contenido"] != DBNull.Value ? dr["descripcion"].ToString() : "Sin descripción",
                                 fecha_inicio = dr["fecha_inicio"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_inicio"]) : DateTime.MinValue,
                                 fecha_fin = dr["fecha_fin"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_fin"]) : DateTime.MinValue,
                                 tipo_semana = dr["tipo_semana"] != DBNull.Value ? dr["tipo_semana"].ToString() : "Normal",
                                 estado = dr["estado"] != DBNull.Value ? dr["estado"].ToString() : "Pendiente",
-                                fecha_registro = dr["fecha_registro"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_registro"]) : DateTime.MinValue
                             });
                         }
                     }
@@ -110,7 +111,7 @@ namespace capa_datos
             return lista;
         }
 
-        public int Actualizar(SEMANASASIGNATURAMATRIZ semana, out string mensaje)
+        public int Actualizar(CONTENIDOS contenido, out string mensaje)
         {
             int resultado = 0;
             mensaje = string.Empty;
@@ -119,14 +120,14 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_ActualizarSemana", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarContenido", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     // Parámetros de entrada
-                    cmd.Parameters.AddWithValue("IdSemana", semana.id_semana);
-                    cmd.Parameters.AddWithValue("Descripcion", semana.descripcion);
-                    cmd.Parameters.AddWithValue("TipoSemana", semana.tipo_semana);
-                    cmd.Parameters.AddWithValue("Estado", semana.estado);
+                    cmd.Parameters.AddWithValue("IdContenido", contenido.id_contenido);
+                    cmd.Parameters.AddWithValue("Contenido", contenido.contenido);
+                    cmd.Parameters.AddWithValue("TipoSemana", contenido.tipo_semana);
+                    cmd.Parameters.AddWithValue("Estado", contenido.estado);
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;

@@ -65,7 +65,7 @@
     <Compile Include="CN_PlanClasesDiario.cs" />
     <Compile Include="CN_Recursos.cs" />
     <Compile Include="CN_Rol.cs" />
-    <Compile Include="CN_SemanasAsginaturaMatriz.cs" />
+    <Compile Include="CN_Contenidos.cs" />
     <Compile Include="CN_Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

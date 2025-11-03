@@ -43,8 +43,8 @@ namespace capa_datos
                                 nombre_profesor = dr["profesor"].ToString(),
                                 correo_profesor = dr["correo"].ToString(),
                                 estado = dr["estado"].ToString(),
-                                semanas_finalizadas = dr["semanas_finalizadas"] != DBNull.Value ? Convert.ToInt32(dr["semanas_finalizadas"]) : 0,
-                                total_semanas = dr["total_semanas"] != DBNull.Value ? Convert.ToInt32(dr["total_semanas"]) : 0,
+                                contenidos_finalizados = dr["contenidos_finalizados"] != DBNull.Value ? Convert.ToInt32(dr["contenidos_finalizados"]) : 0,
+                                total_contenidos = dr["total_contenidos"] != DBNull.Value ? Convert.ToInt32(dr["total_contenidos"]) : 0,
                                 fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                             });
                         }
@@ -96,8 +96,8 @@ namespace capa_datos
                                 nombre_asignatura = dr["asignatura"].ToString(),
                                 fk_profesor_asignado = Convert.ToInt32(dr["fk_profesor_asignado"]),
                                 estado = dr["estado"].ToString(),
-                                semanas_finalizadas = dr["semanas_finalizadas"] != DBNull.Value ? Convert.ToInt32(dr["semanas_finalizadas"]) : 0,
-                                total_semanas = dr["total_semanas"] != DBNull.Value ? Convert.ToInt32(dr["total_semanas"]) : 0,
+                                contenidos_finalizados = dr["contenidos_finalizados"] != DBNull.Value ? Convert.ToInt32(dr["contenidos_finalizados"]) : 0,
+                                total_contenidos = dr["total_contenidos"] != DBNull.Value ? Convert.ToInt32(dr["total_contenidos"]) : 0,
                                 fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                             });
                         }
