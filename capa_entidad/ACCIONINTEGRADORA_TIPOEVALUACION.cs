@@ -15,12 +15,14 @@ namespace capa_entidad
         public int fk_matriz_integracion { get; set; }
         [NotMapped] // Para Entity Framework, no mapear a la base de datos
         public string fk_matriz_integracion_encriptado { get; set; }
-        public string numero_semana { get; set; }
+        public int numero_semana { get; set; }
         public string accion_integradora { get; set; }
         public string tipo_evaluacion { get; set; }
         public DateTime fecha_registro { get; set; } = DateTime.Now;
         public string nombre_matriz { get; set; }
         public string codigo_matriz { get; set; }
         public string estado { get; set; }
+        public string descripcion_semana { get; set; }
+        public string tipo_semana { get; set; }
     }
 }

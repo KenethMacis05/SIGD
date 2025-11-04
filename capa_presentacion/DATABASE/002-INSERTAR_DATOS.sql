@@ -135,7 +135,7 @@ VALUES
     ('Planificacion', 'EliminarMatrizAsignatura', 'Remover asignatura de la matriz', 'API'),
     ('Planificacion', 'ListarAsignaturaAsignadas', 'Listar asignaturas asignadas del profesor', 'API'),
 
-    -- 1.2 Semanas de la asignatura
+    -- 1.2 Contenidos de la asignatura
     ('Planificacion', 'Contenidos', 'Vista de los contenidos de la asignatura por semana', 'Vista'),
     ('Planificacion', 'ContenidosPorSemana', 'Vista de los contenidos por semanas de la matriz', 'Vista'),
     ('Planificacion', 'ListarContenidosPorId', 'Listar los contenidos a trabajar de la asignatura', 'API'),
@@ -147,6 +147,11 @@ VALUES
     ('Planificacion', 'ListarAccionIntegradoraTipoEvaluacionPorId', 'Listar acción integradora y tipo de evaluación por id', 'API'),
     ('Planificacion', 'EliminarAccionIntegradoraTipoEvaluacion', 'Eliminar acción integradora y tipo de evaluación', 'API'),
     ('Planificacion', 'ListarAccionIntegradoraTipoEvaluacion', 'Listar acción integradora y tipo de evaluación', 'API'),
+
+    -- 1.4 Semanas de la matriz
+    ('Planificacion', 'SemanasMatriz', 'Vista de semanas por matriz de integración', 'Vista'),
+    ('Planificacion', 'GuardarSemanaMatriz', 'Crear/Editar semana de la matriz de integración', 'API'),
+    ('Planificacion', 'EliminarSemanaMatriz', 'Eliminar semana de la matriz de integración', 'API'),
 
     -- 2. Plan didáctico semestral
     ('Planificacion', 'ListarPlanesDidacticos', 'Listar planes didácticos semestrales', 'API'),

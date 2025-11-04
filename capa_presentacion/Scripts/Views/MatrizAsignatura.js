@@ -284,7 +284,6 @@ function asignarAsignatura() {
 $(document).on('click', '.btn-eliminar-asignatura', function (e) {
     e.preventDefault();
     const idMatriz = $(this).data('id');
-    console.log("ID Matriz Asignatura a eliminar:", idMatriz);
     confirmarEliminacion().then((result) => {
 
         if (result.isConfirmed) {

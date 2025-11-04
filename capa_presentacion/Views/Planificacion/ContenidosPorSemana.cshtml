@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     // Convertir ViewBag a lista tipada para mejor manejo
-    var contenidos = ViewBag.Contenidos as List<capa_entidad.SEMANASASIGNATURAMATRIZ>;
+    var contenidos = ViewBag.Contenidos as List<capa_entidad.CONTENIDOS>;
 }
 
 <!--Contenedor-->
@@ -17,7 +17,7 @@
                     <div class="breadcrumb mb-0 shadow-sm rounded bg-light p-3 align-items-center flex-grow-1 me-md-3 w-100">
                         <div class="breadcrumb-item text-truncate">
                             <span class="text-primary fw-bold">
-                                <i class="fas fa-layer-group me-2"></i>Contenidos de la @ViewBag.Semana, @Model.nombre || @Model.codigo || @Model.periodo
+                                <i class="fas fa-layer-group me-2"></i>Contenidos de la Semana @ViewBag.Semana, @Model.nombre || @Model.codigo || @Model.periodo
                             </span>
                         </div>
                     </div>
@@ -60,9 +60,9 @@
                                         </div>
                                         <div class="card-body">
                                             <p class="card-text">
-                                                @if (!string.IsNullOrEmpty(contenido.descripcion) && contenido.descripcion != "Sin descripción")
+                                                @if (!string.IsNullOrEmpty(contenido.contenido) && contenido.contenido != "Sin descripción")
                                                 {
-                                                    @contenido.descripcion
+                                                    @contenido.contenido
                                                 }
                                                 else
                                                 {

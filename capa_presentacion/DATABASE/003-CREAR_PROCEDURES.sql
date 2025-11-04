@@ -4355,11 +4355,108 @@ END;
 GO
 
 -- =============================================
+-- PROCEDIMIENTOS PARA SEMANAS
+-- =============================================
+
+-- Leer semanas de una matriz específica
+CREATE OR ALTER PROCEDURE usp_LeerSemanasPorMatriz
+    @FKMatrizIntegracion INT
+AS
+BEGIN
+    SELECT 
+        id_semana,
+        fk_matriz_integracion,
+        numero_semana,
+        descripcion,
+        fecha_inicio,
+        fecha_fin,
+        tipo_semana,
+        estado,
+        fecha_registro
+    FROM SEMANAS
+    WHERE fk_matriz_integracion = @FKMatrizIntegracion
+    ORDER BY numero_semana ASC
+END;
+
+GO
+
+-- Actualizar semana de una matriz específica
+CREATE OR ALTER PROCEDURE usp_ActualizarSemana
+    @IdSemana INT,
+    @Descripcion VARCHAR(255),
+    @FechaInicio DATE,
+    @FechaFin DATE,
+    @TipoSemana VARCHAR(50),
+    @Estado VARCHAR(50),
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    BEGIN TRY
+        -- Verificar si la semana existe
+        IF NOT EXISTS (SELECT 1 FROM SEMANAS WHERE id_semana = @IdSemana)
+        BEGIN
+            SET @Mensaje = 'La semana no existe';
+            RETURN;
+        END
+
+        -- Verificar que la descripción nueva no exista en otra semana de la misma matriz
+        DECLARE @FKMatrizIntegracion INT;
+        SELECT @FKMatrizIntegracion = fk_matriz_integracion FROM SEMANAS WHERE id_semana = @IdSemana;
+        IF EXISTS (
+            SELECT 1 
+            FROM SEMANAS 
+            WHERE descripcion = @Descripcion 
+              AND fk_matriz_integracion = @FKMatrizIntegracion 
+              AND id_semana != @IdSemana
+        )
+        BEGIN
+            SET @Mensaje = 'La descripción de la semana ya está en uso en esta matriz';
+            RETURN;
+        END
+
+        -- Verificar que la fecha de fin sea posterior a la fecha de inicio
+        IF @FechaFin < @FechaInicio
+        BEGIN
+            SET @Mensaje = 'La fecha de fin debe ser posterior a la fecha de inicio';
+            RETURN;
+        END
+
+        -- Verificar que el tipo de semana sea válido
+        IF @TipoSemana NOT IN ('Normal', 'Corte Final')
+        BEGIN
+            SET @Mensaje = 'El tipo de semana no es válido';
+            RETURN;
+        END
+
+        -- Actualizar la semana
+        UPDATE SEMANAS
+        SET 
+            descripcion = @Descripcion,
+            fecha_inicio = @FechaInicio,
+            fecha_fin = @FechaFin,
+            tipo_semana = @TipoSemana,
+            estado = @Estado
+        WHERE id_semana = @IdSemana;
+        SET @Resultado = 1;
+        SET @Mensaje = 'Semana actualizada exitosamente';
+END TRY
+BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al actualizar la semana: ' + ERROR_MESSAGE();
+END CATCH
+END;
+
+GO
+
+-- =============================================
 -- PROCEDIMIENTOS PARA MATRIZASIGNATURA
 -- =============================================
 
 -- Asignar asignatura a una matriz de integración
-CREATE PROCEDURE usp_AsignarAsignaturaMatriz
+CREATE OR ALTER PROCEDURE usp_AsignarAsignaturaMatriz
     @FKMatrizIntegracion INT,
     @FKAsignatura INT,
     @FKProfesorPropietario INT,
@@ -4450,13 +4547,11 @@ BEGIN
         INSERT INTO CONTENIDOS (
             fk_matriz_asignatura, 
             fk_semana, 
-            contenido, 
             estado
         )
         SELECT 
             @IdMatrizAsignatura,
             id_semana,
-            'Contenido pendiente para ' + @NombreAsignatura,
             'Pendiente'
         FROM SEMANAS 
         WHERE fk_matriz_integracion = @FKMatrizIntegracion
@@ -5020,7 +5115,8 @@ BEGIN
         c.id_contenido,
         c.fk_matriz_asignatura,
         s.numero_semana,
-        s.descripcion_semana,
+        s.descripcion AS descripcion_semana,
+        s.tipo_semana,
         c.contenido,
         s.fecha_inicio,
         s.fecha_fin,
@@ -5316,6 +5412,8 @@ BEGIN
             mic.nombre AS nombre_matriz,
             mic.codigo AS codigo_matriz,
             s.numero_semana,
+            s.descripcion AS descripcion_semana,
+            s.tipo_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
             ait.estado,
@@ -5334,6 +5432,8 @@ BEGIN
             mic.nombre AS nombre_matriz,
             mic.codigo AS codigo_matriz,
             s.numero_semana,
+            s.descripcion AS descripcion_semana,
+            s.tipo_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
             ait.estado,
@@ -5354,6 +5454,8 @@ BEGIN
             mic.codigo AS codigo_matriz,
             ait.fk_semana,
             s.numero_semana,
+            s.descripcion AS descripcion_semana,
+            s.tipo_semana,
             ait.accion_integradora,
             ait.tipo_evaluacion,
             ait.estado,

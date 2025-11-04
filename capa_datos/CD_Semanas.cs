@@ -9,11 +9,12 @@ using System.Threading.Tasks;
 
 namespace capa_datos
 {
-    public class CD_AccionIntegradoraTipoEvaluaciona
+    public class CD_Semanas
     {
-        public List<ACCIONINTEGRADORA_TIPOEVALUACION> ListarPorMatriz(int fk_matriz_integracion, out int resultado, out string mensaje)
+        // Listar semanas de una matriz de integracion
+        public List<SEMANAS> Listar(int fk_matriz_integracion, out int resultado, out string mensaje)
         {
-            List<ACCIONINTEGRADORA_TIPOEVALUACION> lista = new List<ACCIONINTEGRADORA_TIPOEVALUACION>();
+            List<SEMANAS> lista = new List<SEMANAS>();
             resultado = 0;
             mensaje = string.Empty;
 
@@ -21,7 +22,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_LeerAccionIntegradoraTipoEvaluacion", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_LeerSemanasPorMatriz", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("FKMatrizIntegracion", fk_matriz_integracion);
 
@@ -31,17 +32,15 @@ namespace capa_datos
                     {
                         while (dr.Read())
                         {
-                            lista.Add(new ACCIONINTEGRADORA_TIPOEVALUACION()
+                            lista.Add(new SEMANAS()
                             {
-                                id_accion_tipo = Convert.ToInt32(dr["id_accion_tipo"]),
+                                id_semana = Convert.ToInt32(dr["id_semana"]),
                                 fk_matriz_integracion = Convert.ToInt32(dr["fk_matriz_integracion"]),
-                                nombre_matriz = dr["nombre_matriz"].ToString(),
-                                codigo_matriz = dr["codigo_matriz"].ToString(),
                                 numero_semana = Convert.ToInt32(dr["numero_semana"]),
-                                descripcion_semana = dr["descripcion_semana"].ToString(),
+                                descripcion = dr["descripcion"].ToString(),
+                                fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
+                                fecha_fin = Convert.ToDateTime(dr["fecha_fin"]),
                                 tipo_semana = dr["tipo_semana"].ToString(),
-                                accion_integradora = dr["accion_integradora"].ToString(),
-                                tipo_evaluacion = dr["tipo_evaluacion"].ToString(),
                                 estado = dr["estado"].ToString(),
                                 fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                             });
@@ -49,36 +48,36 @@ namespace capa_datos
                     }
 
                     resultado = 1;
-                    mensaje = "Asignaturas cargadas correctamente";
+                    mensaje = "Semanas cargadas correctamente";
                 }
             }
             catch (Exception ex)
             {
                 resultado = 0;
-                mensaje = "Error al listar las asignaturas: " + ex.Message;
+                mensaje = "Error al listar las semanas de la asignatura: " + ex.Message;
             }
 
             return lista;
         }
 
-        // Actualizar
-        public int Actualizar(ACCIONINTEGRADORA_TIPOEVALUACION accionTipo, out string mensaje)
+        public int Actualizar(SEMANAS semana, out string mensaje)
         {
             int resultado = 0;
             mensaje = string.Empty;
-
             try
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("usp_ActualizarAccionIntegradoraTipoEvaluacion", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarSemana", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // Parámetros de entrada
-                    cmd.Parameters.AddWithValue("IdAccionTipo", accionTipo.id_accion_tipo);
-                    cmd.Parameters.AddWithValue("AccionIntegradora", accionTipo.accion_integradora);
-                    cmd.Parameters.AddWithValue("TipoEvaluacion", accionTipo.tipo_evaluacion);
-                    cmd.Parameters.AddWithValue("Estado", accionTipo.estado);
+                    // Parametros de entrada
+                    cmd.Parameters.AddWithValue("IDSemana", semana.id_semana);
+                    cmd.Parameters.AddWithValue("Descripcion", semana.descripcion);
+                    cmd.Parameters.AddWithValue("FechaInicio", semana.fecha_inicio);
+                    cmd.Parameters.AddWithValue("FechaFin", semana.fecha_fin);
+                    cmd.Parameters.AddWithValue("TipoSemana", semana.tipo_semana);
+                    cmd.Parameters.AddWithValue("Estado", semana.estado);
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
@@ -94,9 +93,8 @@ namespace capa_datos
             catch (Exception ex)
             {
                 resultado = 0;
-                mensaje = "Error al actualizar el registro: " + ex.Message;
+                mensaje = "Error al actualizar la semana: " + ex.Message;
             }
-
             return resultado;
         }
     }

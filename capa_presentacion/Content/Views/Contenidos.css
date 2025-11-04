@@ -1,0 +1,54 @@
+﻿/* Hover para contenidos - estado Pendiente (secondary) */
+.groud-Contenido.estado-secondary:hover {
+    box-shadow: 0 5px 15px rgba(108, 117, 125, 0.2) !important;
+    border-color: var(--bs-secondary) !important;
+}
+
+.btn-titulo-Contenido.estado-secondary:hover {
+    color: var(--bs-secondary) !important;
+}
+
+/* Hover para contenidos - estado En proceso (primary) */
+.groud-Contenido.estado-primary:hover {
+    box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2) !important;
+    border-color: var(--bs-primary) !important;
+}
+
+.btn-titulo-Contenido.estado-primary:hover {
+    color: var(--bs-primary) !important;
+}
+
+/* Hover para contenidos - estado Finalizado (success) */
+.groud-Contenido.estado-success:hover {
+    box-shadow: 0 5px 15px rgba(25, 135, 84, 0.2) !important;
+    border-color: var(--bs-success) !important;
+}
+
+.btn-titulo-Contenido.estado-success:hover {
+    color: var(--bs-success) !important;
+}
+
+/* Estilos base para los contenidos */
+.groud-Contenido {
+    transition: all 0.3s ease;
+    cursor: pointer;
+    border: 1px solid #dee2e6;
+}
+
+.btn-titulo-Contenido {
+    transition: color 0.2s ease;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+}
+
+/* Estilos para el botón de editar */
+.btn-editar-contenido {
+    transition: all 0.2s ease;
+}
+
+.btn-editar-contenido:hover {
+    transform: scale(1.1);
+}

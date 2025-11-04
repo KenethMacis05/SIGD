@@ -66,6 +66,7 @@
     <Compile Include="CN_Recursos.cs" />
     <Compile Include="CN_Rol.cs" />
     <Compile Include="CN_Contenidos.cs" />
+    <Compile Include="CN_Semanas.cs" />
     <Compile Include="CN_Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

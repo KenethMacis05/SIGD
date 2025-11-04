@@ -24,6 +24,25 @@ function generarHtmlContenidosAsignatura(Contenido) {
     // Determinar color y icono según el estado
     var colorEstado = '';
     var iconoEstado = '';
+    var TipoSemana = '';
+    var esCorte = false;
+    var badgeColor = '';
+    var badgeIcon = '';
+
+    // Verificar si es corte evaluativo o final
+    if (Contenido.tipo_semana && Contenido.tipo_semana !== 'Normal') {
+        TipoSemana = Contenido.tipo_semana;
+        esCorte = true;
+
+        // Definir colores e iconos específicos para cortes
+        if (Contenido.tipo_semana === 'Corte Evaluativo') {
+            badgeColor = 'warning';
+            badgeIcon = 'fa-star';
+        } else if (Contenido.tipo_semana === 'Corte Final') {
+            badgeColor = 'danger';
+            badgeIcon = 'fa-trophy';
+        }
+    }
 
     switch (Contenido.estado) {
         case 'Pendiente':
@@ -46,9 +65,18 @@ function generarHtmlContenidosAsignatura(Contenido) {
     return `
     <div class="col-sm-12 col-md-6 col-lg-4 mb-3">
         <div class="card h-100 shadow-sm groud-Contenido estado-${colorEstado}">
-            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center py-2 position-relative">
                 <div class="d-flex align-items-center">
-                    <span class="fw-bold text-${colorEstado} me-2 btn-titulo-Contenido estado-${colorEstado}">${Contenido.descripcion_semana}</span>
+                    <span class="fw-bold text-${colorEstado} me-2 btn-titulo-Contenido estado-${colorEstado}">
+                        ${Contenido.descripcion_semana}
+                    </span>
+                    ${esCorte ? `
+                    <div>
+                        <span class="badge bg-${badgeColor} bg-gradient">
+                            <i class="fas ${badgeIcon} me-1"></i>${TipoSemana}
+                        </span>
+                    </div>
+                    ` : ''}
                 </div>
                 <button class="btn btn-sm btn-outline-${colorEstado} btn-editar-contenido" 
                         data-id="${Contenido.id_contenido}">
@@ -76,7 +104,9 @@ function generarHtmlContenidosAsignatura(Contenido) {
                 </div>
                 ${Contenido.contenido ? `
                     <p class="card-text small text-muted mb-2">${Contenido.contenido}</p>
-                ` : ''}
+                ` : `
+                    <p class="card-text small text-muted mb-2">Contenido pendiente</p>
+                `}
             </div>
         </div>
     </div>`;

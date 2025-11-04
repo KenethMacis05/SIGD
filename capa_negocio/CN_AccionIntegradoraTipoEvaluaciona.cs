@@ -29,5 +29,31 @@ namespace capa_negocio
 
             return accionTipoMatriz;
         }
+
+        public int Actualizar(ACCIONINTEGRADORA_TIPOEVALUACION accionTipo, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            // Validaciones básicas
+            if (accionTipo == null)
+            {
+                mensaje = "Los datos del registro no pueden ser nulos";
+                return 0;
+            }
+
+            if (accionTipo.id_accion_tipo <= 0)
+            {
+                mensaje = "Debe especificar un id válido";
+                return 0;
+            }
+
+            // Llamar al método de la capa de datos
+            return CD_AccionIntegradoraTipoEvaluaciona.Actualizar(accionTipo, out mensaje);
+        }
+
+        public int Crear(ACCIONINTEGRADORA_TIPOEVALUACION accionTipo, out string mensaje)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

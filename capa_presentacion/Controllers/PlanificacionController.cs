@@ -19,9 +19,10 @@ namespace capa_presentacion.Controllers
         CN_MatrizAsignatura CN_MatrizAsignatura = new CN_MatrizAsignatura();
         CN_Contenidos CN_Contenidos = new CN_Contenidos();
         CN_AccionIntegradoraTipoEvaluaciona CN_AccionIntegradoraTipoEvaluaciona = new CN_AccionIntegradoraTipoEvaluaciona();
+        CN_Semanas CN_Semanas = new CN_Semanas();
 
         #region Matriz de Integracion de Componentes
-        
+
         public ActionResult Matriz_de_Integracion()
         {
             return View();
@@ -126,6 +127,34 @@ namespace capa_presentacion.Controllers
             if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
             int resultado = CN_MatrizIntegradora.Eliminar(id_matriz_integracion, usuario.id_usuario, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        ////////////////////////////////////////////////////////////////////////////////////
+        //  Semanas de la matriz de integracion  //
+        ///////////////////////////////////////////////////////////////////////////////////
+
+        [HttpGet]
+        public ActionResult SemanasMatriz(string idEncriptado)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            
+            // Obtener la matriz principal
+            MATRIZINTEGRACIONCOMPONENTES matriz = CN_MatrizIntegradora.ObtenerMatrizPorId(idEncriptado, usuario.id_usuario);
+
+            if (matriz == null || usuario == null)
+            {
+                TempData["Error"] = "La matriz de integración no existe.";
+                return RedirectToAction("Matriz_de_Integracion");
+            }
+            
+            // Obtener las semanas de la matriz
+            int resultado;
+            string mensaje;
+            var semanas = CN_Semanas.Listar(idEncriptado, out resultado, out mensaje);
+            ViewBag.Semanas = semanas;
+            ViewBag.MensajeSemanas = mensaje;
+
+            return View(matriz);
         }
 
         ////////////////////////////////////////////////////////////////////////////////////
@@ -441,6 +470,32 @@ namespace capa_presentacion.Controllers
                 return Json(new { success = false, data = new List<ACCIONINTEGRADORA_TIPOEVALUACION>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
+        [HttpPost]
+        public JsonResult GuardarAccionIntegradoraTipoEvaluacion(ACCIONINTEGRADORA_TIPOEVALUACION accionTipo)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null)
+            {
+                return Json(new { success = false, message = "La sesión ha expirado. Por favor, inicie sesión nuevamente." });
+            }
+
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (accionTipo.id_accion_tipo == 0)
+            {
+                resultado = CN_AccionIntegradoraTipoEvaluaciona.Crear(accionTipo, out mensaje);
+            }
+            else
+            {
+                resultado = CN_AccionIntegradoraTipoEvaluaciona.Actualizar(accionTipo, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+
 
         #endregion
 

@@ -216,22 +216,16 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("IdMatrizAsignatura", id_matriz_asignatura);
                     cmd.Parameters.AddWithValue("FKProfesorPropietario", fk_profesor_propietario);
 
-                    // Parámetro de salida
+                    // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
 
                     conexion.Open();
                     cmd.ExecuteNonQuery();
 
+                    // Obtener los valores de salida
                     resultado = Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
-
-                    if (resultado)
-                    {
-                        mensaje = "Asignatura eliminada correctamente de la matriz";
-                    }
-                    else
-                    {
-                        mensaje = "No se pudo eliminar la asignatura. Verifique que exista.";
-                    }
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
                 }
             }
             catch (Exception ex)

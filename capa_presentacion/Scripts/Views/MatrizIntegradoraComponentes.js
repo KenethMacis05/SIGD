@@ -80,11 +80,10 @@ $('#datatable tbody').on('click', '.btn-viewAccionIntegradoraTipoEvaluacion', fu
     window.location.href = "/Planificacion/AccionIntegradoraTipoEvaluacion?idEncriptado=" + data.id_encriptado;
 });
 
-//Boton seleccionar matriz para ver las semanas de la matriz
-$("#datatable tbody").on("click", '.btn-semanas', function () {
-    filaSeleccionada = $(this).closest("tr");
-    var data = dataTable.row(filaSeleccionada).data()
-    abrirModal(data)
+// Redirigir a la pantalla de semanas
+$("#datatable tbody").on("click", '.btn-viewSemanas', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Planificacion/SemanasMatriz?idEncriptado=" + data.id_encriptado;
 });
 
 function abrirModal(json) {
@@ -201,7 +200,7 @@ const dataTableOptions = {
                 '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
                 '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
                 '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar"><i class="fa fa-user-graduate"></i></button>' +
-                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-semanas"><i class="fa fa-calendar"></i></button>' +
+                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-viewSemanas"><i class="fa fa-calendar"></i></button>' +
                 '<button type="button" class="btn btn-dark btn-sm ms-1 btn-viewAccionIntegradoraTipoEvaluacion"><i class="fa fa-tasks"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
             width: "200"

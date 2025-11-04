@@ -89,7 +89,7 @@ namespace capa_datos
                                 asignatura = dr["asignatura"].ToString(),
                                 codigo_asignatura = dr["codigo_asignatura"].ToString(),
                                 profesor = dr["profesor"] != DBNull.Value ? dr["profesor"].ToString() : "Sin asignar",
-                                contenido = dr["contenido"] != DBNull.Value ? dr["descripcion"].ToString() : "Sin descripción",
+                                contenido = dr["contenido"] != DBNull.Value ? dr["contenido"].ToString() : "Sin contenido",
                                 fecha_inicio = dr["fecha_inicio"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_inicio"]) : DateTime.MinValue,
                                 fecha_fin = dr["fecha_fin"] != DBNull.Value ? Convert.ToDateTime(dr["fecha_fin"]) : DateTime.MinValue,
                                 tipo_semana = dr["tipo_semana"] != DBNull.Value ? dr["tipo_semana"].ToString() : "Normal",

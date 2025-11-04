@@ -50,7 +50,7 @@ function generarHtml(Item) {
              data-semana="${Item.numero_semana}">
             <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
                 <div class="d-flex align-items-center">
-                    <span class="fw-bold text-${colorEstado} me-2 btn-titulo-semana estado-${colorEstado}">${Item.numero_semana}</span>
+                    <span class="fw-bold text-${colorEstado} me-2 btn-titulo-semana estado-${colorEstado}">${Item.descripcion_semana}</span>
                 </div>
                 <button class="btn btn-sm btn-outline-${colorEstado} btn-editar-accion" 
                         data-id="${Item.id_accion_tipo}">
@@ -126,7 +126,79 @@ $(document).on('click', '.card-semana-accion', function (e) {
 // Evento para el botón editar (separado)
 $(document).on('click', '.btn-editar-accion', function (e) {
     e.stopPropagation(); // Evitar que se active el evento de la card
-    const idAccion = $(this).data('id');
+    const idAccionTipo = $(this).data('id');
     // Tu lógica para editar la acción integradora
-    abrirModalEditarAccion(idAccion);
+    abrirModalEditarAccion(idAccionTipo);
 });
+
+function abrirModalEditarAccion(idAccionTipo) {
+    // Limpiar los campos
+    $("#idAccionTipo").val("0");
+    $("#accionIntegradora").val("");
+    $("#tipoEvaluacion").val("");
+    $("#estado").val("Pendiente");
+
+
+    if (idAccionTipo && window.accionTipoData) {
+        const accionTipo = window.accionTipoData.find(a => a.id_accion_tipo === idAccionTipo);
+
+        if (accionTipo) {
+            $("#idAccionTipo").val(accionTipo.id_accion_tipo);
+            $("#accionIntegradora").val(accionTipo.accion_integradora);
+            $("#tipoEvaluacion").val(accionTipo.tipo_evaluacion);
+            $("#estado").val(accionTipo.estado);
+        }
+    }
+
+    $("#accionTipo").modal("show");
+}
+
+function guardarAccionTipo() {
+    var accionTipo = {
+        id_accion_tipo: $("#idAccionTipo").val().trim(),
+        accionIntegradora: $('#accionIntegradora').summernote('code'),
+        tipo_evaluacion: $("#tipoEvaluacion").val().trim(),
+        estado: $("#estado").val().trim(),
+    };
+
+    // Validaciones básicas
+    if (!accionTipo.estado) {
+        showAlert("Error", "Debe seleccionar un estado", "error");
+        return;
+    }
+
+    // Validaciones de accion integradora y tipo de evaluacion
+    if (!accionTipo.accionIntegradora || !accionTipo.tipo_evaluacion) {
+        showAlert("Error", "Debe ingresar la acción integradora y el tipo de evaluación", "error");
+        return;
+    }
+
+    showLoadingAlert("Procesando", "Guardando registro...");
+
+    jQuery.ajax({
+        url: '/Planificacion/GuardarAccionIntegradoraTipoEvaluacion',
+        type: "POST",
+        data: JSON.stringify({ accionTipo: accionTipo }),
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+        success: function (data) {
+            Swal.close();
+            $("#accionTipo").modal("hide");
+
+            if (data.Resultado || data.Respuesta) {
+                const mensaje = data.Mensaje || (accionTipo.id_accion_tipo == "0" ? "Registro creado correctamente" : "Registro actualizado correctamente");
+                showAlert("¡Éxito!", mensaje, "success").then((result) => {
+                    location.reload();
+                });
+            }
+            else {
+                const mensaje = data.Mensaje || (accionTipo.id_accion_tipo == "0" ? "No se pudo crear el registro" : "No se pudo actualizar el registro");
+                showAlert("Error", mensaje, "error");
+            }
+        },
+        error: (xhr) => {
+            Swal.close();
+            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+        }
+    });
+}
