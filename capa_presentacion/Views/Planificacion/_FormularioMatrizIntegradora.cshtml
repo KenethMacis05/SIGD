@@ -159,16 +159,36 @@
                     <div class="col col-md-4 col-sm-12">
                         <div class="input-group mb-3">
                             <span class="input-group-text"># de semanas</span>
-                            @Html.TextBoxFor(m => m.numero_semanas, new
+                            @{
+                                var NumeroSemana = Model.numero_semanas;
+                            }
+
+                            @if (Model.id_matriz_integracion != 0)
                             {
-                                @class = "form-control",
-                                type = "number",
-                                min = "1",
-                                max = "52",
-                                required = "required",
-                                @oninvalid = "this.setCustomValidity('El número de semanas es requerido')",
-                                @oninput = "setCustomValidity('')"
-                            })
+                                @Html.TextBoxFor(m => m.numero_semanas, new
+                                {
+                                    @type = "number",
+                                    @class = "form-control",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El número de semanas es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    @Value = NumeroSemana,
+                                    disabled = "disabled"
+                                })
+                            }
+                            else
+                            {
+                                @Html.TextBoxFor(m => m.numero_semanas, new
+                                {
+                                    @class = "form-control",
+                                    type = "number",
+                                    min = "1",
+                                    max = "52",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El número de semanas es requerido')",
+                                    @oninput = "setCustomValidity('')"
+                                })
+                            }
                         </div>
                     </div>
                 </div>

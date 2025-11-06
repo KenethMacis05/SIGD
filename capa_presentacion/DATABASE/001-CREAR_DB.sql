@@ -300,6 +300,7 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     estrategia_integradora VARCHAR(255),
 
     estado BIT DEFAULT 1,
+    estado_proceso VARCHAR(50) NOT NULL CHECK (estado_proceso IN ('Pendiente', 'En proceso', 'Finalizado')) DEFAULT 'Pendiente',
     fecha_registro DATETIME DEFAULT GETDATE(),
 
     CONSTRAINT FK_MIC_AREA FOREIGN KEY (fk_area) REFERENCES AREACONOCIMIENTO(id_area),

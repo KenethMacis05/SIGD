@@ -77,7 +77,6 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("FechaInicio", semana.fecha_inicio);
                     cmd.Parameters.AddWithValue("FechaFin", semana.fecha_fin);
                     cmd.Parameters.AddWithValue("TipoSemana", semana.tipo_semana);
-                    cmd.Parameters.AddWithValue("Estado", semana.estado);
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;

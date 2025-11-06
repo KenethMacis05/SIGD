@@ -196,6 +196,27 @@ const dataTableOptions = {
         { data: "carrera", title: "Carrera" },
         { data: "modalidad", title: "Modalidad" },
         {
+            data: "estado_proceso", title: "Estado",
+            render: function (data) {
+                let badgeClass = 'secondary';
+                let icon = 'fa-clock';
+
+                if (data === 'En proceso') {
+                    badgeClass = 'primary';
+                    icon = 'fa-spinner';
+                } else if (data === 'Finalizado') {
+                    badgeClass = 'success';
+                    icon = 'fa-check';
+                }
+
+                return `
+                    <span class="badge bg-${badgeClass} bg-gradient">
+                        <i class="fas ${icon} me-1"></i>${data}
+                    </span>
+                `;
+            }
+        },
+        {
             defaultContent:
                 '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
                 '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +

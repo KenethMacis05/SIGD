@@ -148,13 +148,52 @@ namespace capa_presentacion.Controllers
             }
             
             // Obtener las semanas de la matriz
-            int resultado;
-            string mensaje;
-            var semanas = CN_Semanas.Listar(idEncriptado, out resultado, out mensaje);
-            ViewBag.Semanas = semanas;
-            ViewBag.MensajeSemanas = mensaje;
+            //int resultado;
+            //string mensaje;
+            //var semanas = CN_Semanas.Listar(idEncriptado, out resultado, out mensaje);
+            //ViewBag.Semanas = semanas;
+            //ViewBag.MensajeSemanas = mensaje;
 
             return View(matriz);
+        }
+
+        [HttpGet]
+        public JsonResult ListarSemanasMatriz(string idEncriptado)
+        {
+            try
+            {
+                int resultado;
+                string mensaje;
+                List<SEMANAS> semanas = CN_Semanas.Listar(idEncriptado, out resultado, out mensaje);
+                return Json(new { data = semanas, resultado = resultado,  mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, data = new List<SEMANAS>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult GuardarSemanaMatriz(SEMANAS semana)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null)
+            {
+                return Json(new { success = false, message = "La sesión ha expirado. Por favor, inicie sesión nuevamente." });
+            }
+            string mensaje = string.Empty;
+            int resultado = 0;
+            if (semana.id_semana == 0)
+            {
+                // Crear nueva semana
+                resultado = CN_Semanas.Crear(semana, out mensaje);
+            }
+            else
+            {
+                // Actualizar semana existente
+                resultado = CN_Semanas.Actualizar(semana, out mensaje);
+            }
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         ////////////////////////////////////////////////////////////////////////////////////

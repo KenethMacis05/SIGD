@@ -150,6 +150,7 @@ VALUES
 
     -- 1.4 Semanas de la matriz
     ('Planificacion', 'SemanasMatriz', 'Vista de semanas por matriz de integración', 'Vista'),
+    ('Planificacion', 'ListarSemanasMatriz', 'Listar semanas', 'API'),
     ('Planificacion', 'GuardarSemanaMatriz', 'Crear/Editar semana de la matriz de integración', 'API'),
     ('Planificacion', 'EliminarSemanaMatriz', 'Eliminar semana de la matriz de integración', 'API'),
 

@@ -17,13 +17,40 @@ namespace capa_negocio
         public List<SEMANAS> Listar(string fk_matriz_integracion_encriptado, out int resultado, out string mensaje)
         {
             int fk_matriz_integracion = Convert.ToInt32(CN_Recursos.DecryptValue(fk_matriz_integracion_encriptado));
-            return CD_Semanas.Listar(fk_matriz_integracion, out resultado, out mensaje);
+
+            var semanas = CD_Semanas.Listar(fk_matriz_integracion, out resultado, out mensaje);
+            semanas.ForEach(s =>
+            {
+                s.fk_matriz_integracion_encriptado = fk_matriz_integracion_encriptado;
+            });
+
+            return semanas;
         }
 
         // Actualizar semana
         public int Actualizar(SEMANAS semana, out string mensaje)
         {
+            //validaciones basicas
+            if (semana.numero_semana <= 0)
+            {
+                mensaje = "El número de semana debe ser mayor a cero.";
+                return 0;
+            }
+
+            else {
+                if (semana.fecha_fin < semana.fecha_inicio)
+                {
+                    mensaje = "La fecha de fin no puede ser anterior a la fecha de inicio.";
+                    return 0;
+                }
+            }
+
             return CD_Semanas.Actualizar(semana, out mensaje);
+        }
+
+        public int Crear(SEMANAS semana, out string mensaje)
+        {
+            throw new NotImplementedException();
         }
     }
 }

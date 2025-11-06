@@ -53,6 +53,7 @@ namespace capa_datos
                                     usuario = dr["usuario"].ToString(),
                                     periodo = dr["periodo"].ToString(),
                                     estado = Convert.ToBoolean(dr["estado"]),
+                                    estado_proceso = dr["estado_proceso"].ToString(),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
                                 }
                             );
@@ -140,6 +141,7 @@ namespace capa_datos
                                 numero_semanas = Convert.ToInt32(dr["numero_semanas"]),
                                 fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
                                 estado = Convert.ToBoolean(dr["estado"]),
+                                estado_proceso = dr["estado_proceso"].ToString(),
                                 fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                             };
                         }

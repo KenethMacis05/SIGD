@@ -4060,6 +4060,58 @@ BEGIN
 END;
 GO
 
+-- =====================================================
+-- FUNCIÓN REUTILIZABLE: ACTUALIZAR ESTADO DE MATRIZ INTEGRACIÓN
+-- Parámetros necesarios: @IdMatrizIntegracion INT
+-- =====================================================
+CREATE OR ALTER PROCEDURE usp_ActualizarEstadoMatrizIntegracion
+    @IdMatrizIntegracion INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @TotalSemanas INT;
+    DECLARE @SemanasEnProceso INT;
+    DECLARE @SemanasFinalizadas INT;
+    DECLARE @NuevoEstadoMatriz VARCHAR(50);
+
+    -- Contar las semanas por estado
+    SELECT 
+        @TotalSemanas = COUNT(*),
+        @SemanasEnProceso = COUNT(CASE WHEN estado = 'En proceso' THEN 1 END),
+        @SemanasFinalizadas = COUNT(CASE WHEN estado = 'Finalizado' THEN 1 END)
+    FROM SEMANAS 
+    WHERE fk_matriz_integracion = @IdMatrizIntegracion;
+
+    -- Determinar el nuevo estado para la matriz
+    SET @NuevoEstadoMatriz = 
+        CASE 
+            -- Si TODAS las semanas están FINALIZADAS
+            WHEN @SemanasFinalizadas = @TotalSemanas AND @TotalSemanas > 0 THEN 'Finalizado'
+            
+            -- Si AL MENOS UNA semana está EN PROCESO o FINALIZADA
+            WHEN (@SemanasEnProceso > 0 OR @SemanasFinalizadas > 0) THEN 'En proceso'
+            
+            -- Si TODAS las semanas están PENDIENTES o no hay semanas
+            ELSE 'Pendiente'
+        END;
+
+    -- Actualizar el estado de la matriz si cambió
+    UPDATE MATRIZINTEGRACIONCOMPONENTES 
+    SET estado_proceso = @NuevoEstadoMatriz
+    WHERE id_matriz_integracion = @IdMatrizIntegracion
+    AND estado_proceso != @NuevoEstadoMatriz;
+
+    -- Opcional: Retornar información para debugging
+    SELECT 
+        @IdMatrizIntegracion AS IdMatriz,
+        @TotalSemanas AS TotalSemanas,
+        @SemanasEnProceso AS SemanasEnProceso,
+        @SemanasFinalizadas AS SemanasFinalizadas,
+        @NuevoEstadoMatriz AS NuevoEstadoMatriz;
+END;
+GO
+
 -- Leer datos generales Matriz de Integración de un usuario
 CREATE PROCEDURE usp_LeerMatrizIntegracion
     @IdUsuario INT,
@@ -4106,6 +4158,7 @@ BEGIN
             u.pri_nombre + ' ' + u.pri_apellido AS usuario,
             p.semestre AS periodo,
             mic.estado,
+            mic.estado_proceso,
             mic.fecha_registro
         FROM MATRIZINTEGRACIONCOMPONENTES mic
         INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
@@ -4271,7 +4324,7 @@ END;
 GO
 
 -- Eliminar Matriz de Integración definitivamente
-CREATE PROCEDURE usp_EliminarMatrizIntegracion
+CREATE OR ALTER PROCEDURE usp_EliminarMatrizIntegracion
     @IdMatriz INT,
     @IdUsuario INT,
     @Resultado BIT OUTPUT,
@@ -4303,7 +4356,7 @@ BEGIN
         -- 3. Verificar si la matriz tiene asignaturas asignadas
         IF EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE fk_matriz_integracion = @IdMatriz)
         BEGIN
-            -- 4. Verificar que todas las asignaturas estén en estado "Iniciado"
+            -- 4. Verificar que todas las asignaturas estén en estado "Pendiente"
             IF EXISTS (
                 SELECT 1 FROM MATRIZASIGNATURA 
                 WHERE fk_matriz_integracion = @IdMatriz 
@@ -4314,10 +4367,10 @@ BEGIN
                 THROW 51015, @Mensaje, 1;
             END
 
-            -- 5. Si tiene asignaturas en estado "Iniciado", primero eliminar las descripciones asociadas
-            DELETE dam 
-            FROM SEMANASASIGNATURAMATRIZ dam
-            INNER JOIN MATRIZASIGNATURA ma ON dam.fk_matriz_asignatura = ma.id_matriz_asignatura
+            -- 5. Si tiene asignaturas en estado "Pendiente", primero eliminar los contenidos asociados
+            DELETE c 
+            FROM CONTENIDOS c
+            INNER JOIN MATRIZASIGNATURA ma ON c.fk_matriz_asignatura = ma.id_matriz_asignatura
             WHERE ma.fk_matriz_integracion = @IdMatriz;
 
             -- 6. Luego eliminar las asignaturas de la matriz
@@ -4325,14 +4378,41 @@ BEGIN
             WHERE fk_matriz_integracion = @IdMatriz;
         END
 
-        -- 7. Verificar si existen registros en la tabla de ACCIONINTEGRADORA_TIPOEVALUACION
+        -- 7. Verificar y eliminar registros en ACCIONINTEGRADORA_TIPOEVALUACION
         IF EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION WHERE fk_matriz_integracion = @IdMatriz)
         BEGIN
-            SET @Mensaje = 'No se puede eliminar la matriz porque tiene registros en la tabla ACCIONINTEGRADORA_TIPOEVALUACION. Debe eliminar primero los planes didácticos.';
-            THROW 51017, @Mensaje, 1;
+            -- 4. Verificar que todas las asignaturas estén en estado "Pendiente"
+            IF EXISTS (
+                SELECT 1 FROM  ACCIONINTEGRADORA_TIPOEVALUACION
+                WHERE fk_matriz_integracion = @IdMatriz 
+                AND estado IN ('En proceso', 'Finalizado')
+            )
+            BEGIN
+                SET @Mensaje = 'No se puede eliminar la matriz porque tiene acciones integradoras y tipos de evaluación en estado "En proceso" o "Finalizado". Solo se pueden eliminar matrices con asignaturas en estado "Pendiente" o sin asignaturas.';
+                THROW 51016, @Mensaje, 1;
+            END
+
+            DELETE FROM ACCIONINTEGRADORA_TIPOEVALUACION 
+            WHERE fk_matriz_integracion = @IdMatriz;
+        END
+        
+        -- 8. Verificar y eliminar semanas asociadas
+        IF EXISTS (SELECT 1 FROM SEMANAS WHERE fk_matriz_integracion = @IdMatriz)
+        BEGIN
+            IF EXISTS (
+                SELECT 1 FROM SEMANAS WHERE fk_matriz_integracion = @IdMatriz
+                AND estado IN ('En proceso', 'Finalizado')
+            )
+            BEGIN
+                SET @Mensaje = 'No se puede eliminar la matriz porque tiene semanas en estado "En proceso". Solo se pueden eliminar matrices con semanas en estado "Pendiente"';
+                THROW 51017, @Mensaje, 1
+            END
+
+            DELETE FROM SEMANAS 
+            WHERE fk_matriz_integracion = @IdMatriz;
         END
 
-        -- 8. Finalmente eliminar la matriz de integración
+        -- 9. Finalmente eliminar la matriz de integración
         DELETE FROM MATRIZINTEGRACIONCOMPONENTES 
         WHERE id_matriz_integracion = @IdMatriz;
 
@@ -4387,7 +4467,6 @@ CREATE OR ALTER PROCEDURE usp_ActualizarSemana
     @FechaInicio DATE,
     @FechaFin DATE,
     @TipoSemana VARCHAR(50),
-    @Estado VARCHAR(50),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -4424,21 +4503,13 @@ BEGIN
             RETURN;
         END
 
-        -- Verificar que el tipo de semana sea válido
-        IF @TipoSemana NOT IN ('Normal', 'Corte Final')
-        BEGIN
-            SET @Mensaje = 'El tipo de semana no es válido';
-            RETURN;
-        END
-
         -- Actualizar la semana
         UPDATE SEMANAS
         SET 
             descripcion = @Descripcion,
             fecha_inicio = @FechaInicio,
             fecha_fin = @FechaFin,
-            tipo_semana = @TipoSemana,
-            estado = @Estado
+            tipo_semana = @TipoSemana
         WHERE id_semana = @IdSemana;
         SET @Resultado = 1;
         SET @Mensaje = 'Semana actualizada exitosamente';
@@ -4556,6 +4627,79 @@ BEGIN
         FROM SEMANAS 
         WHERE fk_matriz_integracion = @FKMatrizIntegracion
         ORDER BY numero_semana;
+
+        -- =====================================================
+		-- SECCIÓN REUTILIZABLE: ACTUALIZAR ESTADO DE SEMANAS
+		-- Parámetros necesarios: @FKMatrizIntegracion INT
+		-- =====================================================
+		DECLARE @SemanasParaActualizar TABLE (
+			id_semana INT,
+			total_contenidos INT,
+			contenidos_en_proceso INT,
+			contenidos_finalizados INT,
+			tiene_accion_integradora BIT,
+			estado_accion_integradora VARCHAR(50)
+		);
+
+		-- Calcular estadísticas para cada semana (CONTENIDOS + ACCIONINTEGRADORA_TIPOEVALUACION)
+		INSERT INTO @SemanasParaActualizar (
+			id_semana, 
+			total_contenidos, 
+			contenidos_en_proceso, 
+			contenidos_finalizados,
+			tiene_accion_integradora,
+			estado_accion_integradora
+		)
+		SELECT 
+			s.id_semana,
+			COUNT(DISTINCT c.id_contenido) as total_contenidos,
+			COUNT(DISTINCT CASE WHEN c.estado = 'En proceso' THEN c.id_contenido END) as contenidos_en_proceso,
+			COUNT(DISTINCT CASE WHEN c.estado = 'Finalizado' THEN c.id_contenido END) as contenidos_finalizados,
+			CASE WHEN MAX(a.id_accion_tipo) IS NOT NULL THEN 1 ELSE 0 END as tiene_accion_integradora,
+			MAX(a.estado) as estado_accion_integradora
+		FROM SEMANAS s
+		LEFT JOIN CONTENIDOS c ON s.id_semana = c.fk_semana
+		LEFT JOIN ACCIONINTEGRADORA_TIPOEVALUACION a ON s.id_semana = a.fk_semana AND a.fk_matriz_integracion = @FKMatrizIntegracion
+		WHERE s.fk_matriz_integracion = @FKMatrizIntegracion
+		GROUP BY s.id_semana;
+
+		-- Actualizar estado de todas las semanas considerando AMBAS tablas
+		UPDATE s
+		SET estado = 
+			CASE 
+				-- REGLA 1: SEMANA FINALIZADA - Todo debe estar finalizado
+				WHEN (
+					-- Todos los contenidos finalizados (o no hay contenidos)
+					(spa.total_contenidos = 0 OR spa.contenidos_finalizados = spa.total_contenidos)
+					AND 
+					-- La acción integradora finalizada (o no existe acción integradora)
+					(spa.tiene_accion_integradora = 0 OR spa.estado_accion_integradora = 'Finalizado')
+				) THEN 'Finalizado'
+        
+				-- REGLA 2: SEMANA EN PROCESO - Al menos un elemento en proceso o finalizado
+				WHEN (
+					-- Al menos un contenido en proceso o finalizado
+					(spa.contenidos_en_proceso > 0 OR spa.contenidos_finalizados > 0)
+					OR 
+					-- O la acción integradora en proceso o finalizada
+					(spa.estado_accion_integradora IN ('En proceso', 'Finalizado'))
+				) THEN 'En proceso'
+        
+				-- REGLA 3: SEMANA PENDIENTE - Todo está pendiente
+				ELSE 'Pendiente'
+			END
+		FROM SEMANAS s
+		INNER JOIN @SemanasParaActualizar spa ON s.id_semana = spa.id_semana
+		WHERE s.fk_matriz_integracion = @FKMatrizIntegracion;
+		-- =====================================================
+		-- FIN SECCIÓN REUTILIZABLE
+		-- =====================================================
+
+		-- =====================================================
+        -- ACTUALIZAR ESTADO DE LA MATRIZ
+        -- =====================================================
+        EXEC usp_ActualizarEstadoMatrizIntegracion @FKMatrizIntegracion;
+        -- =====================================================
 
         SET @Resultado = @IdMatrizAsignatura;
 
@@ -4696,7 +4840,7 @@ BEGIN
         a.nombre,
         ma.estado,
         ma.fecha_registro
-    ORDER BY a.nombre;
+    ORDER BY ma.id_matriz_asignatura DESC;
 END;
 GO
 
@@ -4962,7 +5106,6 @@ BEGIN
 END;
 GO
 
--- Remover asignatura de matriz
 CREATE OR ALTER PROCEDURE usp_RemoverAsignaturaMatriz
     @IdMatrizAsignatura INT,
     @FKProfesorPropietario INT,
@@ -4973,10 +5116,13 @@ BEGIN
     SET @Resultado = 0;
     SET @Mensaje = '';
 
+    -- Variables principales
+    DECLARE @IdMatrizIntegracion INT;
+
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- Verificar si la asignatura de matriz existe
+        -- Verificar si la asignatura de matriz existe y obtener información
         IF NOT EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura)
         BEGIN
             SET @Mensaje = 'La asignatura no existe en la matriz';
@@ -4984,7 +5130,12 @@ BEGIN
             RETURN;
         END
 
-        -- Verificar si el profesor propietario tiene permisos (opcional)
+        -- Obtener el ID de la matriz de integración
+        SELECT @IdMatrizIntegracion = fk_matriz_integracion 
+        FROM MATRIZASIGNATURA 
+        WHERE id_matriz_asignatura = @IdMatrizAsignatura;
+
+        -- Verificar si el profesor propietario tiene permisos
         IF NOT EXISTS (
             SELECT 1 
             FROM MATRIZASIGNATURA ma
@@ -4998,7 +5149,7 @@ BEGIN
             RETURN;
         END
 
-        -- Primero eliminar los contenidos asociados (nueva estructura)
+        -- Primero eliminar los contenidos asociados
         DELETE FROM CONTENIDOS 
         WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
 
@@ -5006,14 +5157,88 @@ BEGIN
         DELETE FROM MATRIZASIGNATURA 
         WHERE id_matriz_asignatura = @IdMatrizAsignatura;
 
+        -- =====================================================
+        -- SECCIÓN REUTILIZABLE: ACTUALIZAR ESTADO DE SEMANAS
+        -- =====================================================
+        DECLARE @SemanasParaActualizar TABLE (
+            id_semana INT,
+            total_contenidos INT,
+            contenidos_en_proceso INT,
+            contenidos_finalizados INT,
+            tiene_accion_integradora BIT,
+            estado_accion_integradora VARCHAR(50)
+        );
+
+        -- Calcular estadísticas para cada semana (CONTENIDOS + ACCIONINTEGRADORA_TIPOEVALUACION)
+        INSERT INTO @SemanasParaActualizar (
+            id_semana, 
+            total_contenidos, 
+            contenidos_en_proceso, 
+            contenidos_finalizados,
+            tiene_accion_integradora,
+            estado_accion_integradora
+        )
+        SELECT 
+            s.id_semana,
+            COUNT(DISTINCT c.id_contenido) as total_contenidos,
+            COUNT(DISTINCT CASE WHEN c.estado = 'En proceso' THEN c.id_contenido END) as contenidos_en_proceso,
+            COUNT(DISTINCT CASE WHEN c.estado = 'Finalizado' THEN c.id_contenido END) as contenidos_finalizados,
+            CASE WHEN MAX(a.id_accion_tipo) IS NOT NULL THEN 1 ELSE 0 END as tiene_accion_integradora,
+            MAX(a.estado) as estado_accion_integradora
+        FROM SEMANAS s
+        LEFT JOIN CONTENIDOS c ON s.id_semana = c.fk_semana
+        LEFT JOIN ACCIONINTEGRADORA_TIPOEVALUACION a ON s.id_semana = a.fk_semana AND a.fk_matriz_integracion = @IdMatrizIntegracion
+        WHERE s.fk_matriz_integracion = @IdMatrizIntegracion
+        GROUP BY s.id_semana;
+
+        -- Actualizar estado de todas las semanas considerando AMBAS tablas
+        UPDATE s
+        SET estado = 
+            CASE 
+                -- REGLA 1: SEMANA FINALIZADA - Todo debe estar finalizado
+                WHEN (
+                    -- Todos los contenidos finalizados (o no hay contenidos)
+                    (spa.total_contenidos = 0 OR spa.contenidos_finalizados = spa.total_contenidos)
+                    AND 
+                    -- La acción integradora finalizada (o no existe acción integradora)
+                    (spa.tiene_accion_integradora = 0 OR spa.estado_accion_integradora = 'Finalizado')
+                ) THEN 'Finalizado'
+                
+                -- REGLA 2: SEMANA EN PROCESO - Al menos un elemento en proceso o finalizado
+                WHEN (
+                    -- Al menos un contenido en proceso o finalizado
+                    (spa.contenidos_en_proceso > 0 OR spa.contenidos_finalizados > 0)
+                    OR 
+                    -- O la acción integradora en proceso o finalizada
+                    (spa.estado_accion_integradora IN ('En proceso', 'Finalizado'))
+                ) THEN 'En proceso'
+                
+                -- REGLA 3: SEMANA PENDIENTE - Todo está pendiente
+                ELSE 'Pendiente'
+            END
+        FROM SEMANAS s
+        INNER JOIN @SemanasParaActualizar spa ON s.id_semana = spa.id_semana
+        WHERE s.fk_matriz_integracion = @IdMatrizIntegracion;
+        -- =====================================================
+        -- FIN SECCIÓN REUTILIZABLE
+        -- =====================================================
+
+		-- =====================================================
+        -- ACTUALIZAR ESTADO DE LA MATRIZ
+        -- =====================================================
+        EXEC usp_ActualizarEstadoMatrizIntegracion @IdMatrizIntegracion;
+        -- =====================================================
+
+
         SET @Resultado = 1;
-        SET @Mensaje = 'Asignatura removida exitosamente de la matriz';
+        SET @Mensaje = 'Asignatura removida exitosamente de la matriz. Estados de semanas actualizados.';
 
         COMMIT TRANSACTION;
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
             ROLLBACK TRANSACTION;
+        
         SET @Resultado = 0;
         SET @Mensaje = 'Error al remover la asignatura: ' + ERROR_MESSAGE();
     END CATCH
@@ -5130,7 +5355,6 @@ BEGIN
 END;
 GO
 
--- Actualizar contenido de asignatura en matriz con lógica de estados
 CREATE OR ALTER PROCEDURE usp_ActualizarContenido
     @IdContenido INT,
     @Contenido VARCHAR(MAX) = NULL,
@@ -5144,29 +5368,39 @@ BEGIN
     SET @Resultado = 0;
     SET @Mensaje = '';
 
-    -- Variables para la lógica de estados
+    -- Variables principales
     DECLARE @IdMatrizAsignatura INT;
     DECLARE @IdSemana INT;
     DECLARE @EstadoActualContenido VARCHAR(50);
     DECLARE @NuevoEstadoContenido VARCHAR(50);
     DECLARE @EstadoMatrizAsignatura VARCHAR(50);
-    DECLARE @NuevoEstadoMatriz VARCHAR(50);
-    DECLARE @TotalContenidos INT;
-    DECLARE @ContenidosEnProceso INT;
-    DECLARE @ContenidosFinalizados INT;
+    DECLARE @NuevoEstadoMatrizAsignatura VARCHAR(50);
     DECLARE @ContenidoActual VARCHAR(MAX);
-    
+    DECLARE @DescripcionSemana VARCHAR(255);
+    DECLARE @NumeroSemana INT;
+    DECLARE @IdMatriz INT;
+
+    -- Variables para matriz asignatura
+    DECLARE @TotalContenidosMatriz INT;
+    DECLARE @ContenidosEnProcesoMatriz INT;
+    DECLARE @ContenidosFinalizadosMatriz INT;
+
     BEGIN TRY
         BEGIN TRANSACTION;
 
         -- Verificar si el contenido existe y obtener valores actuales
         SELECT 
-            @IdMatrizAsignatura = fk_matriz_asignatura,
-            @IdSemana = fk_semana,
-            @EstadoActualContenido = estado,
-            @ContenidoActual = contenido
-        FROM CONTENIDOS 
+            @IdMatrizAsignatura = c.fk_matriz_asignatura,
+            @IdSemana = c.fk_semana,
+            @EstadoActualContenido = c.estado,
+            @ContenidoActual = c.contenido,
+            @DescripcionSemana = s.descripcion,
+            @NumeroSemana = s.numero_semana
+        FROM CONTENIDOS c
+        LEFT JOIN SEMANAS s ON c.fk_semana = s.id_semana
         WHERE id_contenido = @IdContenido;
+
+        SET @IdMatriz = (SELECT fk_matriz_integracion FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @IdMatrizAsignatura)
 
         IF @IdMatrizAsignatura IS NULL
         BEGIN
@@ -5176,17 +5410,13 @@ BEGIN
             RETURN;
         END
 
-        -- Inicializar el nuevo estado del contenido con el estado enviado
+        -- Inicializar el nuevo estado del contenido
         SET @NuevoEstadoContenido = @Estado;
 
         -- Lógica para actualización automática del estado del CONTENIDO
-        -- Solo cambiar a "En proceso" si actualmente está en "Pendiente" y se está agregando contenido
         IF @EstadoActualContenido = 'Pendiente' 
         BEGIN
-            -- Verificar si se está agregando contenido
-            IF (
-                @Contenido IS NOT NULL AND @ContenidoActual IS NULL
-            )
+            IF (@Contenido IS NOT NULL AND @ContenidoActual IS NULL)
             BEGIN
                 SET @NuevoEstadoContenido = 'En proceso';
             END
@@ -5195,7 +5425,6 @@ BEGIN
         -- Validación: No se puede cambiar a "Finalizado" si no está completo el campo contenido
         IF @Estado = 'Finalizado' AND @NuevoEstadoContenido != 'Finalizado'
         BEGIN
-            -- Verificar si el campo contenido está completo
             DECLARE @CampoCompleto BIT = 1;
             
             IF (@Contenido IS NULL OR LTRIM(RTRIM(@Contenido)) = '' OR @Contenido = '<p><br></p>' OR @Contenido = '<p></p>')
@@ -5213,7 +5442,23 @@ BEGIN
         -- Si el estado actual es "Finalizado", mantenerlo sin cambios
         IF @EstadoActualContenido = 'Finalizado'
         BEGIN
-            SET @NuevoEstadoContenido = 'Finalizado';
+            SET @Resultado = 0;
+            SET @Mensaje = 'No se puede actualizar el contenido de la ' + @DescripcionSemana + ' porque esta en estado Finalizado.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- Solo se puede editar el contenido consecutivamente
+        IF EXISTS (SELECT 1 FROM CONTENIDOS c
+                    LEFT JOIN SEMANAS s ON c.fk_semana = s.id_semana
+                    WHERE c.fk_matriz_asignatura = @IdMatrizAsignatura
+                    AND c.estado != 'Finalizado'
+                    AND s.numero_semana < @NumeroSemana)
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'No se puede actualizar el contenido la '+ @DescripcionSemana +' debido a que el contenido anterior aun no se encuentra "FINALIZADO"';
+            ROLLBACK TRANSACTION;
+            RETURN;
         END
 
         -- Actualizar el contenido
@@ -5240,41 +5485,111 @@ BEGIN
         FROM MATRIZASIGNATURA 
         WHERE id_matriz_asignatura = @IdMatrizAsignatura;
 
-        -- Contar los contenidos por estado
+        -- Contar los contenidos por estado (PARA TODA LA MATRIZ)
         SELECT 
-            @TotalContenidos = COUNT(*),
-            @ContenidosEnProceso = COUNT(CASE WHEN estado = 'En proceso' THEN 1 END),
-            @ContenidosFinalizados = COUNT(CASE WHEN estado = 'Finalizado' THEN 1 END)
+            @TotalContenidosMatriz = COUNT(*),
+            @ContenidosEnProcesoMatriz = COUNT(CASE WHEN estado = 'En proceso' THEN 1 END),
+            @ContenidosFinalizadosMatriz = COUNT(CASE WHEN estado = 'Finalizado' THEN 1 END)
         FROM CONTENIDOS 
         WHERE fk_matriz_asignatura = @IdMatrizAsignatura;
 
         -- Determinar el nuevo estado para MATRIZASIGNATURA
-        SET @NuevoEstadoMatriz = @EstadoMatrizAsignatura;
+        SET @NuevoEstadoMatrizAsignatura = @EstadoMatrizAsignatura;
 
-        -- Regla 1: Si al menos 1 contenido está "En proceso", la matriz va a "En proceso"
-        IF @ContenidosEnProceso > 0
+        IF @ContenidosEnProcesoMatriz > 0
         BEGIN
-            SET @NuevoEstadoMatriz = 'En proceso';
+            SET @NuevoEstadoMatrizAsignatura = 'En proceso';
         END
 
-        -- Regla 2: Si TODOS los contenidos están "Finalizado", la matriz va a "Finalizado"
-        IF @ContenidosFinalizados = @TotalContenidos AND @TotalContenidos > 0
+        IF @ContenidosFinalizadosMatriz = @TotalContenidosMatriz AND @TotalContenidosMatriz > 0
         BEGIN
-            SET @NuevoEstadoMatriz = 'Finalizado';
+            SET @NuevoEstadoMatrizAsignatura = 'Finalizado';
         END
 
         -- Actualizar el estado de MATRIZASIGNATURA si cambió
-        IF @EstadoMatrizAsignatura != @NuevoEstadoMatriz
+        IF @EstadoMatrizAsignatura != @NuevoEstadoMatrizAsignatura
         BEGIN
             UPDATE MATRIZASIGNATURA 
-            SET estado = @NuevoEstadoMatriz
+            SET estado = @NuevoEstadoMatrizAsignatura
             WHERE id_matriz_asignatura = @IdMatrizAsignatura;
         END
+
+        -- =====================================================
+        -- SECCIÓN REUTILIZABLE: ACTUALIZAR ESTADO DE SEMANAS
+        -- =====================================================
+        DECLARE @SemanasParaActualizar TABLE (
+            id_semana INT,
+            total_contenidos INT,
+            contenidos_en_proceso INT,
+            contenidos_finalizados INT,
+            tiene_accion_integradora BIT,
+            estado_accion_integradora VARCHAR(50)
+        );
+
+        -- Calcular estadísticas para cada semana (CONTENIDOS + ACCIONINTEGRADORA_TIPOEVALUACION)
+        INSERT INTO @SemanasParaActualizar (
+            id_semana, 
+            total_contenidos, 
+            contenidos_en_proceso, 
+            contenidos_finalizados,
+            tiene_accion_integradora,
+            estado_accion_integradora
+        )
+        SELECT 
+            s.id_semana,
+            COUNT(DISTINCT c.id_contenido) as total_contenidos,
+            COUNT(DISTINCT CASE WHEN c.estado = 'En proceso' THEN c.id_contenido END) as contenidos_en_proceso,
+            COUNT(DISTINCT CASE WHEN c.estado = 'Finalizado' THEN c.id_contenido END) as contenidos_finalizados,
+            CASE WHEN MAX(a.id_accion_tipo) IS NOT NULL THEN 1 ELSE 0 END as tiene_accion_integradora,
+            MAX(a.estado) as estado_accion_integradora
+        FROM SEMANAS s
+        LEFT JOIN CONTENIDOS c ON s.id_semana = c.fk_semana
+        LEFT JOIN ACCIONINTEGRADORA_TIPOEVALUACION a ON s.id_semana = a.fk_semana AND a.fk_matriz_integracion = @IdMatriz
+        WHERE s.fk_matriz_integracion = @IdMatriz
+        GROUP BY s.id_semana;
+
+        -- Actualizar estado de todas las semanas considerando AMBAS tablas
+        UPDATE s
+        SET estado = 
+            CASE 
+                -- REGLA 1: SEMANA FINALIZADA - Todo debe estar finalizado
+                WHEN (
+                    -- Todos los contenidos finalizados (o no hay contenidos)
+                    (spa.total_contenidos = 0 OR spa.contenidos_finalizados = spa.total_contenidos)
+                    AND 
+                    -- La acción integradora finalizada (o no existe acción integradora)
+                    (spa.tiene_accion_integradora = 0 OR spa.estado_accion_integradora = 'Finalizado')
+                ) THEN 'Finalizado'
+                
+                -- REGLA 2: SEMANA EN PROCESO - Al menos un elemento en proceso o finalizado
+                WHEN (
+                    -- Al menos un contenido en proceso o finalizado
+                    (spa.contenidos_en_proceso > 0 OR spa.contenidos_finalizados > 0)
+                    OR 
+                    -- O la acción integradora en proceso o finalizada
+                    (spa.estado_accion_integradora IN ('En proceso', 'Finalizado'))
+                ) THEN 'En proceso'
+                
+                -- REGLA 3: SEMANA PENDIENTE - Todo está pendiente
+                ELSE 'Pendiente'
+            END
+        FROM SEMANAS s
+        INNER JOIN @SemanasParaActualizar spa ON s.id_semana = spa.id_semana
+        WHERE s.fk_matriz_integracion = @IdMatriz;
+        -- =====================================================
+        -- FIN SECCIÓN REUTILIZABLE
+        -- =====================================================
+
+		-- =====================================================
+        -- ACTUALIZAR ESTADO DE LA MATRIZ
+        -- =====================================================
+        EXEC usp_ActualizarEstadoMatrizIntegracion @IdMatriz;
+        -- =====================================================
 
         SET @Resultado = 1;
         SET @Mensaje = 'Contenido actualizado correctamente. ' +
                        'Estado contenido: ' + @NuevoEstadoContenido + '. ' +
-                       'Estado matriz: ' + @NuevoEstadoMatriz;
+                       'Estado matriz: ' + @NuevoEstadoMatrizAsignatura + '.';
 
         COMMIT TRANSACTION;
     END TRY
@@ -5493,7 +5808,7 @@ END;
 GO
 
 -- ACTUALIZAR registro en ACCIONINTEGRADORA_TIPOEVALUACION
-CREATE PROCEDURE usp_ActualizarAccionIntegradoraTipoEvaluacion
+CREATE OR ALTER PROCEDURE usp_ActualizarAccionIntegradoraTipoEvaluacion
     @IdAccionTipo INT,
     @AccionIntegradora VARCHAR(255) = NULL,
     @TipoEvaluacion VARCHAR(50) = NULL,
@@ -5517,18 +5832,174 @@ BEGIN
             RETURN;
         END
 
-        -- Actualizar el registro
+		-- =====================================================
+        -- LÓGICA PARA ACTUALIZAR LOS REGISTROS CONSECUTIVAMENTE
+        -- =====================================================
+		DECLARE @IdMatriz INT;
+		DECLARE @NumeroSemana INT;
+		DECLARE @DescripcionSemana VARCHAR(255);
+
+		SELECT
+			@IdMatriz = a.fk_matriz_integracion,
+			@NumeroSemana = s.numero_semana,
+			@DescripcionSemana = s.descripcion
+		FROM ACCIONINTEGRADORA_TIPOEVALUACION a
+			LEFT JOIN SEMANAS s ON a.fk_semana = s.id_semana
+		WHERE id_accion_tipo = @IdAccionTipo
+
+		-- Solo se puede editar el registro consecutivamente
+        IF EXISTS (SELECT 1 FROM ACCIONINTEGRADORA_TIPOEVALUACION a
+                    LEFT JOIN SEMANAS s ON a.fk_semana = s.id_semana
+                    WHERE a.fk_matriz_integracion = @IdMatriz
+                    AND a.estado != 'Finalizado'
+                    AND s.numero_semana < @NumeroSemana)
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'No se puede actualizar el registro la '+ @DescripcionSemana +' debido a que el registro anterior aun no se encuentra "FINALIZADO"';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+		-- Actualizar el registro
         UPDATE ACCIONINTEGRADORA_TIPOEVALUACION 
         SET 
             accion_integradora = ISNULL(@AccionIntegradora, accion_integradora),
-            tipo_evaluacion = ISNULL(@TipoEvaluacion, tipo_evaluacion),
-            estado = @Estado
+            tipo_evaluacion = ISNULL(@TipoEvaluacion, tipo_evaluacion)
         WHERE id_accion_tipo = @IdAccionTipo;
+
+		-- =====================================================
+        -- LÓGICA PARA ACTUALIZAR ESTADO DE ACCIONINTEGRADORA_TIPOEVALUACION
+        -- =====================================================
+		DECLARE @EstadoActual VARCHAR(255);
+		DECLARE @EstadoNuevo VARCHAR(255);
+
+		SELECT 
+			@EstadoActual = estado,
+			@AccionIntegradora = accion_integradora,
+			@TipoEvaluacion = accion_integradora
+		FROM ACCIONINTEGRADORA_TIPOEVALUACION 
+		WHERE id_accion_tipo = @IdAccionTipo;
+
+		-- Inicializar el nuevo estado del contenido
+		SET @EstadoNuevo = @Estado
+
+		-- Lógica para actualización automática del estado
+        IF @EstadoActual = 'Pendiente' 
+        BEGIN
+            IF (@AccionIntegradora IS NOT NULL AND @TipoEvaluacion IS NOT NULL)
+            BEGIN
+                SET @EstadoNuevo = 'En proceso';
+            END
+        END
+
+        -- Validación: No se puede cambiar a "Finalizado" si no está completo el campo contenido
+        IF @Estado = 'Finalizado' AND @EstadoNuevo != 'Finalizado'
+        BEGIN
+            DECLARE @CampoCompleto BIT = 1;
+            
+            IF (@AccionIntegradora IS NULL OR LTRIM(RTRIM(@AccionIntegradora)) = '' OR @AccionIntegradora = '<p><br></p>' OR @AccionIntegradora = '<p></p>')
+                SET @CampoCompleto = 0;
+            
+			IF (@TipoEvaluacion IS NULL OR LTRIM(RTRIM(@TipoEvaluacion)) = '' OR @TipoEvaluacion = '<p><br></p>' OR @TipoEvaluacion = '<p></p>')
+                SET @CampoCompleto = 0;
+
+            IF @CampoCompleto = 0
+            BEGIN
+                SET @Resultado = 0;
+                SET @Mensaje = 'No se puede finalizar el registro. Los campos Acción Integradora y Tipo de Evaluación debe estar completo.';
+                ROLLBACK TRANSACTION;
+                RETURN;
+            END
+        END
+
+        -- Si el estado actual es "Finalizado", mantenerlo sin cambios
+        IF @EstadoActual = 'Finalizado'
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'No se puede actualizar el registro de la porque esta en estado Finalizado.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+		UPDATE ACCIONINTEGRADORA_TIPOEVALUACION SET estado = @EstadoNuevo where id_accion_tipo = @IdAccionTipo
+
+		-- =====================================================
+		-- SECCIÓN REUTILIZABLE: ACTUALIZAR ESTADO DE SEMANAS
+		-- Parámetros necesarios: @FKMatrizIntegracion INT
+		-- =====================================================
+		DECLARE @SemanasParaActualizar TABLE (
+			id_semana INT,
+			total_contenidos INT,
+			contenidos_en_proceso INT,
+			contenidos_finalizados INT,
+			tiene_accion_integradora BIT,
+			estado_accion_integradora VARCHAR(50)
+		);
+
+		-- Calcular estadísticas para cada semana (CONTENIDOS + ACCIONINTEGRADORA_TIPOEVALUACION)
+		INSERT INTO @SemanasParaActualizar (
+			id_semana, 
+			total_contenidos, 
+			contenidos_en_proceso, 
+			contenidos_finalizados,
+			tiene_accion_integradora,
+			estado_accion_integradora
+		)
+		SELECT 
+			s.id_semana,
+			COUNT(DISTINCT c.id_contenido) as total_contenidos,
+			COUNT(DISTINCT CASE WHEN c.estado = 'En proceso' THEN c.id_contenido END) as contenidos_en_proceso,
+			COUNT(DISTINCT CASE WHEN c.estado = 'Finalizado' THEN c.id_contenido END) as contenidos_finalizados,
+			CASE WHEN MAX(a.id_accion_tipo) IS NOT NULL THEN 1 ELSE 0 END as tiene_accion_integradora,
+			MAX(a.estado) as estado_accion_integradora
+		FROM SEMANAS s
+		LEFT JOIN CONTENIDOS c ON s.id_semana = c.fk_semana
+		LEFT JOIN ACCIONINTEGRADORA_TIPOEVALUACION a ON s.id_semana = a.fk_semana AND a.fk_matriz_integracion = @IdMatriz
+		WHERE s.fk_matriz_integracion = @IdMatriz
+		GROUP BY s.id_semana;
+
+		-- Actualizar estado de todas las semanas considerando AMBAS tablas
+		UPDATE s
+		SET estado = 
+			CASE 
+				-- REGLA 1: SEMANA FINALIZADA - Todo debe estar finalizado
+				WHEN (
+					-- Todos los contenidos finalizados (o no hay contenidos)
+					(spa.total_contenidos = 0 OR spa.contenidos_finalizados = spa.total_contenidos)
+					AND 
+					-- La acción integradora finalizada (o no existe acción integradora)
+					(spa.tiene_accion_integradora = 0 OR spa.estado_accion_integradora = 'Finalizado')
+				) THEN 'Finalizado'
+        
+				-- REGLA 2: SEMANA EN PROCESO - Al menos un elemento en proceso o finalizado
+				WHEN (
+					-- Al menos un contenido en proceso o finalizado
+					(spa.contenidos_en_proceso > 0 OR spa.contenidos_finalizados > 0)
+					OR 
+					-- O la acción integradora en proceso o finalizada
+					(spa.estado_accion_integradora IN ('En proceso', 'Finalizado'))
+				) THEN 'En proceso'
+        
+				-- REGLA 3: SEMANA PENDIENTE - Todo está pendiente
+				ELSE 'Pendiente'
+			END
+		FROM SEMANAS s
+		INNER JOIN @SemanasParaActualizar spa ON s.id_semana = spa.id_semana
+		WHERE s.fk_matriz_integracion = @IdMatriz;
+		-- =====================================================
+		-- FIN SECCIÓN REUTILIZABLE
+		-- =====================================================
+
+		-- =====================================================
+        -- ACTUALIZAR ESTADO DE LA MATRIZ
+        -- =====================================================
+        EXEC usp_ActualizarEstadoMatrizIntegracion @IdMatriz;
+        -- =====================================================
 
         SET @Resultado = 1;
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'Registro actualizado exitosamente en ACCIONINTEGRADORA_TIPOEVALUACION';
+        SET @Mensaje = 'Registro actualizado exitosamente en ACCIONINTEGRADORA_TIPOEVALUACION' + @Estado;
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
@@ -5630,6 +6101,7 @@ BEGIN
             mic.numero_semanas,
             mic.fecha_inicio,
             mic.estado,
+            mic.estado_proceso,
             mic.fecha_registro
         FROM MATRIZINTEGRACIONCOMPONENTES mic
         INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area

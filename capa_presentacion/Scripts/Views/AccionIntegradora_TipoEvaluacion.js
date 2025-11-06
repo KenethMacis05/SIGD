@@ -24,6 +24,25 @@ function generarHtml(Item) {
     // Determinar color y icono según el estado
     var colorEstado = '';
     var iconoEstado = '';
+    var TipoSemana = '';
+    var esCorte = false;
+    var badgeColor = '';
+    var badgeIcon = '';
+
+    // Verificar si es corte evaluativo o final
+    if (Item.tipo_semana && Item.tipo_semana !== 'Normal') {
+        TipoSemana = Item.tipo_semana;
+        esCorte = true;
+
+        // Definir colores e iconos específicos para cortes
+        if (Item.tipo_semana === 'Corte Evaluativo') {
+            badgeColor = 'warning';
+            badgeIcon = 'fa-star';
+        } else if (Item.tipo_semana === 'Corte Final') {
+            badgeColor = 'danger';
+            badgeIcon = 'fa-trophy';
+        }
+    }
 
     switch (Item.estado) {
         case 'Pendiente':
@@ -51,6 +70,13 @@ function generarHtml(Item) {
             <div class="card-header bg-light d-flex justify-content-between align-items-center py-2">
                 <div class="d-flex align-items-center">
                     <span class="fw-bold text-${colorEstado} me-2 btn-titulo-semana estado-${colorEstado}">${Item.descripcion_semana}</span>
+                    ${esCorte ? `
+                    <div>
+                        <span class="badge bg-${badgeColor} bg-gradient">
+                            <i class="fas ${badgeIcon} me-1"></i>${TipoSemana}
+                        </span>
+                    </div>
+                    ` : ''}
                 </div>
                 <button class="btn btn-sm btn-outline-${colorEstado} btn-editar-accion" 
                         data-id="${Item.id_accion_tipo}">
@@ -128,10 +154,10 @@ $(document).on('click', '.btn-editar-accion', function (e) {
     e.stopPropagation(); // Evitar que se active el evento de la card
     const idAccionTipo = $(this).data('id');
     // Tu lógica para editar la acción integradora
-    abrirModalEditarAccion(idAccionTipo);
+    abrirModal(idAccionTipo);
 });
 
-function abrirModalEditarAccion(idAccionTipo) {
+function abrirModal(idAccionTipo) {
     // Limpiar los campos
     $("#idAccionTipo").val("0");
     $("#accionIntegradora").val("");
@@ -148,15 +174,94 @@ function abrirModalEditarAccion(idAccionTipo) {
             $("#tipoEvaluacion").val(accionTipo.tipo_evaluacion);
             $("#estado").val(accionTipo.estado);
         }
+
+        aplicarReglasEstado(accionTipo);
     }
 
     $("#accionTipo").modal("show");
 }
 
+function aplicarReglasEstado(contenido) {
+    const tieneContenidoValido = validarContenido(contenido.accion_integradora);
+    const estadoActual = contenido.estado;
+    const selectEstado = $("#estado");
+
+    // Resetear estado del select
+    selectEstado.prop("disabled", false);
+    selectEstado.removeAttr("title");
+    $("option", selectEstado).prop('disabled', false);
+
+    // Aplicar reglas según el estado actual y contenido
+    switch (estadoActual) {
+        case 'Pendiente':
+            aplicarReglasPendiente(tieneContenidoValido, selectEstado);
+            break;
+
+        case 'En proceso':
+            aplicarReglasEnProceso(tieneContenidoValido, selectEstado);
+            break;
+
+        case 'Finalizado':
+            aplicarReglasFinalizado(selectEstado);
+            break;
+
+        default:
+            // Estado no reconocido, permitir todo
+            break;
+    }
+}
+
+// Función auxiliar para validar contenido
+function validarContenido(contenido) {
+    if (!contenido) return false;
+
+    const contenidoLimpio = contenido
+        .replace(/<p><br><\/p>/gi, '')
+        .replace(/<p><\/p>/gi, '')
+        .replace(/&nbsp;/gi, '')
+        .trim();
+
+    return contenidoLimpio.length > 0 && contenidoLimpio !== '<p></p>';
+}
+
+// Reglas específicas para estado "Pendiente"
+function aplicarReglasPendiente(tieneContenido, selectEstado) {
+    if (!tieneContenido) {
+        selectEstado.prop("disabled", true);
+        selectEstado.attr("title", "Complete el contenido para habilitar el cambio de estado");
+    } else {
+        // Si tiene contenido, permitir cambiar a "En proceso" o "Finalizado"
+        selectEstado.attr("title", "Puede avanzar a 'En proceso' o 'Finalizado'");
+    }
+}
+
+// Reglas específicas para estado "En proceso"
+function aplicarReglasEnProceso(tieneContenido, selectEstado) {
+    if (!tieneContenido) {
+        // Sin contenido: solo permitir mantener "En proceso" o retroceder a "Pendiente"
+        selectEstado.attr("title", "Complete el contenido para poder finalizar");
+        selectEstado.find("option[value='Finalizado']").prop('disabled', true);
+    } else {
+        // Con contenido: permitir cambiar a "Finalizado" pero no retroceder a "Pendiente"
+        selectEstado.attr("title", "Puede finalizar el contenido");
+        selectEstado.find("option[value='Pendiente']").prop('disabled', true);
+    }
+}
+
+// Reglas específicas para estado "Finalizado"
+function aplicarReglasFinalizado(selectEstado) {
+    // Una vez finalizado, no permitir cambios
+    selectEstado.prop("disabled", true);
+    selectEstado.attr("title", "Estado finalizado - No se puede modificar");
+
+    // También deshabilitar todas las opciones excepto la actual
+    $("option:not(:selected)", selectEstado).prop('disabled', true);
+}
+
 function guardarAccionTipo() {
     var accionTipo = {
         id_accion_tipo: $("#idAccionTipo").val().trim(),
-        accionIntegradora: $('#accionIntegradora').summernote('code'),
+        accion_integradora: $('#accionIntegradora').val().trim(),
         tipo_evaluacion: $("#tipoEvaluacion").val().trim(),
         estado: $("#estado").val().trim(),
     };
@@ -168,7 +273,7 @@ function guardarAccionTipo() {
     }
 
     // Validaciones de accion integradora y tipo de evaluacion
-    if (!accionTipo.accionIntegradora || !accionTipo.tipo_evaluacion) {
+    if (!accionTipo.accion_integradora || !accionTipo.tipo_evaluacion) {
         showAlert("Error", "Debe ingresar la acción integradora y el tipo de evaluación", "error");
         return;
     }

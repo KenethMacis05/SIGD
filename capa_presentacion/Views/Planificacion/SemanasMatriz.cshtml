@@ -29,6 +29,7 @@
         </div>
 
         <hr />
+        <input type="hidden" name="idEncriptado" id="idEncriptado" value="@Model.id_encriptado" />
 
         <!-- Tabla de Semanas -->
         <table class="display cell-border" style="width: 100%" id="datatable">
@@ -44,39 +45,6 @@
                 </tr>
             </thead>
             <tbody>
-                @if (semanas != null && semanas.Any())
-                {
-                    foreach (var semana in semanas)
-                    {
-                        <tr>
-                            <td>@semana.numero_semana</td>
-                            <td>@semana.fecha_inicio.ToString("dd/MM/yyyy")</td>
-                            <td>@semana.fecha_fin.ToString("dd/MM/yyyy")</td>
-                            <td>@semana.descripcion</td>
-                            <td>
-                                <span class="badge bg-@(semana.tipo_semana == "Normal" ? "secondary" : semana.tipo_semana == "Corte Evaluativo" ? "warning" : "danger")">
-                                    @semana.tipo_semana
-                                </span>
-                            </td>
-                            <td>
-                                <span class="badge bg-@(semana.estado == "Pendiente" ? "secondary" : semana.estado == "En proceso" ? "primary" : "success")">
-                                    @semana.estado
-                                </span>
-                            </td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary btn-editar" data-id="@semana.id_semana">
-                                    <i class="fas fa-edit"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="7" class="text-center">No hay semanas disponibles.</td>
-                    </tr>
-                }
             </tbody>
         </table>
     </div>
@@ -91,9 +59,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body g-2">
-                <form id="semanaForm" autocomplete="off">
                     <input type="hidden" name="idSemana" id="idSemana" value="0" autocomplete="off">
-                    
+
                     <div class="row">
                         <div class="col-md-3 mb-3">
                             <label class="form-label">Número de Semana</label>
@@ -133,11 +100,10 @@
                         <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
                             <i class="fas fa-times-circle me-2"></i>Cerrar
                         </button>
-                        <button type="submit" style="background: #0072BB" class="btn btn-success w-50">
+                        <button type="submit" onclick="Guardar()" style="background: #0072BB" class="btn btn-success w-50">
                             <i class="fas fa-save me-2"></i>Guardar
                         </button>
                     </div>
-                </form>
             </div>
         </div>
     </div>

@@ -45,5 +45,6 @@ namespace capa_entidad
         public string competencias_especificas { get; set; }
         public int numero_semanas { get; set; }
         public DateTime fecha_inicio { get; set; }
+        public string estado_proceso { get; set; }
     }
 }

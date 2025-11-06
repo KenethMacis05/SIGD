@@ -11,6 +11,13 @@
                 $('#matrizAsignatura').html(html);
             } else {
                 $('#matrizAsignatura').html('<div class="alert alert-light text-center">No hay asignaturas asignadas a esta matriz</div>');
+                $(`#matrizAsignatura`).html(`
+                    <div class="alert alert-light text-center py-5">
+                        <img src="/Assets/img/Sin_asignaturas.png" alt="No hay asignaturas" style="max-width: 350px; display: block; margin: 10px auto;" />
+                        <h4 class="text-muted">No hay asignaturas asignadas</h4>
+                        <p class="text-muted mb-0">No se han definido asignaturas para la Matriz de Integración de Componentes.</p>
+                    </div>
+                `);
             }
         },
         error: function () {

@@ -86,6 +86,37 @@ function formatASPNetDate(jsonDate, showTime = true) {
     return date.toLocaleDateString('es-ES', options);
 }
 
+function formatDateForInput(dateString) {
+    if (!dateString) return '';
+
+    let date;
+
+    // Formato /Date(...)/
+    if (typeof dateString === 'string' && dateString.startsWith('/Date(')) {
+        const timestamp = parseInt(dateString.substr(6));
+        date = new Date(timestamp);
+    }
+    // Si ya es una fecha válida
+    else {
+        try {
+            date = new Date(dateString);
+            if (isNaN(date.getTime())) {
+                return '';
+            }
+        } catch (e) {
+            console.error("Error formateando fecha para input:", e);
+            return '';
+        }
+    }
+
+    // Formatear a YYYY-MM-DD para input type="date"
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+}
+
 // Configuración de SweetAlert2
 const swalConfig = {
     confirmButtonColor: "#3085d6",

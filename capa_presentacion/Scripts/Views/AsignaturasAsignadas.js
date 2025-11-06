@@ -4,7 +4,7 @@
 $('#datatable tbody').on('click', '.btn-viewSemanas', function () {
     var data = dataTable.row($(this).parents('tr')).data();
     const idEncriptado = data.id_matriz_asignatura_encriptado;
-    window.location.href = "/Planificacion/SemanasAsignatura?idEncriptado=" + idEncriptado;
+    window.location.href = "/Planificacion/Contenidos?idEncriptado=" + idEncriptado;
 });
 
 const dataTableOptions = {
@@ -28,7 +28,7 @@ const dataTableOptions = {
         { data: "nombre_matriz", title: "Nombre" },
         { data: "nombre_profesor", title: "Propietario" },
         { data: "nombre_asignatura", title: "Asignatura" },
-        { data: "total_semanas", title: "# de Semanas" },
+        { data: "total_contenidos", title: "# de Semanas" },
         {
             data: "estado",
             title: "Estado",

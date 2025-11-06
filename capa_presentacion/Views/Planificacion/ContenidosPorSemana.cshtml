@@ -22,9 +22,6 @@
                         </div>
                     </div>
                     <div class="d-flex align-items-center flex-shrink-0 gap-2">
-                        <button type="button" class="btn btn-secondary" onclick="abrirModal(null)">
-                            <i class="fas fa-book-medical me-2"></i>Agregar Acción Integradora y Tipo de Evaluación
-                        </button>
                         <a href="@Url.Action("Matriz_de_Integracion", "Planificacion")" class="btn btn-danger">
                             <i class="fa fa-times me-2"></i>Regresar
                         </a>
@@ -87,8 +84,24 @@
                                             </div>
                                         </div>
                                         <div class="card-footer bg-transparent">
+                                            Tipo de semana:
                                             <small class="text-muted">
-                                                <i class="fas fa-tag me-1"></i>@contenido.tipo_semana
+                                                @{ 
+                                                    var badgeColor = "primary";
+                                                    var badgeIcon = "fa-tag";
+                                                    if (contenido.tipo_semana == "Corte Final")
+                                                    {
+                                                        badgeColor = "danger"; badgeIcon = "fa-trophy";
+                                                    }
+                                                    else if (contenido.tipo_semana == "Corte Evaluativo")
+                                                    {
+                                                        badgeColor = "warning"; badgeIcon = "fa-star";
+                                                    }
+                                                }
+
+                                                <span class="badge bg-@badgeColor bg-gradient">
+                                                    <i class="fas @badgeIcon me-1"></i>@contenido.tipo_semana
+                                                </span>
                                             </small>
                                         </div>
                                     </div>
@@ -99,7 +112,7 @@
                         {
                             <div class="col-12">
                                 <div class="alert alert-light text-center py-5">
-                                    <i class="fas fa-info-circle fa-3x text-muted mb-3"></i>
+                                    <img src="/Assets/img/Sin_contenidos.png" alt="No hay contenidos" style="max-width: 350px; display: block; margin: 10px auto;" />
                                     <h4 class="text-muted">No hay contenidos definidos</h4>
                                     <p class="text-muted mb-0">No se han definido contenidos para las asignaturas en esta semana.</p>
                                 </div>

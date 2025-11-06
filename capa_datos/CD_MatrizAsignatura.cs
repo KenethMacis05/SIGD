@@ -75,7 +75,7 @@ namespace capa_datos
                 {
                     SqlCommand cmd = new SqlCommand("usp_LeerAsignaturasPorProfesor", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
-                    cmd.Parameters.AddWithValue("@FKProfesorAsignado", profesorAsignado);
+                    cmd.Parameters.AddWithValue("FKProfesorAsignado", profesorAsignado);
 
                     conexion.Open();
 
