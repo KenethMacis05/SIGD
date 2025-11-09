@@ -279,5 +279,56 @@ namespace capa_datos
 
             return asignatura;
         }
+
+        public List<MATRIZASIGNATURA> BuscarMatrizAsignatura(string usuario, string nombres, int asignado, int periodo, out string mensaje)
+        {
+            List<MATRIZASIGNATURA> lst = new List<MATRIZASIGNATURA>();
+            mensaje = string.Empty;
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_BuscarMatrizAsignatura", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetros de entrada
+                    cmd.Parameters.AddWithValue("UsuarioProfesorPropietario", string.IsNullOrEmpty(usuario) ? (object)DBNull.Value : usuario);
+                    cmd.Parameters.AddWithValue("NombreProfesorPropietario", string.IsNullOrEmpty(nombres) ? (object)DBNull.Value : nombres);
+                    cmd.Parameters.AddWithValue("ProfesorAsignado", asignado);
+                    cmd.Parameters.AddWithValue("Periodo", periodo);
+
+                    // Parámetro de salida
+                    var paramMensaje = new SqlParameter("Mensaje", SqlDbType.NVarChar, 255)
+                    {
+                        Direction = ParameterDirection.Output
+                    };
+                    cmd.Parameters.Add(paramMensaje);
+
+                    conexion.Open();
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lst.Add(new MATRIZASIGNATURA
+                            {
+                                id_matriz_asignatura = Convert.ToInt32(dr["id_matriz_asignatura"]),
+                                codigo_matriz = dr["codigo_matriz"].ToString(),
+                                nombre_matriz = dr["nombre_matriz"].ToString(),
+                                periodo_matriz = dr["periodo"].ToString(),
+                                nombre_asignatura = dr["asignatura"].ToString(),
+                                carrera = dr["carrera"].ToString(),
+                                nombre_profesor = dr["profesor_propietario"].ToString()
+                            });
+                        }
+                    }
+                    mensaje = paramMensaje.Value?.ToString() ?? "";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al buscar la asignatura: " + ex.Message);
+            }
+            return lst;
+        }
     }
 }

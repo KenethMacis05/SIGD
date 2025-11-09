@@ -545,6 +545,17 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
+        public JsonResult BuscarMatrizAsignatura(string usuario, string nombres, int periodo)
+        {
+            var usuarioAsignado = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuarioAsignado == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
+            string mensaje = string.Empty;
+            List<MATRIZASIGNATURA> lst = CN_MatrizAsignatura.BuscarMatriz(usuario, nombres, periodo, usuarioAsignado.id_usuario, out mensaje);
+
+            return Json(new { data = lst, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
         #endregion
 
         #region PLAN DE CLASES DIARIO

@@ -35,5 +35,8 @@ namespace capa_entidad
         public int total_contenidos { get; set; }
         public string codigo_matriz { get; set; }
         public string nombre_matriz { get; set; }
+
+        public string periodo_matriz { get; set; }
+        public string carrera { get; set; }
     }
 }

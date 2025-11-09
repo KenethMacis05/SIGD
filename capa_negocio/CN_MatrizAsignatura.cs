@@ -239,5 +239,18 @@ namespace capa_negocio
             bool eliminado = CD_MatrizAsignatura.Eliminar(id_matriz_asignatura, fk_profesor_propietario, out mensaje);
             return eliminado ? 1 : 0;
         }
+
+        public List<MATRIZASIGNATURA> BuscarMatriz(string usuario, string nombres, int periodo, int id_usuario, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(usuario) && string.IsNullOrWhiteSpace(nombres))
+            {
+                mensaje = "Por favor, complete al menos un campo de búsqueda.";
+                return new List<MATRIZASIGNATURA>();
+            }
+
+            return CD_MatrizAsignatura.BuscarMatrizAsignatura(usuario, nombres, id_usuario, periodo, out mensaje);
+        }
     }
 }

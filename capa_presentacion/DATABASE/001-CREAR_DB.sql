@@ -378,12 +378,10 @@ GO
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PLANDIDACTICOSEMESTRAL')
 CREATE TABLE PLANDIDACTICOSEMESTRAL (
     id_plan_didactico INT PRIMARY KEY IDENTITY(1,1),	
-	fk_matriz_integracion INT NOT NULL,
-    fk_profesor INT NOT NULL,
 	codigo_documento VARCHAR(255),	
 	nombre VARCHAR(255),
 
-	-- Datos Generales (SE SACAN DE LA RELACIÓN CON LA MATRIZ)
+	-- Datos Generales (SE SACAN DE LA RELACIÓN CON LA MATRIZ DE INTEGRACIÖN A TRAVEZ DE LA MATRIZ DE ASIGNATURA)
 	-- 1. Area del conocimiento
 	-- 2. Departamento
 	-- 3. Carrera
@@ -396,8 +394,8 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 
 	-- A.	Eje disiplinar (En la tabla EJESTRANSVERSAL)
 
-	-- B.	Nombre del Componente Curricular
-	fk_asignatura INT NOT NULL,
+	-- B.	Nombre del Componente Curricular (SE SACA DE LA MATRIZ DE ASIGNATURA)
+    fk_matriz_asignatura INT NOT NULL,
 	
 	-- C.	Currículum
 	curriculum VARCHAR(255),
@@ -431,9 +429,7 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 	bibliografia VARCHAR(255),
 
 	fecha_registro DATETIME DEFAULT GETDATE(),
-	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion),
-	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_USUARIO FOREIGN KEY (fk_profesor) REFERENCES USUARIOS(id_usuario),
-	CONSTRAINT FK_PDS_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura)
+	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_MA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura),
 );
 
 GO
