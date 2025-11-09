@@ -157,6 +157,7 @@ VALUES
     -- 2. Plan didáctico semestral
     ('Planificacion', 'ListarPlanesDidacticos', 'Listar planes didácticos semestrales', 'API'),
     ('Planificacion', 'BuscarMatrizAsignatura', 'Buscar matris de asignatura', 'API'),
+    ('Planificacion', 'ListarDatosGeneralesPlanSemestral', 'Listar datos generales del plan semestral', 'API'),
     ('Planificacion', 'DetallePlanDidactico', 'Vista de detalles de planes didácticos semestrales', 'Vista'),
     ('Planificacion', 'EditarPlanDidactico', 'Vista de edición para los planes didácticos semestrales', 'Vista'),
     ('Planificacion', 'CrearPlanDidactico', 'Vista de creación para los planes didácticos semestrales', 'Vista'),

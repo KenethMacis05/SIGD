@@ -15,6 +15,7 @@ namespace capa_presentacion.Controllers
     public class PlanificacionController : Controller
     {
         CN_PlanClasesDiario CN_PlanClasesDiario = new CN_PlanClasesDiario();
+        CN_PlanSemestral CN_PlanSemestral = new CN_PlanSemestral();
         CN_MatrizIntegracionComponentes CN_MatrizIntegradora = new CN_MatrizIntegracionComponentes();
         CN_MatrizAsignatura CN_MatrizAsignatura = new CN_MatrizAsignatura();
         CN_Contenidos CN_Contenidos = new CN_Contenidos();
@@ -554,6 +555,28 @@ namespace capa_presentacion.Controllers
             List<MATRIZASIGNATURA> lst = CN_MatrizAsignatura.BuscarMatriz(usuario, nombres, periodo, usuarioAsignado.id_usuario, out mensaje);
 
             return Json(new { data = lst, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        //Enpoint(GET): Listar matrices de integracion del usuario
+        [HttpGet]
+        public JsonResult ListarDatosGeneralesPlanSemestral()
+        {
+            try
+            {
+                var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+                if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
+                int resultado;
+                string mensaje;
+
+                List<PLANDIDACTICOSEMESTRAL> lst = CN_PlanSemestral.ListarDatosGenerales(usuario.id_usuario, out resultado, out mensaje);
+
+                return Json(new { data = lst, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
+            }
         }
 
         #endregion

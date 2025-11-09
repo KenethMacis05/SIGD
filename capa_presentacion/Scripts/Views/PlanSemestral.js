@@ -111,10 +111,32 @@ function cargarPeriodos() {
     });
 }
 
+function Guardar() {
+    var asignaturasSeleccionadas = [];
+
+    $('#datatableMatriz tbody').find('.matrizAsignaturaCheckbox:checked').each(function () {
+        asignaturasSeleccionadas.push($(this).data('id'));
+    });
+
+    if (asignaturasSeleccionadas.length === 0) {
+        showAlert("!Atención¡", "Debe seleccionar una asignatura", "warning", true);
+        return;
+    }
+
+    if (asignaturasSeleccionadas.length > 1) {
+        showAlert("!Atención¡", "Solo debe seleccionar una asignatura", "warning", true);
+        return;
+    }
+
+    $.LoadingOverlay("hide");
+
+    console.log(asignaturasSeleccionadas)
+}
+
 const dataTableOptions = {
     ...dataTableConfig,
     ajax: {
-        url: '/Planificacion/ListarMatricesIntegracion',
+        url: '/Planificacion/ListarDatosGeneralesPlanSemestral',
         type: "GET",
         dataType: "json"
     },
@@ -130,30 +152,12 @@ const dataTableOptions = {
         },
         { data: "codigo", title: "Codigo" },
         { data: "nombre", title: "Nombre" },
-        { data: "numero_semanas", title: "# de Semanas" },
-        { data: "periodo", title: "Periodo" },
-        { data: "carrera", title: "Carrera" },
-        { data: "modalidad", title: "Modalidad" },
+        { data: "Asignatura.asignatura", title: "Asignatura" },
+        { data: "Matriz.numero_semanas", title: "# de Semanas" },
+        { data: "Matriz.periodo", title: "Periodo" },
+        { data: "Matriz.carrera", title: "Carrera" },
+        { data: "Matriz.modalidad", title: "Modalidad" },
         {
-            data: "estado_proceso", title: "Estado",
-            render: function (data) {
-                let badgeClass = 'secondary';
-                let icon = 'fa-clock';
-
-                if (data === 'En proceso') {
-                    badgeClass = 'primary';
-                    icon = 'fa-spinner';
-                } else if (data === 'Finalizado') {
-                    badgeClass = 'success';
-                    icon = 'fa-check';
-                }
-
-                return `
-                    <span class="badge bg-${badgeClass} bg-gradient">
-                        <i class="fas ${icon} me-1"></i>${data}
-                    </span>
-                `;
-            }
         },
         {
             defaultContent:
@@ -182,13 +186,16 @@ const dataTableMatrizOptions = {
         { data: "nombre_asignatura", title: "Asignatura" },
         { data: "carrera", title: "Carrera" },
         {
-            data: "fk_matriz_asignatura",
+            data: "id_matriz_asignatura",
             render: function (data) {
-                return `<div class="d-flex justify-content-center">
-                    <button type="button" class="btn btn-danger btn-sm btn-reinicar" title="Reiniciar contraseña">
-                        <i class="fa fa-redo"></i>
-                    </button>
-                </div>`;
+                return `
+                    <div class="icheck-primary">
+                    <input type="checkbox" class="checkboxIcheck matrizAsignaturaCheckbox"
+                        id="matriz_${data}" 
+                        data-id="${data}">
+                    <label for="matriz_${data}"></label>
+                    </div>
+                `;
             },
             orderable: false,
             width: "100px"

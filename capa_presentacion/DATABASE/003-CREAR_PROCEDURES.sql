@@ -6268,6 +6268,83 @@ BEGIN
 END
 GO
 
+CREATE OR ALTER PROCEDURE usp_LeerDatosGeneralesPlanSemestral
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        -- Validar si el usuario existe
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El usuario no existe o está inactivo';
+            RETURN;
+        END
+
+        -- Validar si el usuario tiene registros de Matriz de Integración
+        IF NOT EXISTS (
+            SELECT 1 
+            FROM MATRIZASIGNATURA 
+            WHERE fk_profesor_asignado = @IdUsuario
+        )
+        BEGIN
+            SET @Mensaje = 'El usuario aún no ha sido asignado a ninguna asignatura en alguna matriz de integración';
+            RETURN;
+        END
+
+        -- Retornar las matrices del usuario
+        SELECT
+            -- Datos del plan didáctico semestral
+			pds.id_plan_didactico,
+            pds.codigo AS codigo,
+            pds.nombre AS nombre,
+			
+            -- Datos de la asignatura asignada
+            asi_asignada.nombre AS asignatura,
+
+			-- Datos provenientes de la matriz
+            mic.id_matriz_integracion AS fk_matriz_integracion,
+            mic.codigo AS codigo_matriz,
+            mic.nombre AS nombre_matriz,
+            mic.numero_semanas AS numero_semana,
+            mic.fecha_inicio AS fecha_inicio,
+            a.nombre AS area_conocimiento,
+            d.nombre AS departamento,
+            c.nombre AS carrera,
+            m.nombre AS modalidad,
+            u.pri_nombre + ' ' + u.pri_apellido AS usuario_propietario,
+            p.semestre AS periodo,
+            mic.estado AS estado,
+            mic.estado_proceso AS estado_proceso,
+            mic.fecha_registro AS fecha_registro
+        FROM PLANDIDACTICOSEMESTRAL pds
+		INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+		INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+        INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
+        INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+        INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+        INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
+        INNER JOIN ASIGNATURA asi_asignada ON ma.fk_asignatura = asi_asignada.id_asignatura
+        INNER JOIN USUARIOS u ON mic.fk_profesor = u.id_usuario
+        INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+        WHERE ma.fk_profesor_asignado = @IdUsuario
+        ORDER BY pds.id_plan_didactico DESC;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Datos Generales del Plan Didactico Semestral cargados correctamente';
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al cargar los registros: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS PLANES DE CLASES DE UN USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerPlanesDeClases
     @IdUsuario INT,

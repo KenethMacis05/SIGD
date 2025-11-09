@@ -63,6 +63,7 @@
     <Compile Include="CN_Periodo.cs" />
     <Compile Include="CN_Permisos.cs" />
     <Compile Include="CN_PlanClasesDiario.cs" />
+    <Compile Include="CN_PlanSemestral.cs" />
     <Compile Include="CN_Recursos.cs" />
     <Compile Include="CN_Rol.cs" />
     <Compile Include="CN_Contenidos.cs" />
