@@ -6311,7 +6311,7 @@ BEGIN
             mic.id_matriz_integracion AS fk_matriz_integracion,
             mic.codigo AS codigo_matriz,
             mic.nombre AS nombre_matriz,
-            mic.numero_semanas AS numero_semana,
+            mic.numero_semanas AS numero_semanas,
             mic.fecha_inicio AS fecha_inicio,
             a.nombre AS area_conocimiento,
             d.nombre AS departamento,

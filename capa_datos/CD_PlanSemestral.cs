@@ -41,7 +41,6 @@ namespace capa_datos
                                 {
                                     //Datos del plan didáctico semestral
                                     id_plan_didactico = Convert.ToInt32(dr["id_plan_didactico"]),
-                                    fk_matriz_asignatura = Convert.ToInt32(dr["fk_matriz_asignatura"]),
                                     codigo = dr["codigo"].ToString(),
                                     nombre = dr["nombre"].ToString(),
 

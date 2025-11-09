@@ -152,13 +152,11 @@ const dataTableOptions = {
         },
         { data: "codigo", title: "Codigo" },
         { data: "nombre", title: "Nombre" },
-        { data: "Asignatura.asignatura", title: "Asignatura" },
+        { data: "Asignatura.nombre", title: "Asignatura" },
         { data: "Matriz.numero_semanas", title: "# de Semanas" },
         { data: "Matriz.periodo", title: "Periodo" },
         { data: "Matriz.carrera", title: "Carrera" },
         { data: "Matriz.modalidad", title: "Modalidad" },
-        {
-        },
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
