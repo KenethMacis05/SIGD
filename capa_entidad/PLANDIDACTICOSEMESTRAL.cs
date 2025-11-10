@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace capa_entidad
 {
@@ -15,14 +16,23 @@ namespace capa_entidad
         public DateTime fecha_inicio { get; set; }
         public DateTime fecha_fin { get; set; }
         public int fk_matriz_asignatura { get; set; }
+        [AllowHtml]
         public string curriculum { get; set; }
-        public string competencias_generales { get; set; }
+        [AllowHtml]
+        public string competencias_genericas { get; set; }
+        [AllowHtml]
         public string competencias_especificas { get; set; }
+        [AllowHtml]
         public string objetivos_aprendizaje { get; set; }
+        [AllowHtml]
         public string objetivo_integrador { get; set; }
+        [AllowHtml]
         public string estrategia_metodologica { get; set; }
+        [AllowHtml]
         public string estrategia_evaluacion { get; set; }
+        [AllowHtml]
         public string recursos { get; set; }
+        [AllowHtml]
         public string bibliografia { get; set; }
         public DateTime fecha_registro { get; set; }
         public virtual MATRIZINTEGRACIONCOMPONENTES Matriz { get; set; }

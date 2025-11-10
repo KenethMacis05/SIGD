@@ -25,5 +25,17 @@ namespace capa_negocio
 
             return planesSemestrales;
         }
+
+        public PLANDIDACTICOSEMESTRAL ObtenerPlanSemestralPorId(string idEncriptado, int id_usuario, out string mensaje)
+        {
+            int id = Convert.ToInt32(new CN_Recursos().DecryptValue(idEncriptado));
+            int resultado = 0;
+
+            var planSemestral = CD_PlanSemestral.ObtenerPlanSemestralPorId(id, id_usuario, out resultado, out mensaje);
+
+            planSemestral.id_encriptado = CN_Recursos.EncryptValue(planSemestral.id_plan_didactico.ToString());
+
+            return planSemestral;
+        }
     }
 }

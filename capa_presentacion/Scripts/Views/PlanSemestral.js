@@ -1,9 +1,128 @@
 ﻿let dataTable;
 let dataTableMatriz;
 var filaSeleccionada;
+const $tabs = $('.tab-pane');
+const $tabButtons = $('.nav-link-tab');
+let currentTabIndex = 0;
+
+// Limpiar mensajes de error al corregir
+document.querySelectorAll('#formPlanSemestral input[required]').forEach(function (input) {
+    input.addEventListener('input', function () {
+        if (this.value.trim() !== "") this.classList.remove('is-invalid');
+    });
+});
+
+// Función para validar el tab actual
+function validarTabActual() {
+    const $tabActual = $($tabs[currentTabIndex]);
+    let valido = true;
+    let camposFaltantes = [];
+
+    $tabActual.find('.is-invalid').removeClass('is-invalid');
+
+    $tabActual.find('input[required], textarea[required], select[required]').each(function () {
+        const $elemento = $(this);
+        let valor = '';
+        let nombreCampo = '';
+        let esSummernote = false;
+
+        if ($elemento.hasClass('summernote') || $elemento.next('.note-editor').length) {
+            esSummernote = true;
+            valor = $elemento.summernote('code').replace(/<[^>]*>/g, '').trim();
+        } else {
+            valor = $elemento.val().trim();
+        }
+
+        if (!valor) {
+            valido = false;
+
+            if (esSummernote) {
+                $elemento.next('.note-editor').css('border', '1px solid #dc3545');
+            } else {
+                $elemento.addClass('is-invalid');
+            }
+
+            nombreCampo = obtenerNombreCampo($elemento);
+            camposFaltantes.push(nombreCampo);
+        }
+    });
+
+    if (!valido && camposFaltantes.length > 0) {
+        const mensaje = `Por favor complete los siguientes campos:<br><br>- ${camposFaltantes.join('<br>- ')}`;
+        showAlert("Campos requeridos", mensaje, "error", true, true);
+    }
+    return valido;
+}
+
+// Función auxiliar para obtener el nombre del campo
+function obtenerNombreCampo($elemento) {
+    return $elemento.closest('.input-group').find('.input-group-text').text().trim() ||
+        $elemento.attr('placeholder') ||
+        $elemento.closest('.card').find('.form-label').text().trim() ||
+        $elemento.attr('name') ||
+        $elemento.closest('.form-group').find('label').text().trim() ||
+        'Campo sin nombre';
+}
+
+// Botón de navegación Siguiente
+$('#btnSiguiente').click(function () {
+    if (validarTabActual()) {
+        if (currentTabIndex < $tabs.length - 1) {
+            $tabs.eq(currentTabIndex).animate({ opacity: 0 }, 200, function () {
+                $(this).removeClass('active show').css('display', 'none');
+
+                $tabButtons.eq(currentTabIndex).removeClass('active').attr('aria-selected', 'false');
+                currentTabIndex++;
+
+                $tabs.eq(currentTabIndex).css('display', 'block').animate({ opacity: 1 }, 200, function () {
+                    $(this).addClass('active show');
+                });
+                $tabButtons.eq(currentTabIndex).addClass('active').attr('aria-selected', 'true');
+
+                if (currentTabIndex === $tabs.length - 1) {
+                    $('#btnSiguiente').hide();
+                    var idPlanSemestral = $('#idPlanSemestral').val();
+                    if (idPlanSemestral == 0) {
+                        $('#btnGuardar').show();
+                    }
+                }
+                $('#btnAnterior').show();
+            });
+        }
+    }
+});
+
+// Botón de navegación Anterior
+$('#btnAnterior').click(function () {
+    if (currentTabIndex > 0) {
+        $tabs.eq(currentTabIndex).animate({ opacity: 0 }, 200, function () {
+            $(this).removeClass('active show').css('display', 'none');
+
+            $tabButtons.eq(currentTabIndex).removeClass('active').attr('aria-selected', 'false');
+            currentTabIndex--;
+
+            $tabs.eq(currentTabIndex).css('display', 'block').animate({ opacity: 1 }, 200, function () {
+                $(this).addClass('active show');
+            });
+            $tabButtons.eq(currentTabIndex).addClass('active').attr('aria-selected', 'true');
+
+            if (currentTabIndex === 0) {
+                $('#btnAnterior').hide();
+            }
+            $('#btnSiguiente').show();
+            $('#btnGuardar').hide();
+        });
+    }
+});
 
 
-function abrirModal(json) {
+// Redirigir a la pantalla de edición
+$('#datatable tbody').on('click', '.btn-editar', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Planificacion/EditarPlanDidactico?idEncriptado=" + data.id_encriptado;
+});
+
+function abrirModal() {
     $("#crearPlanSemestral").modal("show");
 }
 
@@ -111,11 +230,17 @@ function cargarPeriodos() {
     });
 }
 
-function Guardar() {
+function Seleccionar() {
     var asignaturasSeleccionadas = [];
+    var datosAsignatura = null;
 
     $('#datatableMatriz tbody').find('.matrizAsignaturaCheckbox:checked').each(function () {
-        asignaturasSeleccionadas.push($(this).data('id'));
+        const id = $(this).data('id');
+        asignaturasSeleccionadas.push(id);
+
+        // Obtener los datos completos de la fila
+        const fila = $(this).closest('tr');
+        datosAsignatura = dataTableMatriz.row(fila).data();
     });
 
     if (asignaturasSeleccionadas.length === 0) {
@@ -128,9 +253,31 @@ function Guardar() {
         return;
     }
 
-    $.LoadingOverlay("hide");
+    // Cargar datos en los inputs
+    if (datosAsignatura) {
+        cargarDatosEnFormulario(datosAsignatura);
+    }
 
-    console.log(asignaturasSeleccionadas)
+    console.log("Asignatura seleccionada:", datosAsignatura);
+}
+
+// Función para cargar datos en los inputs
+function cargarDatosEnFormulario(datos) {
+    if (datos.nombre_asignatura) $('#asignaturaNombre').val(datos.nombre_asignatura);
+    if (datos.carrera) $('#carrera').val(datos.carrera);
+    if (datos.nombre_profesor) $('#usuarioPropietario').val(datos.nombre_profesor);
+    if (datos.area) $('#areaConocimiento').val(datos.area);
+    if (datos.departamento) $('#departamento').val(datos.departamento);
+    if (datos.carrera) $('#carrera').val(datos.carrera);
+    if (datos.modalidad) $('#modalidad').val(datos.modalidad);
+    if (datos.periodo_matriz) $('#periodo').val(datos.periodo_matriz);
+    if (datos.id_matriz_asignatura) $('#fkMatrizAsignatura').val(datos.id_matriz_asignatura);
+
+    
+    // Mostrar mensaje de éxito
+    showAlert("Éxito", "Datos cargados correctamente en el formulario", "success", false);
+
+    $('#crearPlanSemestral').modal('hide');
 }
 
 const dataTableOptions = {
@@ -206,4 +353,30 @@ $(document).ready(function () {
     dataTableMatriz = $("#datatableMatriz").DataTable(dataTableMatrizOptions)
     inicializarSelect2Periodo();
     cargarPeriodos();
+    $('#curriculumSummernote').summernote(summernoteConfig);
+    $('#competenciasEspecificasSummernote').summernote(summernoteConfig);
+    $('#competenciasGenericasSummernote').summernote(summernoteConfig);
+    $('#objetivosAprendizajeSummernote').summernote(summernoteConfig);
+    $('#objetivoIntegradorSummernote').summernote(summernoteConfig);
+    $('#estrategiaMetodologicaSummernote').summernote(summernoteConfig);
+    $('#estrategiaEvaluacionSummernote').summernote(summernoteConfig);
+    $('#recursosSummernote').summernote(summernoteConfig);
+    $('#bibliografiaSummernote').summernote(summernoteConfig);
+    $tabs.not(':first').removeClass('active show');
+    $tabButtons.not(':first').removeClass('active').attr('aria-selected', 'false');
+
+    $('.nav-tabs').on('click', 'button', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+    });
+
+    $tabButtons.each(function () {
+        $(this).attr('data-bs-toggle', '');
+        $(this).css('pointer-events', 'none');
+        $(this).css('cursor', 'default');
+    });
+
+    $('#btnAnterior').hide();
+    $('#btnGuardar').hide();
 });

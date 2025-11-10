@@ -747,6 +747,9 @@
     <Content Include="Views\Planificacion\AccionIntegradoraTipoEvaluacion.cshtml" />
     <Content Include="Views\Planificacion\ContenidosPorSemana.cshtml" />
     <Content Include="Views\Planificacion\SemanasMatriz.cshtml" />
+    <Content Include="Views\Planificacion\EditarPlanDidactico.cshtml" />
+    <Content Include="Views\Planificacion\_FormularioPlanSemestral.cshtml" />
+    <Content Include="Views\Planificacion\CrearPlanDidactico.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

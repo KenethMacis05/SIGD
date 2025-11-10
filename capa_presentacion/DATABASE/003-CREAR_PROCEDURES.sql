@@ -6240,9 +6240,14 @@ BEGIN
         ma.id_matriz_asignatura,
         mic.codigo AS codigo_matriz,
         mic.nombre AS nombre_matriz,
+
         CONCAT(pe.anio, ' - ', pe.semestre) AS periodo,
         CONCAT(a.codigo, ' - ', a.nombre) AS asignatura,
-        ca.nombre AS carrera,
+        ac.nombre AS area,
+		dep.nombre AS departamento,
+		ca.nombre AS carrera,
+		moda.nombre AS modalidad,
+
         --CONCAT(us.pri_nombre, ' ', 
         --       CASE WHEN us.seg_nombre IS NOT NULL THEN us.seg_nombre + ' ' ELSE '' END,
         --       us.pri_apellido,
@@ -6258,7 +6263,10 @@ BEGIN
     INNER JOIN USUARIOS uprop ON uprop.id_usuario = mic.fk_profesor
     INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
     INNER JOIN PERIODO pe ON mic.fk_periodo = pe.id_periodo
+	INNER JOIN AREACONOCIMIENTO ac ON ac.id_area = mic.fk_area
+	INNER JOIN DEPARTAMENTO dep ON dep.id_departamento = mic.fk_departamento
     INNER JOIN CARRERA ca ON ca.id_carrera = mic.fk_carrera
+	INNER JOIN MODALIDAD moda ON moda.id_modalidad = mic.fk_modalidad
     WHERE pds.id_plan_didactico IS NULL
     AND (@ProfesorAsignado IS NULL OR ma.fk_profesor_asignado = @ProfesorAsignado)
     AND mic.fk_profesor = @IdProfesorPropietario
@@ -6267,6 +6275,7 @@ BEGIN
     SET @Mensaje = 'Búsqueda realizada exitosamente. Se encontraron ' + CAST(@CountResultados AS NVARCHAR(10)) + ' registro(s).';
 END
 GO
+
 
 CREATE OR ALTER PROCEDURE usp_LeerDatosGeneralesPlanSemestral
     @IdUsuario INT,
@@ -6337,6 +6346,109 @@ BEGIN
 
         SET @Resultado = 1;
         SET @Mensaje = 'Datos Generales del Plan Didactico Semestral cargados correctamente';
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al cargar los registros: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+CREATE OR ALTER PROCEDURE usp_LeerPlanSemestralPorId
+    @IdUsuario INT,
+	@IdPlaSemestral INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+        -- Validar si el usuario existe
+        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'El usuario no existe o está inactivo';
+            RETURN;
+        END
+
+		IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @IdPlaSemestral)
+		BEGIN
+			SET @Mensaje = 'El plan semestral no existe';
+			RETURN;
+		END
+
+        -- Validar si el usuario tiene registros de Matriz de Integración
+		IF NOT EXISTS (
+		    SELECT 1 
+		    FROM PLANDIDACTICOSEMESTRAL pds
+			INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+		    WHERE ma.fk_profesor_asignado = @IdUsuario AND pds.id_plan_didactico = @IdPlaSemestral
+		)
+		BEGIN
+		    SET @Mensaje = 'El usuario no tiene permisos sobre este plan didactico semestral';
+		    RETURN;
+		END
+
+        -- Retornar las matrices del usuario
+        SELECT
+            -- Datos del plan didáctico semestral
+			pds.id_plan_didactico,
+            pds.codigo AS codigo,
+            pds.nombre AS nombre,
+			pds.fk_matriz_asignatura,
+			
+			pds.curriculum, 
+			pds.competencias_especificas, 
+			pds.competencias_genericas, 
+			pds.objetivos_aprendizaje, 
+			pds.objetivo_integrador, 
+			pds.estrategia_metodologica, 
+			pds.estrategia_evaluacion, 
+			pds.recursos, 
+			pds.bibliografia,
+			pds.estado AS estado,
+			pds.fecha_registro,
+
+			-- Datos de la asignatura asignada
+            asi_asignada.nombre AS asignatura,
+
+			-- Datos provenientes de la matriz
+            mic.codigo AS codigo_matriz,
+            mic.nombre AS nombre_matriz,
+            mic.numero_semanas AS numero_semanas_matriz,
+            mic.fecha_inicio AS fecha_inicio_matriz,
+			(SELECT TOP 1 fecha_fin 
+				FROM SEMANAS 
+				WHERE fk_matriz_integracion = mic.id_matriz_integracion 
+				ORDER BY numero_semana DESC
+			)AS fecha_fin_matriz,
+            a.nombre AS area_conocimiento,
+            d.nombre AS departamento,
+            c.nombre AS carrera,
+            m.nombre AS modalidad,
+            u.pri_nombre + ' ' + u.pri_apellido AS usuario_propietario,
+            p.semestre AS periodo,
+            mic.estado AS estado_matriz,
+            mic.estado_proceso AS estado_proceso_matriz,
+            mic.fecha_registro AS fecha_registro_matriz
+        FROM PLANDIDACTICOSEMESTRAL pds
+		INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+		INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+        INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
+        INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+        INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+        INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
+        INNER JOIN ASIGNATURA asi_asignada ON ma.fk_asignatura = asi_asignada.id_asignatura
+        INNER JOIN USUARIOS u ON mic.fk_profesor = u.id_usuario
+        INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+        WHERE ma.fk_profesor_asignado = @IdUsuario 
+		AND pds.id_plan_didactico = @IdPlaSemestral
+        ORDER BY pds.id_plan_didactico DESC;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Datos del Plan Didactico Semestral cargados correctamente';
     END TRY
     BEGIN CATCH
         SET @Resultado = -1;

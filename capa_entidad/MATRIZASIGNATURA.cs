@@ -38,5 +38,8 @@ namespace capa_entidad
 
         public string periodo_matriz { get; set; }
         public string carrera { get; set; }
+        public string area { get; set; }
+        public string modalidad { get; set; }
+        public string departamento { get; set; }
     }
 }

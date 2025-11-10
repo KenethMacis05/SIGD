@@ -317,6 +317,9 @@ namespace capa_datos
                                 periodo_matriz = dr["periodo"].ToString(),
                                 nombre_asignatura = dr["asignatura"].ToString(),
                                 carrera = dr["carrera"].ToString(),
+                                area = dr["area"].ToString(),
+                                modalidad = dr["modalidad"].ToString(),
+                                departamento = dr["departamento"].ToString(),
                                 nombre_profesor = dr["profesor_propietario"].ToString()
                             });
                         }

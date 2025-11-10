@@ -546,6 +546,29 @@ namespace capa_presentacion.Controllers
             return View();
         }
 
+        //Vista Crear plan de didactico semestral
+        [HttpGet]
+        public ActionResult CrearPlanDidactico()
+        {
+            return View();
+        }
+
+        //Vista Editar de la Matriz de Integracion de Componentes
+        [HttpGet]
+        public ActionResult EditarPlanDidactico(string idEncriptado)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            string mensaje = string.Empty;
+
+            PLANDIDACTICOSEMESTRAL planSemestral = CN_PlanSemestral.ObtenerPlanSemestralPorId(idEncriptado, usuario.id_usuario, out mensaje);
+            if (planSemestral == null || usuario == null)
+            {
+                ViewBag["Error"] = mensaje;
+                return RedirectToAction("Plan_Didactico_Semestral");
+            }
+            return View(planSemestral);
+        }
+
         public JsonResult BuscarMatrizAsignatura(string usuario, string nombres, int periodo)
         {
             var usuarioAsignado = (USUARIOS)Session["UsuarioAutenticado"];

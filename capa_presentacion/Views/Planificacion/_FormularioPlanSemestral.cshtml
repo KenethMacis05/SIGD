@@ -1,0 +1,428 @@
+﻿<style>
+    /* CSS personalizado */
+    .select2-hidden {
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+    }
+
+    .input-group .select2-container {
+        flex: 1 1 auto;
+    }
+
+    .input-group .select2-selection {
+        height: 100%;
+    }
+
+        .input-group .select2-selection:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+</style>
+
+@model capa_entidad.PLANDIDACTICOSEMESTRAL
+
+
+@using (Html.BeginForm("GuardarPlanSemestral", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "formPlanSemestral", @novalidate = "novalidate" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(m => m.id_plan_didactico, new
+    {
+        id = "idPlanSemestral"
+    })
+
+    @Html.HiddenFor(m => m.fk_matriz_asignatura, new
+    {
+        id = "fkMatrizAsignatura"
+    })
+
+    <div class="card-header pb-0 border-bottom-0">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link nav-link-tab active esp-link" id="generales-tab" data-bs-toggle="tab" data-bs-target="#generales" type="button" role="tab" aria-controls="generales" aria-selected="true">
+                    Datos generales
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link nav-link-tab esp-link" id="curriculum-tab" data-bs-toggle="tab" data-bs-target="#curriculum" type="button" role="tab" aria-controls="curriculum" aria-selected="false">
+                    Curriculum y Competencias
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link nav-link-tab esp-link" id="objetivos-tab" data-bs-toggle="tab" data-bs-target="#objetivos" type="button" role="tab" aria-controls="objetivos" aria-selected="false">
+                    Objetivos
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link nav-link-tab esp-link" id="estrategias-tab" data-bs-toggle="tab" data-bs-target="#estrategias" type="button" role="tab" aria-controls="estrategias" aria-selected="false">
+                    Estrategias y Recursos
+                </button>
+            </li>
+        </ul>
+    </div>
+
+    <div class="card-body overflow-auto" style="max-height: 45vh;">
+        <div class="tab-content" id="myTabContent">
+            <!--Datos generales-->
+            <div class="tab-pane fade show active" id="generales" role="tabpanel" aria-labelledby="generales-tab">
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            @if (Model.id_plan_didactico != 0)
+                            {
+                                <span class="input-group-text">Asignatura</span>
+                                @Html.TextBoxFor(m => m.Asignatura.nombre, new
+                                {
+                                    @class = "form-control",
+                                    @disabled = "disabled"
+                                })
+                            }
+                            else
+                            {
+                                <span class="input-group-text">Asignatura</span>
+                                @Html.TextBoxFor(m => m.Asignatura.nombre, new
+                                {
+                                    @class = "form-control",
+                                    id = "asignaturaNombre",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La asignatura es requerido')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "255"
+                                })
+                                <span class="input-group-text bg-primary text-white" onclick="abrirModal()"><i class="fa fa-search"></i></span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Código</span>
+                            @Html.TextBoxFor(m => m.codigo, new
+                            {
+                                @class = "form-control",
+                                @disabled = "disabled"
+                            })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Nombre</span>
+                            @Html.TextBoxFor(m => m.nombre, new
+                            {
+                                @class = "form-control",
+                                required = "required",
+                                @oninvalid = "this.setCustomValidity('El nombre es requerido')",
+                                @oninput = "setCustomValidity('')",
+                                maxlength = "255"
+                            })
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Prof. Integrador</span>
+                            @Html.TextBoxFor(m => m.Matriz.usuario, new
+                            {
+                                @class = "form-control",
+                                id = "usuarioPropietario",
+                                @disabled = "disabled"
+                            })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Área de conocimiento</span>
+                            @Html.TextBoxFor(m => m.Matriz.area, new
+                            {
+                                @class = "form-control",
+                                id = "areaConocimiento",
+                                @disabled = "disabled"
+                            })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Departamento</span>
+                            @Html.TextBoxFor(m => m.Matriz.departamento, new
+                            {
+                                @class = "form-control",
+                                id = "departamento",
+                                @disabled = "disabled"
+                            })
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Carrera</span>
+                            @Html.TextBoxFor(m => m.Matriz.carrera, new
+                            {
+                                @class = "form-control",
+                                id = "carrera",
+                                @disabled = "disabled"
+                            })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Modalidad</span>
+                            @Html.TextBoxFor(m => m.Matriz.modalidad, new
+                            {
+                                @class = "form-control",
+                                id = "modalidad",
+                                @disabled = "disabled"
+                            })
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text">Periodo</span>
+                            @Html.TextBoxFor(m => m.Matriz.periodo, new
+                            {
+                                @class = "form-control",
+                                id = "periodo",
+                                @disabled = "disabled"
+                            })
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 2: Curriculum -->
+            <div class="tab-pane fade" id="curriculum" role="tabpanel" aria-labelledby="curriculum-tab">
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-book-open fa-lg text-primary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Curriculum</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.curriculum, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "curriculumSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El curriculum es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-success shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-bullseye fa-lg text-success me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Competencias Específicas</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.competencias_especificas, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "competenciasEspecificasSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las competencias especificas son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-info shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-layer-group fa-lg text-info me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Competencias Genéricas</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.competencias_genericas, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "competenciasGenericasSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Las competencias genericas son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 4: Objetivos -->
+            <div class="tab-pane fade" id="objetivos" role="tabpanel" aria-labelledby="objetivos-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-success shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-flag fa-lg text-warning me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Objetivos de Aprendizaje</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.objetivos_aprendizaje, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "objetivosAprendizajeSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Los objetivos de aprendizaje son requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-puzzle-piece fa-lg text-danger me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Objetivo Integrador</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.objetivo_integrador, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "objetivoIntegradorSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El objetivo integrador es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 5: Estrategias -->
+            <div class="tab-pane fade" id="estrategias" role="tabpanel" aria-labelledby="estrategias-tab">
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-danger shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-chalkboard-teacher fa-lg text-info me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Estrategia de Metodológica</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.estrategia_metodologica, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "estrategiaMetodologicaSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La estrategia metodológica es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-danger shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-clipboard-check fa-lg text-danger me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Estrategia de Evaluación</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.estrategia_evaluacion, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "estrategiaEvaluacionSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La estrategia de evaluación es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-info shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-tools fa-lg text-warning me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Recursos</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.recursos, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "recursosSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El recurso es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-6 col-sm-12 mb-3">
+                        <div class="card border-left-secondary shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-book fa-lg text-primary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Bibliografía</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.bibliografia, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "bibliografiaSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La bibliografia es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controles de navegación en el footer -->
+    <div class="card-footer text-center">
+        <div class="d-flex justify-content-between">
+            <button type="button" class="btn btn-outline-danger" id="btnAnterior" style="display: none;">
+                <i class="fa fa-arrow-left"></i>
+            </button>
+
+            <div>
+                <a href="@Url.Action("Plan_Didactico_Semestral", "Planificacion")" class="btn btn-danger me-2">
+                    <i class="fa fa-times"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" id="btnGuardar" style="display: none;">
+                    <i class="fa fa-save"></i> @(Model.id_plan_didactico == 0 ? "Guardar" : "Actualizar")
+                </button>
+
+                @if (Model.id_plan_didactico != 0)
+                {
+                    <button type="submit" class="btn btn-primary" id="btnGuardar2">
+                        <i class="fa fa-save"></i> Actualizar
+                    </button>
+                }
+            </div>
+
+            <button type="button" class="btn btn-outline-primary" id="btnSiguiente">
+                <i class="fa fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+}

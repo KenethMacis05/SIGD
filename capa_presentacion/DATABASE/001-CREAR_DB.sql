@@ -388,9 +388,7 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 	-- 4. Profesor
     -- 5. Año y semestre
 
-	-- 6. Fecha de Inicio / Fecha de Finalizacion
-    fecha_inicio DATE NOT NULL,
-    fecha_fin DATE NOT NULL,
+	-- 6. Fecha de Inicio / Fecha de Finalizacion (SE SACAN DE LA RELACIÓN CON LA MATRIZ DE INTEGRACIÖN A TRAVEZ DE LA MATRIZ DE ASIGNATURA)
 
 	-- A.	Eje disiplinar (En la tabla EJESTRANSVERSAL)
 
@@ -428,7 +426,7 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
     -- L. Bibliografía fundamental
 	bibliografia VARCHAR(255),
 
-    esado BIT DEFAULT 1,
+    estado BIT DEFAULT 1,
 	fecha_registro DATETIME DEFAULT GETDATE(),
 	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_MA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura),
 );
