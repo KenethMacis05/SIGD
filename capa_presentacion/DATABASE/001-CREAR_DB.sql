@@ -411,6 +411,9 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 	objetivo_integrador VARCHAR(255),
 
 	-- H.	Eje Transversal (En la tabla: EjeTransversal)
+    competencia_generica VARCHAR(MAX),
+    tema_transversal VARCHAR(MAX),
+    valores_transversales VARCHAR(MAX),
 
     -- I.	Estrategia Metodológica
     estrategia_metodologica VARCHAR(255),
@@ -458,19 +461,6 @@ CREATE TABLE CREDITOSTEMA (
     creditos INT,
     CONSTRAINT FK_CREDITOS_TEMAPLANIFICACION FOREIGN KEY (fk_tema_planificacion) REFERENCES TEMAPLANIFICACIONSEMESTRAL(id_tema) ON DELETE CASCADE
 );
-
--- (1.2) H.	Eje Transversal
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'EJESTRANSVERSAL')
-CREATE TABLE EJESTRANSVERSAL (
-    id_eje INT PRIMARY KEY IDENTITY(1,1),
-    fk_plan_didactico INT NOT NULL,
-    competencia_generica VARCHAR(100) NOT NULL,
-    tema_transversal VARCHAR(255),
-    valores_transversales VARCHAR(255),
-	CONSTRAINT FK_EJESTRANSVERSAL_PDS FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE
-);
-
-GO
 
 -- (1.3) Tabla Matriz de Planifiacion Semestral
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZPLANIFICACIONSEMESTRAL')

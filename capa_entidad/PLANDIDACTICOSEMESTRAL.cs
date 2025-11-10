@@ -27,6 +27,12 @@ namespace capa_entidad
         [AllowHtml]
         public string objetivo_integrador { get; set; }
         [AllowHtml]
+        public string competencia_generica { get; set; }
+        [AllowHtml]
+        public string tema_transversal { get; set; }
+        [AllowHtml]
+        public string valores_transversales { get; set; }
+        [AllowHtml]
         public string estrategia_metodologica { get; set; }
         [AllowHtml]
         public string estrategia_evaluacion { get; set; }

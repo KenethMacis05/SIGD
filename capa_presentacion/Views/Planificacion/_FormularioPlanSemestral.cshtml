@@ -53,7 +53,7 @@
             </li>
             <li class="nav-item">
                 <button class="nav-link nav-link-tab esp-link" id="objetivos-tab" data-bs-toggle="tab" data-bs-target="#objetivos" type="button" role="tab" aria-controls="objetivos" aria-selected="false">
-                    Objetivos
+                    Objetivos y Eje transversal
                 </button>
             </li>
             <li class="nav-item">
@@ -302,6 +302,67 @@
                                     id = "objetivoIntegradorSummernote",
                                     required = "required",
                                     @oninvalid = "this.setCustomValidity('El objetivo integrador es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <h5>Eje transversal:</h5>
+                <div class="row">
+                    <div class="col col-md-4 col-sm-12 mb-3">
+                        <div class="card border-left-success shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-flag fa-lg text-warning me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Competencia genérica</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.competencia_generica, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "competenciaGenericaSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('La competencia genérica es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-puzzle-piece fa-lg text-danger me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Tema transversal</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.tema_transversal, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "temaTransversalSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El tema transversal es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col col-md-4 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-puzzle-piece fa-lg text-danger me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Valores transversales</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.valores_transversales, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "valoresTransversalesSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('Los valores transversales son requeridas')",
                                     @oninput = "setCustomValidity('')",
                                     maxlength = "1000"
                                 })

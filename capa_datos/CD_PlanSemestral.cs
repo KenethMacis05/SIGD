@@ -121,6 +121,9 @@ namespace capa_datos
                                 competencias_genericas = dr["competencias_genericas"].ToString(),
                                 objetivos_aprendizaje = dr["objetivos_aprendizaje"].ToString(),
                                 objetivo_integrador = dr["objetivo_integrador"].ToString(),
+                                competencia_generica = dr["competencia_generica"].ToString(),
+                                tema_transversal = dr["tema_transversal"].ToString(),
+                                valores_transversales = dr["valores_transversales"].ToString(),
                                 estrategia_metodologica = dr["estrategia_metodologica"].ToString(),
                                 estrategia_evaluacion = dr["estrategia_evaluacion"].ToString(),
                                 recursos = dr["recursos"].ToString(),
@@ -184,6 +187,9 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);
                     cmd.Parameters.AddWithValue("ObjetivosAprendizaje", plan.objetivos_aprendizaje);
                     cmd.Parameters.AddWithValue("ObjetivoIntegrador", plan.objetivo_integrador);
+                    cmd.Parameters.AddWithValue("CompetenciaGenerica", plan.competencia_generica);
+                    cmd.Parameters.AddWithValue("TemaTransversal", plan.tema_transversal);
+                    cmd.Parameters.AddWithValue("ValoresTransversales", plan.valores_transversales);
                     cmd.Parameters.AddWithValue("EstrategiaMetodologica", plan.estrategia_metodologica);
                     cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
                     cmd.Parameters.AddWithValue("Recursos", plan.recursos);
@@ -233,6 +239,9 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);
                     cmd.Parameters.AddWithValue("ObjetivosAprendizaje", plan.objetivos_aprendizaje);
                     cmd.Parameters.AddWithValue("ObjetivoIntegrador", plan.objetivo_integrador);
+                    cmd.Parameters.AddWithValue("CompetenciaGenerica", plan.competencia_generica);
+                    cmd.Parameters.AddWithValue("TemaTransversal", plan.tema_transversal);
+                    cmd.Parameters.AddWithValue("ValoresTransversales", plan.valores_transversales);
                     cmd.Parameters.AddWithValue("EstrategiaMetodologica", plan.estrategia_metodologica);
                     cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
                     cmd.Parameters.AddWithValue("Recursos", plan.recursos);
