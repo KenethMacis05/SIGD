@@ -117,8 +117,6 @@ namespace capa_presentacion.Controllers
             }
         }
 
-
-
         //Enpoint(POST): Eliminar matriz de integracion de componentes
         [HttpPost]
         public JsonResult EliminarMatrizIntegracion(int id_matriz_integracion)
@@ -600,6 +598,56 @@ namespace capa_presentacion.Controllers
             {
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
+        }
+
+        // Guardar Matriz de Integracion de Componentes
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult GuardarPlanDidactico(PLANDIDACTICOSEMESTRAL pds)
+        {
+            try
+            {
+                if (!ModelState.IsValid)
+                {
+                    return View("Plan_Didactico_Semestral", pds);
+                }
+
+                string mensaje;
+                int resultado;
+                bool esNuevo = pds.id_plan_didactico == 0;
+
+                // 1. Guardar la matriz principal
+                if (esNuevo)
+                {
+                    resultado = CN_PlanSemestral.Crear(pds, out mensaje);
+                }
+                else
+                {
+                    resultado = CN_PlanSemestral.Editar(pds, out mensaje);
+                }
+
+                if (resultado <= 0)
+                {
+                    TempData["Error"] = $"No se pudo {(esNuevo ? "registrar" : "actualizar")} el plan semestral. {mensaje}";
+                    return View("Plan_Didactico_Semestral", pds);
+                }
+
+                TempData["Success"] = mensaje;
+                return RedirectToAction("Plan_Didactico_Semestral");
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Ocurrió un error inesperado al procesar su solicitud: " + ex.Message;
+                return RedirectToAction("Plan_Didactico_Semestral", new { id = pds?.id_plan_didactico ?? 0 });
+            }
+        }
+
+        [HttpPost]
+        public JsonResult EliminarPlanDidactico(int id_plan_semestral)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_PlanSemestral.Eliminar(id_plan_semestral, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

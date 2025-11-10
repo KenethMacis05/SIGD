@@ -163,5 +163,134 @@ namespace capa_datos
 
             return pds;
         }
+
+        public int CrearPlanSemestral(PLANDIDACTICOSEMESTRAL plan, out string mensaje)
+        {
+            int idautogenerado = 0;
+            mensaje = string.Empty;
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_CrearPLanSemestral", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Parámetros de entrada
+                    cmd.Parameters.AddWithValue("Nombre", plan.nombre);
+                    cmd.Parameters.AddWithValue("FKMatrizAsignatura", plan.fk_matriz_asignatura);
+                    cmd.Parameters.AddWithValue("Curriculum", plan.curriculum);
+                    cmd.Parameters.AddWithValue("CompetenciasEspecificas", plan.competencias_especificas);
+                    cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);
+                    cmd.Parameters.AddWithValue("ObjetivosAprendizaje", plan.objetivos_aprendizaje);
+                    cmd.Parameters.AddWithValue("ObjetivoIntegrador", plan.objetivo_integrador);
+                    cmd.Parameters.AddWithValue("EstrategiaMetodologica", plan.estrategia_metodologica);
+                    cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
+                    cmd.Parameters.AddWithValue("Recursos", plan.recursos);
+                    cmd.Parameters.AddWithValue("Bibliografia", plan.bibliografia);
+
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 255).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    idautogenerado = Convert.ToInt32(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                idautogenerado = 0;
+                mensaje = "Error al registrar el plan semetral: " + ex.Message;
+            }
+
+            return idautogenerado;
+        }
+
+        // Actualizar plan de clases diario
+        public bool ActualizarPlanSemestral(PLANDIDACTICOSEMESTRAL plan, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                // Crear conexión
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    // Consulta SQL con parámetros
+                    SqlCommand cmd = new SqlCommand("usp_ActualizarPlanSemestral", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    // Agregar parámetros
+                    cmd.Parameters.AddWithValue("IdPlanSemestral", plan.id_plan_didactico);
+                    cmd.Parameters.AddWithValue("Nombre", plan.nombre);
+                    cmd.Parameters.AddWithValue("FKMatrizAsignatura", plan.fk_matriz_asignatura);
+                    cmd.Parameters.AddWithValue("Curriculum", plan.curriculum);
+                    cmd.Parameters.AddWithValue("CompetenciasEspecificas", plan.competencias_especificas);
+                    cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);
+                    cmd.Parameters.AddWithValue("ObjetivosAprendizaje", plan.objetivos_aprendizaje);
+                    cmd.Parameters.AddWithValue("ObjetivoIntegrador", plan.objetivo_integrador);
+                    cmd.Parameters.AddWithValue("EstrategiaMetodologica", plan.estrategia_metodologica);
+                    cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
+                    cmd.Parameters.AddWithValue("Recursos", plan.recursos);
+                    cmd.Parameters.AddWithValue("Bibliografia", plan.bibliografia);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    // Abrir conexión
+                    conexion.Open();
+
+                    // Ejecutar comando
+                    cmd.ExecuteNonQuery();
+
+                    // Obtener valores de los parámetros de salida
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value != DBNull.Value ? cmd.Parameters["Mensaje"].Value.ToString() : "Mensaje no disponible.";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al actualizar el plan semestral: " + ex.Message;
+            }
+            return resultado;
+        }
+
+        public bool EliminarPlanSemestral(int id_plan, out string mensaje)
+        {
+            bool resultado = false;
+            mensaje = string.Empty;
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("usp_EliminarPlanSemestral", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("IdPlanSemestral", id_plan);
+
+                    // Parámetros de salida
+                    cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;
+                    cmd.Parameters.Add("Mensaje", SqlDbType.VarChar, 500).Direction = ParameterDirection.Output;
+
+                    conexion.Open();
+                    cmd.ExecuteNonQuery();
+
+                    resultado = cmd.Parameters["Resultado"].Value != DBNull.Value && Convert.ToBoolean(cmd.Parameters["Resultado"].Value);
+                    mensaje = cmd.Parameters["Mensaje"].Value != DBNull.Value ? cmd.Parameters["Mensaje"].Value.ToString() : "Mensaje no disponible";
+                }
+            }
+            catch (Exception ex)
+            {
+                resultado = false;
+                mensaje = "Error al eliminar el plan semestral: " + ex.Message;
+            }
+            return resultado;
+        }
     }
 }

@@ -280,6 +280,36 @@ function cargarDatosEnFormulario(datos) {
     $('#crearPlanSemestral').modal('hide');
 }
 
+//Boton eliminar plan de clases diario
+$("#datatable tbody").on("click", '.btn-eliminar', function () {
+    const planseleccionado = $(this).closest("tr");
+    const data = dataTable.row(planseleccionado).data();
+
+    confirmarEliminacion().then((result) => {
+        if (result.isConfirmed) {
+            showLoadingAlert("Eliminando plan semestral", "Por favor espere...")
+
+            // Enviar petición AJAX
+            $.ajax({
+                url: "/Planificacion/EliminarPlanDidactico",
+                type: "POST",
+                data: JSON.stringify({ id_plan_semestral: data.id_plan_didactico }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+
+                success: function (response) {
+                    Swal.close();
+                    if (response.Respuesta) {
+                        dataTable.row(planseleccionado).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Plan de semestral eliminado correctamente", "success")
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el plan de semestral", "error") }
+                },
+                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+            });
+        }
+    });
+});
+
 const dataTableOptions = {
     ...dataTableConfig,
     ajax: {

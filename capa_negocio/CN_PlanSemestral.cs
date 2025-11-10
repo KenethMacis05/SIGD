@@ -37,5 +37,27 @@ namespace capa_negocio
 
             return planSemestral;
         }
+
+        public int Eliminar(int id_plan, out string mensaje)
+        {
+            bool eliminado = CD_PlanSemestral.EliminarPlanSemestral(id_plan, out mensaje);
+            return eliminado ? 1 : 0;
+        }
+
+        public int Crear(PLANDIDACTICOSEMESTRAL plan, out string mensaje)
+        {
+            mensaje = string.Empty;
+
+            return CD_PlanSemestral.CrearPlanSemestral(plan, out mensaje);
+        }
+
+        public int Editar(PLANDIDACTICOSEMESTRAL plan, out string mensaje)
+        {
+            mensaje = string.Empty;
+            
+            bool actualizado = CD_PlanSemestral.ActualizarPlanSemestral(plan, out mensaje);
+            
+            return actualizado ? 1 : 0;
+        }
     }
 }

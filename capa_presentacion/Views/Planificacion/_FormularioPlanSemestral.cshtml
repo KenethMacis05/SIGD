@@ -25,7 +25,7 @@
 @model capa_entidad.PLANDIDACTICOSEMESTRAL
 
 
-@using (Html.BeginForm("GuardarPlanSemestral", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "formPlanSemestral", @novalidate = "novalidate" }))
+@using (Html.BeginForm("GuardarPlanDidactico", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "formPlanSemestral", @novalidate = "novalidate" }))
 {
     @Html.AntiForgeryToken()
 

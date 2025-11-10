@@ -6457,6 +6457,354 @@ BEGIN
 END;
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA CREAR PLAN DIDÁCTICO SEMESTRAL CON CÓDIGO AUTOMÁTICO
+CREATE OR ALTER PROCEDURE usp_CrearPlanSemestral(
+    @Nombre VARCHAR(255),
+    @FKMatrizAsignatura INT,
+    @Curriculum VARCHAR(MAX) = NULL,
+    @CompetenciasEspecificas VARCHAR(MAX) = NULL,
+    @CompetenciasGenericas VARCHAR(MAX) = NULL,
+    @ObjetivosAprendizaje VARCHAR(MAX) = NULL,
+    @ObjetivoIntegrador VARCHAR(MAX) = NULL,
+    @EstrategiaMetodologica VARCHAR(MAX) = NULL,
+    @EstrategiaEvaluacion VARCHAR(MAX) = NULL,
+    @Recursos VARCHAR(MAX) = NULL,
+    @Bibliografia VARCHAR(MAX) = NULL,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    DECLARE @Codigo VARCHAR(20);
+    DECLARE @Contador INT;
+    DECLARE @Anio INT = YEAR(GETDATE());
+    DECLARE @IdProfesorAsignado INT;
+    DECLARE @EstadoMatrizAsignatura VARCHAR(50);
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar si la matriz de asignatura existe y está activa
+        IF NOT EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @FKMatrizAsignatura)
+        BEGIN
+            SET @Mensaje = 'La matriz de asignatura';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Obtener información de la matriz asignatura
+        SELECT 
+            @IdProfesorAsignado = fk_profesor_asignado,
+            @EstadoMatrizAsignatura = estado
+        FROM MATRIZASIGNATURA 
+        WHERE id_matriz_asignatura = @FKMatrizAsignatura;
+
+        -- 3. Verificar si el estado de la matriz asignatura permite crear plan semestral
+        IF @EstadoMatrizAsignatura NOT IN ('En proceso', 'Finalizado')
+        BEGIN
+            SET @Mensaje = 'No se puede crear el plan semestral. La asignatura en la matriz debe estar en estado En proceso o Finalizado';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 4. Verificar si ya existe un plan semestral para esta matriz de asignatura
+        IF EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE fk_matriz_asignatura = @FKMatrizAsignatura AND estado = 1)
+        BEGIN
+            SET @Mensaje = 'Ya existe un plan semestral activo para esta asignatura en la matriz';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 5. Verificar si el nombre del plan ya existe para este profesor
+        IF EXISTS (
+            SELECT 1 
+            FROM PLANDIDACTICOSEMESTRAL pds
+            INNER JOIN MATRIZASIGNATURA ma ON pds.fk_matriz_asignatura = ma.id_matriz_asignatura
+            WHERE pds.nombre = @Nombre 
+            AND ma.fk_profesor_asignado = @IdProfesorAsignado
+            AND pds.estado = 1
+        )
+        BEGIN
+            SET @Mensaje = 'El nombre del plan semestral ya está registrado para este profesor';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 6. Generar código automático (formato: PDS-AÑO-SECUENCIA)
+        SELECT @Contador = ISNULL(MAX(
+            CAST(
+                CASE 
+                    WHEN codigo LIKE 'PDS-' + CAST(@Anio AS VARCHAR(4)) + '-%'
+                    THEN RIGHT(codigo, 3)
+                    ELSE '0'
+                END
+            AS INT)
+        ), 0)
+        FROM PLANDIDACTICOSEMESTRAL 
+        WHERE codigo LIKE 'PDS-' + CAST(@Anio AS VARCHAR(4)) + '-%'
+        AND estado = 1;
+
+        -- Incrementar el contador
+        SET @Contador = @Contador + 1;
+
+        -- Formatear el código (PDS-2025-001)
+        SET @Codigo = 'PDS-' + CAST(@Anio AS VARCHAR(4)) + '-' + 
+              RIGHT('000' + CAST(@Contador AS VARCHAR(3)), 3);
+
+        -- 7. Insertar el nuevo plan semestral
+        INSERT INTO PLANDIDACTICOSEMESTRAL(
+            codigo, 
+            nombre, 
+            fk_matriz_asignatura,
+            curriculum, 
+            competencias_especificas, 
+            competencias_genericas, 
+            objetivos_aprendizaje, 
+            objetivo_integrador, 
+            estrategia_metodologica, 
+            estrategia_evaluacion, 
+            recursos, 
+            bibliografia,
+            estado,
+            fecha_registro
+        ) VALUES (
+            @Codigo, 
+            @Nombre, 
+            @FKMatrizAsignatura,
+            ISNULL(@Curriculum, ''),
+            ISNULL(@CompetenciasEspecificas, ''),
+            ISNULL(@CompetenciasGenericas, ''),
+            ISNULL(@ObjetivosAprendizaje, ''),
+            ISNULL(@ObjetivoIntegrador, ''),
+            ISNULL(@EstrategiaMetodologica, ''),
+            ISNULL(@EstrategiaEvaluacion, ''),
+            ISNULL(@Recursos, ''),
+            ISNULL(@Bibliografia, ''),
+            1, -- Estado activo
+            GETDATE()
+        );
+
+        SET @Resultado = SCOPE_IDENTITY();
+
+        -- 8. Opcional: Actualizar el estado de la matriz asignatura si es necesario
+
+        COMMIT TRANSACTION;
+
+        SET @Mensaje = 'Plan didáctico semestral registrado exitosamente. Código: ' + @Codigo + ' - Nombre: ' + @Nombre;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al crear el plan didáctico semestral: ' + ERROR_MESSAGE();
+        
+        -- Log adicional para debugging
+        PRINT 'Error en usp_CrearPlanSemestral: ' + ERROR_MESSAGE();
+        PRINT 'Linea: ' + CAST(ERROR_LINE() AS VARCHAR(10));
+    END CATCH
+END;
+GO
+
+-- PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UN PLAN DIDÁCTICO SEMESTRAL
+CREATE OR ALTER PROCEDURE usp_ActualizarPlanSemestral
+    @IdPlanSemestral INT,
+    @Nombre VARCHAR(255),
+    @FKMatrizAsignatura INT,
+    @Curriculum VARCHAR(MAX) = NULL,
+    @CompetenciasEspecificas VARCHAR(MAX) = NULL,
+    @CompetenciasGenericas VARCHAR(MAX) = NULL,
+    @ObjetivosAprendizaje VARCHAR(MAX) = NULL,
+    @ObjetivoIntegrador VARCHAR(MAX) = NULL,
+    @EstrategiaMetodologica VARCHAR(MAX) = NULL,
+    @EstrategiaEvaluacion VARCHAR(MAX) = NULL,
+    @Recursos VARCHAR(MAX) = NULL,
+    @Bibliografia VARCHAR(MAX) = NULL,
+    @Resultado BIT OUTPUT,
+    @Mensaje VARCHAR(500) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    DECLARE @IdProfesorAsignado INT;
+    DECLARE @EstadoMatrizAsignatura VARCHAR(50);
+    DECLARE @EstadoActualPlan BIT;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar si el plan semestral existe
+        IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @IdPlanSemestral)
+        BEGIN
+            SET @Mensaje = 'El plan didáctico semestral no existe';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Obtener el estado actual del plan
+        SELECT @EstadoActualPlan = estado 
+        FROM PLANDIDACTICOSEMESTRAL 
+        WHERE id_plan_didactico = @IdPlanSemestral;
+
+        -- 3. Verificar si el plan está activo (solo se pueden modificar planes activos)
+        IF @EstadoActualPlan = 0
+        BEGIN
+            SET @Mensaje = 'No se puede modificar un plan didáctico semestral inactivo';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 4. Verificar si la matriz de asignatura existe y está activa
+        IF NOT EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @FKMatrizAsignatura)
+        BEGIN
+            SET @Mensaje = 'La matriz de asignatura no existe';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 5. Obtener información de la matriz asignatura
+        SELECT 
+            @IdProfesorAsignado = fk_profesor_asignado,
+            @EstadoMatrizAsignatura = estado
+        FROM MATRIZASIGNATURA 
+        WHERE id_matriz_asignatura = @FKMatrizAsignatura;
+
+        -- 6. Verificar si el estado de la matriz asignatura permite modificar el plan semestral
+        IF @EstadoMatrizAsignatura NOT IN ('En proceso', 'Finalizado')
+        BEGIN
+            SET @Mensaje = 'No se puede modificar el plan semestral. La asignatura en la matriz debe estar en estado "En proceso" o "Finalizado"';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 7. Verificar si el nombre ya existe (excluyendo el plan actual)
+        IF EXISTS (
+            SELECT 1 
+            FROM PLANDIDACTICOSEMESTRAL pds
+            INNER JOIN MATRIZASIGNATURA ma ON pds.fk_matriz_asignatura = ma.id_matriz_asignatura
+            WHERE pds.nombre = @Nombre 
+            AND pds.id_plan_didactico != @IdPlanSemestral
+            AND ma.fk_profesor_asignado = @IdProfesorAsignado
+            AND pds.estado = 1
+        )
+        BEGIN
+            SET @Mensaje = 'El nombre del plan semestral ya está en uso por otro plan activo del mismo profesor';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 8. Verificar si ya existe otro plan semestral activo para esta matriz de asignatura (excluyendo el actual)
+        IF EXISTS (
+            SELECT 1 
+            FROM PLANDIDACTICOSEMESTRAL 
+            WHERE fk_matriz_asignatura = @FKMatrizAsignatura 
+            AND id_plan_didactico != @IdPlanSemestral
+            AND estado = 1
+        )
+        BEGIN
+            SET @Mensaje = 'Ya existe otro plan semestral activo para esta asignatura en la matriz';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 9. Actualizar el plan semestral
+        UPDATE PLANDIDACTICOSEMESTRAL
+        SET 
+            nombre = @Nombre,
+            fk_matriz_asignatura = @FKMatrizAsignatura,
+            curriculum = ISNULL(@Curriculum, curriculum),
+            competencias_especificas = ISNULL(@CompetenciasEspecificas, competencias_especificas),
+            competencias_genericas = ISNULL(@CompetenciasGenericas, competencias_genericas),
+            objetivos_aprendizaje = ISNULL(@ObjetivosAprendizaje, objetivos_aprendizaje),
+            objetivo_integrador = ISNULL(@ObjetivoIntegrador, objetivo_integrador),
+            estrategia_metodologica = ISNULL(@EstrategiaMetodologica, estrategia_metodologica),
+            estrategia_evaluacion = ISNULL(@EstrategiaEvaluacion, estrategia_evaluacion),
+            recursos = ISNULL(@Recursos, recursos),
+            bibliografia = ISNULL(@Bibliografia, bibliografia)
+        WHERE id_plan_didactico = @IdPlanSemestral;
+
+        -- 10. Verificar si se actualizó algún registro
+        IF @@ROWCOUNT = 0
+        BEGIN
+            SET @Mensaje = 'No se realizaron cambios en el plan didáctico semestral';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        COMMIT TRANSACTION;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Plan didáctico semestral actualizado exitosamente';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al actualizar el plan didáctico semestral: ' + ERROR_MESSAGE();
+        
+        -- Log adicional para debugging
+        PRINT 'Error en usp_ActualizarPlanSemestral: ' + ERROR_MESSAGE();
+        PRINT 'Linea: ' + CAST(ERROR_LINE() AS VARCHAR(10));
+    END CATCH
+END;
+GO
+
+CREATE OR ALTER PROCEDURE usp_EliminarPlanSemestral
+	@IdPlanSemestral INT,
+    @Resultado BIT OUTPUT,
+    @Mensaje VARCHAR(500) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar si el plan semestral existe
+        IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @IdPlanSemestral)
+        BEGIN
+            SET @Mensaje = 'El plan semestral no existe';
+            RETURN;
+        END
+
+        -- 2. Eliminar el plan semestral definitivamente
+        DELETE FROM PLANDIDACTICOSEMESTRAL 
+        WHERE id_plan_didactico = @IdPlanSemestral;
+
+        -- 3. Verificar si se eliminó correctamente
+        IF @@ROWCOUNT > 0
+        BEGIN
+            SET @Resultado = 1;
+            SET @Mensaje = 'Plan semestral eliminado correctamente';
+        END
+        ELSE
+        BEGIN
+            SET @Mensaje = 'No se pudo eliminar el plan semestral';
+        END
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al eliminar el plan semestral: ' + ERROR_MESSAGE();
+        
+        PRINT 'Error en usp_EliminarPlanSemestral: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS PLANES DE CLASES DE UN USUARIO
 CREATE OR ALTER PROCEDURE usp_LeerPlanesDeClases
     @IdUsuario INT,
