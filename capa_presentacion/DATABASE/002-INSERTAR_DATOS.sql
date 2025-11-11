@@ -164,6 +164,12 @@ VALUES
     ('Planificacion', 'GuardarPlanDidactico', 'Crear/Editar plan didáctico semestral', 'API'),
     ('Planificacion', 'EliminarPlanDidactico', 'Eliminar plan didáctico semestral', 'API'),
 
+    -- 2.1 Temas del plan didáctico semestral
+    ('Planificacion', 'TemasPlanSemestral', 'Vista de temas del planes didácticos semestrales', 'Vista'),
+    ('Planificacion', 'ListarTemasPlanSemestral', 'Listar temas del plan semestral', 'API'),
+    ('Planificacion', 'GuardarTemasPlanSemestral', 'Editar/Crear temas del plan semestral', 'API'),
+    ('Planificacion', 'EliminarTemasPlanSemestral', 'Eliminar temas del plan semestral', 'API'),
+
     -- 3. Plan de clases diario
     ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API'),
     ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista'),

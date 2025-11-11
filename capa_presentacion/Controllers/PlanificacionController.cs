@@ -21,6 +21,7 @@ namespace capa_presentacion.Controllers
         CN_Contenidos CN_Contenidos = new CN_Contenidos();
         CN_AccionIntegradoraTipoEvaluaciona CN_AccionIntegradoraTipoEvaluaciona = new CN_AccionIntegradoraTipoEvaluaciona();
         CN_Semanas CN_Semanas = new CN_Semanas();
+        CN_TemasPlanificacionSemestral CN_TemasPlanificacionSemestral = new CN_TemasPlanificacionSemestral();
 
         #region Matriz de Integracion de Componentes
 
@@ -647,6 +648,63 @@ namespace capa_presentacion.Controllers
         {
             string mensaje = string.Empty;
             int resultado = CN_PlanSemestral.Eliminar(id_plan_semestral, out mensaje);
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // TEMAS DEL PLAN SEMESTRAL
+        [HttpGet]
+        public ActionResult TemasPlanSemestral(string idEncriptado)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            string mensaje = string.Empty;
+
+            PLANDIDACTICOSEMESTRAL planSemestral = CN_PlanSemestral.ObtenerPlanSemestralPorId(idEncriptado, usuario.id_usuario, out mensaje);
+            if (planSemestral == null || usuario == null)
+            {
+                ViewBag["Error"] = mensaje;
+                return RedirectToAction("Plan_Didactico_Semestral");
+            }
+            return View(planSemestral);
+        }
+
+        [HttpGet]
+        public JsonResult ListarTemasPlanSemestral(string idEncriptado)
+        {
+            try
+            {
+                int resultado;
+                string mensaje;
+                List<TEMAPLANIFICACIONSEMESTRAL> temas = CN_TemasPlanificacionSemestral.Listar(idEncriptado, out resultado, out mensaje);
+                return Json(new { data = temas, resultado = resultado, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, data = new List<TEMAPLANIFICACIONSEMESTRAL>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult GuardarTemasPlanSemestral(TEMAPLANIFICACIONSEMESTRAL tema)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (tema.id_tema == 0)
+            {
+                resultado = CN_TemasPlanificacionSemestral.Crear(tema, out mensaje);
+            }
+            else
+            {
+                resultado = CN_TemasPlanificacionSemestral.Editar(tema, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult EliminarTemasPlanSemestral(int id_tema)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_TemasPlanificacionSemestral.Eliminar(id_tema, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 

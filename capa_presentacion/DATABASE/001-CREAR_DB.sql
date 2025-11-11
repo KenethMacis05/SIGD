@@ -390,7 +390,8 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 
 	-- 6. Fecha de Inicio / Fecha de Finalizacion (SE SACAN DE LA RELACIÓN CON LA MATRIZ DE INTEGRACIÖN A TRAVEZ DE LA MATRIZ DE ASIGNATURA)
 
-	-- A.	Eje disiplinar (En la tabla EJESTRANSVERSAL)
+	-- A.	Eje disiplinar
+    eje_disciplinar VARCHAR(255),
 
 	-- B.	Nombre del Componente Curricular (SE SACA DE LA MATRIZ DE ASIGNATURA)
     fk_matriz_asignatura INT NOT NULL,
@@ -441,7 +442,6 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TEMAP
 CREATE TABLE TEMAPLANIFICACIONSEMESTRAL (
     id_tema INT PRIMARY KEY IDENTITY(1,1),
     fk_plan_didactico INT NOT NULL,
-    numero_tema INT,
     tema VARCHAR(100) NOT NULL,
     horas_teoricas INT,
     horas_laboratorio INT,

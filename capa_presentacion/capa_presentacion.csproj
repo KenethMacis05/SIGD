@@ -626,6 +626,7 @@
     <Content Include="Scripts\Views\Roles.js" />
     <Content Include="Scripts\Views\Contenidos.js" />
     <Content Include="Scripts\Views\Semanas.js" />
+    <Content Include="Scripts\Views\TemasPlanSemestral.js" />
     <Content Include="Scripts\Views\UserConfig.js" />
     <Content Include="Scripts\Views\Usuarios.js" />
     <Content Include="Web.config" />
@@ -750,6 +751,7 @@
     <Content Include="Views\Planificacion\EditarPlanDidactico.cshtml" />
     <Content Include="Views\Planificacion\_FormularioPlanSemestral.cshtml" />
     <Content Include="Views\Planificacion\CrearPlanDidactico.cshtml" />
+    <Content Include="Views\Planificacion\TemasPlanSemestral.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

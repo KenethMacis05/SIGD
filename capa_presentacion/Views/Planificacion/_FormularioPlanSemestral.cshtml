@@ -201,6 +201,29 @@
                         <div class="card border-left-primary shadow-sm">
                             <div class="card-header">
                                 <i class="fas fa-book-open fa-lg text-primary me-2"></i>
+                                <label class="form-label fs-5 fw-medium mb-0">Eje disciplinar</label>
+                            </div>
+                            <div class="card-body">
+                                @Html.TextAreaFor(m => m.eje_disciplinar, 5, 50, new
+                                {
+                                    @class = "form-control",
+                                    id = "ejeDisciplinarSummernote",
+                                    required = "required",
+                                    @oninvalid = "this.setCustomValidity('El eje disciplinar es requeridas')",
+                                    @oninput = "setCustomValidity('')",
+                                    maxlength = "1000"
+                                })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+                <div class="row">
+                    <div class="col col-md-12 col-sm-12 mb-3">
+                        <div class="card border-left-primary shadow-sm">
+                            <div class="card-header">
+                                <i class="fas fa-book-open fa-lg text-primary me-2"></i>
                                 <label class="form-label fs-5 fw-medium mb-0">Curriculum</label>
                             </div>
                             <div class="card-body">

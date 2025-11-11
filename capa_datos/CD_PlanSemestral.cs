@@ -116,6 +116,7 @@ namespace capa_datos
                                 fecha_inicio = Convert.ToDateTime(dr["fecha_inicio_matriz"]),
                                 fecha_fin = Convert.ToDateTime(dr["fecha_fin_matriz"]),
                                 fk_matriz_asignatura = Convert.ToInt32(dr["fk_matriz_asignatura"]),
+                                eje_disciplinar = dr["eje_disciplinar"].ToString(),
                                 curriculum = dr["curriculum"].ToString(),
                                 competencias_especificas = dr["competencias_especificas"].ToString(),
                                 competencias_genericas = dr["competencias_genericas"].ToString(),
@@ -182,6 +183,7 @@ namespace capa_datos
                     // Parámetros de entrada
                     cmd.Parameters.AddWithValue("Nombre", plan.nombre);
                     cmd.Parameters.AddWithValue("FKMatrizAsignatura", plan.fk_matriz_asignatura);
+                    cmd.Parameters.AddWithValue("EjeDisciplinar", plan.eje_disciplinar);
                     cmd.Parameters.AddWithValue("Curriculum", plan.curriculum);
                     cmd.Parameters.AddWithValue("CompetenciasEspecificas", plan.competencias_especificas);
                     cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);
@@ -234,6 +236,7 @@ namespace capa_datos
                     cmd.Parameters.AddWithValue("IdPlanSemestral", plan.id_plan_didactico);
                     cmd.Parameters.AddWithValue("Nombre", plan.nombre);
                     cmd.Parameters.AddWithValue("FKMatrizAsignatura", plan.fk_matriz_asignatura);
+                    cmd.Parameters.AddWithValue("EjeDisciplinar", plan.eje_disciplinar);
                     cmd.Parameters.AddWithValue("Curriculum", plan.curriculum);
                     cmd.Parameters.AddWithValue("CompetenciasEspecificas", plan.competencias_especificas);
                     cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);

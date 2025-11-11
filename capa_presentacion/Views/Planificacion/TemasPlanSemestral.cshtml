@@ -1,0 +1,133 @@
+﻿@model capa_entidad.PLANDIDACTICOSEMESTRAL
+@{
+    ViewBag.Title = "Temas Plan Semestral";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Contenedor Principal -->
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+            <div class="breadcrumb mb-0 shadow-sm rounded bg-light p-3 align-items-center flex-grow-1 me-md-3 w-100">
+                <div class="breadcrumb-item text-truncate">
+                    <span class="text-primary fw-bold">
+                        <i class="fas fa-calendar-alt me-2"></i>Temas del plan semestral: @Model.nombre || @Model.codigo
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center flex-shrink-0 gap-2">
+                <button class="btn btn-primary" onclick="abrirModal(null)">
+                    <i class="fas fa-plus me-2"></i>Nuevo tema
+                </button>
+                <a href="@Url.Action("Plan_Didactico_Semestral", "Planificacion")" class="btn btn-danger">
+                    <i class="fa fa-times me-2"></i>Regresar
+                </a>
+            </div>
+        </div>
+
+        <hr />
+
+        <!-- Tabla de Semanas -->
+        <table class="display cell-border" style="width: 100%" id="datatable">
+            <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                <tr>
+                    <th>#</th>
+                    <th>Tema</th>
+                    <th>Horas teoricas</th>
+                    <th>Horas laboratorio</th>
+                    <th>Horas practicas</th>
+                    <th>Horas investigacion</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade modal-lg" id="modalTemas" tabindex="-1" aria-labelledby="modalTemasLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #0072BB">
+                <h5 class="modal-title" id="modalTemasLabel">Gestión de Temas - Plan Semestral</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body g-2">
+                <input type="text" name="idTema" id="idTema" />
+                <input type="text" name="idPlanDidactico" id="idPlanDidactico" value="@Model.id_plan_didactico" />
+
+                <div class="row">
+                    <div class="col-lg-12 mb-3">
+                        <label class="form-label" for="tema">Tema</label>
+                        <input type="text" class="form-control" id="tema" name="tema" placeholder="Ingrese el nombre del tema" required autocomplete="off">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-lg-3 mb-3">
+                        <label class="form-label" for="horasTeoricas">Horas Teóricas</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-chalkboard-teacher"></i></span>
+                            <input type="number" class="form-control" id="horasTeoricas" name="horasTeoricas" min="0" value="0" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 mb-3">
+                        <label class="form-label" for="horasLaboratorio">Horas Laboratorio</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-flask"></i></span>
+                            <input type="number" class="form-control" id="horasLaboratorio" name="horasLaboratorio" min="0" value="0" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 mb-3">
+                        <label class="form-label" for="horasPracticas">Horas Prácticas</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-tools"></i></span>
+                            <input type="number" class="form-control" id="horasPracticas" name="horasPracticas" min="0" value="0" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-lg-3 mb-3">
+                        <label class="form-label" for="horasInvestigacion">Horas Investigación</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fa fa-search"></i></span>
+                            <input type="number" class="form-control" id="horasInvestigacion" name="horasInvestigacion" min="0" value="0" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                        <i class="fas fa-times-circle me-2"></i>Cerrar
+                    </button>
+                    <button type="submit" style="background: #0072BB" onclick="Guardar()" class="btn btn-success w-50">
+                        <i class="fas fa-save me-2"></i>Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            cargarTemas("@Model.id_encriptado");
+
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                    showAlert("¡Éxito!", "@Html.Raw(TempData["Success"])", "success");
+                </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                    showAlert("¡Error!", "@Html.Raw(TempData["Error"])", "error");
+                </text>
+            }
+    });
+    </script>
+    <script src="@Url.Content("~/Scripts/Views/TemasPlanSemestral.js")" type="text/javascript"></script>
+}

@@ -6399,6 +6399,7 @@ BEGIN
             pds.nombre AS nombre,
 			pds.fk_matriz_asignatura,
 			
+            pds.eje_disciplinar,
 			pds.curriculum, 
 			pds.competencias_especificas, 
 			pds.competencias_genericas, 
@@ -6460,10 +6461,201 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE usp_LeerTemasPlanSemestralPorId
+    @FKPlanSemestral INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        id_tema,
+        fk_plan_didactico,
+        tema,
+        horas_teoricas,
+        horas_laboratorio,
+        horas_practicas,
+        horas_investigacion
+    FROM TEMAPLANIFICACIONSEMESTRAL
+    WHERE fk_plan_didactico = @FKPlanSemestral
+    ORDER BY numero_tema; -- Ordenar por número de tema para mantener el orden
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_CrearTemaPlanSemestral
+    @Tema VARCHAR(100),
+    @FKPlanSemestral INT,
+    @HorasTeoricas INT = 0,
+    @HorasLaboratorio INT = 0,
+    @HorasPracticas INT = 0,
+    @HorasInvestigacion INT = 0,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(500) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Verificar si el plan semestral existe
+        IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @FKPlanSemestral)
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'El plan semestral no existe.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Insertar el nuevo tema
+        INSERT INTO TEMAPLANIFICACIONSEMESTRAL (
+            fk_plan_didactico,
+            tema,
+            horas_teoricas,
+            horas_laboratorio,
+            horas_practicas,
+            horas_investigacion
+        )
+        VALUES (
+            @FKPlanSemestral,
+            @Tema,
+            @HorasTeoricas,
+            @HorasLaboratorio,
+            @HorasPracticas,
+            @HorasInvestigacion
+        );
+        
+        -- Obtener el ID autogenerado
+        SET @Resultado = SCOPE_IDENTITY();
+        SET @Mensaje = 'Tema creado exitosamente.';
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al crear el tema: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_ActualizarTemaPlanSemestral
+    @IdTema INT,
+    @Tema VARCHAR(100),
+    @FKPlanSemestral INT,
+    @HorasTeoricas INT = 0,
+    @HorasLaboratorio INT = 0,
+    @HorasPracticas INT = 0,
+    @HorasInvestigacion INT = 0,
+    @Resultado BIT OUTPUT,
+    @Mensaje VARCHAR(500) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Verificar si el tema existe
+        IF NOT EXISTS (SELECT 1 FROM TEMAPLANIFICACIONSEMESTRAL WHERE id_tema = @IdTema)
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'El tema no existe.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Verificar si el plan semestral existe
+        IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @FKPlanSemestral)
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'El plan semestral no existe.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Actualizar el tema
+        UPDATE TEMAPLANIFICACIONSEMESTRAL 
+        SET 
+            tema = @Tema,
+            horas_teoricas = @HorasTeoricas,
+            horas_laboratorio = @HorasLaboratorio,
+            horas_practicas = @HorasPracticas,
+            horas_investigacion = @HorasInvestigacion
+        WHERE id_tema = @IdTema;
+        
+        -- Verificar si se actualizó correctamente
+        IF @@ROWCOUNT > 0
+        BEGIN
+            SET @Resultado = 1;
+            SET @Mensaje = 'Tema actualizado exitosamente.';
+        END
+        ELSE
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'No se pudo actualizar el tema.';
+        END
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al actualizar el tema: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_EliminarTemaPlanSemestral
+    @IdTema INT,
+    @Resultado BIT OUTPUT,
+    @Mensaje VARCHAR(500) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- Verificar si el tema existe
+        IF NOT EXISTS (SELECT 1 FROM TEMAPLANIFICACIONSEMESTRAL WHERE id_tema = @IdTema)
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'El tema no existe.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+        
+        -- Eliminar el tema
+        DELETE FROM TEMAPLANIFICACIONSEMESTRAL 
+        WHERE id_tema = @IdTema;
+        
+        -- Verificar si se eliminó correctamente
+        IF @@ROWCOUNT > 0
+        BEGIN
+            SET @Resultado = 1;
+            SET @Mensaje = 'Tema eliminado exitosamente.';
+        END
+        ELSE
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'No se pudo eliminar el tema.';
+        END
+        
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al eliminar el tema: ' + ERROR_MESSAGE();
+    END CATCH
+END
+GO
+
 -- PROCEDIMIENTO ALMACENADO PARA CREAR PLAN DIDÁCTICO SEMESTRAL CON CÓDIGO AUTOMÁTICO
 CREATE OR ALTER PROCEDURE usp_CrearPlanSemestral(
     @Nombre VARCHAR(255),
     @FKMatrizAsignatura INT,
+    @EjeDisciplinar VARCHAR(MAX) = NULL,
     @Curriculum VARCHAR(MAX) = NULL,
     @CompetenciasEspecificas VARCHAR(MAX) = NULL,
     @CompetenciasGenericas VARCHAR(MAX) = NULL,
@@ -6566,6 +6758,7 @@ BEGIN
             codigo, 
             nombre, 
             fk_matriz_asignatura,
+            eje_disciplinar,
             curriculum, 
             competencias_especificas, 
             competencias_genericas, 
@@ -6584,6 +6777,7 @@ BEGIN
             @Codigo, 
             @Nombre, 
             @FKMatrizAsignatura,
+            ISNULL(@EjeDisciplinar, ''),
             ISNULL(@Curriculum, ''),
             ISNULL(@CompetenciasEspecificas, ''),
             ISNULL(@CompetenciasGenericas, ''),
@@ -6627,6 +6821,7 @@ CREATE OR ALTER PROCEDURE usp_ActualizarPlanSemestral
     @IdPlanSemestral INT,
     @Nombre VARCHAR(255),
     @FKMatrizAsignatura INT,
+    @EjeDisciplinar VARCHAR(MAX) = NULL,
     @Curriculum VARCHAR(MAX) = NULL,
     @CompetenciasEspecificas VARCHAR(MAX) = NULL,
     @CompetenciasGenericas VARCHAR(MAX) = NULL,
@@ -6733,6 +6928,7 @@ BEGIN
         SET 
             nombre = @Nombre,
             fk_matriz_asignatura = @FKMatrizAsignatura,
+            eje_disciplinar = ISNULL(@EjeDisciplinar, eje_disciplinar),
             curriculum = ISNULL(@Curriculum, curriculum),
             competencias_especificas = ISNULL(@CompetenciasEspecificas, competencias_especificas),
             competencias_genericas = ISNULL(@CompetenciasGenericas, competencias_genericas),
@@ -6794,6 +6990,12 @@ BEGIN
             RETURN;
         END
 
+        IF EXISTS (SELECT 1 FROM TEMAPLANIFICACIONSEMESTRAL WHERE fk_plan_didactico = @IdPlanSemestral)
+        BEGIN
+            DELETE FROM TEMAPLANIFICACIONSEMESTRAL 
+            WHERE fk_plan_didactico = @IdPlanSemestral;
+        END
+
         -- 2. Eliminar el plan semestral definitivamente
         DELETE FROM PLANDIDACTICOSEMESTRAL 
         WHERE id_plan_didactico = @IdPlanSemestral;
@@ -6821,6 +7023,26 @@ BEGIN
         PRINT 'Error en usp_EliminarPlanSemestral: ' + ERROR_MESSAGE();
     END CATCH
 END;
+GO
+
+CREATE OR ALTER PROCEDURE usp_LeerTemasPlanSemestralPorId
+    @FKPlanSemestral INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        id_tema,
+        fk_plan_didactico,
+        tema,
+        horas_teoricas,
+        horas_laboratorio,
+        horas_practicas,
+        horas_investigacion
+    FROM TEMAPLANIFICACIONSEMESTRAL
+    WHERE fk_plan_didactico = @FKPlanSemestral
+    ORDER BY numero_tema; -- Ordenar por número de tema para mantener el orden
+END
 GO
 
 -- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS PLANES DE CLASES DE UN USUARIO

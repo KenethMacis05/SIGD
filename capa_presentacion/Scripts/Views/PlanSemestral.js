@@ -122,6 +122,12 @@ $('#datatable tbody').on('click', '.btn-editar', function () {
     window.location.href = "/Planificacion/EditarPlanDidactico?idEncriptado=" + data.id_encriptado;
 });
 
+// Redirigir a la pantalla de temas
+$('#datatable tbody').on('click', '.btn-temas', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Planificacion/TemasPlanSemestral?idEncriptado=" + data.id_encriptado;
+});
+
 function abrirModal() {
     $("#crearPlanSemestral").modal("show");
 }
@@ -257,8 +263,6 @@ function Seleccionar() {
     if (datosAsignatura) {
         cargarDatosEnFormulario(datosAsignatura);
     }
-
-    console.log("Asignatura seleccionada:", datosAsignatura);
 }
 
 // Función para cargar datos en los inputs
@@ -337,8 +341,9 @@ const dataTableOptions = {
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
+                '<button type="button" class="btn btn-warning btn-sm ms-2 btn-temas"><i class="fa fa-list-alt"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "90"
+            width: "100"
         },
     ]
 };
@@ -383,6 +388,7 @@ $(document).ready(function () {
     dataTableMatriz = $("#datatableMatriz").DataTable(dataTableMatrizOptions)
     inicializarSelect2Periodo();
     cargarPeriodos();
+    $('#ejeDisciplinarSummernote').summernote(summernoteConfig);
     $('#curriculumSummernote').summernote(summernoteConfig);
     $('#competenciasEspecificasSummernote').summernote(summernoteConfig);
     $('#competenciasGenericasSummernote').summernote(summernoteConfig);
