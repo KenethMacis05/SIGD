@@ -6059,7 +6059,7 @@ GO
 -- =============================================
 
 -- Obtener matriz completa con todas sus relaciones
-CREATE PROCEDURE usp_ObtenerMatrizCompleta
+CREATE OR ALTER PROCEDURE usp_ObtenerMatrizCompleta
     @IdMatrizIntegracion INT,
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
@@ -6073,6 +6073,7 @@ BEGIN
         -- Verificar si la matriz existe
         IF NOT EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE id_matriz_integracion = @IdMatrizIntegracion AND estado = 1)
         BEGIN
+            SET @Resultado = -1;
             SET @Mensaje = 'La matriz no existe o está inactiva';
             RETURN;
         END
@@ -6124,6 +6125,58 @@ BEGIN
         SET @Resultado = -1;
         SET @Mensaje = 'Error al obtener la matriz: ' + ERROR_MESSAGE();
     END CATCH
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_ObtenerSemanasMatriz
+    @IdMatrizIntegracion INT
+AS
+BEGIN
+    SELECT 
+        s.id_semana,
+        s.descripcion AS semana,
+        s.numero_semana,
+        ai.accion_integradora,
+        ai.tipo_evaluacion
+    FROM SEMANAS s
+    LEFT JOIN ACCIONINTEGRADORA_TIPOEVALUACION ai ON s.id_semana = ai.fk_semana
+    WHERE s.fk_matriz_integracion = @IdMatrizIntegracion
+    ORDER BY s.numero_semana;
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_ObtenerAsignaturasMatriz
+    @IdMatrizIntegracion INT
+AS
+BEGIN
+    SELECT 
+        ma.id_matriz_asignatura,
+        a.nombre AS asignatura,
+        u.pri_nombre + ' ' + u.pri_apellido AS profesor_asignado
+    FROM MATRIZASIGNATURA ma
+    INNER JOIN ASIGNATURA a ON a.id_asignatura = ma.fk_asignatura
+    INNER JOIN USUARIOS u ON u.id_usuario = ma.fk_profesor_asignado
+    WHERE ma.fk_matriz_integracion = @IdMatrizIntegracion;
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_ObtenerContenidosMatriz
+    @IdMatrizIntegracion INT
+AS
+BEGIN
+    SELECT 
+        c.id_contenido,
+        c.contenido,
+        c.fk_semana,
+        c.fk_matriz_asignatura,
+        s.descripcion AS semana,
+        a.nombre AS asignatura
+    FROM CONTENIDOS c
+    INNER JOIN SEMANAS s ON c.fk_semana = s.id_semana
+    INNER JOIN MATRIZASIGNATURA ma ON c.fk_matriz_asignatura = ma.id_matriz_asignatura
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    WHERE s.fk_matriz_integracion = @IdMatrizIntegracion
+    ORDER BY s.numero_semana, ma.id_matriz_asignatura;
 END
 GO
 
