@@ -622,6 +622,7 @@
     <Content Include="Scripts\Views\Periodo.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\PlanClasesDiario.js" />
+    <Content Include="Scripts\Views\PlanIndividual.js" />
     <Content Include="Scripts\Views\PlanSemestral.js" />
     <Content Include="Scripts\Views\Roles.js" />
     <Content Include="Scripts\Views\Contenidos.js" />
@@ -752,6 +753,7 @@
     <Content Include="Views\Planificacion\_FormularioPlanSemestral.cshtml" />
     <Content Include="Views\Planificacion\CrearPlanDidactico.cshtml" />
     <Content Include="Views\Planificacion\TemasPlanSemestral.cshtml" />
+    <Content Include="Views\Planificacion\Planificacion_Individual.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

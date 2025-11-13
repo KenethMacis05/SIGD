@@ -462,18 +462,21 @@ CREATE TABLE CREDITOSTEMA (
     CONSTRAINT FK_CREDITOS_TEMAPLANIFICACION FOREIGN KEY (fk_tema_planificacion) REFERENCES TEMAPLANIFICACIONSEMESTRAL(id_tema) ON DELETE CASCADE
 );
 
--- (1.3) Tabla Matriz de Planifiacion Semestral
-IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZPLANIFICACIONSEMESTRAL')
-CREATE TABLE MATRIZPLANIFICACIONSEMESTRAL (
-    id_matriz INT PRIMARY KEY IDENTITY(1,1),  
-	fk_plan_didactico_semestral INT NOT NULL,
+GO
+
+-- (1.3) Tabla Planificación individual semestral
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PLANIFICACIONINDIVIDUALSEMESTRAL')
+CREATE TABLE PLANIFICACIONINDIVIDUALSEMESTRAL (
+    id_planificacion INT PRIMARY KEY IDENTITY(1,1),  
+	fk_plan_didactico INT NOT NULL,
 	
-	--Numero de semanas
-	numero_semana INT,
+	--Numero de semanas (SE UTILIZA ESTE VALOR PARA ORDENARLO CON EL NUMERO DE SEMANAS DE LOS CONTENIDOS)
+	numero_semanas INT,
 
-	--Contenidos escenciales (SE EXTRAE DE LA MATRIZ)
+    --Objetivos de aprendizaje a lograr en el semestre (SE EXTRAE DE LOS DATOS GENERALES DEL PLAN SEMESTRAL)
 
-    --Objetivos de aprendizaje a lograr en el semestre (SE EXTRAE DE LOS DATOS GENERALES)
+	--Contenidos escenciales (SE EXTRAE DE LOS CONTENIDOS DE LA MATRIZASIGNATURA ASIGNADA DE LA MATRIZ)
+	fk_contenido INT,
 
 	--Estrategias de aprendizaje (Integradoras)
     estrategias_aprendizaje VARCHAR(255),
@@ -490,11 +493,11 @@ CREATE TABLE MATRIZPLANIFICACIONSEMESTRAL (
 	--Evidencias de aprendizaje
     evidencias_aprendizaje VARCHAR(255),
 
-	CONSTRAINT FK_MATRIZPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_plan_didactico_semestral) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE
+	CONSTRAINT FK_MATRIZPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE,
+	CONSTRAINT FK_CONTENIDOSPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_contenido) REFERENCES CONTENIDOS(id_contenido)
 );
 
 GO
-
 -----------------------------------------------------Etapa 3: Plan de Clases Diario-----------------------------------------------------
 -- (1) Tabla Plan de Clases Diario
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PLANCLASESDIARIO')

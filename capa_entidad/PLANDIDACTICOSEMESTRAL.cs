@@ -44,6 +44,7 @@ namespace capa_entidad
         public virtual MATRIZINTEGRACIONCOMPONENTES Matriz { get; set; }
         public bool estado { get; set; }
         public ASIGNATURA Asignatura { get; set; }
+        [AllowHtml]
         public string eje_disciplinar { get; set; }
     }
 }

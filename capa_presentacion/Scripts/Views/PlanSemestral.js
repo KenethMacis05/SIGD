@@ -128,6 +128,12 @@ $('#datatable tbody').on('click', '.btn-temas', function () {
     window.location.href = "/Planificacion/TemasPlanSemestral?idEncriptado=" + data.id_encriptado;
 });
 
+// Redirigir a la pantalla de planes individuales
+$('#datatable tbody').on('click', '.btn-planIndividual', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Planificacion/Planificacion_Individual?idEncriptado=" + data.id_encriptado;
+});
+
 function abrirModal() {
     $("#crearPlanSemestral").modal("show");
 }
@@ -342,8 +348,9 @@ const dataTableOptions = {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
                 '<button type="button" class="btn btn-warning btn-sm ms-2 btn-temas"><i class="fa fa-list-alt"></i></button>' +
+                '<button type="button" class="btn btn-success btn-sm ms-2 btn-planIndividual"><i class="fa fa-tasks"></i></button>' +
                 '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "100"
+            width: "150"
         },
     ]
 };
@@ -394,6 +401,9 @@ $(document).ready(function () {
     $('#competenciasGenericasSummernote').summernote(summernoteConfig);
     $('#objetivosAprendizajeSummernote').summernote(summernoteConfig);
     $('#objetivoIntegradorSummernote').summernote(summernoteConfig);
+    $('#competenciaGenericaSummernote').summernote(summernoteConfig);
+    $('#temaTransversalSummernote').summernote(summernoteConfig);
+    $('#valoresTransversalesSummernote').summernote(summernoteConfig);
     $('#estrategiaMetodologicaSummernote').summernote(summernoteConfig);
     $('#estrategiaEvaluacionSummernote').summernote(summernoteConfig);
     $('#recursosSummernote').summernote(summernoteConfig);

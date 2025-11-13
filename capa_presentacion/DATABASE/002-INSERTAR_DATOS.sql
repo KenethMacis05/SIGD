@@ -170,6 +170,11 @@ VALUES
     ('Planificacion', 'GuardarTemasPlanSemestral', 'Editar/Crear temas del plan semestral', 'API'),
     ('Planificacion', 'EliminarTemasPlanSemestral', 'Eliminar temas del plan semestral', 'API'),
 
+    -- 2.2 Planes individuales
+    ('Planificacion', 'Planificacion_Individual', 'Vista de planes individuales', 'Vista'),
+    ('Planificacion', 'ListarPlanificacionIndividual', 'Listar plan individual', 'API'),
+    ('Planificacion', 'GuardarPlanificacionIndividual', 'Editar/Crear plan individual', 'API'),
+
     -- 3. Plan de clases diario
     ('Planificacion', 'ListarPlanesClases', 'Listar planes de clases diario', 'API'),
     ('Planificacion', 'DetallePlanDiario', 'Vista de detalles de planes de clases diario', 'Vista'),

@@ -22,6 +22,7 @@ namespace capa_presentacion.Controllers
         CN_AccionIntegradoraTipoEvaluaciona CN_AccionIntegradoraTipoEvaluaciona = new CN_AccionIntegradoraTipoEvaluaciona();
         CN_Semanas CN_Semanas = new CN_Semanas();
         CN_TemasPlanificacionSemestral CN_TemasPlanificacionSemestral = new CN_TemasPlanificacionSemestral();
+        CN_PlanIndividual CN_PlanIndividual = new CN_PlanIndividual();
 
         #region Matriz de Integracion de Componentes
 
@@ -393,7 +394,7 @@ namespace capa_presentacion.Controllers
             return View(matriz);
         }
 
-        // Endpoint para cargar asignaturas via AJAX
+        // Endpoint para cargar los contenidos via AJAX
         [HttpGet]
         public JsonResult ListarContenidosPorId(string idEncriptado)
         {
@@ -601,7 +602,6 @@ namespace capa_presentacion.Controllers
             }
         }
 
-        // Guardar Matriz de Integracion de Componentes
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult GuardarPlanDidactico(PLANDIDACTICOSEMESTRAL pds)
@@ -706,6 +706,64 @@ namespace capa_presentacion.Controllers
             string mensaje = string.Empty;
             int resultado = CN_TemasPlanificacionSemestral.Eliminar(id_tema, out mensaje);
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // PLANIFICACION INDIVIDUAL
+        [HttpGet]
+        public ActionResult Planificacion_Individual(string idEncriptado)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            string mensaje = string.Empty;
+
+            PLANDIDACTICOSEMESTRAL planSemestral = CN_PlanSemestral.ObtenerPlanSemestralPorId(idEncriptado, usuario.id_usuario, out mensaje);
+            if (planSemestral == null || usuario == null)
+            {
+                ViewBag["Error"] = mensaje;
+                return RedirectToAction("Plan_Didactico_Semestral");
+            }
+            return View(planSemestral);
+        }
+
+        [HttpGet]
+        public JsonResult ListarPlanificacionIndividual(string idEncriptado)
+        {
+            try
+            {
+                int resultado;
+                string mensaje;
+                var planificacionIndividual = CN_PlanIndividual.Listar(idEncriptado, out resultado, out mensaje);
+                return Json(new { success = resultado == 1, data = planificacionIndividual, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, data = new List<PLANIFICACIONINDIVIDUALSEMESTRAL>(), mensaje = "Error: " + ex.Message }, JsonRequestBehavior.AllowGet);
+            }
+        }
+
+        [HttpPost]
+        public JsonResult GuardarPlanificacionIndividual(PLANIFICACIONINDIVIDUALSEMESTRAL PlanIndividual)
+        {
+            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null)
+            {
+                return Json(new { success = false, message = "La sesión ha expirado. Por favor, inicie sesión nuevamente." });
+            }
+
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (PlanIndividual.id_planificacion == 0)
+            {
+                // Crear nuevo plan
+                resultado = CN_PlanIndividual.Crear(PlanIndividual, out mensaje);
+            }
+            else
+            {
+                // Actualizar plan
+                resultado = CN_PlanIndividual.Actualizar(PlanIndividual, out mensaje);
+            }
+
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

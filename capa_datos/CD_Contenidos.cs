@@ -11,7 +11,7 @@ namespace capa_datos
 {
     public class CD_Contenidos
     {
-        // Listar semanas de asignatura matriz
+        // Listar contenidos de asignatura matriz
         public List<CONTENIDOS> Listar(int fk_matriz_asignatura, out int resultado, out string mensaje)
         {
             List<CONTENIDOS> lista = new List<CONTENIDOS>();
@@ -22,7 +22,7 @@ namespace capa_datos
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
                 {
-                    SqlCommand cmd = new SqlCommand("sp_LeerContenidosAsignatura", conexion);
+                    SqlCommand cmd = new SqlCommand("usp_LeerContenidosAsignatura", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
                     cmd.Parameters.AddWithValue("FKMatrizAsignatura", fk_matriz_asignatura);
 

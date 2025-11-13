@@ -5336,7 +5336,7 @@ END;
 GO
 
 -- Leer contenidos de asignatura en matriz
-CREATE OR ALTER PROCEDURE sp_LeerContenidosAsignatura
+CREATE OR ALTER PROCEDURE usp_LeerContenidosAsignatura
     @FKMatrizAsignatura INT
 AS
 BEGIN
@@ -6477,7 +6477,7 @@ BEGIN
         horas_investigacion
     FROM TEMAPLANIFICACIONSEMESTRAL
     WHERE fk_plan_didactico = @FKPlanSemestral
-    ORDER BY numero_tema; -- Ordenar por número de tema para mantener el orden
+    ORDER BY id_tema DESC; -- Ordenar por número de tema para mantener el orden
 END
 GO
 
@@ -6651,7 +6651,6 @@ BEGIN
 END
 GO
 
--- PROCEDIMIENTO ALMACENADO PARA CREAR PLAN DIDÁCTICO SEMESTRAL CON CÓDIGO AUTOMÁTICO
 CREATE OR ALTER PROCEDURE usp_CrearPlanSemestral(
     @Nombre VARCHAR(255),
     @FKMatrizAsignatura INT,
@@ -6682,6 +6681,7 @@ BEGIN
     DECLARE @Anio INT = YEAR(GETDATE());
     DECLARE @IdProfesorAsignado INT;
     DECLARE @EstadoMatrizAsignatura VARCHAR(50);
+    DECLARE @IdPlanGenerado INT;
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -6689,7 +6689,7 @@ BEGIN
         -- 1. Verificar si la matriz de asignatura existe y está activa
         IF NOT EXISTS (SELECT 1 FROM MATRIZASIGNATURA WHERE id_matriz_asignatura = @FKMatrizAsignatura)
         BEGIN
-            SET @Mensaje = 'La matriz de asignatura';
+            SET @Mensaje = 'La matriz de asignatura no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
@@ -6794,13 +6794,56 @@ BEGIN
             GETDATE()
         );
 
-        SET @Resultado = SCOPE_IDENTITY();
+        SET @IdPlanGenerado = SCOPE_IDENTITY();
+        SET @Resultado = @IdPlanGenerado;
 
-        -- 8. Opcional: Actualizar el estado de la matriz asignatura si es necesario
+        -- 8. Crear registros en PLANIFICACIONINDIVIDUALSEMESTRAL con fk_contenidos
+        DECLARE @NumeroSemanas INT;
+        DECLARE @IdMatrizIntegracion INT;
+
+        -- Obtener el número de semanas y el id de matriz integración
+        SELECT 
+            @NumeroSemanas = mic.numero_semanas,
+            @IdMatrizIntegracion = mic.id_matriz_integracion
+        FROM MATRIZASIGNATURA ma
+        INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+        WHERE ma.id_matriz_asignatura = @FKMatrizAsignatura;
+
+        -- Insertar planificaciones individuales para cada semana con su contenido correspondiente
+        INSERT INTO PLANIFICACIONINDIVIDUALSEMESTRAL (
+            fk_plan_didactico,
+            numero_semanas,
+            fk_contenido
+        )
+        SELECT 
+            @IdPlanGenerado,
+            s.numero_semana,
+            c.id_contenido
+        FROM SEMANAS s
+        LEFT JOIN CONTENIDOS c ON c.fk_semana = s.id_semana 
+            AND c.fk_matriz_asignatura = @FKMatrizAsignatura
+        WHERE s.fk_matriz_integracion = @IdMatrizIntegracion
+        AND s.numero_semana <= @NumeroSemanas
+        ORDER BY s.numero_semana;
+
+        -- 9. Verificar que se crearon las planificaciones individuales
+        DECLARE @CantidadPlanificaciones INT;
+        SELECT @CantidadPlanificaciones = COUNT(*) 
+        FROM PLANIFICACIONINDIVIDUALSEMESTRAL 
+        WHERE fk_plan_didactico = @IdPlanGenerado;
+
+        IF @CantidadPlanificaciones = 0
+        BEGIN
+            SET @Mensaje = 'Plan semestral creado pero no se pudieron crear las planificaciones individuales';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
 
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'Plan didáctico semestral registrado exitosamente. Código: ' + @Codigo + ' - Nombre: ' + @Nombre;
+        SET @Mensaje = 'Plan didáctico semestral registrado exitosamente. Código: ' + @Codigo + 
+                      ' - Nombre: ' + @Nombre + 
+                      ' - Planificaciones creadas: ' + CAST(@CantidadPlanificaciones AS VARCHAR(10));
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 
@@ -7041,7 +7084,7 @@ BEGIN
         horas_investigacion
     FROM TEMAPLANIFICACIONSEMESTRAL
     WHERE fk_plan_didactico = @FKPlanSemestral
-    ORDER BY numero_tema; -- Ordenar por número de tema para mantener el orden
+    ORDER BY id_tema DESC; -- Ordenar por número de tema para mantener el orden
 END
 GO
 

@@ -1,0 +1,179 @@
+﻿
+@{
+    ViewBag.Title = "Planificación Individual";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Contenedor Principal -->
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+            <div class="breadcrumb mb-0 shadow-sm rounded bg-light p-3 align-items-center flex-grow-1 me-md-3 w-100">
+                <div class="breadcrumb-item text-truncate">
+                    <span class="text-primary fw-bold">
+                        <i class="fas fa-calendar-alt me-2"></i>Planes individuales, Plan semestral: @Model.nombre || @Model.codigo
+                    </span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center flex-shrink-0 gap-2">
+                <a href="@Url.Action("Plan_Didactico_Semestral", "Planificacion")" class="btn btn-danger">
+                    <i class="fa fa-times me-2"></i>Regresar
+                </a>
+            </div>
+        </div>
+
+        <hr />
+
+        <!-- Planes -->
+        <div class="container-fluid mb-3">
+            <div class="row g-3" id="planesIndividuales">
+                <!-- Los registros se cargarán aquí via AJAX -->
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Modal para editar Planificación Individual -->
+<div class="modal fade modal-xl" id="modalPlanIndividual" tabindex="-1" aria-labelledby="modalPlanIndividualLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #0072BB">
+                <h5 class="modal-title" id="modalPlanIndividualLabel">
+                    <i class="fas fa-tasks me-2"></i>Planificación Individual
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" name="idPlanificacion" id="idPlanificacion">
+
+                <!-- Información de contexto -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body py-2">
+                                <small class="text-muted">Semana:</small>
+                                <h6 class="mb-0" id="infoSemana"></h6>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body py-2">
+                                <small class="text-muted">Contenido:</small>
+                                <h6 class="mb-0" id="infoContenido"></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header pb-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item">
+                                <button class="nav-link nav-link-tab active esp-link" id="eAprendizaje-tab" data-bs-toggle="tab" data-bs-target="#eAprendizaje" type="button" role="tab" aria-controls="eAprendizaje" aria-selected="true">
+                                    <i class="fas fa-chalkboard-teacher me-2 text-primary"></i>
+                                    Estrategias de Aprendizaje
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link nav-link-tab esp-link" id="eEvaluacion-tab" data-bs-toggle="tab" data-bs-target="#eEvaluacion" type="button" role="tab" aria-controls="eEvaluacion" aria-selected="false">
+                                    <i class="fas fa-clipboard-check me-2 text-success"></i>
+                                    Estrategias de Evaluación
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link nav-link-tab esp-link" id="tEvaluacion-tab" data-bs-toggle="tab" data-bs-target="#tEvaluacion" type="button" role="tab" aria-controls="tEvaluacion" aria-selected="false">
+                                    <i class="fas fa-tasks me-2 text-warning"></i>
+                                    Tipo de Evaluación
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link nav-link-tab esp-link" id="iEvaluacion-tab" data-bs-toggle="tab" data-bs-target="#iEvaluacion" type="button" role="tab" aria-controls="iEvaluacion" aria-selected="false">
+                                    <i class="fas fa-toolbox me-2 text-info"></i>
+                                    Instrumento de Evaluación
+                                </button>
+                            </li>
+                            <li class="nav-item">
+                                <button class="nav-link nav-link-tab esp-link" id="evAprendizaje-tab" data-bs-toggle="tab" data-bs-target="#evAprendizaje" type="button" role="tab" aria-controls="evAprendizaje" aria-selected="false">
+                                    <i class="fas fa-file-alt me-2 text-danger"></i>
+                                    Evidencias de Aprendizaje
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="card-body overflow-auto" style="max-height: 45vh;">
+                        <div class="tab-content" id="myTabContent">
+                            <div class="tab-pane fade show active" id="eAprendizaje" role="tabpanel" aria-labelledby="eAprendizaje-tab">
+                                <!-- Estrategias de Aprendizaje -->
+                                <div class="col-12 mb-4">
+                                    <textarea class="form-control summernote" id="estrategiasAprendizaje" name="estrategiasAprendizaje" rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="eEvaluacion" role="tabpanel" aria-labelledby="eEvaluacion-tab">
+                                <!-- Estrategias de Evaluación -->
+                                <div class="col-12 mb-4">
+                                    <textarea class="form-control summernote" id="estrategiasEvaluacion" name="estrategiasEvaluacion" rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="tEvaluacion" role="tabpanel" aria-labelledby="tEvaluacion-tab">
+                                <!-- Tipo de Evaluación -->
+                                <div class="col-12 mb-4">
+                                    <textarea class="form-control summernote" id="tipoEvaluacion" name="tipoEvaluacion" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="iEvaluacion" role="tabpanel" aria-labelledby="iEvaluacion-tab">
+                                <!-- Instrumento de Evaluación -->
+                                <div class="col-12 mb-4">
+                                    <textarea class="form-control summernote" id="instrumentoEvaluacion" name="instrumentoEvaluacion" rows="2"></textarea>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade" id="evAprendizaje" role="tabpanel" aria-labelledby="evAprendizaje-tab">
+                                <!-- Evidencias de Aprendizaje -->
+                                <div class="col-12 mb-4">
+                                    <textarea class="form-control summernote" id="evidenciasAprendizaje" name="evidenciasAprendizaje" rows="3"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i>Cerrar
+                </button>
+                <button type="submit" style="background: #0072BB" onclick="Guardar()" class="btn btn-success w-50">
+                    <i class="fas fa-save me-2"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            cargarPlanIndividual("@Model.id_encriptado")
+
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                    showAlert("¡Éxito!", "@Html.Raw(TempData["Success"])", "success");
+                </text>
+            }
+
+            @if (TempData["Error"] != null)
+            {
+                <text>
+                    showAlert("¡Error!", "@Html.Raw(TempData["Error"])", "error");
+                </text>
+            }
+    });
+    </script>
+    <script src="@Url.Content("~/Scripts/Views/PlanIndividual.js")" type="text/javascript"></script>
+}
