@@ -16,7 +16,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerUsuari
 DROP PROCEDURE usp_LeerUsuario
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_CrearUsuario')
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_CrearUsuario')da
 DROP PROCEDURE usp_CrearUsuario
 GO
 
@@ -7160,6 +7160,131 @@ BEGIN
     SET @Resultado = 1
     SET @Mensaje = 'Planes de estudios cargados correctamente'
 END
+GO
+
+CREATE OR ALTER PROCEDURE usp_LeerPlanificacionIndividualPorId
+    @FKPlanSemestral INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+		pis.id_planificacion,
+		pis.fk_plan_didactico,
+		pis.fk_contenido,
+		s.descripcion AS semana,
+		s.tipo_semana AS tipo_semana,
+		pds.objetivos_aprendizaje AS objetivos_aprendizaje,
+		c.contenido AS contenido,
+		pis.estrategias_aprendizaje,
+		pis.estrategias_evaluacion,
+		pis.tipo_evaluacion,
+		pis.instrumento_evaluacion,
+		pis.evidencias_aprendizaje
+	FROM PLANIFICACIONINDIVIDUALSEMESTRAL pis
+	INNER JOIN PLANDIDACTICOSEMESTRAL pds ON pds.id_plan_didactico = pis.fk_plan_didactico
+	INNER JOIN CONTENIDOS c ON c.id_contenido = pis.fk_contenido
+	INNER JOIN SEMANAS s ON s.id_semana = c.fk_semana
+	WHERE pis.fk_plan_didactico = @FKPlanSemestral
+	ORDER BY s.numero_semana;
+END
+GO
+
+CREATE OR ALTER PROCEDURE usp_ActualizarPlanificacionIndividual
+    @IdPlanificacion INT,
+    @EstrategiaAprendizaje VARCHAR(MAX) = NULL,
+    @EstrategiaEvaluacion VARCHAR(MAX) = NULL,
+    @TipoEvaluacion VARCHAR(MAX) = NULL,
+    @InstrumentoEvaluacion VARCHAR(MAX) = NULL,
+    @EvidenciasAprendizaje VARCHAR(MAX) = NULL,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        -- 1. Verificar si la planificación individual existe
+        IF NOT EXISTS (SELECT 1 FROM PLANIFICACIONINDIVIDUALSEMESTRAL WHERE id_planificacion = @IdPlanificacion)
+        BEGIN
+            SET @Mensaje = 'La planificación individual no existe.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 2. Verificar que al menos un campo tenga contenido
+        IF (
+            (NULLIF(@EstrategiaAprendizaje, '') IS NULL OR @EstrategiaAprendizaje IN ('<p><br></p>', '<p></p>', '<br>')) AND
+            (NULLIF(@EstrategiaEvaluacion, '') IS NULL OR @EstrategiaEvaluacion IN ('<p><br></p>', '<p></p>', '<br>')) AND
+            (NULLIF(@TipoEvaluacion, '') IS NULL OR @TipoEvaluacion IN ('<p><br></p>', '<p></p>', '<br>')) AND
+            (NULLIF(@InstrumentoEvaluacion, '') IS NULL OR @InstrumentoEvaluacion IN ('<p><br></p>', '<p></p>', '<br>')) AND
+            (NULLIF(@EvidenciasAprendizaje, '') IS NULL OR @EvidenciasAprendizaje IN ('<p><br></p>', '<p></p>', '<br>'))
+        )
+        BEGIN
+            SET @Mensaje = 'Debe proporcionar al menos un campo con contenido válido.';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 3. Actualizar la planificación individual
+        UPDATE PLANIFICACIONINDIVIDUALSEMESTRAL 
+        SET 
+            estrategias_aprendizaje = CASE 
+                WHEN NULLIF(@EstrategiaAprendizaje, '') IS NOT NULL AND @EstrategiaAprendizaje NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                THEN @EstrategiaAprendizaje 
+                ELSE estrategias_aprendizaje 
+            END,
+            estrategias_evaluacion = CASE 
+                WHEN NULLIF(@EstrategiaEvaluacion, '') IS NOT NULL AND @EstrategiaEvaluacion NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                THEN @EstrategiaEvaluacion 
+                ELSE estrategias_evaluacion 
+            END,
+            tipo_evaluacion = CASE 
+                WHEN NULLIF(@TipoEvaluacion, '') IS NOT NULL AND @TipoEvaluacion NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                THEN @TipoEvaluacion 
+                ELSE tipo_evaluacion 
+            END,
+            instrumento_evaluacion = CASE 
+                WHEN NULLIF(@InstrumentoEvaluacion, '') IS NOT NULL AND @InstrumentoEvaluacion NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                THEN @InstrumentoEvaluacion 
+                ELSE instrumento_evaluacion 
+            END,
+            evidencias_aprendizaje = CASE 
+                WHEN NULLIF(@EvidenciasAprendizaje, '') IS NOT NULL AND @EvidenciasAprendizaje NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                THEN @EvidenciasAprendizaje 
+                ELSE evidencias_aprendizaje 
+            END
+        WHERE id_planificacion = @IdPlanificacion;
+
+        -- 4. Verificar si se actualizó correctamente
+        IF @@ROWCOUNT > 0
+        BEGIN
+            SET @Resultado = 1;
+            SET @Mensaje = 'Planificación individual actualizada exitosamente.';
+        END
+        ELSE
+        BEGIN
+            SET @Resultado = 0;
+            SET @Mensaje = 'No se pudo actualizar la planificación individual.';
+        END
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        
+        SET @Resultado = 0;
+        SET @Mensaje = 'Error al actualizar la planificación individual: ' + ERROR_MESSAGE();
+        
+        PRINT 'Error en usp_ActualizarPlanificacionIndividual: ' + ERROR_MESSAGE();
+        PRINT 'Linea: ' + CAST(ERROR_LINE() AS VARCHAR(10));
+    END CATCH
+END;
 GO
 
 -- PROCEDIMIENTO ALMACENADO PARA CREAR PLANES DE CLASES DIARIO CON CÓDIGO AUTOMÁTICO
