@@ -16,7 +16,7 @@ IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_LeerUsuari
 DROP PROCEDURE usp_LeerUsuario
 GO
 
-IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_CrearUsuario')da
+IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_CrearUsuario')
 DROP PROCEDURE usp_CrearUsuario
 GO
 
