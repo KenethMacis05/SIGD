@@ -7652,3 +7652,184 @@ BEGIN
 END
 
 GO
+
+CREATE OR ALTER PROCEDURE usp_ReportePlanSemestralPorId
+	@IdPlaSemestral INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+
+		IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @IdPlaSemestral)
+		BEGIN
+			SET @Mensaje = 'El plan semestral no existe';
+			RETURN;
+		END
+
+        -- Retornar las matrices del usuario
+        SELECT
+            -- Datos del plan didáctico semestral
+			pds.id_plan_didactico,
+            pds.codigo AS codigo,
+            pds.nombre AS nombre,
+			pds.fk_matriz_asignatura,
+			CONCAT(us.pri_nombre, ' ', us.pri_apellido) AS profesor,
+			
+            pds.eje_disciplinar,
+			pds.curriculum, 
+			pds.competencias_especificas, 
+			pds.competencias_genericas, 
+			pds.objetivos_aprendizaje, 
+			pds.objetivo_integrador,
+            pds.competencia_generica,
+            pds.tema_transversal,
+            pds.valores_transversales,
+			pds.estrategia_metodologica, 
+			pds.estrategia_evaluacion, 
+			pds.recursos, 
+			pds.bibliografia,
+			pds.estado AS estado,
+			pds.fecha_registro,
+
+			-- Datos de la asignatura asignada
+            asi_asignada.nombre AS asignatura,
+
+			-- Datos provenientes de la matriz
+            mic.codigo AS codigo_matriz,
+            mic.nombre AS nombre_matriz,
+            mic.numero_semanas AS numero_semanas,
+            mic.fecha_inicio AS fecha_inicio,
+			(SELECT TOP 1 fecha_fin 
+				FROM SEMANAS 
+				WHERE fk_matriz_integracion = mic.id_matriz_integracion 
+				ORDER BY numero_semana DESC
+			)AS fecha_fin,
+            a.nombre AS area_conocimiento,
+            d.nombre AS departamento,
+            c.nombre AS carrera,
+            m.nombre AS modalidad,
+            u.pri_nombre + ' ' + u.pri_apellido AS usuario_propietario,
+            CONCAT(p.anio, ' || ', p.semestre) AS periodo,
+            mic.estado AS estado_matriz,
+            mic.estado_proceso AS estado_proceso_matriz,
+            mic.fecha_registro AS fecha_registro_matriz
+        FROM PLANDIDACTICOSEMESTRAL pds
+		INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+		INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+        INNER JOIN AREACONOCIMIENTO a ON mic.fk_area = a.id_area
+        INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+        INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+        INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
+        INNER JOIN ASIGNATURA asi_asignada ON ma.fk_asignatura = asi_asignada.id_asignatura
+        INNER JOIN USUARIOS u ON mic.fk_profesor = u.id_usuario
+		INNER JOIN USUARIOS us ON us.id_usuario = ma.fk_profesor_asignado
+        INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+        WHERE ma.fk_profesor_asignado = ma.fk_profesor_asignado
+		AND pds.id_plan_didactico = @IdPlaSemestral
+        ORDER BY pds.id_plan_didactico DESC;
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Datos del Plan Didactico Semestral cargados correctamente';
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al cargar los registros: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+CREATE OR ALTER PROCEDURE usp_ReportePlanClasesDiarioPorId
+	@IdPlaClasesDiario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @Resultado = 0;
+    SET @Mensaje = '';
+
+    BEGIN TRY
+
+		IF NOT EXISTS (SELECT 1 FROM PLANCLASESDIARIO WHERE id_plan_diario = @IdPlaClasesDiario)
+		BEGIN
+			SET @Mensaje = 'El plan de clases diario no existe';
+			RETURN;
+		END
+
+        -- Mostrar plan de clases diario
+        SELECT
+	    ac.nombre AS area_conocimiento,
+	    dep.nombre AS departamento,
+
+        -- 1. Datos generales del plan de clases diario
+	    car.nombre AS carrera,
+	    RTRIM(LTRIM(
+        CONCAT(
+            u.pri_nombre, 
+            CASE WHEN NULLIF(u.seg_nombre, '') IS NOT NULL THEN ' ' + u.seg_nombre ELSE '' END,
+            ' ',
+            u.pri_apellido,
+            CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
+        )
+	    )) AS profesor,
+	    RTRIM(LTRIM(
+	    CONCAT(
+		    pe.anio, ' || ', pe.semestre
+	    )
+	    )) AS periodo,
+        pcd.fecha_inicio,
+        pcd.fecha_fin,
+        pcd.ejes,
+        pcd.competencias,
+	    a.nombre AS asignatura,
+        pcd.BOA,
+
+        -- 2. Aprendizaje
+        pcd.objetivo_aprendizaje,
+        pcd.tema_contenido,
+        pcd.indicador_logro,
+
+        -- 3. Tareas y actividades
+        pcd.tareas_iniciales,
+        pcd.tareas_desarrollo,
+        pcd.tareas_sintesis,
+
+        -- 4. Evaluacion de los aprendizajes
+        pcd.tipo_evaluacion,
+        pcd.estrategia_evaluacion,
+        pcd.instrumento_evaluacion,
+        pcd.evidencias_aprendizaje
+
+        FROM PLANCLASESDIARIO pcd
+        INNER JOIN 
+		    USUARIOS u ON pcd.fk_profesor = u.id_usuario
+	    INNER JOIN 
+		    PERIODO pe ON pcd.fk_periodo = pe.id_periodo
+	    INNER JOIN 
+		    Asignatura a ON pcd.fk_asignatura = a.id_asignatura
+	    LEFT JOIN
+		    Carrera car ON pcd.fk_carrera = car.id_carrera
+        LEFT JOIN
+            Departamento dep ON pcd.fk_departamento = dep.id_departamento
+        LEFT JOIN
+            AreaConocimiento ac ON pcd.fk_area = ac.id_area
+        WHERE pcd.id_plan_diario = @IdPlaClasesDiario
+          AND pcd.estado = 1
+	      AND pe.estado = 1
+	      AND u.estado = 1
+        ORDER BY pcd.fecha_registro DESC
+
+        SET @Resultado = 1;
+        SET @Mensaje = 'Datos del Plan de Clases Diario cargados correctamente';
+    END TRY
+    BEGIN CATCH
+        SET @Resultado = -1;
+        SET @Mensaje = 'Error al cargar los registros: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
