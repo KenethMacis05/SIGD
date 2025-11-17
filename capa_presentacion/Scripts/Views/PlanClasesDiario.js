@@ -74,6 +74,12 @@ $('#datatable tbody').on('click', '.btn-editar', function () {
     window.location.href = "/Planificacion/EditarPlanDiario?id=" + data.id_plan_diario;
 });
 
+// Redirigir a la pantalla de reporte PDF
+$('#datatable tbody').on('click', '.btn-pdf', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Reporte/PlanClasesDiario?id=" + data.id_plan_diario;
+});
+
 // Botón de navegación Siguiente
 $('#btnSiguiente').click(function () {
     if (validarTabActual()) {
@@ -184,11 +190,11 @@ const dataTableOptions = {
         { data: "periodo", title: "Periodo" },
         {
             defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
-                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "130"
+                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe"><i class="fa fa-file-pdf"></i></button>' +
+                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-detalles" title="Ver detalles del registro"><i class="fa fa-eye"></i></button>' +
+                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar" title="Modificar registro"><i class="fa fa-pen"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar" title="Eliminar registro"><i class="fa fa-trash"></i></button>',
+            width: "150"
         },
     ]
 };

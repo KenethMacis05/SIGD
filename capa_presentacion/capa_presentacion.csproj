@@ -130,6 +130,7 @@
     <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\PermisosController.cs" />
     <Compile Include="Controllers\PlanificacionController.cs" />
+    <Compile Include="Controllers\ReporteController.cs" />
     <Compile Include="Controllers\RolController.cs" />
     <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Controllers\UsuarioController.cs" />
@@ -760,6 +761,7 @@
     <Folder Include="Models\" />
     <Folder Include="Views\Configuracion\" />
     <Folder Include="Views\Controlador\" />
+    <Folder Include="Views\Reporte\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

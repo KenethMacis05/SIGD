@@ -86,6 +86,12 @@ $("#datatable tbody").on("click", '.btn-viewSemanas', function () {
     window.location.href = "/Planificacion/SemanasMatriz?idEncriptado=" + data.id_encriptado;
 });
 
+// Redirigir a la pantalla de reporte PDF
+$('#datatable tbody').on('click', '.btn-pdf', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Reporte/MatrizIntegracionComponente?id=" + data.id_matriz_integracion;
+});
+
 function abrirModal(json) {
   
     $("#createUser").modal("show");
@@ -218,12 +224,12 @@ const dataTableOptions = {
         },
         {
             defaultContent:
-                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar"><i class="fa fa-user-graduate"></i></button>' +
-                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-viewSemanas"><i class="fa fa-calendar"></i></button>' +
-                '<button type="button" class="btn btn-dark btn-sm ms-1 btn-viewAccionIntegradoraTipoEvaluacion"><i class="fa fa-tasks"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
+                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe"><i class="fa fa-file-pdf"></i></button>' +
+                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar" title="Modificar registro"><i class="fa fa-pen"></i></button>' +
+                '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar" title="Asignaturas"><i class="fa fa-user-graduate"></i></button>' +
+                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-viewSemanas" title="Configurar semanas académicas"><i class="fa fa-calendar"></i></button>' +
+                '<button type="button" class="btn btn-dark btn-sm ms-1 btn-viewAccionIntegradoraTipoEvaluacion" title="Gestionar evaluaciones integradoras"><i class="fa fa-tasks"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar" title="Eliminar registro"><i class="fa fa-trash"></i></button>',
             width: "200"
         },
     ]

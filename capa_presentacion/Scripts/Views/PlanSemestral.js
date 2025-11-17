@@ -134,6 +134,12 @@ $('#datatable tbody').on('click', '.btn-planIndividual', function () {
     window.location.href = "/Planificacion/Planificacion_Individual?idEncriptado=" + data.id_encriptado;
 });
 
+// Redirigir a la pantalla de reporte PDF
+$('#datatable tbody').on('click', '.btn-pdf', function () {
+    var data = dataTable.row($(this).parents('tr')).data();
+    window.location.href = "/Reporte/PlanDidacticoSemestral?id=" + data.id_plan_didactico;
+});
+
 function abrirModal() {
     $("#crearPlanSemestral").modal("show");
 }
@@ -346,11 +352,12 @@ const dataTableOptions = {
         { data: "Matriz.modalidad", title: "Modalidad" },
         {
             defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-2 btn-temas"><i class="fa fa-list-alt"></i></button>' +
-                '<button type="button" class="btn btn-success btn-sm ms-2 btn-planIndividual"><i class="fa fa-tasks"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "150"
+                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe"><i class="fa fa-file-pdf"></i></button>' +
+                '<button type="button" class="btn btn-primary btn-sm ms-2 btn-editar" title="Editar registro"><i class="fa fa-pen"></i></button>' +
+                '<button type="button" class="btn btn-warning btn-sm ms-2 btn-temas" title="Gestionar temas"><i class="fa fa-list-alt"></i></button>' +
+                '<button type="button" class="btn btn-secondary btn-sm ms-2 btn-planIndividual" title="Generar plan individual"><i class="fa fa-tasks"></i></button>' +
+                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar" title="Eliminar registro"><i class="fa fa-trash"></i></button>',
+            width: "200"
         },
     ]
 };
