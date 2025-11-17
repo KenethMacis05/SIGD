@@ -77,7 +77,7 @@ $('#datatable tbody').on('click', '.btn-editar', function () {
 // Redirigir a la pantalla de reporte PDF
 $('#datatable tbody').on('click', '.btn-pdf', function () {
     var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Reporte/PlanClasesDiario?id=" + data.id_plan_diario;
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=/PlanClasesDiario/PlanClasesDiario&id=' + data.id_plan_diario, '_blank');
 });
 
 // Botón de navegación Siguiente

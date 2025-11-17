@@ -137,7 +137,7 @@ $('#datatable tbody').on('click', '.btn-planIndividual', function () {
 // Redirigir a la pantalla de reporte PDF
 $('#datatable tbody').on('click', '.btn-pdf', function () {
     var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Reporte/PlanDidacticoSemestral?id=" + data.id_plan_didactico;
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=/PlanDidacticoSemestral/PlanDidacticoSemestral&id=' + data.id_plan_didactico, '_blank');
 });
 
 function abrirModal() {

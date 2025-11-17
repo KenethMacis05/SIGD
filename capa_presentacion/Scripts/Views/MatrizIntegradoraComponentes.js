@@ -89,7 +89,7 @@ $("#datatable tbody").on("click", '.btn-viewSemanas', function () {
 // Redirigir a la pantalla de reporte PDF
 $('#datatable tbody').on('click', '.btn-pdf', function () {
     var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Reporte/MatrizIntegracionComponente?id=" + data.id_matriz_integracion;
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=/MatrizIntegracionComponente/MatrizIntegracionComponente&id=' + data.id_matriz_integracion, '_blank');
 });
 
 function abrirModal(json) {
