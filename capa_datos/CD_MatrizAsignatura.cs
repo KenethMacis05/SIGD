@@ -280,7 +280,7 @@ namespace capa_datos
             return asignatura;
         }
 
-        public List<MATRIZASIGNATURA> BuscarMatrizAsignatura(string usuario, string nombres, int asignado, int periodo, out string mensaje)
+        public List<MATRIZASIGNATURA> BuscarMatrizAsignatura(int asignado, int periodo, out string mensaje)
         {
             List<MATRIZASIGNATURA> lst = new List<MATRIZASIGNATURA>();
             mensaje = string.Empty;
@@ -292,8 +292,6 @@ namespace capa_datos
                     cmd.CommandType = CommandType.StoredProcedure;
 
                     // Agregar parámetros de entrada
-                    cmd.Parameters.AddWithValue("UsuarioProfesorPropietario", string.IsNullOrEmpty(usuario) ? (object)DBNull.Value : usuario);
-                    cmd.Parameters.AddWithValue("NombreProfesorPropietario", string.IsNullOrEmpty(nombres) ? (object)DBNull.Value : nombres);
                     cmd.Parameters.AddWithValue("ProfesorAsignado", asignado);
                     cmd.Parameters.AddWithValue("Periodo", periodo);
 

@@ -429,7 +429,8 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
 
     -- L. Bibliografía fundamental
 	bibliografia VARCHAR(255),
-
+    
+    estado_proceso VARCHAR(50) NOT NULL CHECK (estado_proceso IN ('Pendiente', 'En proceso', 'Finalizado')) DEFAULT 'Pendiente',
     estado BIT DEFAULT 1,
 	fecha_registro DATETIME DEFAULT GETDATE(),
 	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_MA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura),

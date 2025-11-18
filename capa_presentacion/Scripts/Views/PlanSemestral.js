@@ -146,14 +146,7 @@ function abrirModal() {
 
 function Buscar() {
     const filtros = {
-        usuario: limpiarFiltro($("#usuario").val().trim()),
-        nombres: limpiarFiltro($("#nombrecompleto").val().trim()),
         periodo: limpiarFiltro($("#inputGroupSelectPeriodo").val().trim())
-    }
-
-    if (!filtros.usuario && !filtros.nombres) {
-        showAlert("Advertencia", "Debe ingresar al menos un dato en algún filtro de Usuario y Nombre completo.", "warning", true);
-        return;
     }
 
     if (!filtros.periodo) {
@@ -350,6 +343,27 @@ const dataTableOptions = {
         { data: "Matriz.periodo", title: "Periodo" },
         { data: "Matriz.carrera", title: "Carrera" },
         { data: "Matriz.modalidad", title: "Modalidad" },
+        {
+            data: "estado_proceso_pds", title: "Estado",
+            render: function (data) {
+                let badgeClass = 'secondary';
+                let icon = 'fa-clock';
+
+                if (data === 'En proceso') {
+                    badgeClass = 'primary';
+                    icon = 'fa-spinner';
+                } else if (data === 'Finalizado') {
+                    badgeClass = 'success';
+                    icon = 'fa-check';
+                }
+
+                return `
+                    <span class="badge bg-${badgeClass} bg-gradient">
+                        <i class="fas ${icon} me-1"></i>${data}
+                    </span>
+                `;
+            }
+        },
         {
             defaultContent:
                 '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe"><i class="fa fa-file-pdf"></i></button>' +

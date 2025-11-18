@@ -43,6 +43,7 @@ namespace capa_datos
                                     id_plan_didactico = Convert.ToInt32(dr["id_plan_didactico"]),
                                     codigo = dr["codigo"].ToString(),
                                     nombre = dr["nombre"].ToString(),
+                                    estado_proceso_pds = dr["estado_proceso_pds"].ToString(),
 
                                     //Datos de la asignatura
                                     Asignatura = new ASIGNATURA

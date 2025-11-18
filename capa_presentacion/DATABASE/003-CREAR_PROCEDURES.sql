@@ -5152,6 +5152,19 @@ BEGIN
             ROLLBACK TRANSACTION;
             RETURN;
         END
+        
+        -- Verificar si no tiene plan semestral relacionado
+        IF EXISTS (
+            SELECT 1 
+            FROM PLANDIDACTICOSEMESTRAL pds
+            INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+            WHERE ma.id_matriz_asignatura = @IdMatrizAsignatura 
+        )
+        BEGIN
+            SET @Mensaje = 'La asignatura tiene un Plan Didáctica Semestral relacionado';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
 
         -- Primero eliminar los contenidos asociados
         DELETE FROM CONTENIDOS 
@@ -5245,6 +5258,72 @@ BEGIN
         
         SET @Resultado = 0;
         SET @Mensaje = 'Error al remover la asignatura: ' + ERROR_MESSAGE();
+    END CATCH
+END;
+GO
+
+CREATE OR ALTER PROCEDURE usp_ActualizarEstadoPlanDidactico
+    @IdPlanDidactico INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        DECLARE @TotalRegistros INT;
+        DECLARE @RegistrosConDatos INT;
+        DECLARE @NuevoEstado VARCHAR(50);
+
+        -- Contar total de registros relacionados
+        SELECT @TotalRegistros = COUNT(*)
+        FROM PLANIFICACIONINDIVIDUALSEMESTRAL
+        WHERE fk_plan_didactico = @IdPlanDidactico;
+
+        -- Si no hay registros relacionados, estado Pendiente
+        IF @TotalRegistros = 0
+        BEGIN
+            SET @NuevoEstado = 'Pendiente';
+        END
+        ELSE
+        BEGIN
+            -- Contar registros que tienen al menos un campo con datos válidos
+            SELECT @RegistrosConDatos = COUNT(*)
+            FROM PLANIFICACIONINDIVIDUALSEMESTRAL
+            WHERE fk_plan_didactico = @IdPlanDidactico
+            AND (
+                NULLIF(estrategias_aprendizaje, '') IS NOT NULL AND estrategias_aprendizaje NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                OR NULLIF(estrategias_evaluacion, '') IS NOT NULL AND estrategias_evaluacion NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                OR NULLIF(tipo_evaluacion, '') IS NOT NULL AND tipo_evaluacion NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                OR NULLIF(instrumento_evaluacion, '') IS NOT NULL AND instrumento_evaluacion NOT IN ('<p><br></p>', '<p></p>', '<br>')
+                OR NULLIF(evidencias_aprendizaje, '') IS NOT NULL AND evidencias_aprendizaje NOT IN ('<p><br></p>', '<p></p>', '<br>')
+            );
+
+            -- Determinar el estado basado en los conteos
+            IF @RegistrosConDatos = 0
+                SET @NuevoEstado = 'Pendiente';
+            ELSE IF @RegistrosConDatos = @TotalRegistros
+                SET @NuevoEstado = 'Finalizado';
+            ELSE
+                SET @NuevoEstado = 'En proceso';
+        END
+
+        -- Actualizar el estado del plan didáctico
+        UPDATE PLANDIDACTICOSEMESTRAL 
+        SET estado_proceso = @NuevoEstado
+        WHERE id_plan_didactico = @IdPlanDidactico;
+
+        COMMIT TRANSACTION;
+        
+        -- Retornar el nuevo estado
+        SELECT @NuevoEstado AS NuevoEstado;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 
+            ROLLBACK TRANSACTION;
+        
+        DECLARE @ErrorMessage VARCHAR(4000) = 'Error al actualizar estado del plan didáctico: ' + ERROR_MESSAGE();
+        THROW 50000, @ErrorMessage, 1;
     END CATCH
 END;
 GO
@@ -5444,13 +5523,13 @@ BEGIN
         END
 
         -- Si el estado actual es "Finalizado", mantenerlo sin cambios
-        IF @EstadoActualContenido = 'Finalizado'
-        BEGIN
-            SET @Resultado = 0;
-            SET @Mensaje = 'No se puede actualizar el contenido de la ' + @DescripcionSemana + ' porque esta en estado Finalizado.';
-            ROLLBACK TRANSACTION;
-            RETURN;
-        END
+        --IF @EstadoActualContenido = 'Finalizado'
+        --BEGIN
+        --    SET @Resultado = 0;
+        --    SET @Mensaje = 'No se puede actualizar el contenido de la ' + @DescripcionSemana + ' porque esta en estado Finalizado.';
+        --    ROLLBACK TRANSACTION;
+        --    RETURN;
+        --END
 
         -- Solo se puede editar el contenido consecutivamente
         IF EXISTS (SELECT 1 FROM CONTENIDOS c
@@ -6202,69 +6281,13 @@ GO
 
 -- PLAN DIDACTICO SEMESTRAL
 CREATE OR ALTER PROCEDURE usp_BuscarMatrizAsignatura
-    @NombreProfesorPropietario NVARCHAR(250) = NULL,
-    @UsuarioProfesorPropietario NVARCHAR(250) = NULL,
     @ProfesorAsignado INT = NULL,
     @Periodo INT = NULL,
     @Mensaje NVARCHAR(250) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
-    
-    DECLARE @IdProfesorPropietario INT;
     DECLARE @CountResultados INT = 0;
-
-    -- Validar que al menos un parámetro de búsqueda esté presente
-    IF (@UsuarioProfesorPropietario IS NULL OR @UsuarioProfesorPropietario = '') 
-       AND (@NombreProfesorPropietario IS NULL OR @NombreProfesorPropietario = '')
-    BEGIN
-        SET @Mensaje = 'Debe proporcionar al menos un criterio de búsqueda (Usuario o Nombre del profesor propietario)';
-        RETURN;
-    END
-
-    -- Buscar ID del profesor propietario por usuario o nombre completo
-    IF (@UsuarioProfesorPropietario IS NOT NULL AND @UsuarioProfesorPropietario <> '')
-    BEGIN
-        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @UsuarioProfesorPropietario)
-        BEGIN
-            SET @Mensaje = 'El usuario no existe';
-            RETURN;
-        END
-
-        IF EXISTS (SELECT 1 FROM USUARIOS WHERE usuario = @UsuarioProfesorPropietario AND estado = 0)
-        BEGIN
-            SET @Mensaje = 'El usuario está inactivo';
-            RETURN;
-        END
-
-        SELECT @IdProfesorPropietario = id_usuario 
-        FROM USUARIOS 
-        WHERE usuario = @UsuarioProfesorPropietario;
-    END
-    ELSE IF (@NombreProfesorPropietario IS NOT NULL AND @NombreProfesorPropietario <> '')
-    BEGIN
-        -- Buscar por nombre completo (concatenando todos los campos de nombre)
-        IF NOT EXISTS (SELECT 1 FROM USUARIOS 
-                      WHERE CONCAT(pri_nombre, ' ', 
-                                  CASE WHEN seg_nombre IS NOT NULL THEN seg_nombre + ' ' ELSE '' END, 
-                                  pri_apellido, 
-                                  CASE WHEN seg_apellido IS NOT NULL THEN ' ' + seg_apellido ELSE '' END) 
-                      LIKE '%' + @NombreProfesorPropietario + '%')
-        BEGIN
-            SET @Mensaje = 'No se encontraron profesores con ese nombre';
-            RETURN;
-        END
-
-        -- Si hay múltiples coincidencias, toma el primero
-        SELECT TOP 1 @IdProfesorPropietario = id_usuario 
-        FROM USUARIOS 
-        WHERE CONCAT(pri_nombre, ' ', 
-                    CASE WHEN seg_nombre IS NOT NULL THEN seg_nombre + ' ' ELSE '' END, 
-                    pri_apellido, 
-                    CASE WHEN seg_apellido IS NOT NULL THEN ' ' + seg_apellido ELSE '' END) 
-              LIKE '%' + @NombreProfesorPropietario + '%' 
-        AND estado = 1;
-    END
 
     -- Primero verificar si existen registros sin hacer el SELECT principal
     SELECT @CountResultados = COUNT(*)
@@ -6278,7 +6301,6 @@ BEGIN
     INNER JOIN CARRERA ca ON ca.id_carrera = mic.fk_carrera
     WHERE pds.id_plan_didactico IS NULL
     AND (@ProfesorAsignado IS NULL OR ma.fk_profesor_asignado = @ProfesorAsignado)
-    AND mic.fk_profesor = @IdProfesorPropietario
     AND (@Periodo IS NULL OR pe.id_periodo = @Periodo);
 
     -- Si no hay resultados, retornar mensaje y salir
@@ -6300,11 +6322,6 @@ BEGIN
 		dep.nombre AS departamento,
 		ca.nombre AS carrera,
 		moda.nombre AS modalidad,
-
-        --CONCAT(us.pri_nombre, ' ', 
-        --       CASE WHEN us.seg_nombre IS NOT NULL THEN us.seg_nombre + ' ' ELSE '' END,
-        --       us.pri_apellido,
-        --       CASE WHEN us.seg_apellido IS NOT NULL THEN ' ' + us.seg_apellido ELSE '' END) AS profesor_asignado,
         CONCAT(uprop.pri_nombre, ' ', 
                CASE WHEN uprop.seg_nombre IS NOT NULL THEN uprop.seg_nombre + ' ' ELSE '' END,
                uprop.pri_apellido,
@@ -6322,13 +6339,11 @@ BEGIN
 	INNER JOIN MODALIDAD moda ON moda.id_modalidad = mic.fk_modalidad
     WHERE pds.id_plan_didactico IS NULL
     AND (@ProfesorAsignado IS NULL OR ma.fk_profesor_asignado = @ProfesorAsignado)
-    AND mic.fk_profesor = @IdProfesorPropietario
     AND (@Periodo IS NULL OR pe.id_periodo = @Periodo);
 
     SET @Mensaje = 'Búsqueda realizada exitosamente. Se encontraron ' + CAST(@CountResultados AS NVARCHAR(10)) + ' registro(s).';
 END
 GO
-
 
 CREATE OR ALTER PROCEDURE usp_LeerDatosGeneralesPlanSemestral
     @IdUsuario INT,
@@ -6365,7 +6380,8 @@ BEGIN
 			pds.id_plan_didactico,
             pds.codigo AS codigo,
             pds.nombre AS nombre,
-			
+			pds.estado_proceso AS estado_proceso_pds,
+
             -- Datos de la asignatura asignada
             asi_asignada.nombre AS asignatura,
 
@@ -7227,6 +7243,7 @@ BEGIN
 		pis.fk_contenido,
 		s.descripcion AS semana,
 		s.tipo_semana AS tipo_semana,
+        s.numero_semana AS numero_semana,
 		pds.objetivos_aprendizaje AS objetivos_aprendizaje,
 		c.contenido AS contenido,
 		pis.estrategias_aprendizaje,
