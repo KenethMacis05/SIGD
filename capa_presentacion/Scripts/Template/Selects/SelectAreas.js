@@ -19,7 +19,7 @@ function cargarAreas() {
     var areaActual = $("#fk_area_activa").val();
 
     jQuery.ajax({
-        url: "/Catalogos/ListarAreasDeConocimiento",
+        url: "/Catalogos/GetAreaConocimiento",
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",

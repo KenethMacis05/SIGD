@@ -49,6 +49,44 @@ namespace capa_datos
             }
             return lst;
         }
+        
+        //Listar áreas de conocimiento por dominios
+        public List<AREACONOCIMIENTO> ListarPorDominios(int UsuarioId)
+        {
+            List<AREACONOCIMIENTO> lst = new List<AREACONOCIMIENTO>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("GetAreaConocimiento", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("UsuarioId", UsuarioId);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lst.Add(
+                                new AREACONOCIMIENTO
+                                {
+                                    id_area = Convert.ToInt32(dr["Id"]),
+                                    nombre = dr["Descripcion"].ToString(),
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los dominios por áreas de conocimiento: " + ex.Message);
+            }
+            return lst;
+        }
 
         //Crear área de conocimiento
         public int Crear(AREACONOCIMIENTO area, out string mensaje)

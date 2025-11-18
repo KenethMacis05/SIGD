@@ -19,7 +19,7 @@ function cargarCarreras() {
     var carreraActual = $("#fk_carrera_activa").val();
 
     jQuery.ajax({
-        url: "/Catalogos/ListarCarreras",
+        url: "/Catalogos/GetCarrera",
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",

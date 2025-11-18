@@ -50,6 +50,43 @@ namespace capa_datos
             return lst;
         }
 
+        public List<PERIODO> ListarPorDominios(int UsuarioId)
+        {
+            List<PERIODO> lst = new List<PERIODO>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("GetPeriodo", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("UsuarioId", UsuarioId);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lst.Add(
+                                new PERIODO
+                                {
+                                    id_periodo = Convert.ToInt32(dr["Id"]),
+                                    periodo = dr["Descripcion"].ToString(),
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los dominios por periodo: " + ex.Message);
+            }
+            return lst;
+        }
+
         //Crear periodo
         public int Crear(PERIODO periodo, out string mensaje)
         {

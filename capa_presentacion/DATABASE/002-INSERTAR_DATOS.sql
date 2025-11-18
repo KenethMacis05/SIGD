@@ -372,6 +372,59 @@ VALUES
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Plan Didactico Semestral
 	((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11); -- Plan Clases
 GO
+
+-- REGISTROS EN TABLA TIPO_DOMINIO
+INSERT INTO TIPO_DOMINIO (descripcion_tipo_dominio, nombre_procedimiento) VALUES
+('Carreras', 'GetCarrera'),
+('Departamentos', 'GetDepartamento'),
+('AreasConocimiento', 'GetAreaConocimiento'),
+('Periodos', 'GetPeriodo')
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA CARRERAS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Carreras'),
+    nombre,
+    codigo,
+    id_carrera
+FROM CARRERA
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA DEPARTAMENTOS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Departamentos'),
+    nombre,
+    codigo,
+    id_departamento
+FROM DEPARTAMENTO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA AREAS DE CONOCIMIENTO
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'AreasConocimiento'),
+    nombre,
+    codigo,
+    id_area
+FROM AREACONOCIMIENTO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA PERIODOS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Periodos'),
+    semestre,
+    anio,
+    id_periodo
+FROM PERIODO
+WHERE estado = 1
+GO
+
 --------------------------------------------------------------------------------------------------------------------    
 
 -- (1) REGISTROS EN TABLA CARPETA

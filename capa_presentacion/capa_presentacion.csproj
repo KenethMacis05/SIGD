@@ -152,7 +152,6 @@
     <Compile Include="Controllers\PermisosController.cs" />
     <Compile Include="Controllers\PlanificacionController.cs" />
     <Compile Include="Controllers\RolController.cs" />
-    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Controllers\UsuarioController.cs" />
     <Compile Include="Filters\VerificarSession.cs" />
     <Compile Include="Global.asax.cs">
@@ -398,6 +397,7 @@
     <Content Include="DATABASE\002-INSERTAR_DATOS.sql" />
     <Content Include="DATABASE\003-CREAR_PROCEDURES.sql" />
     <Content Include="DATABASE\004-CREAR_VIEWS.sql" />
+    <Content Include="DATABASE\007-FUNCTION.sql" />
     <Content Include="DATABASE\006-TRIGGER.sql" />
     <Content Include="DATABASE\005-JOD.sql" />
     <Content Include="DATABASE\DB_SINCATALOGOS\001-CREAR_DB.sql" />
@@ -804,7 +804,6 @@
     <Folder Include="ARCHIVOS\" />
     <Folder Include="Views\Configuracion\" />
     <Folder Include="Views\Controlador\" />
-    <Folder Include="Views\Reporte\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />

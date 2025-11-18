@@ -96,6 +96,45 @@ CREATE TABLE USUARIOS (
 )
 GO
 
+-- (6) TABLA TIPO_DOMINIO (Catálogo de tipos de dominio)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TIPO_DOMINIO')
+CREATE TABLE TIPO_DOMINIO (
+    id_tipo_dominio INT PRIMARY KEY IDENTITY(1,1),
+    descripcion_tipo_dominio VARCHAR(50) NOT NULL UNIQUE,
+    nombre_procedimiento VARCHAR(100) NULL,
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE()
+)
+GO
+
+-- (7) TABLA DOMINIO (Entidades específicas del sistema)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DOMINIO')
+CREATE TABLE DOMINIO (
+    id_dominio INT PRIMARY KEY IDENTITY(1,1),
+    fk_tipo_dominio INT NOT NULL,
+    descripcion_dominio VARCHAR(100) NOT NULL,
+    codigo VARCHAR(50) NULL,
+    referencia_id INT NOT NULL,
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_DOMINIO_TIPO FOREIGN KEY (fk_tipo_dominio) REFERENCES TIPO_DOMINIO(id_tipo_dominio)
+)
+GO
+
+-- (9) TABLA DOMINIO_ROL (Asignación de dominios a roles - acceso masivo)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DOMINIO_ROL')
+CREATE TABLE DOMINIO_ROL (
+    id_dominio_rol INT PRIMARY KEY IDENTITY(1,1),
+    fk_rol INT NOT NULL,
+    fk_dominio INT NOT NULL,
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_DOMROL_ROL FOREIGN KEY (fk_rol) REFERENCES ROL(id_rol) ON DELETE CASCADE,
+    CONSTRAINT FK_DOMROL_DOMINIO FOREIGN KEY (fk_dominio) REFERENCES DOMINIO(id_dominio) ON DELETE CASCADE,
+    CONSTRAINT UQ_DOMINIO_ROL UNIQUE (fk_rol, fk_dominio)
+)
+GO
+
 --------------------------------------------------TABLAS PARA LA GESTION DE ARCHIVOS--------------------------------------------------
 
 -- (1) TABLA CARPETA

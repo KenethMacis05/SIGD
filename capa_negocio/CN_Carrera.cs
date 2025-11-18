@@ -18,6 +18,12 @@ namespace capa_negocio
             return CD_Carrera.Listar();
         }
 
+        //Listar carreras por dominios
+        public List<CARRERA> ListarPorDominios(int UsuarioId)
+        {
+            return CD_Carrera.ListarPorDominios(UsuarioId);
+        }
+
         //Crear departamento
         public int Crear(CARRERA carrera, out string mensaje)
         {

@@ -19,7 +19,7 @@ function cargarPeriodos() {
     var periodoActual = $("#fk_periodo_activo").val();
 
     jQuery.ajax({
-        url: "/Catalogos/ListarPeriodos",
+        url: "/Catalogos/GetPeriodo",
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",
@@ -33,7 +33,7 @@ function cargarPeriodos() {
                 $('#inputGroupSelectPeriodo').append(
                     $('<option>', {
                         value: periodo.id_periodo,
-                        text: periodo.anio + " || " + periodo.semestre,
+                        text: periodo.periodo,
                         selected: isSelected
                     })
                 );

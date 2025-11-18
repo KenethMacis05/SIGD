@@ -134,6 +134,76 @@ GO
 
 --------------------------------------------------------------------------------------------------------------------
 
+-- GetCarrera adaptado a tu sistema
+CREATE PROCEDURE [dbo].[GetCarrera] (@UsuarioId INT)
+AS
+BEGIN
+    SELECT 
+        C.id_carrera AS Id,
+        '(' + RTRIM(LTRIM(C.codigo)) + ') ' + RTRIM(LTRIM(C.nombre)) AS Descripcion
+    FROM CARRERA C
+    WHERE C.id_carrera IN (SELECT ReferenciaId FROM dbo.FiltrarDominio(@UsuarioId, 'Carreras'))
+    AND C.estado = 1
+    ORDER BY C.nombre
+END
+GO
+
+-- GetDepartamento
+CREATE PROCEDURE [dbo].[GetDepartamento] (@UsuarioId INT)
+AS
+BEGIN
+    SELECT 
+        D.id_departamento AS Id,
+        '(' + RTRIM(LTRIM(D.codigo)) + ') ' + RTRIM(LTRIM(D.nombre)) AS Descripcion
+    FROM DEPARTAMENTO D
+    WHERE D.id_departamento IN (SELECT ReferenciaId FROM dbo.FiltrarDominio(@UsuarioId, 'Departamentos'))
+    AND D.estado = 1
+    ORDER BY D.nombre
+END
+GO
+
+-- GetAreaConocimiento
+CREATE PROCEDURE [dbo].[GetAreaConocimiento] (@UsuarioId INT)
+AS
+BEGIN
+    SELECT 
+        A.id_area AS Id,
+        '(' + RTRIM(LTRIM(A.codigo)) + ') ' + RTRIM(LTRIM(A.nombre)) AS Descripcion
+    FROM AREACONOCIMIENTO A
+    WHERE A.id_area IN (SELECT ReferenciaId FROM dbo.FiltrarDominio(@UsuarioId, 'AreasConocimiento'))
+    AND A.estado = 1
+    ORDER BY A.nombre
+END
+GO
+
+CREATE PROCEDURE [dbo].[GetPeriodo] (@UsuarioId INT)
+AS
+BEGIN
+    SELECT 
+        P.id_periodo AS Id,
+        CONCAT(RTRIM(LTRIM(P.anio)), ' || ', RTRIM(LTRIM(P.semestre))) AS Descripcion
+    FROM PERIODO P
+    WHERE P.id_periodo IN (SELECT ReferenciaId FROM dbo.FiltrarDominio(@UsuarioId, 'Periodos'))
+    AND P.estado = 1
+    ORDER BY P.id_periodo DESC
+END
+GO
+
+-- Dar acceso a TODOS los dominios existentes al rol 1 (ADMINISTRADOR)
+INSERT INTO DOMINIO_ROL (fk_rol, fk_dominio)
+SELECT 
+    1 AS fk_rol,
+    D.id_dominio
+FROM DOMINIO D
+WHERE D.estado = 1
+AND NOT EXISTS (
+    SELECT 1 FROM DOMINIO_ROL DR 
+    WHERE DR.fk_rol = 1 AND DR.fk_dominio = D.id_dominio
+)
+GO
+
+--------------------------------------------------------------------------------------------------------------------
+
 -- (1) PROCEDIMIENTO ALMACENADO PARA INICIAR SESIÓN DE USUARIO
 CREATE PROCEDURE usp_LoginUsuario(    
 	@Usuario VARCHAR(60),

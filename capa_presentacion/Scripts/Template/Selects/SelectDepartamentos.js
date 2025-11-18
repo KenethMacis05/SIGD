@@ -19,7 +19,7 @@ function cargarDepartamentos() {
     var departamentoActual = $("#fk_departamento_activo").val();
 
     jQuery.ajax({
-        url: "/Catalogos/ListarDepartamentos",
+        url: "/Catalogos/GetDepartamento",
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",

@@ -50,6 +50,44 @@ namespace capa_entidad
             return lst;
         }
 
+        //Listar departamentos por dominios
+        public List<DEPARTAMENTO> ListarPorDominios(int UsuarioId)
+        {
+            List<DEPARTAMENTO> lst = new List<DEPARTAMENTO>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("GetDepartamento", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("UsuarioId", UsuarioId);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lst.Add(
+                                new DEPARTAMENTO
+                                {
+                                    id_departamento = Convert.ToInt32(dr["Id"]),
+                                    nombre = dr["Descripcion"].ToString(),
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los dominios por departamento: " + ex.Message);
+            }
+            return lst;
+        }
+
         //Crear departamento
         public int Crear(DEPARTAMENTO departamento, out string mensaje)
         {

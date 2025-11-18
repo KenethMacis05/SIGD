@@ -13,5 +13,6 @@ namespace capa_entidad
         public string semestre { get; set; }
         public bool estado { get; set; }
         public DateTime fecha_registro { get; set; }
+        public string periodo { get; set; }
     }
 }

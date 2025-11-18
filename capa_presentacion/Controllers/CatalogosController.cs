@@ -37,6 +37,19 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult GetAreaConocimiento()
+        {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+            
+            List<AREACONOCIMIENTO> lst = new List<AREACONOCIMIENTO>();
+            lst = CN_AreaConocimiento.ListarPorDominios(usuario.id_usuario);
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
         // Enpoint(POST): Guardar o editar área de conocimiento
         [HttpPost]
         public JsonResult GuardarAreaDeConocimiento(AREACONOCIMIENTO area)
@@ -85,6 +98,19 @@ namespace capa_presentacion.Controllers
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult GetDepartamento()
+        {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
+            List<DEPARTAMENTO> lst = new List<DEPARTAMENTO>();
+            lst = CN_Departamento.ListarPorDominios(usuario.id_usuario);
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
         // Enpoint(POST): Guardar o editar departamento
         [HttpPost]
         public JsonResult GuardarDepartamentos(DEPARTAMENTO departamento)
@@ -129,6 +155,19 @@ namespace capa_presentacion.Controllers
         {
             List<CARRERA> lst = new List<CARRERA>();
             lst = CN_Carrera.Listar();
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult GetCarrera()
+        {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
+            List<CARRERA> lst = new List<CARRERA>();
+            lst = CN_Carrera.ListarPorDominios(usuario.id_usuario);
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
@@ -225,6 +264,19 @@ namespace capa_presentacion.Controllers
         {
             List<PERIODO> lst = new List<PERIODO>();
             lst = CN_Periodo.Listar();
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult GetPeriodo()
+        {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
+            List<PERIODO> lst = new List<PERIODO>();
+            lst = CN_Periodo.ListarPorDominios(usuario.id_usuario);
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }

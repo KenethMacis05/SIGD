@@ -18,6 +18,12 @@ namespace capa_negocio
             return CD_AreaConocimiento.Listar();
         }
 
+        //Listar áreas de conocimiento por dominios
+        public List<AREACONOCIMIENTO> ListarPorDominios(int UsuarioId)
+        {
+            return CD_AreaConocimiento.ListarPorDominios(UsuarioId);
+        }
+
         //Crear área de conocimiento
         public int Crear(AREACONOCIMIENTO area, out string mensaje)
         {
