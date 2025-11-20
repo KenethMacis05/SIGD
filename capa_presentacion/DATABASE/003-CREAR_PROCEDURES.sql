@@ -189,19 +189,6 @@ BEGIN
 END
 GO
 
--- Dar acceso a TODOS los dominios existentes al rol 1 (ADMINISTRADOR)
-INSERT INTO DOMINIO_ROL (fk_rol, fk_dominio)
-SELECT 
-    1 AS fk_rol,
-    D.id_dominio
-FROM DOMINIO D
-WHERE D.estado = 1
-AND NOT EXISTS (
-    SELECT 1 FROM DOMINIO_ROL DR 
-    WHERE DR.fk_rol = 1 AND DR.fk_dominio = D.id_dominio
-)
-GO
-
 --------------------------------------------------------------------------------------------------------------------
 
 -- (1) PROCEDIMIENTO ALMACENADO PARA INICIAR SESIÓN DE USUARIO
@@ -744,7 +731,64 @@ BEGIN
     AND (td.descripcion_tipo_dominio = @Dominio OR td.id_tipo_dominio = @IdDominio)
 END
 GO
- 
+
+-- PROCEDIMIENTO PARA ASIGNAR UN DOMINIO A UN ROL 
+CREATE PROCEDURE usp_AsignarDominio
+    @IdRol INT,
+    @IdDominio INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    DECLARE @Resultado INT = 0;
+    DECLARE @EstadoDominio BIT;
+    
+    -- 1. Verificar si el dominio está activo
+    SELECT @EstadoDominio = estado 
+    FROM DOMINIO
+    WHERE id_dominio = @IdDominio;
+    
+    -- Si el dominio no existe o está inactivo
+    IF @EstadoDominio IS NULL OR @EstadoDominio = 0
+    BEGIN
+        SELECT -1 AS Resultado; -- Código de error: Dominio no existe o está inactivo
+        RETURN;
+    END
+    
+    -- 2. Verificar si el rol ya tiene este dominio asignado
+    IF EXISTS (SELECT 1 FROM DOMINIO_ROL
+               WHERE fk_rol = @IdRol AND fk_dominio = @IdDominio)
+    BEGIN
+        SELECT -2 AS Resultado; -- Código de error: El rol ya tiene este dominio asignado
+        RETURN;
+    END
+    
+    -- 3. Si pasa las validaciones, insertar el nuevo dominio para el rol
+    INSERT INTO DOMINIO_ROL(fk_rol, fk_dominio)
+    VALUES (@IdRol, @IdDominio);
+    
+    SET @Resultado = SCOPE_IDENTITY();
+    
+    SELECT @Resultado AS Resultado;
+END
+GO
+
+-- PROCEDIMIENTO PARA QUITAR UN DOMINIO ASIGNADO A UN ROL
+CREATE PROCEDURE usp_QuitarDominioAsignado
+    @IdDominio INT,
+    @Resultado BIT OUTPUT
+AS
+BEGIN
+    SET @Resultado = 0
+    
+    IF EXISTS (SELECT 1 FROM DOMINIO_ROL WHERE id_dominio_rol = @IdDominio)
+    BEGIN
+        DELETE FROM DOMINIO_ROL WHERE id_dominio_rol = @IdDominio
+        SET @Resultado = 1
+    END
+END
+GO
+
 --------------------------------------------------------------------------------------------------------------------
 
 -- (5) PROCEDIMIENTO ALMACENADO PARA OBTENER TODOS LOS USUARIOS

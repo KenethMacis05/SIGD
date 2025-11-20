@@ -381,50 +381,6 @@ INSERT INTO TIPO_DOMINIO (descripcion_tipo_dominio, nombre_procedimiento) VALUES
 ('Periodos', 'GetPeriodo')
 GO
 
--- REGISTROS EN TABLA DOMINIO PARA CARRERAS
-INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
-SELECT 
-    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Carreras'),
-    nombre,
-    codigo,
-    id_carrera
-FROM CARRERA
-WHERE estado = 1
-GO
-
--- REGISTROS EN TABLA DOMINIO PARA DEPARTAMENTOS
-INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
-SELECT 
-    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Departamentos'),
-    nombre,
-    codigo,
-    id_departamento
-FROM DEPARTAMENTO
-WHERE estado = 1
-GO
-
--- REGISTROS EN TABLA DOMINIO PARA AREAS DE CONOCIMIENTO
-INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
-SELECT 
-    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'AreasConocimiento'),
-    nombre,
-    codigo,
-    id_area
-FROM AREACONOCIMIENTO
-WHERE estado = 1
-GO
-
--- REGISTROS EN TABLA DOMINIO PARA PERIODOS
-INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
-SELECT 
-    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Periodos'),
-    semestre,
-    anio,
-    id_periodo
-FROM PERIODO
-WHERE estado = 1
-GO
-
 --------------------------------------------------------------------------------------------------------------------    
 
 -- (1) REGISTROS EN TABLA CARPETA
@@ -573,6 +529,63 @@ VALUES ('Matutino', 1), ('Vespertino', 1),
         ('Sabatino', 2), ('Profecionalización', 2),
         ('En linea', 2);
 
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA CARRERAS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Carreras'),
+    nombre,
+    codigo,
+    id_carrera
+FROM CARRERA
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA DEPARTAMENTOS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Departamentos'),
+    nombre,
+    codigo,
+    id_departamento
+FROM DEPARTAMENTO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA AREAS DE CONOCIMIENTO
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'AreasConocimiento'),
+    nombre,
+    codigo,
+    id_area
+FROM AREACONOCIMIENTO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA PERIODOS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Periodos'),
+    semestre,
+    anio,
+    id_periodo
+FROM PERIODO
+WHERE estado = 1
+GO
+
+-- Dar acceso a TODOS los dominios existentes al rol 1 (ADMINISTRADOR)
+INSERT INTO DOMINIO_ROL (fk_rol, fk_dominio)
+SELECT 
+    1 AS fk_rol,
+    D.id_dominio
+FROM DOMINIO D
+WHERE D.estado = 1
+AND NOT EXISTS (
+    SELECT 1 FROM DOMINIO_ROL DR 
+    WHERE DR.fk_rol = 1 AND DR.fk_dominio = D.id_dominio
+)
 GO
 
 --------------------------------------------------------------------------------------------------------------------
