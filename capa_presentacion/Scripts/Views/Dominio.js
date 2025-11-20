@@ -238,16 +238,16 @@ function renderizarDominiosAsignados() {
     let html = '';
     dominiosAsignados.forEach(function (dominio) {
         html += `
-            <div class="form-check mb-2 dominio-item">
-                <input class="form-check-input asignadosCheckbox"
-                       type="checkbox" 
-                       value="${dominio.Dominio.id_dominio}" 
-                       id="dominioAsignado_${dominio.Dominio.id_dominio}" 
-                       data-dominio="${dominio.Dominio.id_dominio}">
-                <label class="form-check-label w-100" for="dominioAsignado_${dominio.Dominio.id_dominio}">
-                    <span>${dominio.Dominio.descripcion_dominio || 'Sin nombre'}</span>
-                </label>
-            </div>
+          <div class="form-check mb-2 dominio-item">
+              <input class="form-check-input asignadosCheckbox"
+                     type="checkbox"
+                     value="${dominio.Dominio.id_dominio}" 
+                     id="dominioAsignado_${dominio.Dominio.id_dominio}" 
+                     data-dominio="${dominio.Dominio.id_dominio}">
+              <label class="form-check-label w-100" for="dominioAsignado_${dominio.Dominio.id_dominio}">
+                  <span>${dominio.Dominio.descripcion_dominio || 'Sin nombre'}</span>
+              </label>
+          </div>
         `;
     });
 
@@ -276,7 +276,7 @@ function renderizarDominiosNoAsignados() {
                 <input class="form-check-input noAsignadosCheckbox"
                        type="checkbox" 
                        value="${dominio.id_dominio}" 
-                       id="${dominio.id_dominio}"
+                       id="dominioNoAsignado_${dominio.id_dominio}"
                        data-dominio='${JSON.stringify(dominio.id_dominio)}'>
                 <label class="form-check-label w-100" for="dominioNoAsignado_${dominio.id_dominio}">
                     <span>${dominio.descripcion_dominio || 'Sin nombre'}</span>
