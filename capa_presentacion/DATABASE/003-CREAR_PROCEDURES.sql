@@ -695,6 +695,56 @@ BEGIN
     END
 END
 GO
+
+--------------------------------------------------------------------------------------------------------------------
+-- PROCEMIENTO ALMACENADO PARA OBTENER LOS DOMINIOS DE UN ROL
+CREATE OR ALTER PROCEDURE usp_LeerDominiosPorRol
+    @IdRol INT,
+    @Dominio VARCHAR(255) = NULL,
+    @IdDominio INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT DISTINCT
+        d.id_dominio,
+        CONCAT(d.codigo, ' - ', d.descripcion_dominio) AS descripcion_dominio,
+        d.referencia_id
+    FROM DOMINIO d
+    INNER JOIN TIPO_DOMINIO td ON td.id_tipo_dominio = d.fk_tipo_dominio
+    INNER JOIN DOMINIO_ROL dr ON dr.fk_dominio = d.id_dominio
+    WHERE dr.fk_rol = @IdRol
+    AND (td.descripcion_tipo_dominio = @Dominio OR td.id_tipo_dominio = @IdDominio)
+END
+GO
+
+-- PROCEMIENTO ALMACENADO PARA OBTENER DOMINIOS NO ASIGNADOS A UN ROL
+CREATE OR ALTER PROCEDURE usp_LeerDominiosNoAsignadosPorRol
+    @IdRol INT,
+    @Dominio VARCHAR(255) = NULL,
+    @IdDominio INT = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SELECT DISTINCT
+        d.id_dominio,
+        CONCAT(d.codigo, ' - ', d.descripcion_dominio) AS descripcion_dominio,
+        d.referencia_id
+    FROM DOMINIO d
+    INNER JOIN TIPO_DOMINIO td ON td.id_tipo_dominio = d.fk_tipo_dominio
+    INNER JOIN DOMINIO_ROL dr ON dr.fk_dominio = d.id_dominio
+    WHERE NOT EXISTS (
+        SELECT 1 FROM DOMINIO d
+            INNER JOIN TIPO_DOMINIO td ON td.id_tipo_dominio = d.fk_tipo_dominio
+            INNER JOIN DOMINIO_ROL dr ON dr.fk_dominio = d.id_dominio
+        WHERE dr.fk_rol = @IdRol
+        AND (td.descripcion_tipo_dominio = @Dominio OR td.id_tipo_dominio = @IdDominio)
+    ) 
+    AND (td.descripcion_tipo_dominio = @Dominio OR td.id_tipo_dominio = @IdDominio)
+END
+GO
+ 
 --------------------------------------------------------------------------------------------------------------------
 
 -- (5) PROCEDIMIENTO ALMACENADO PARA OBTENER TODOS LOS USUARIOS
