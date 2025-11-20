@@ -25,6 +25,8 @@ jQuery.ajax({
 // Mostrar permisos del Rol
 $("#btnBuscar").off("click").on("click", function () {
     IdRol = $('#obtenerRol').val();
+    let IdDominio = $('#inputGroupSelectTipoDominio').val();
+
     if (!IdRol) {
         showAlert("¡Atención!", "Primero debe seleccionar un rol", "warning");
         return false;
@@ -32,6 +34,9 @@ $("#btnBuscar").off("click").on("click", function () {
     dataTable.column(1).search('').draw();
     dataTable.column(4).search('').draw();
     carparPermisos(IdRol)
+    if (IdDominio != null) {
+        cargarDominios(IdRol, IdDominio);
+    }
 });
 
 function carparPermisos(IdRol) {

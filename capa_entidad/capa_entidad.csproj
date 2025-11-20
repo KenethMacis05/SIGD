@@ -82,6 +82,7 @@
     <Compile Include="CONTROLLER.cs" />
     <Compile Include="DEPARTAMENTO.cs" />
     <Compile Include="DOMINIO.cs" />
+    <Compile Include="DOMINIOROL.cs" />
     <Compile Include="MODALIDAD.cs" />
     <Compile Include="CONTENIDOS.cs" />
     <Compile Include="DETALLEARCHIVO.cs" />
@@ -98,6 +99,7 @@
     <Compile Include="ROL.cs" />
     <Compile Include="SEMANAS.cs" />
     <Compile Include="TEMAPLANIFICACIONSEMESTRAL.cs" />
+    <Compile Include="TIPODOMINIO.cs" />
     <Compile Include="TURNO.cs" />
     <Compile Include="USUARIOS.cs" />
   </ItemGroup>

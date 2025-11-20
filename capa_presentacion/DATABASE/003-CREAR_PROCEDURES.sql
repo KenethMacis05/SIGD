@@ -708,8 +708,8 @@ GO
 -- PROCEMIENTO ALMACENADO PARA OBTENER DOMINIOS NO ASIGNADOS A UN ROL
 CREATE OR ALTER PROCEDURE usp_LeerDominiosNoAsignadosPorRol
     @IdRol INT,
-    @Dominio VARCHAR(255) = NULL,
-    @IdDominio INT = NULL
+    @IdTipoDominio INT = NULL,
+    @TipoDominio VARCHAR(255) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -720,15 +720,18 @@ BEGIN
         d.referencia_id
     FROM DOMINIO d
     INNER JOIN TIPO_DOMINIO td ON td.id_tipo_dominio = d.fk_tipo_dominio
-    INNER JOIN DOMINIO_ROL dr ON dr.fk_dominio = d.id_dominio
     WHERE NOT EXISTS (
-        SELECT 1 FROM DOMINIO d
-            INNER JOIN TIPO_DOMINIO td ON td.id_tipo_dominio = d.fk_tipo_dominio
-            INNER JOIN DOMINIO_ROL dr ON dr.fk_dominio = d.id_dominio
-        WHERE dr.fk_rol = @IdRol
-        AND (td.descripcion_tipo_dominio = @Dominio OR td.id_tipo_dominio = @IdDominio)
-    ) 
-    AND (td.descripcion_tipo_dominio = @Dominio OR td.id_tipo_dominio = @IdDominio)
+        SELECT 1 
+        FROM DOMINIO_ROL dr 
+        WHERE dr.fk_dominio = d.id_dominio 
+        AND dr.fk_rol = @IdRol
+    )
+    AND (
+        (@IdTipoDominio IS NOT NULL AND td.id_tipo_dominio = @IdTipoDominio) OR
+        (@TipoDominio IS NOT NULL AND td.descripcion_tipo_dominio = @TipoDominio)
+    )
+    AND d.estado = 1
+    AND td.estado = 1
 END
 GO
 
@@ -786,6 +789,52 @@ BEGIN
         DELETE FROM DOMINIO_ROL WHERE id_dominio_rol = @IdDominio
         SET @Resultado = 1
     END
+END
+GO
+
+-- PROCEDIMIENTO PARA REEMPLAZAR DOMINIOS DE UN ROL POR TIPO DE DOMINIO
+CREATE OR ALTER PROCEDURE usp_ReemplazarDominiosRol
+    @IdRol INT,
+    @IdsDominios NVARCHAR(MAX),
+    @IdTipoDominio INT = NULL,
+    @TipoDominio VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        
+        -- 1. Eliminar solo los dominios del tipo específico para este rol
+        DELETE dr 
+        FROM DOMINIO_ROL dr
+        INNER JOIN DOMINIO d ON dr.fk_dominio = d.id_dominio
+        INNER JOIN TIPO_DOMINIO td ON d.fk_tipo_dominio = td.id_tipo_dominio
+        WHERE dr.fk_rol = @IdRol
+        AND (
+            (@IdTipoDominio IS NOT NULL AND td.id_tipo_dominio = @IdTipoDominio) OR
+            (@TipoDominio IS NOT NULL AND td.descripcion_tipo_dominio = @TipoDominio)
+        );
+        
+        -- 2. Insertar los nuevos dominios (si la lista no está vacía)
+        IF @IdsDominios IS NOT NULL AND LEN(@IdsDominios) > 0
+        BEGIN
+            INSERT INTO DOMINIO_ROL (fk_rol, fk_dominio)
+            SELECT @IdRol, CAST(value AS INT)
+            FROM STRING_SPLIT(@IdsDominios, ',')
+            WHERE value != '' AND value IS NOT NULL;
+        END
+        
+        COMMIT TRANSACTION;
+        
+        SELECT 1 AS Resultado;
+        
+    END TRY
+    BEGIN CATCH
+        ROLLBACK TRANSACTION;
+        SELECT -1 AS Resultado, 
+               ERROR_MESSAGE() AS MensajeError;
+    END CATCH
 END
 GO
 
