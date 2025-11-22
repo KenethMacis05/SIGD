@@ -33,6 +33,7 @@ VALUES
     ('Catalogos', 'Carrera', 'Carrera', 'Vista'),
     ('Catalogos', 'Componente', 'Componente', 'Vista'),
     ('Catalogos', 'Periodo', 'Periodo', 'Vista'),
+    ('Catalogos', 'Modalidad', 'Modalidad', 'Vista'),
 
     -- Acciones API/AJAX
     -- UsuarioController
@@ -116,7 +117,9 @@ VALUES
     ('Catalogos', 'GuardarPeriodos', 'Crear/Editar periodos', 'API'),
     ('Catalogos', 'EliminarPeriodos', 'Eliminar periodos', 'API'),
 
-    ('Catalogos', 'ListarModalidad', 'Listar Modalidades', 'API'),
+    ('Catalogos', 'ListarModalidad', 'Listar modalidades', 'API'),
+    ('Catalogos', 'GuardarModalidad', 'Crear/Editar modalidades', 'API'),
+    ('Catalogos', 'EliminarModalidad', 'Eliminar modalidades', 'API'),
 
     -- PlanificacionController
 
@@ -209,6 +212,7 @@ VALUES
         ('Carrera', 17, 'fas fa-graduation-cap', '7.6'),
         ('Componente', 18, 'fas fa-puzzle-piece', '7.7'),
         ('Periodo', 19, 'fas fa-calendar-week', '7.8'),
+        ('Modalidad', 20, 'fas fa-toggle-on', '7.9'),
     ('Reportes', 13, 'fas fa-chart-bar', '8')
 GO
 

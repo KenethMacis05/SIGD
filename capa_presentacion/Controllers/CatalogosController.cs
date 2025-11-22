@@ -313,6 +313,12 @@ namespace capa_presentacion.Controllers
 
         #region Modalidad
 
+        // Vista: Modalidad
+        public ActionResult Modalidad()
+        {
+            return View();
+        }
+
         [HttpGet]
         public JsonResult ListarModalidad()
         {
@@ -320,6 +326,32 @@ namespace capa_presentacion.Controllers
             lst = CN_Modalidad.Listar();
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult GuardarModalidad(MODALIDAD modalidad)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (modalidad.id_modalidad == 0)
+            {
+                resultado = CN_Modalidad.Crear(modalidad, out mensaje);
+            }
+            else
+            {
+                resultado = CN_Modalidad.Editar(modalidad, out mensaje);
+            }
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        public JsonResult EliminarModalidad(int IdModalidad)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_Modalidad.Eliminar(IdModalidad, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

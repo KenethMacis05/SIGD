@@ -656,6 +656,7 @@
     <Content Include="Scripts\Views\MatrizAsignatura.js" />
     <Content Include="Scripts\Views\MatrizIntegradoraComponentes.js" />
     <Content Include="Scripts\Views\Menu.js" />
+    <Content Include="Scripts\Views\Modalidad.js" />
     <Content Include="Scripts\Views\Periodo.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\PlanClasesDiario.js" />
@@ -803,6 +804,7 @@
     <Content Include="Views\Planificacion\CrearPlanDidactico.cshtml" />
     <Content Include="Views\Planificacion\TemasPlanSemestral.cshtml" />
     <Content Include="Views\Planificacion\Planificacion_Individual.cshtml" />
+    <Content Include="Views\Catalogos\Modalidad.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

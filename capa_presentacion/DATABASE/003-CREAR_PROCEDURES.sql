@@ -3875,7 +3875,7 @@ BEGIN
     SET @Resultado = 0
 	SET @Mensaje = ''
 
-	-- Verificar si el nombre del área ya existe
+	-- Verificar si el nombre de la modalidad ya existe
 	IF EXISTS (SELECT * FROM MODALIDAD WHERE nombre = @Nombre)
 	BEGIN
 		SET @Mensaje = 'El nombre de la modalidada ya está en uso'
