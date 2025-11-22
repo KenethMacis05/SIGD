@@ -4326,7 +4326,7 @@ END;
 GO
 
 -- Leer datos generales Matriz de Integración de un usuario
-CREATE PROCEDURE usp_LeerMatrizIntegracion
+CREATE OR ALTER PROCEDURE usp_LeerMatrizIntegracion
     @IdUsuario INT,
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
@@ -4369,7 +4369,7 @@ BEGIN
             m.nombre AS modalidad,
             asi_principal.nombre AS asignatura,
             u.pri_nombre + ' ' + u.pri_apellido AS usuario,
-            p.semestre AS periodo,
+            CONCAT(p.anio, ' || ', p.semestre) AS periodo,
             mic.estado,
             mic.estado_proceso,
             mic.fecha_registro
@@ -6609,7 +6609,9 @@ BEGIN
             c.nombre AS carrera,
             m.nombre AS modalidad,
             u.pri_nombre + ' ' + u.pri_apellido AS usuario_propietario,
-            p.semestre AS periodo,
+            ua.pri_nombre + ' ' + ua.pri_apellido AS usuario_asignado,
+            CONCAT(p.anio, ' || ', p.semestre) AS periodo,
+            mic.fk_periodo AS fk_periodo,
             mic.estado AS estado,
             mic.estado_proceso AS estado_proceso,
             mic.fecha_registro AS fecha_registro
@@ -6622,6 +6624,7 @@ BEGIN
         INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
         INNER JOIN ASIGNATURA asi_asignada ON ma.fk_asignatura = asi_asignada.id_asignatura
         INNER JOIN USUARIOS u ON mic.fk_profesor = u.id_usuario
+        INNER JOIN USUARIOS ua ON ma.fk_profesor_asignado = ua.id_usuario
         INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
         WHERE ma.fk_profesor_asignado = @IdUsuario
         ORDER BY pds.id_plan_didactico DESC;
@@ -6715,7 +6718,8 @@ BEGIN
             c.nombre AS carrera,
             m.nombre AS modalidad,
             u.pri_nombre + ' ' + u.pri_apellido AS usuario_propietario,
-            p.semestre AS periodo,
+            CONCAT(p.anio, ' || ', p.semestre) AS periodo,
+            mic.fk_periodo AS fk_periodo_matriz,
             mic.estado AS estado_matriz,
             mic.estado_proceso AS estado_proceso_matriz,
             mic.fecha_registro AS fecha_registro_matriz
@@ -7370,80 +7374,6 @@ BEGIN
 END
 GO
 
--- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS PLANES DE CLASES DE UN USUARIO
-CREATE OR ALTER PROCEDURE usp_LeerPlanesDeClases
-    @IdUsuario INT,
-    @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
-AS
-BEGIN
-    SET NOCOUNT ON;
-
-    -- Validar si el usuario existe
-    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
-    BEGIN
-        SET @Resultado = 0
-        SET @Mensaje = 'El usuario no existe'
-        RETURN
-    END
-
-    -- Validar si el usuario tiene planes de clases creados
-    IF NOT EXISTS (
-        SELECT 1 
-        FROM PLANCLASESDIARIO p
-        INNER JOIN USUARIOS u ON p.fk_profesor = u.id_usuario
-        WHERE p.fk_profesor = @IdUsuario
-    )
-    BEGIN
-        SET @Resultado = 0
-        SET @Mensaje = 'El usuario aún no ha creado planes de clases diario'
-        RETURN
-    END
-
-    -- Mostrar todas los planes de clases diario del usuario
-    SELECT pcd.*,
-	a.nombre AS asignatura,
-	ac.nombre AS area_conocimiento,
-	dep.nombre AS departamento,
-	car.nombre AS carrera,
-	RTRIM(LTRIM(
-    CONCAT(
-        u.pri_nombre, 
-        CASE WHEN NULLIF(u.seg_nombre, '') IS NOT NULL THEN ' ' + u.seg_nombre ELSE '' END,
-        ' ',
-        u.pri_apellido,
-        CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
-    )
-	)) AS profesor,
-	RTRIM(LTRIM(
-	CONCAT(
-		pe.anio, ' || ', pe.semestre
-	)
-	)) AS periodo
-    FROM PLANCLASESDIARIO pcd
-    INNER JOIN 
-		USUARIOS u ON pcd.fk_profesor = u.id_usuario
-	INNER JOIN 
-		PERIODO pe ON pcd.fk_periodo = pe.id_periodo
-	INNER JOIN 
-		Asignatura a ON pcd.fk_asignatura = a.id_asignatura
-	LEFT JOIN
-		Carrera car ON pcd.fk_carrera = car.id_carrera
-    LEFT JOIN
-        Departamento dep ON pcd.fk_departamento = dep.id_departamento
-    LEFT JOIN
-        AreaConocimiento ac ON pcd.fk_area = ac.id_area
-    WHERE pcd.fk_profesor = @IdUsuario 
-      AND pcd.estado = 1
-	  AND pe.estado = 1
-	  AND u.estado = 1
-    ORDER BY pcd.fecha_registro DESC
-
-    SET @Resultado = 1
-    SET @Mensaje = 'Planes de estudios cargados correctamente'
-END
-GO
-
 CREATE OR ALTER PROCEDURE usp_LeerPlanificacionIndividualPorId
     @FKPlanSemestral INT
 AS
@@ -7570,33 +7500,104 @@ BEGIN
 END;
 GO
 
+-- PROCEDIMIENTO ALMACENADO PARA OBTENER LOS PLANES DE CLASES DE UN USUARIO
+CREATE OR ALTER PROCEDURE usp_LeerPlanesDeClases
+    @IdUsuario INT,
+    @Resultado INT OUTPUT,
+    @Mensaje VARCHAR(255) OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Validar si el usuario existe
+    IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @IdUsuario)
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario no existe'
+        RETURN
+    END
+
+    -- Validar si el usuario tiene planes de clases creados
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM PLANCLASESDIARIO pcd
+		INNER JOIN PLANDIDACTICOSEMESTRAL pds ON pds.id_plan_didactico = pcd.fk_plan_didactico
+		INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+        WHERE ma.fk_profesor_asignado = @IdUsuario
+    )
+    BEGIN
+        SET @Resultado = 0
+        SET @Mensaje = 'El usuario aún no ha creado planes de clases diario'
+        RETURN
+    END
+
+	-- Mostrar todas los planes de clases diario del usuario
+	SELECT 
+        --Datos generales del plan de clases diario
+        ac.nombre AS area_conocimiento,
+        d.nombre AS departamento,
+        c.nombre AS carrera,
+        a.nombre AS asignatura,
+        CONCAT(p.anio, ' || ', p.semestre) AS periodo,
+        RTRIM(LTRIM(
+        	CONCAT(
+        		us.pri_nombre, 
+        		CASE WHEN NULLIF(us.seg_nombre, '') IS NOT NULL THEN ' ' + us.seg_nombre ELSE '' END,
+        		' ',
+        		us.pri_apellido,
+        		CASE WHEN NULLIF(us.seg_apellido, '') IS NOT NULL THEN ' ' + us.seg_apellido ELSE '' END
+        	)
+        	)) AS profesor,
+        
+        -- Tema y contenidos
+        t.tema AS tema,
+        con.contenido AS 'contenido(s)',
+        
+        -- Evaluación
+        pdi.tipo_evaluacion,
+        pdi.estrategias_evaluacion,
+        pdi.instrumento_evaluacion,
+        pdi.evidencias_aprendizaje,
+        pcd.*
+	FROM PLANCLASESDIARIO pcd
+	INNER JOIN PLANDIDACTICOSEMESTRAL pds ON pds.id_plan_didactico = pcd.fk_plan_didactico
+	INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+	INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+	INNER JOIN AREACONOCIMIENTO ac ON mic.fk_area = ac.id_area
+	INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+	INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+	INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
+	INNER JOIN ASIGNATURA a ON a.id_asignatura = ma.fk_asignatura
+	INNER JOIN USUARIOS us ON us.id_usuario = ma.fk_profesor_asignado
+	INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+	INNER JOIN TEMAPLANIFICACIONSEMESTRAL t ON t.id_tema = pcd.fk_tema
+	INNER JOIN PLANIFICACIONINDIVIDUALSEMESTRAL pdi ON pdi.id_planificacion = pcd.fk_plan_individual
+	INNER JOIN CONTENIDOS con ON con.id_contenido = pdi.fk_contenido
+	WHERE ma.fk_profesor_asignado = @IdUsuario
+	ORDER BY pcd.fecha_registro DESC
+
+    SET @Resultado = 1
+    SET @Mensaje = 'Planes de estudios cargados correctamente'
+END
+GO
+
 -- PROCEDIMIENTO ALMACENADO PARA CREAR PLANES DE CLASES DIARIO CON CÓDIGO AUTOMÁTICO
 CREATE OR ALTER PROCEDURE usp_CrearPlanClasesDiario(
     @Nombre VARCHAR(255),
-    @FKAreaConocimiento INT,
-    @FKDepartamento INT,
-    @FKCarrera INT,
-    @FKAsignatura INT,
+    @FKPlanDidactico INT,
     @Ejes VARCHAR(255),
-    @FKProfesor INT, 
-    @FKPeriodo INT, 
-    @Competencias VARCHAR(255),
+    @CompetenciasGenericas VARCHAR(255),
+    @CompetenciasEspecificas VARCHAR(255),
     @BOA VARCHAR(255),
     @FechaInicio DATE, 
     @FechaFin DATE,
     @ObjetivoAprendizaje VARCHAR(255),
-    @TemaContenido VARCHAR(255),
     @IndicadorLogro VARCHAR(255),
-    @TareasIniciales  VARCHAR(255), 
+    @FKTema INT,
+    @FKPlanIndividual INT,
+    @TareasIniciales VARCHAR(255), 
     @TareasDesarrollo VARCHAR(255),
     @TareasSintesis VARCHAR(255),
-    @TipoEvaluacion VARCHAR(255),
-    @EstrategiaEvaluacion VARCHAR(255),
-    @InstrumentoEvaluacion VARCHAR(255),
-    @EvidenciasAprendizaje VARCHAR(255),
-    @CriteriosAprendizaje VARCHAR(255),
-    @IndicadoresAprendizaje VARCHAR(255),
-    @NivelAprendizaje VARCHAR(255),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 )
@@ -7609,37 +7610,43 @@ BEGIN
     DECLARE @Codigo VARCHAR(20);
     DECLARE @Contador INT;
     DECLARE @Anio INT = YEAR(GETDATE());
-    DECLARE @SiglasCarrera VARCHAR(10);
-    DECLARE @SiglasAsignatura VARCHAR(10);
 
     BEGIN TRY
         BEGIN TRANSACTION;
 
-        -- 1. Verificar si el profesor existe y está activo
-        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @FKProfesor AND estado = 1)
+        -- 1. Verificar si el plan didáctico existe
+        IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @FKPlanDidactico)
         BEGIN
-            SET @Mensaje = 'El profesor no existe o está inactivo';
+            SET @Mensaje = 'El plan didáctico no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 2. Verificar si el nombre existe
-        IF EXISTS (SELECT 1 FROM PLANCLASESDIARIO WHERE nombre = @Nombre AND fk_profesor = @FKProfesor)
+        -- 2. Verificar si el tema existe
+        IF NOT EXISTS (SELECT 1 FROM TEMAPLANIFICACIONSEMESTRAL WHERE id_tema = @FKTema)
         BEGIN
-            SET @Mensaje = 'El nombre ya está registrado';
+            SET @Mensaje = 'El tema no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 3. Verificar si el periodo seleccionado está activo
-        IF NOT EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @FKPeriodo AND estado = 1)
+        -- 3. Verificar si el plan individual existe
+        IF NOT EXISTS (SELECT 1 FROM PLANIFICACIONINDIVIDUALSEMESTRAL WHERE id_planificacion = @FKPlanIndividual)
         BEGIN
-            SET @Mensaje = 'El periodo seleccionado no existe o está inactivo';
+            SET @Mensaje = 'El plan individual no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 4. Validar fechas
+        -- 4. Verificar si el nombre existe para el mismo plan didáctico
+        IF EXISTS (SELECT 1 FROM PLANCLASESDIARIO WHERE nombre = @Nombre AND fk_plan_didactico = @FKPlanDidactico)
+        BEGIN
+            SET @Mensaje = 'El nombre ya está registrado para este plan didáctico';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 5. Validar fechas
         IF @FechaInicio > @FechaFin
         BEGIN
             SET @Mensaje = 'La fecha de inicio no puede ser posterior a la fecha fin';
@@ -7647,14 +7654,18 @@ BEGIN
             RETURN;
         END
 
-        -- 5. Generar código automático (formato: PCD-AÑO-SECUENCIA)
+        -- 6. Generar código automático (formato: PCD-AÑO-SECUENCIA)
         SELECT @Contador = ISNULL(MAX(
             CAST(
-                RIGHT(codigo, 3) 
+                CASE 
+                    WHEN codigo LIKE 'PCD-' + CAST(@Anio AS VARCHAR(4)) + '-%'
+                    THEN RIGHT(codigo, 3)
+                    ELSE '0'
+                END
             AS INT)
         ), 0)
         FROM PLANCLASESDIARIO 
-        WHERE codigo LIKE 'PCD-' + CAST(@Anio AS VARCHAR(4)) + '-[0-9][0-9][0-9]';
+        WHERE codigo LIKE 'PCD-' + CAST(@Anio AS VARCHAR(4)) + '%';
 
         -- Incrementar el contador
         SET @Contador = @Contador + 1;
@@ -7663,33 +7674,53 @@ BEGIN
         SET @Codigo = 'PCD-' + CAST(@Anio AS VARCHAR(4)) + '-' + 
               RIGHT('000' + CAST(@Contador AS VARCHAR(3)), 3);
 
-        -- 6. Insertar el nuevo plan
+        -- 7. Insertar el nuevo plan
         INSERT INTO PLANCLASESDIARIO(
-            codigo, nombre, fk_area, fk_departamento, fk_carrera, ejes, fk_asignatura,
-            fk_profesor, fk_periodo, competencias, BOA, fecha_inicio, fecha_fin,
-            objetivo_aprendizaje, tema_contenido, indicador_logro,
-            tareas_iniciales, tareas_desarrollo, tareas_sintesis,
-            tipo_evaluacion, estrategia_evaluacion, instrumento_evaluacion,
-            evidencias_aprendizaje, criterios_aprendizaje, indicadores_aprendizaje, nivel_aprendizaje
+            codigo, 
+            nombre, 
+            fk_plan_didactico, 
+            ejes, 
+            competencias_genericas, 
+            competencias_especificas, 
+            BOA, 
+            fecha_inicio, 
+            fecha_fin,
+            objetivo_aprendizaje, 
+            indicador_logro, 
+            fk_tema, 
+            fk_plan_individual,
+            tareas_iniciales, 
+            tareas_desarrollo, 
+            tareas_sintesis
         ) VALUES (
-            @Codigo, @Nombre, @FKAreaConocimiento, @FKDepartamento, @FKCarrera, @Ejes, @FKAsignatura,
-            @FKProfesor, @FKPeriodo, @Competencias, @BOA, @FechaInicio, @FechaFin,
-            @ObjetivoAprendizaje, @TemaContenido, @IndicadorLogro, 
-            @TareasIniciales, @TareasDesarrollo, @TareasSintesis,
-            @TipoEvaluacion, @EstrategiaEvaluacion, @InstrumentoEvaluacion,
-            @EvidenciasAprendizaje, @CriteriosAprendizaje, @IndicadoresAprendizaje, @NivelAprendizaje
+            @Codigo, 
+            @Nombre, 
+            @FKPlanDidactico, 
+            @Ejes, 
+            @CompetenciasGenericas, 
+            @CompetenciasEspecificas, 
+            @BOA, 
+            @FechaInicio, 
+            @FechaFin,
+            @ObjetivoAprendizaje, 
+            @IndicadorLogro, 
+            @FKTema, 
+            @FKPlanIndividual,
+            @TareasIniciales, 
+            @TareasDesarrollo, 
+            @TareasSintesis
         );
 
         SET @Resultado = SCOPE_IDENTITY();
 
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'Plan de clases registrado exitosamente. Plan: ' + @Codigo + ' - ' + @Nombre;
+        SET @Mensaje = 'Plan de clases diario registrado exitosamente. Plan: ' + @Codigo + ' - ' + @Nombre;
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         SET @Resultado = -1;
-        SET @Mensaje = 'Error al crear el plan de clases: ' + ERROR_MESSAGE();
+        SET @Mensaje = 'Error al crear el plan de clases diario: ' + ERROR_MESSAGE();
     END CATCH
 END
 GO
@@ -7715,30 +7746,20 @@ GO
 CREATE OR ALTER PROCEDURE usp_ActualizarPlanClasesDiario
     @IdPlanClasesDiario INT,
     @Nombre VARCHAR(255),
-    @FKAreaConocimiento INT,
-    @FKDepartamento INT,
-    @FKCarrera INT,
-    @FKAsignatura INT,
+    @FKPlanDidactico INT,
     @Ejes VARCHAR(255),
-    @FKProfesor INT,
-    @FKPeriodo INT,
-    @Competencias VARCHAR(255),
+    @CompetenciasGenericas VARCHAR(255),
+    @CompetenciasEspecificas VARCHAR(255),
     @BOA VARCHAR(255),
     @FechaInicio DATE, 
     @FechaFin DATE,
     @ObjetivoAprendizaje VARCHAR(255),
-    @TemaContenido VARCHAR(255),
     @IndicadorLogro VARCHAR(255),
+    @FKTema INT,
+    @FKPlanIndividual INT,
     @TareasIniciales VARCHAR(255), 
     @TareasDesarrollo VARCHAR(255),
     @TareasSintesis VARCHAR(255),
-    @TipoEvaluacion VARCHAR(255),
-    @EstrategiaEvaluacion VARCHAR(255),
-    @InstrumentoEvaluacion VARCHAR(255),
-    @EvidenciasAprendizaje VARCHAR(255),
-    @CriteriosAprendizaje VARCHAR(255),
-    @IndicadoresAprendizaje VARCHAR(255),
-    @NivelAprendizaje VARCHAR(255),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -7753,36 +7774,47 @@ BEGIN
         -- 1. Verificar si el plan existe
         IF NOT EXISTS (SELECT 1 FROM PLANCLASESDIARIO WHERE id_plan_diario = @IdPlanClasesDiario)
         BEGIN
-            SET @Mensaje = 'El plan de clases no existe';
+            SET @Mensaje = 'El plan de clases diario no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 2. Verificar si el profesor existe y está activo
-        IF NOT EXISTS (SELECT 1 FROM USUARIOS WHERE id_usuario = @FKProfesor AND estado = 1)
+        -- 2. Verificar si el plan didáctico existe
+        IF NOT EXISTS (SELECT 1 FROM PLANDIDACTICOSEMESTRAL WHERE id_plan_didactico = @FKPlanDidactico)
         BEGIN
-            SET @Mensaje = 'El profesor no existe o está inactivo';
+            SET @Mensaje = 'El plan didáctico no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 3. Verificar si el nombre ya existe (excluyendo el plan actual)
-        IF EXISTS (SELECT 1 FROM PLANCLASESDIARIO WHERE nombre = @Nombre AND id_plan_diario != @IdPlanClasesDiario)
+        -- 3. Verificar si el tema existe
+        IF NOT EXISTS (SELECT 1 FROM TEMAPLANIFICACIONSEMESTRAL WHERE id_tema = @FKTema)
         BEGIN
-            SET @Mensaje = 'El nombre del plan de clases ya está en uso';
+            SET @Mensaje = 'El tema no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 4. Verificar si el periodo seleccionado está activo
-        IF NOT EXISTS (SELECT 1 FROM PERIODO WHERE id_periodo = @FKPeriodo AND estado = 1)
+        -- 4. Verificar si el plan individual existe
+        IF NOT EXISTS (SELECT 1 FROM PLANIFICACIONINDIVIDUALSEMESTRAL WHERE id_planificacion = @FKPlanIndividual)
         BEGIN
-            SET @Mensaje = 'El periodo seleccionado no existe o está inactivo';
+            SET @Mensaje = 'El plan individual no existe';
             ROLLBACK TRANSACTION;
             RETURN;
         END
 
-        -- 5. Validar fechas
+        -- 5. Verificar si el nombre ya existe (excluyendo el plan actual y mismo plan didáctico)
+        IF EXISTS (SELECT 1 FROM PLANCLASESDIARIO 
+                  WHERE nombre = @Nombre 
+                  AND id_plan_diario != @IdPlanClasesDiario
+                  AND fk_plan_didactico = @FKPlanDidactico)
+        BEGIN
+            SET @Mensaje = 'El nombre del plan de clases ya está en uso para este plan didáctico';
+            ROLLBACK TRANSACTION;
+            RETURN;
+        END
+
+        -- 6. Validar fechas
         IF @FechaInicio > @FechaFin
         BEGIN
             SET @Mensaje = 'La fecha de inicio no puede ser posterior a la fecha fin';
@@ -7790,40 +7822,30 @@ BEGIN
             RETURN;
         END
 
-        -- 6. Actualizar el plan de clases
+        -- 7. Actualizar el plan de clases diario
         UPDATE PLANCLASESDIARIO
         SET 
             nombre = @Nombre,
-            fk_area = @FKAreaConocimiento,
-            fk_departamento = @FKDepartamento,
-            fk_carrera = @FKCarrera,
-            fk_asignatura = @FKAsignatura,
+            fk_plan_didactico = @FKPlanDidactico,
             ejes = @Ejes,
-            fk_profesor = @FKProfesor,
-            fk_periodo = @FKPeriodo,
-            competencias = @Competencias,
+            competencias_genericas = @CompetenciasGenericas,
+            competencias_especificas = @CompetenciasEspecificas,
             BOA = @BOA,
             fecha_inicio = @FechaInicio,
             fecha_fin = @FechaFin,
             objetivo_aprendizaje = @ObjetivoAprendizaje,
-            tema_contenido = @TemaContenido,
             indicador_logro = @IndicadorLogro,
+            fk_tema = @FKTema,
+            fk_plan_individual = @FKPlanIndividual,
             tareas_iniciales = @TareasIniciales,
             tareas_desarrollo = @TareasDesarrollo,
-            tareas_sintesis = @TareasSintesis,
-            tipo_evaluacion = @TipoEvaluacion,
-            estrategia_evaluacion = @EstrategiaEvaluacion,
-            instrumento_evaluacion = @InstrumentoEvaluacion,
-            evidencias_aprendizaje = @EvidenciasAprendizaje,
-            criterios_aprendizaje = @CriteriosAprendizaje,
-            indicadores_aprendizaje = @IndicadoresAprendizaje,
-            nivel_aprendizaje = @NivelAprendizaje
+            tareas_sintesis = @TareasSintesis
         WHERE id_plan_diario = @IdPlanClasesDiario;
 
         -- Verificar si se actualizó algún registro
         IF @@ROWCOUNT = 0
         BEGIN
-            SET @Mensaje = 'No se realizaron cambios en el plan de clases';
+            SET @Mensaje = 'No se realizaron cambios en el plan de clases diario';
             ROLLBACK TRANSACTION;
             RETURN;
         END
@@ -7831,12 +7853,12 @@ BEGIN
         COMMIT TRANSACTION;
 
         SET @Resultado = 1;
-        SET @Mensaje = 'Plan de clases actualizado exitosamente';
+        SET @Mensaje = 'Plan de clases diario actualizado exitosamente';
     END TRY
     BEGIN CATCH
         IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
         SET @Resultado = -1;
-        SET @Mensaje = 'Error al actualizar el plan de clases: ' + ERROR_MESSAGE();
+        SET @Mensaje = 'Error al actualizar el plan de clases diario: ' + ERROR_MESSAGE();
     END CATCH
 END
 GO
@@ -7991,67 +8013,48 @@ BEGIN
 			RETURN;
 		END
 
-        -- Mostrar plan de clases diario
         SELECT
-	    ac.nombre AS area_conocimiento,
-	    dep.nombre AS departamento,
+            --Datos generales del plan de clases diario
+		    ac.nombre AS area_conocimiento,
+		    d.nombre AS departamento,
+		    c.nombre AS carrera,
+		    a.nombre AS asignatura,
+		    CONCAT(p.anio, ' || ', p.semestre) AS periodo,
+		    RTRIM(LTRIM(
+			    CONCAT(
+				    us.pri_nombre, 
+				    CASE WHEN NULLIF(us.seg_nombre, '') IS NOT NULL THEN ' ' + us.seg_nombre ELSE '' END,
+				    ' ',
+				    us.pri_apellido,
+				    CASE WHEN NULLIF(us.seg_apellido, '') IS NOT NULL THEN ' ' + us.seg_apellido ELSE '' END
+			    )
+			    )) AS profesor,
 
-        -- 1. Datos generales del plan de clases diario
-	    car.nombre AS carrera,
-	    RTRIM(LTRIM(
-        CONCAT(
-            u.pri_nombre, 
-            CASE WHEN NULLIF(u.seg_nombre, '') IS NOT NULL THEN ' ' + u.seg_nombre ELSE '' END,
-            ' ',
-            u.pri_apellido,
-            CASE WHEN NULLIF(u.seg_apellido, '') IS NOT NULL THEN ' ' + u.seg_apellido ELSE '' END
-        )
-	    )) AS profesor,
-	    RTRIM(LTRIM(
-	    CONCAT(
-		    pe.anio, ' || ', pe.semestre
-	    )
-	    )) AS periodo,
-        pcd.fecha_inicio,
-        pcd.fecha_fin,
-        pcd.ejes,
-        pcd.competencias,
-	    a.nombre AS asignatura,
-        pcd.BOA,
+		    -- Tema y contenidos
+		    t.tema AS tema,
+		    con.contenido AS 'contenido(s)',
 
-        -- 2. Aprendizaje
-        pcd.objetivo_aprendizaje,
-        pcd.tema_contenido,
-        pcd.indicador_logro,
-
-        -- 3. Tareas y actividades
-        pcd.tareas_iniciales,
-        pcd.tareas_desarrollo,
-        pcd.tareas_sintesis,
-
-        -- 4. Evaluacion de los aprendizajes
-        pcd.tipo_evaluacion,
-        pcd.estrategia_evaluacion,
-        pcd.instrumento_evaluacion,
-        pcd.evidencias_aprendizaje
-
+		    -- Evaluación
+		    pdi.tipo_evaluacion,
+		    pdi.estrategias_evaluacion,
+		    pdi.instrumento_evaluacion,
+		    pdi.evidencias_aprendizaje,
+		    pcd.*
         FROM PLANCLASESDIARIO pcd
-        INNER JOIN 
-		    USUARIOS u ON pcd.fk_profesor = u.id_usuario
-	    INNER JOIN 
-		    PERIODO pe ON pcd.fk_periodo = pe.id_periodo
-	    INNER JOIN 
-		    Asignatura a ON pcd.fk_asignatura = a.id_asignatura
-	    LEFT JOIN
-		    Carrera car ON pcd.fk_carrera = car.id_carrera
-        LEFT JOIN
-            Departamento dep ON pcd.fk_departamento = dep.id_departamento
-        LEFT JOIN
-            AreaConocimiento ac ON pcd.fk_area = ac.id_area
+            INNER JOIN PLANDIDACTICOSEMESTRAL pds ON pds.id_plan_didactico = pcd.fk_plan_didactico
+            INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+            INNER JOIN MATRIZINTEGRACIONCOMPONENTES mic ON mic.id_matriz_integracion = ma.fk_matriz_integracion
+            INNER JOIN AREACONOCIMIENTO ac ON mic.fk_area = ac.id_area
+            INNER JOIN DEPARTAMENTO d ON mic.fk_departamento = d.id_departamento
+            INNER JOIN CARRERA c ON mic.fk_carrera = c.id_carrera
+            INNER JOIN MODALIDAD m ON mic.fk_modalidad = m.id_modalidad
+            INNER JOIN ASIGNATURA a ON a.id_asignatura = ma.fk_asignatura
+            INNER JOIN USUARIOS us ON us.id_usuario = ma.fk_profesor_asignado
+            INNER JOIN PERIODO p ON mic.fk_periodo = p.id_periodo
+            INNER JOIN TEMAPLANIFICACIONSEMESTRAL t ON t.id_tema = pcd.fk_tema
+            INNER JOIN PLANIFICACIONINDIVIDUALSEMESTRAL pdi ON pdi.id_planificacion = pcd.fk_plan_individual
+            INNER JOIN CONTENIDOS con ON con.id_contenido = pdi.fk_contenido
         WHERE pcd.id_plan_diario = @IdPlaClasesDiario
-          AND pcd.estado = 1
-	      AND pe.estado = 1
-	      AND u.estado = 1
         ORDER BY pcd.fecha_registro DESC
 
         SET @Resultado = 1;

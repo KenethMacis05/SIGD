@@ -12,15 +12,32 @@ namespace capa_negocio
     public class CN_PlanClasesDiario
     {
         CD_PlanClasesDiario CD_PlanClasesDiario = new CD_PlanClasesDiario();
-        
+        CN_Recursos CN_Recursos = new CN_Recursos();
+
         public List<PLANCLASESDIARIO> ListarPlanesClases(int id_usuario, out int resultado, out string mensaje)
         {
-            return CD_PlanClasesDiario.ListarPlanClasesDiario(id_usuario, out resultado, out mensaje);
+            var planes = CD_PlanClasesDiario.ListarPlanClasesDiario(id_usuario, out resultado, out mensaje);
+
+            foreach (var plan in planes)
+            {
+                plan.id_encriptado_plan_didactico = CN_Recursos.EncryptValue(plan.fk_plan_didactico.ToString());
+                plan.id_plan_diario_encriptado = CN_Recursos.EncryptValue(plan.id_plan_diario.ToString());
+            }
+            return planes;
         }
 
-        public PLANCLASESDIARIO ObtenerPlanDiarioPorId(int id_plan_diario, int id_usuario)
+        public PLANCLASESDIARIO ObtenerPlanDiarioPorId(string idEncriptado, int id_usuario)
         {
-            return CD_PlanClasesDiario.ObtenerPlanDiarioPorId(id_plan_diario, id_usuario);
+            int id_plan_diario = Convert.ToInt32(new CN_Recursos().DecryptValue(idEncriptado));
+            var planes = CD_PlanClasesDiario.ObtenerPlanDiarioPorId(id_plan_diario, id_usuario);
+
+            foreach (var plan in new List<PLANCLASESDIARIO> { planes })
+            {
+                plan.id_encriptado_plan_didactico = CN_Recursos.EncryptValue(plan.fk_plan_didactico.ToString());
+                plan.id_plan_diario_encriptado = CN_Recursos.EncryptValue(plan.id_plan_diario.ToString());
+            }
+
+            return planes;
         }
 
         public int Eliminar(int id_plan, int id_usuario, out string mensaje)
@@ -40,18 +57,6 @@ namespace capa_negocio
                 return 0;
             }
 
-            if (plan.fk_profesor == 0)
-            {
-                mensaje = "Por favor, seleccione un profesor.";
-                return 0;
-            }
-
-            if (plan.fk_periodo == 0)
-            {
-                mensaje = "Por favor, seleccione un periodo.";
-                return 0;
-            }
-
             return CD_PlanClasesDiario.RegistrarPlanClasesDiario(plan, out mensaje);
         }
 
@@ -64,13 +69,7 @@ namespace capa_negocio
                 mensaje = "Por favor, complete todos los campos.";
                 return 0;
             }
-
-            if (plan.fk_profesor == 0)
-            {
-                mensaje = "Por favor, seleccione un profesor.";
-                return 0;
-            }
-
+            
             bool actualizado = CD_PlanClasesDiario.ActualizarPlanClasesDiario(plan, out mensaje);
             return actualizado ? 1 : 0;
         }

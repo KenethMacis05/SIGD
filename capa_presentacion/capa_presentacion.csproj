@@ -639,9 +639,11 @@
     <Content Include="Scripts\Template\Selects\SelectAreas.js" />
     <Content Include="Scripts\Template\Selects\SelectAsignaturas.js" />
     <Content Include="Scripts\Template\Selects\SelectCarreras.js" />
+    <Content Include="Scripts\Template\Selects\SelectContenidosSemanas.js" />
     <Content Include="Scripts\Template\Selects\SelectDepartamentos.js" />
     <Content Include="Scripts\Template\Selects\SelectModalidad.js" />
     <Content Include="Scripts\Template\Selects\SelectPeriodos.js" />
+    <Content Include="Scripts\Template\Selects\SelectTemas.js" />
     <Content Include="Scripts\Views\Acceso.js" />
     <Content Include="Scripts\Views\AccionIntegradora_TipoEvaluacion.js" />
     <Content Include="Scripts\Views\Archivos.js" />

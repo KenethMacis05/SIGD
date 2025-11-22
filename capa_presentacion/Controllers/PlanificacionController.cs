@@ -569,6 +569,7 @@ namespace capa_presentacion.Controllers
             return View(planSemestral);
         }
 
+        [AllowAnonymous]
         public JsonResult BuscarMatrizAsignatura(int periodo)
         {
             var usuarioAsignado = (USUARIOS)Session["UsuarioAutenticado"];
@@ -601,6 +602,20 @@ namespace capa_presentacion.Controllers
                 return Json(new { success = false, message = ex.Message }, JsonRequestBehavior.AllowGet);
             }
         }
+
+
+        [AllowAnonymous]
+        public JsonResult BuscarPlanDidacticoSemestral(int periodo)
+        {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
+            string mensaje = string.Empty;
+            List<PLANDIDACTICOSEMESTRAL> lst = CN_PlanSemestral.BuscarPlanSemestral(usuario.id_usuario, periodo, out mensaje);
+
+            return Json(new { data = lst, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -807,7 +822,7 @@ namespace capa_presentacion.Controllers
 
         // Vista Detalle del Plan de Clases Diario
         [HttpGet]
-        public ActionResult DetallePlanDiario(int id)
+        public ActionResult DetallePlanDiario(string id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
             PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id, usuario.id_usuario);
@@ -823,7 +838,7 @@ namespace capa_presentacion.Controllers
 
         // Vista Editar del Plan de Clases Diario
         [HttpGet]
-        public ActionResult EditarPlanDiario(int id)
+        public ActionResult EditarPlanDiario(string id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
             PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id, usuario.id_usuario);
@@ -851,10 +866,6 @@ namespace capa_presentacion.Controllers
                 string mensaje;
                 int resultado;
                 bool esNuevo = plan.id_plan_diario == 0;
-
-                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-                
-                plan.fk_profesor = usuario.id_usuario;
 
                 if (esNuevo)
                 {

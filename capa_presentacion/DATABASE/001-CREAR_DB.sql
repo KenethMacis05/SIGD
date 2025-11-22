@@ -545,33 +545,23 @@ CREATE TABLE PLANCLASESDIARIO (
     id_plan_diario INT PRIMARY KEY IDENTITY(1,1),
 	codigo VARCHAR(255) NOT NULL,	
 	nombre VARCHAR(255) NOT NULL,
-	fecha_registro DATETIME DEFAULT GETDATE(),
-    estado BIT DEFAULT 1,
+	
 
-	-- 1.	Datos Generales
+	-- 1.	Datos Generales (SE SACAN DE LA RELACIÓN CON EL PLAN DIDACTICO SEMESTRAL A TRAVEZ DE LA MATRIZ DE INTEGRACION DE COMPONENTES)
+    fk_plan_didactico INT NOT NULL,
     -- Area de conocimiento
-    fk_area INT NOT NULL,
-
     -- Departamento
-    fk_departamento INT NOT NULL,
-
     -- Carrera
-    fk_carrera INT NOT NULL,
+	-- Componente curricular (as)
+	-- Profesor
+	-- Año y semestre
     
 	-- Eje (s)
 	ejes VARCHAR(255),
 
-	-- Componente curricular (as)
-	fk_asignatura INT NOT NULL,
-
-	-- Profesor
-	fk_profesor INT NOT NULL,
-
-	-- Año y semestre
-	fk_periodo INT NOT NULL,
-
 	-- Competencia o competencias
-	competencias VARCHAR(255),
+	competencias_genericas VARCHAR(255),
+	competencias_especificas VARCHAR(255),
 
 	-- BOA
 	BOA VARCHAR(255),
@@ -582,31 +572,32 @@ CREATE TABLE PLANCLASESDIARIO (
 
 	-- 2.	Aprendizaje
     objetivo_aprendizaje VARCHAR(255),
-    tema_contenido VARCHAR(255),
     indicador_logro VARCHAR(255),
+    -- TEMA (Se sacan de la relación de la tabla TEMAS con el PLANDIDACTICOSEMESTRAL)
+    fk_tema INT NOT NULL,
+    -- CONTENIDO (Se sacan de la relación de la tabla CONTENIDO con la tabla MATRIZASIGNATURA con la tabla PLANDIDACTICOSEMESTRAL o con la tabla PLANIFICACIONINDIVIDUALSEMESTRAL)
+    fk_plan_individual INT NOT NULL,
 
 	-- 3.	Tareas o actividades de aprendizaje
     tareas_iniciales VARCHAR(255),
     tareas_desarrollo VARCHAR(255),
     tareas_sintesis VARCHAR(255),
 
-	-- 4.	Evaluación de los aprendizajes
-    tipo_evaluacion VARCHAR(50),
-    estrategia_evaluacion VARCHAR(255),
-    instrumento_evaluacion VARCHAR(100),
-    evidencias_aprendizaje VARCHAR(255),
-	criterios_aprendizaje VARCHAR(255),
-	indicadores_aprendizaje VARCHAR(255),
-	nivel_aprendizaje VARCHAR(255),
+	-- 4.	Evaluación de los aprendizajes (Se saca en dependencia del contenido seleccionado y se saca de la tabla PLANIFICACIONINDIVIDUALSEMESTRAL)
+    -- Tipo de evaluación
+    -- Estrategias de evaluación
+    -- Instrumento de evaluación
+    -- Evidencias de aprendizaje
+    -- Evidencias de aprendizaje
 	
     -- 5.	Anexos
 
-    CONSTRAINT FK_PCD_AREA FOREIGN KEY (fk_area) REFERENCES AREACONOCIMIENTO(id_area),
-    CONSTRAINT FK_PCD_DEPARTAMENTO FOREIGN KEY (fk_departamento) REFERENCES DEPARTAMENTO(id_departamento),
-    CONSTRAINT FK_PCD_CARRERA FOREIGN KEY (fk_carrera) REFERENCES CARRERA(id_carrera),
-    CONSTRAINT FK_PCD_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura),
-    CONSTRAINT FK_PCD_USUARIO FOREIGN KEY (fk_profesor) REFERENCES Usuarios(id_usuario),
-    CONSTRAINT FK_PCD_PERIODO FOREIGN KEY (fk_periodo) REFERENCES Periodo(id_periodo)
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    estado BIT DEFAULT 1,
+
+    CONSTRAINT FK_PCD_PLANDIDACSEMES FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico),
+    CONSTRAINT FK_PCD_TEMAS FOREIGN KEY (fk_tema) REFERENCES TEMAPLANIFICACIONSEMESTRAL(id_tema),
+    CONSTRAINT FK_PCD_PDS FOREIGN KEY (fk_plan_individual) REFERENCES PLANIFICACIONINDIVIDUALSEMESTRAL(id_planificacion)
 );
 
 GO

@@ -144,6 +144,12 @@ function abrirModal() {
     $("#crearPlanSemestral").modal("show");
 }
 
+$(document).ready(function () {
+    $('#asignaturaNombre').on('focus', function () {
+        abrirModal();
+    });
+});
+
 function Buscar() {
     const filtros = {
         periodo: limpiarFiltro($("#inputGroupSelectPeriodo").val().trim())
@@ -215,7 +221,7 @@ function inicializarSelect2Periodo() {
 
 function cargarPeriodos() {
     jQuery.ajax({
-        url: "/Catalogos/GetPeriodo",
+        url: "/Catalogos/ListarPeriodos",
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",
@@ -228,7 +234,7 @@ function cargarPeriodos() {
                 $('#inputGroupSelectPeriodo').append(
                     $('<option>', {
                         value: periodo.id_periodo,
-                        text: periodo.periodo,
+                        text: periodo.anio + " || " + periodo.semestre,
                     })
                 );
             });
@@ -277,7 +283,6 @@ function cargarDatosEnFormulario(datos) {
     if (datos.nombre_profesor) $('#usuarioPropietario').val(datos.nombre_profesor);
     if (datos.area) $('#areaConocimiento').val(datos.area);
     if (datos.departamento) $('#departamento').val(datos.departamento);
-    if (datos.carrera) $('#carrera').val(datos.carrera);
     if (datos.modalidad) $('#modalidad').val(datos.modalidad);
     if (datos.periodo_matriz) $('#periodo').val(datos.periodo_matriz);
     if (datos.id_matriz_asignatura) $('#fkMatrizAsignatura').val(datos.id_matriz_asignatura);
