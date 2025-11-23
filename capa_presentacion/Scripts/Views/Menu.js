@@ -265,8 +265,9 @@ $('#btnAsignarMenu').click(function () {
                         exitosos > 0 ? "info" : "warning"
                     );
                 } else {
-                    showAlert("¡Éxito!", `Todos los menús (${exitosos}) fueron procesados correctamente`, "success");
-                    datatableMenusXRol.clear().rows.add(data.data).draw();
+                    showAlert("¡Éxito!", `Todos los menús (${exitosos}) fueron procesados correctamente`, "success").then((result) => {
+                        location.reload();
+                    });
                 }
 
                 $('#modalMenus').modal('hide');                

@@ -18,6 +18,7 @@ namespace capa_presentacion.Controllers
         CN_Asignatura CN_Asignatura = new CN_Asignatura();
         CN_Periodo CN_Periodo = new CN_Periodo();
         CN_Modalidad CN_Modalidad = new CN_Modalidad();
+        CN_Turno CN_Turno = new CN_Turno();
 
         #region Areas de Conocimiento
 
@@ -350,6 +351,52 @@ namespace capa_presentacion.Controllers
         {
             string mensaje = string.Empty;
             int resultado = CN_Modalidad.Eliminar(IdModalidad, out mensaje);
+
+            return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region Turno
+
+        // Vista: Turno
+        public ActionResult Turno()
+        {
+            return View();
+        }
+
+        // Enpoint(GET): listar los turnos
+        [HttpGet]
+        public JsonResult ListarTurnos()
+        {
+            List<TURNO> lst = CN_Turno.Listar();
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Guardar o editar turno
+        [HttpPost]
+        public JsonResult GuardarTurno(TURNO turno)
+        {
+            string mensaje = string.Empty;
+            int resultado = 0;
+
+            if (turno.id_turno == 0)
+            {
+                resultado = CN_Turno.Crear(turno, out mensaje);
+            }
+            else
+            {
+                resultado = CN_Turno.Editar(turno, out mensaje);
+            }
+            return Json(new { Resultado = resultado, Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        // Enpoint(POST): Eliminar turno
+        [HttpPost]
+        public JsonResult EliminarTurno(int IdTurno)
+        {
+            string mensaje = string.Empty;
+            int resultado = CN_Turno.Eliminar(IdTurno, out mensaje);
 
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }

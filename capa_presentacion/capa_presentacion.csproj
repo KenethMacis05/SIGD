@@ -805,6 +805,7 @@
     <Content Include="Views\Planificacion\TemasPlanSemestral.cshtml" />
     <Content Include="Views\Planificacion\Planificacion_Individual.cshtml" />
     <Content Include="Views\Catalogos\Modalidad.cshtml" />
+    <Content Include="Views\Catalogos\Turno.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />

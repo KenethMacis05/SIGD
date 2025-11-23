@@ -3965,6 +3965,7 @@ BEGIN
     SELECT 
         id_turno,
         nombre,
+        fk_modalidad,
         estado,
         fecha_registro
     FROM TURNO
