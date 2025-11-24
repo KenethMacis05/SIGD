@@ -1,8 +1,9 @@
 ﻿$(document).ready(function () {
     inicializarSelect2Asignatura();
-    cargarAsignaturas();
+    cargarAsignaturas(true);
 });
 
+// Inicializa select2
 function inicializarSelect2Asignatura() {
     $('#inputGroupSelectAsignatura').select2({
         placeholder: "Buscar asignatura...",
@@ -15,11 +16,15 @@ function inicializarSelect2Asignatura() {
     });
 }
 
-function cargarAsignaturas() {
+function cargarAsignaturas(soloIntegradoras) {
     var asignaturaActual = $("#fk_asignatura_activa").val();
+    var url = "/Catalogos/ListarAsignaturas";
+    if (soloIntegradoras) {
+        url += "?soloIntegradoras=true";
+    }
 
     jQuery.ajax({
-        url: "/Catalogos/ListarAsignaturas",
+        url: url,
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",
@@ -39,7 +44,6 @@ function cargarAsignaturas() {
                 );
             });
 
-            // Si hay una asignatura actual, seleccionarla
             if (asignaturaActual && asignaturaActual !== '0') {
                 $('#inputGroupSelectAsignatura').val(asignaturaActual).trigger('change');
             }

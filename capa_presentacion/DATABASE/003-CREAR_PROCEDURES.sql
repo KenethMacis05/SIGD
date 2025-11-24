@@ -3607,6 +3607,7 @@ GO
 
 -- PROCEDIMIENTO ALMACENADO PARA LEER LAS ASIGNATURAS
 CREATE OR ALTER PROCEDURE usp_LeerAsignaturas
+    @SoloIntegradoras BIT = 0
 AS
 BEGIN
     SELECT 
@@ -3616,6 +3617,12 @@ BEGIN
         fecha_registro,
         estado
     FROM ASIGNATURA
+    WHERE 
+        (
+            @SoloIntegradoras = 0
+            OR codigo LIKE 'Int-%'
+            OR nombre LIKE 'Integrador%'
+        )
 	ORDER BY id_asignatura ASC
 END
 GO
@@ -4076,7 +4083,7 @@ GO
 ----------------------------------------------------------------------------
 
 -- Crear Matriz de Integración
-CREATE PROCEDURE usp_CrearMatrizIntegracion
+CREATE OR ALTER PROCEDURE usp_CrearMatrizIntegracion
     @Nombre VARCHAR(255),
     @FKArea INT,
     @FKDepartamento INT,
@@ -4108,6 +4115,7 @@ BEGIN
     DECLARE @FechaInicioSemana DATE;
     DECLARE @FechaFinSemana DATE;
     DECLARE @IdSemana INT;
+    DECLARE @IdMatrizAsignatura INT;
 
     BEGIN TRY
         BEGIN TRANSACTION;
@@ -4266,9 +4274,46 @@ BEGIN
             SET @Contador = @Contador + 1;
         END
 
+        -- 12. Asignar automáticamente la asignatura al docente creador (si se proporcionó asignatura)
+        IF @FKAsignatura IS NOT NULL AND @FKAsignatura > 0
+        BEGIN
+            -- Insertar en MATRIZASIGNATURA asignando al profesor creador como asignado
+            INSERT INTO MATRIZASIGNATURA (
+                fk_matriz_integracion, 
+                fk_asignatura, 
+                fk_profesor_asignado, 
+                estado
+            )
+            VALUES (
+                @IdMatrizIntegracion,
+                @FKAsignatura,
+                @FKProfesor,
+                'Pendiente'
+            );
+
+            SET @IdMatrizAsignatura = SCOPE_IDENTITY();
+
+            -- Insertar todos los contenidos para cada semana (set-based)
+            INSERT INTO CONTENIDOS (
+                fk_matriz_asignatura, 
+                fk_semana, 
+                estado
+            )
+            SELECT 
+                @IdMatrizAsignatura,
+                s.id_semana,
+                'Pendiente'
+            FROM SEMANAS s
+            WHERE s.fk_matriz_integracion = @IdMatrizIntegracion
+            ORDER BY s.numero_semana;
+
+            -- Adjuntar información al mensaje de salida
+            SET @Mensaje = ISNULL(@Mensaje, '') + ' Asignatura asignada al docente creador y contenidos generados.';
+        END
+
         COMMIT TRANSACTION;
 
-        SET @Mensaje = 'La Matriz Integradora se registró exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre + 
+        SET @Mensaje = ISNULL(@Mensaje, '') + ' La Matriz Integradora se registró exitosamente. Matriz: ' + @Codigo + ' - ' + @Nombre + 
                       ' con ' + CAST(@NumeroSemanas AS VARCHAR(3)) + ' semanas creadas';
     END TRY
     BEGIN CATCH

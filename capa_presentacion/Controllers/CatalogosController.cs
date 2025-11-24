@@ -213,10 +213,10 @@ namespace capa_presentacion.Controllers
 
         // Enpoint(GET): listar las asignaturas
         [HttpGet]
-        public JsonResult ListarAsignaturas()
+        public JsonResult ListarAsignaturas(bool soloIntegradoras = false)
         {
             List<ASIGNATURA> lst = new List<ASIGNATURA>();
-            lst = CN_Asignatura.Listar();
+            lst = CN_Asignatura.Listar(soloIntegradoras);
 
             return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }

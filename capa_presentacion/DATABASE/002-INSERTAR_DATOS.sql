@@ -435,7 +435,16 @@ VALUES
 	('CING', 'Ingeniería de Software'),
 	('CWEB', 'Desarrollo Web Avanzado'),
 	('CCLO', 'Computación en la Nube'),
-	('CIOT', 'Internet de las Cosas');
+	('Int-I', 'Integrador I'),
+    ('Int-II', 'Integrador II'),
+    ('Int-III', 'Integrador III'),
+    ('Int-IV', 'Integrador IV'),
+    ('Int-V', 'Integrador V'),
+    ('Int-VI', 'Integrador VI'),
+    ('Int-VII', 'Integrador VII'),
+    ('Int-VIII', 'Integrador VIII'),
+    ('Int-IX', 'Integrador IX'),
+    ('Int-X', 'Integrador X');
 
 GO
 --------------------------------------------------------------------------------------------------------------------
