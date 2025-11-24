@@ -114,6 +114,14 @@ const dataTableOptions = {
     },
 
     columns: [
+        {
+            data: null,
+            title: "#",
+            render: function (data, type, row, meta) {
+                return meta.row + 1;
+            },
+            orderable: false, width: "30"
+        },
         { data: "nombre" },
         {
             data: "estado",

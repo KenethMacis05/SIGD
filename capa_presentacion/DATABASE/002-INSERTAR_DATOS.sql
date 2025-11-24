@@ -34,6 +34,7 @@ VALUES
     ('Catalogos', 'Componente', 'Componente', 'Vista'),
     ('Catalogos', 'Periodo', 'Periodo', 'Vista'),
     ('Catalogos', 'Modalidad', 'Modalidad', 'Vista'),
+    ('Catalogos', 'Turno', 'Turno', 'Vista'),
 
     -- Acciones API/AJAX
     -- UsuarioController
@@ -121,6 +122,10 @@ VALUES
     ('Catalogos', 'GuardarModalidad', 'Crear/Editar modalidades', 'API'),
     ('Catalogos', 'EliminarModalidad', 'Eliminar modalidades', 'API'),
 
+    ('Catalogos', 'ListarTurnos', 'Listar turnos', 'API'),
+    ('Catalogos', 'GuardarTurno', 'Crear/Editar turnos', 'API'),
+    ('Catalogos', 'EliminarTurno', 'Eliminar turnos', 'API'),
+
     -- PlanificacionController
 
     -- 1. Matriz de integración
@@ -204,15 +209,16 @@ VALUES
     ('Plan Didactico Semestral', 11, 'fas fa-calendar-alt', '5'),
     ('Plan de Clases Diario', 12, 'fas fa-chalkboard-teacher', '6'),
     ('Catalogos', null, 'fas fa-th-list', '7'),  -- Menú padre
-        ('Menus', 3, 'fas fa-bars', '7.1'),
-        ('Roles', 4, 'fas fa-user-tag', '7.2'),
-        ('Permisos', 5, 'fas fa-key', '7.3'),
-        ('Área de Conocimiento', 15, 'fas fa-brain', '7.4'),
-        ('Departamento', 16, 'fas fa-building', '7.5'),
-        ('Carrera', 17, 'fas fa-graduation-cap', '7.6'),
-        ('Componente', 18, 'fas fa-puzzle-piece', '7.7'),
-        ('Periodo', 19, 'fas fa-calendar-week', '7.8'),
-        ('Modalidad', 20, 'fas fa-toggle-on', '7.9'),
+        ('Menus', 3, 'fas fa-bars', '7.01'),
+        ('Roles', 4, 'fas fa-user-tag', '7.02'),
+        ('Permisos', 5, 'fas fa-key', '7.03'),
+        ('Área de Conocimiento', 15, 'fas fa-brain', '7.04'),
+        ('Departamento', 16, 'fas fa-building', '7.05'),
+        ('Carrera', 17, 'fas fa-graduation-cap', '7.06'),
+        ('Componente', 18, 'fas fa-puzzle-piece', '7.07'),
+        ('Periodo', 19, 'fas fa-calendar-week', '7.08'),
+        ('Modalidad', 20, 'fas fa-toggle-on', '7.09'),
+        ('Turno', 21, 'fas fa-clock', '7.10'),
     ('Reportes', 13, 'fas fa-chart-bar', '8')
 GO
 

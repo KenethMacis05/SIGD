@@ -140,13 +140,13 @@ const dataTableOptions = {
             render: function (data, type, row, meta) {
                 return meta.row + 1;
             },
-            orderable: false
+            orderable: false, width: "30"
         },
         { data: "tema", title: "Tema" },
-        { data: "horas_teoricas", title: "Horas teoricas" },
-        { data: "horas_laboratorio", title: "Horas laboratorio" },
-        { data: "horas_practicas", title: "Horas practicas" },
-        { data: "horas_investigacion", title: "Horas investigación" },
+        { data: "horas_teoricas", title: "HT", width: "50" },
+        { data: "horas_laboratorio", title: "HL", width: "50" },
+        { data: "horas_practicas", title: "HPr", width: "50" },
+        { data: "horas_investigacion", title: "HTI", width: "50" },
         {
             defaultContent:
                 '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +

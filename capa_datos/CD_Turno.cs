@@ -35,6 +35,9 @@ namespace capa_datos
                                     id_turno = Convert.ToInt32(dr["id_turno"]),
                                     nombre = dr["nombre"].ToString(),
                                     fk_modalidad = Convert.ToInt32(dr["fk_modalidad"]),
+                                    Modalidad = new MODALIDAD {
+                                        nombre = dr["modalidad"].ToString()
+                                    },
                                     estado = Convert.ToBoolean(dr["estado"]),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
                                 }

@@ -669,6 +669,7 @@
     <Content Include="Scripts\Views\Contenidos.js" />
     <Content Include="Scripts\Views\Semanas.js" />
     <Content Include="Scripts\Views\TemasPlanSemestral.js" />
+    <Content Include="Scripts\Views\Turno.js" />
     <Content Include="Scripts\Views\UserConfig.js" />
     <Content Include="Scripts\Views\Usuarios.js" />
     <Content Include="Web.config" />

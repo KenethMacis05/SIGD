@@ -281,7 +281,8 @@ BEGIN
             AND p.estado = 1
         )
     )
-    ORDER BY TRY_CAST(m.orden AS DECIMAL(10,2));
+    ORDER BY CAST(LEFT(m.orden, CHARINDEX('.', m.orden + '.') - 1) AS INT),
+         CAST(SUBSTRING(m.orden, CHARINDEX('.', m.orden) + 1, LEN(m.orden)) AS INT);
 END
 GO
 
@@ -325,7 +326,8 @@ BEGIN
             AND p.estado = 1    
         )    
     )    
-    ORDER BY TRY_CAST(m.orden AS DECIMAL(10,2));
+    ORDER BY CAST(LEFT(m.orden, CHARINDEX('.', m.orden + '.') - 1) AS INT),
+         CAST(SUBSTRING(m.orden, CHARINDEX('.', m.orden) + 1, LEN(m.orden)) AS INT);
 END
 GO
 
@@ -346,7 +348,8 @@ BEGIN
     LEFT JOIN CONTROLLER c ON m.fk_controlador = c.id_controlador        
     WHERE m.estado = 1    
     AND (c.tipo = 'Vista' OR c.tipo IS NULL OR m.fk_controlador = null) -- Solo vistas o menús padres    
-    ORDER BY TRY_CAST(m.orden AS DECIMAL(10,2));
+    ORDER BY CAST(LEFT(m.orden, CHARINDEX('.', m.orden + '.') - 1) AS INT),
+         CAST(SUBSTRING(m.orden, CHARINDEX('.', m.orden) + 1, LEN(m.orden)) AS INT);
 END
 GO
 
@@ -372,7 +375,8 @@ BEGIN
         WHERE mr.fk_rol = @IdRol  
         AND mr.fk_menu = m.id_menu          
     )      
-    ORDER BY m.orden ASC;  
+    ORDER BY CAST(LEFT(m.orden, CHARINDEX('.', m.orden + '.') - 1) AS INT),
+         CAST(SUBSTRING(m.orden, CHARINDEX('.', m.orden) + 1, LEN(m.orden)) AS INT);
 END
 GO
 
@@ -3963,12 +3967,14 @@ CREATE OR ALTER PROCEDURE usp_LeerTurnos
 AS
 BEGIN
     SELECT 
-        id_turno,
-        nombre,
-        fk_modalidad,
-        estado,
-        fecha_registro
-    FROM TURNO
+        t.id_turno,
+        t.nombre,
+        t.fk_modalidad,
+        mo.nombre AS modalidad,
+        t.estado,
+        t.fecha_registro
+    FROM TURNO t
+    INNER JOIN MODALIDAD mo ON mo.id_modalidad = t.fk_modalidad
     ORDER BY id_turno DESC
 END
 GO
@@ -4079,12 +4085,12 @@ CREATE PROCEDURE usp_CrearMatrizIntegracion
     @FKProfesor INT,
     @FKPeriodo INT,
     @FkModalidad INT,
-    @CompetenciasGenericas VARCHAR(255),
-    @CompetenciasEspecificas VARCHAR(255),
-    @ObjetivoAnio VARCHAR(255),
-    @ObjetivoSemestre VARCHAR(255),
-    @ObjetivoIntegrador VARCHAR(255),
-    @EstrategiaIntegradora VARCHAR(255),    
+    @CompetenciasGenericas VARCHAR(MAX),
+    @CompetenciasEspecificas VARCHAR(MAX),
+    @ObjetivoAnio VARCHAR(MAX),
+    @ObjetivoSemestre VARCHAR(MAX),
+    @ObjetivoIntegrador VARCHAR(MAX),
+    @EstrategiaIntegradora VARCHAR(MAX),    
     @NumeroSemanas INT,
     @FechaInicio DATE,
     @Resultado INT OUTPUT,
@@ -4407,14 +4413,14 @@ CREATE PROCEDURE usp_ActualizarMatrizIntegracion
     @FKAsignatura INT,
     @FKProfesor INT,
     @FKPeriodo INT,
-    @CompetenciasGenericas VARCHAR(255),
-    @CompetenciasEspecificas VARCHAR(255),
-    @ObjetivoAnio VARCHAR(255),
-    @ObjetivoSemestre VARCHAR(255),
-    @ObjetivoIntegrador VARCHAR(255),
-    @EstrategiaIntegradora VARCHAR(255),
+    @CompetenciasGenericas VARCHAR(MAX),
+    @CompetenciasEspecificas VARCHAR(MAX),
+    @ObjetivoAnio VARCHAR(MAX),
+    @ObjetivoSemestre VARCHAR(MAX),
+    @ObjetivoIntegrador VARCHAR(MAX),
+    @EstrategiaIntegradora VARCHAR(MAX),
     @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
+    @Mensaje VARCHAR(MAX) OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -5936,8 +5942,8 @@ GO
 CREATE OR ALTER PROCEDURE usp_CrearAccionIntegradoraTipoEvaluacion
     @FKMatrizIntegracion INT,
     @FKSemana INT,
-    @AccionIntegradora VARCHAR(255) = NULL,
-    @TipoEvaluacion VARCHAR(50) = NULL,
+    @AccionIntegradora VARCHAR(MAX) = NULL,
+    @TipoEvaluacion VARCHAR(MAX) = NULL,
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS
@@ -6107,8 +6113,8 @@ GO
 -- ACTUALIZAR registro en ACCIONINTEGRADORA_TIPOEVALUACION
 CREATE OR ALTER PROCEDURE usp_ActualizarAccionIntegradoraTipoEvaluacion
     @IdAccionTipo INT,
-    @AccionIntegradora VARCHAR(255) = NULL,
-    @TipoEvaluacion VARCHAR(50) = NULL,
+    @AccionIntegradora VARCHAR(MAX) = NULL,
+    @TipoEvaluacion VARCHAR(MAX) = NULL,
     @Estado VARCHAR(50),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
@@ -6769,7 +6775,7 @@ END
 GO
 
 CREATE OR ALTER PROCEDURE usp_CrearTemaPlanSemestral
-    @Tema VARCHAR(100),
+    @Tema VARCHAR(MAX),
     @FKPlanSemestral INT,
     @HorasTeoricas INT = 0,
     @HorasLaboratorio INT = 0,
@@ -7586,21 +7592,21 @@ GO
 CREATE OR ALTER PROCEDURE usp_CrearPlanClasesDiario(
     @Nombre VARCHAR(255),
     @FKPlanDidactico INT,
-    @Ejes VARCHAR(255),
-    @CompetenciasGenericas VARCHAR(255),
-    @CompetenciasEspecificas VARCHAR(255),
-    @BOA VARCHAR(255),
+    @Ejes VARCHAR(MAX),
+    @CompetenciasGenericas VARCHAR(MAX),
+    @CompetenciasEspecificas VARCHAR(MAX),
+    @BOA VARCHAR(MAX),
     @FechaInicio DATE, 
     @FechaFin DATE,
-    @ObjetivoAprendizaje VARCHAR(255),
-    @IndicadorLogro VARCHAR(255),
+    @ObjetivoAprendizaje VARCHAR(MAX),
+    @IndicadorLogro VARCHAR(MAX),
     @FKTema INT,
     @FKPlanIndividual INT,
-    @TareasIniciales VARCHAR(255), 
-    @TareasDesarrollo VARCHAR(255),
-    @TareasSintesis VARCHAR(255),
+    @TareasIniciales VARCHAR(MAX), 
+    @TareasDesarrollo VARCHAR(MAX),
+    @TareasSintesis VARCHAR(MAX),
     @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
+    @Mensaje VARCHAR(MAX) OUTPUT
 )
 AS
 BEGIN
@@ -7735,9 +7741,15 @@ AS
 BEGIN
     SET @Resultado = 0
     
-    IF EXISTS (SELECT 1 FROM PLANCLASESDIARIO WHERE fk_profesor = @IdUsuario)
+    IF EXISTS (
+		SELECT 1 FROM PLANCLASESDIARIO pcd
+			INNER JOIN PLANDIDACTICOSEMESTRAL pds ON pds.id_plan_didactico = pcd.fk_plan_didactico
+			INNER JOIN MATRIZASIGNATURA ma ON ma.id_matriz_asignatura = pds.fk_matriz_asignatura
+			WHERE ma.fk_profesor_asignado = @IdUsuario
+		)
     BEGIN
-		DELETE FROM PLANCLASESDIARIO WHERE id_plan_diario = @IdPlanClasesDiario AND fk_profesor = @IdUsuario
+		DELETE FROM PLANCLASESDIARIO
+		WHERE id_plan_diario = @IdPlanClasesDiario
         SET @Resultado = 1
     END
 END
@@ -7748,19 +7760,19 @@ CREATE OR ALTER PROCEDURE usp_ActualizarPlanClasesDiario
     @IdPlanClasesDiario INT,
     @Nombre VARCHAR(255),
     @FKPlanDidactico INT,
-    @Ejes VARCHAR(255),
-    @CompetenciasGenericas VARCHAR(255),
-    @CompetenciasEspecificas VARCHAR(255),
-    @BOA VARCHAR(255),
+    @Ejes VARCHAR(MAX),
+    @CompetenciasGenericas VARCHAR(MAX),
+    @CompetenciasEspecificas VARCHAR(MAX),
+    @BOA VARCHAR(MAX),
     @FechaInicio DATE, 
     @FechaFin DATE,
-    @ObjetivoAprendizaje VARCHAR(255),
-    @IndicadorLogro VARCHAR(255),
+    @ObjetivoAprendizaje VARCHAR(MAX),
+    @IndicadorLogro VARCHAR(MAX),
     @FKTema INT,
     @FKPlanIndividual INT,
-    @TareasIniciales VARCHAR(255), 
-    @TareasDesarrollo VARCHAR(255),
-    @TareasSintesis VARCHAR(255),
+    @TareasIniciales VARCHAR(MAX), 
+    @TareasDesarrollo VARCHAR(MAX),
+    @TareasSintesis VARCHAR(MAX),
     @Resultado INT OUTPUT,
     @Mensaje VARCHAR(255) OUTPUT
 AS

@@ -321,13 +321,13 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     fk_periodo INT NOT NULL,
 
     -- Competencias
-    competencias_genericas VARCHAR(255),
-    competencias_especificas VARCHAR(255),
+    competencias_genericas VARCHAR(MAX),
+    competencias_especificas VARCHAR(MAX),
     
     -- Objetivos
-    objetivo_anio VARCHAR(255),
-    objetivo_semestre VARCHAR(255),
-    objetivo_integrador VARCHAR(255),
+    objetivo_anio VARCHAR(MAX),
+    objetivo_semestre VARCHAR(MAX),
+    objetivo_integrador VARCHAR(MAX),
     
     -- Numero de semanas de la Matriz
     numero_semanas INT,
@@ -336,7 +336,7 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     fecha_inicio DATE NOT NULL,
     
     -- Estrategia integradora
-    estrategia_integradora VARCHAR(255),
+    estrategia_integradora VARCHAR(MAX),
 
     estado BIT DEFAULT 1,
     estado_proceso VARCHAR(50) NOT NULL CHECK (estado_proceso IN ('Pendiente', 'En proceso', 'Finalizado')) DEFAULT 'Pendiente',
@@ -389,7 +389,7 @@ CREATE TABLE CONTENIDOS (
     id_contenido INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_asignatura INT NOT NULL,
     fk_semana INT NOT NULL,
-    contenido VARCHAR(255),
+    contenido VARCHAR(MAX),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_CONTENIDOS_ASIGNATURAMATRIZ FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE,
@@ -403,8 +403,8 @@ CREATE TABLE ACCIONINTEGRADORA_TIPOEVALUACION (
     id_accion_tipo INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_integracion INT NOT NULL,
     fk_semana INT NOT NULL,
-    accion_integradora VARCHAR(255),
-    tipo_evaluacion VARCHAR(50),
+    accion_integradora VARCHAR(MAX),
+    tipo_evaluacion VARCHAR(MAX),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_ACCIONTIPO_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE,
@@ -436,19 +436,19 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
     fk_matriz_asignatura INT NOT NULL,
 	
 	-- C.	Currículum
-	curriculum VARCHAR(255),
+	curriculum VARCHAR(MAX),
 
 	-- D.	Matriz del componente = Temas, horas y creditos	(En la tabla: TemaPlanificacionSemestral)
 
 	-- E.	Competencias con las que va a contribuir
-	competencias_genericas VARCHAR(255),
-	competencias_especificas VARCHAR(255),
+	competencias_genericas VARCHAR(MAX),
+	competencias_especificas VARCHAR(MAX),
 
     -- F.	Objetivos de aprendizaje a lograr
-    objetivos_aprendizaje VARCHAR(255),
+    objetivos_aprendizaje VARCHAR(MAX),
 
 	-- G.	Objetivo integrador
-	objetivo_integrador VARCHAR(255),
+	objetivo_integrador VARCHAR(MAX),
 
 	-- H.	Eje Transversal (En la tabla: EjeTransversal)
     competencia_generica VARCHAR(MAX),
@@ -456,18 +456,18 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
     valores_transversales VARCHAR(MAX),
 
     -- I.	Estrategia Metodológica
-    estrategia_metodologica VARCHAR(255),
+    estrategia_metodologica VARCHAR(MAX),
     
     -- J.	Estrategia de Evaluación
-    estrategia_evaluacion VARCHAR(255),
+    estrategia_evaluacion VARCHAR(MAX),
 
     -- TABLA DE MATRIZ DE PLANIFICACIÓN SEMESTRAL (En la tabla: MatrizPlanificacionSemestral)
 
     -- K. Recursos
-    recursos VARCHAR(255),
+    recursos VARCHAR(MAX),
 
     -- L. Bibliografía fundamental
-	bibliografia VARCHAR(255),
+	bibliografia VARCHAR(MAX),
     
     estado_proceso VARCHAR(50) NOT NULL CHECK (estado_proceso IN ('Pendiente', 'En proceso', 'Finalizado')) DEFAULT 'Pendiente',
     estado BIT DEFAULT 1,
@@ -482,7 +482,7 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TEMAP
 CREATE TABLE TEMAPLANIFICACIONSEMESTRAL (
     id_tema INT PRIMARY KEY IDENTITY(1,1),
     fk_plan_didactico INT NOT NULL,
-    tema VARCHAR(100) NOT NULL,
+    tema VARCHAR(MAX) NOT NULL,
     horas_teoricas INT,
     horas_laboratorio INT,
     horas_practicas INT,
@@ -519,19 +519,19 @@ CREATE TABLE PLANIFICACIONINDIVIDUALSEMESTRAL (
 	fk_contenido INT,
 
 	--Estrategias de aprendizaje (Integradoras)
-    estrategias_aprendizaje VARCHAR(255),
+    estrategias_aprendizaje VARCHAR(MAX),
 
 	--Estrategias de evaluacion (Integradoras)
-    estrategias_evaluacion VARCHAR(255),
+    estrategias_evaluacion VARCHAR(MAX),
 
 	--Tipo de evaluacion
-    tipo_evaluacion VARCHAR(50),
+    tipo_evaluacion VARCHAR(MAX),
 
 	--Instrumento de evaluacion
-    instrumento_evaluacion VARCHAR(100),
+    instrumento_evaluacion VARCHAR(MAX),
 
 	--Evidencias de aprendizaje
-    evidencias_aprendizaje VARCHAR(255),
+    evidencias_aprendizaje VARCHAR(MAX),
 
 	CONSTRAINT FK_MATRIZPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE,
 	CONSTRAINT FK_CONTENIDOSPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_contenido) REFERENCES CONTENIDOS(id_contenido)
@@ -557,31 +557,31 @@ CREATE TABLE PLANCLASESDIARIO (
 	-- Año y semestre
     
 	-- Eje (s)
-	ejes VARCHAR(255),
+	ejes VARCHAR(MAX),
 
 	-- Competencia o competencias
-	competencias_genericas VARCHAR(255),
-	competencias_especificas VARCHAR(255),
+	competencias_genericas VARCHAR(MAX),
+	competencias_especificas VARCHAR(MAX),
 
 	-- BOA
-	BOA VARCHAR(255),
+	BOA VARCHAR(MAX),
 
 	-- Fecha de Inicio y de Finalizacion
 	fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,          
 
 	-- 2.	Aprendizaje
-    objetivo_aprendizaje VARCHAR(255),
-    indicador_logro VARCHAR(255),
+    objetivo_aprendizaje VARCHAR(MAX),
+    indicador_logro VARCHAR(MAX),
     -- TEMA (Se sacan de la relación de la tabla TEMAS con el PLANDIDACTICOSEMESTRAL)
     fk_tema INT NOT NULL,
     -- CONTENIDO (Se sacan de la relación de la tabla CONTENIDO con la tabla MATRIZASIGNATURA con la tabla PLANDIDACTICOSEMESTRAL o con la tabla PLANIFICACIONINDIVIDUALSEMESTRAL)
     fk_plan_individual INT NOT NULL,
 
 	-- 3.	Tareas o actividades de aprendizaje
-    tareas_iniciales VARCHAR(255),
-    tareas_desarrollo VARCHAR(255),
-    tareas_sintesis VARCHAR(255),
+    tareas_iniciales VARCHAR(MAX),
+    tareas_desarrollo VARCHAR(MAX),
+    tareas_sintesis VARCHAR(MAX),
 
 	-- 4.	Evaluación de los aprendizajes (Se saca en dependencia del contenido seleccionado y se saca de la tabla PLANIFICACIONINDIVIDUALSEMESTRAL)
     -- Tipo de evaluación
