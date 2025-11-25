@@ -22,6 +22,23 @@ jQuery.ajax({
     error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
 })
 
+// Cargar tipos de dominios
+jQuery.ajax({
+    url: "/Catalogos/ListarTipoDominio",
+    type: "GET",
+    dataType: "json",
+    contentType: "application/json; charset=utf-8",
+
+    success: function (response) {
+        $('#inputGroupSelectTipoDominio').empty().append('<option value="" disabled selected>Seleccionar...</option>');
+        $.each(response.data, function (index, tipoDominio) {
+            $('#inputGroupSelectTipoDominio').append(`<option value="${tipoDominio.id_tipo_dominio}">${tipoDominio.descripcion_tipo_dominio}</option>`);
+        });
+    },
+
+    error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+})
+
 // Mostrar permisos del Rol
 $("#btnBuscar").off("click").on("click", function () {
     IdRol = $('#obtenerRol').val();

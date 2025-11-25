@@ -174,6 +174,7 @@ function cargarDominios(IdRol, IdDominio) {
             renderizarDominiosNoAsignados();
 
             miElemento.classList.remove('hidden');
+            miElemento.classList.add('fade-in');
             $('#btnGuardarDominios').prop('disabled', false);
         }
     }
@@ -187,11 +188,13 @@ function cargarDominios(IdRol, IdDominio) {
             IdRol: IdRol,
             IdDominio: IdDominio
         },
+        beforeSend: () => $("#listaDominiosAsignados").LoadingOverlay("show"),
         success: function (response) {
             dominiosAsignadosData = response.data || [];
             dominiosAsignadosLoaded = true;
             verificarCargaCompleta();
         },
+        complete: () => $("#listaDominiosAsignados").LoadingOverlay("hide"),
         error: function (xhr, status, error) {
             showAlert("Error", `Error al conectar con el servidor: ${error}`, "error")
             dominiosAsignadosLoaded = true;
@@ -208,11 +211,13 @@ function cargarDominios(IdRol, IdDominio) {
             IdRol: IdRol,
             IdDominio: IdDominio
         },
+        beforeSend: () => $("#listaDominiosNoAsignados").LoadingOverlay("show"),
         success: function (response) {
             dominiosNoAsignadosData = response.data || [];
             dominiosNoAsignadosLoaded = true;
             verificarCargaCompleta();
         },
+        complete: () => $("#listaDominiosNoAsignados").LoadingOverlay("hide"),
         error: function (xhr, status, error) {
             showAlert("Error", `Error al conectar con el servidor: ${error}`, "error")
             dominiosNoAsignadosLoaded = true;

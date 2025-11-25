@@ -402,6 +402,7 @@
     <Content Include="DATABASE\002-INSERTAR_DATOS.sql" />
     <Content Include="DATABASE\003-CREAR_PROCEDURES.sql" />
     <Content Include="DATABASE\004-CREAR_VIEWS.sql" />
+    <Content Include="DATABASE\008-REPORTES.sql" />
     <Content Include="DATABASE\007-FUNCTION.sql" />
     <Content Include="DATABASE\006-TRIGGER.sql" />
     <Content Include="DATABASE\005-JOD.sql" />
