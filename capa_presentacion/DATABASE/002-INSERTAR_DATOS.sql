@@ -555,8 +555,10 @@ GO
 INSERT INTO REPORTES (nombre, codigo, descripcion) VALUES
 ('Resumen de Matriz', 'MIC-1', 'Mostrar la información general de una matriz de integración: código, nombre, asignatura propietaria, docente creador, periodo y modalidad; además el estado por semana, conteo de contenidos y estado de la acción integradora. Ideal para revisar rápidamente el estado global de una matriz.'),
 ('Avance y Cumplimiento por Profesor', 'MIC-2', 'Mostrar el porcentaje de avance (completitud) de las asignaturas/matrices asignadas a cada docente: cuántas matrices/ asignaturas tiene, cuántos contenidos están finalizados vs totales, semanas finalizadas, matrices completas. Útil para supervisión académica y carga de trabajo.'),
-('Inventario de Contenidos Pendientes', 'MIC-3', 'Listar los contenidos que están pendientes (no iniciados) filtrados por periodo, carrera o modalidad. Sirve para coordinar qué semanas/asignaturas requieren atención inmediata antes de evaluaciones.')
-
+('Inventario de Contenidos Pendientes', 'MIC-3', 'Listar los contenidos que están pendientes (no iniciados) filtrados por periodo, carrera o modalidad. Sirve para coordinar qué semanas/asignaturas requieren atención inmediata antes de evaluaciones.'),
+('Detalle de Matriz por Semana', 'MIC-4', 'Mostrar el detalle completo de una matriz de integración por semana: información de cada semana, contenidos por asignatura, estados y acciones integradoras. Ideal para revisión detallada semana a semana.'),
+('Resumen de Matrices por Área/Departamento/Carrera', 'MIC-5', 'Reporte ejecutivo que agrupa matrices por área de conocimiento, departamento y carrera. Muestra totales, estados y porcentajes de avance por agrupación académica. Para análisis institucional.'),
+('Avance y Cumplimiento por Asignatura', 'MIC-6', 'Mostrar el porcentaje de avance detallado por cada asignatura/matriz. Incluye métricas por asignatura, profesor responsable, semanas y contenidos. Para seguimiento específico por materia.');
 GO
 
 -- REGISTROS EN TABLA DOMINIO PARA CARRERAS
