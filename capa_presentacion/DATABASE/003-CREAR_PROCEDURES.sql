@@ -189,7 +189,7 @@ BEGIN
 END
 GO
 
-ALTER PROCEDURE [dbo].[GetReporte] (@UsuarioId INT)
+CREATE PROCEDURE [dbo].[GetReporte] (@UsuarioId INT)
 AS
 BEGIN
     SELECT 
@@ -4100,7 +4100,7 @@ BEGIN
     SELECT 
 		id_tipo_dominio,
 		descripcion_tipo_dominio,
-        nombre_procedimiento
+        nombre_procedimiento,
         estado,
         fecha_registro
     FROM TIPO_DOMINIO
