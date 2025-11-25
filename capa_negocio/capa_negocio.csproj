@@ -71,6 +71,7 @@
     <Compile Include="CN_Contenidos.cs" />
     <Compile Include="CN_Semanas.cs" />
     <Compile Include="CN_TemasPlanificacionSemestral.cs" />
+    <Compile Include="CN_TipoDominio.cs" />
     <Compile Include="CN_Turno.cs" />
     <Compile Include="CN_Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

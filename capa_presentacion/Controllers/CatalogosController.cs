@@ -19,6 +19,7 @@ namespace capa_presentacion.Controllers
         CN_Periodo CN_Periodo = new CN_Periodo();
         CN_Modalidad CN_Modalidad = new CN_Modalidad();
         CN_Turno CN_Turno = new CN_Turno();
+        CN_TipoDominio CN_TipoDominio = new CN_TipoDominio();
 
         #region Areas de Conocimiento
 
@@ -399,6 +400,23 @@ namespace capa_presentacion.Controllers
             int resultado = CN_Turno.Eliminar(IdTurno, out mensaje);
 
             return Json(new { Respuesta = (resultado == 1), Mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+        #endregion
+
+        #region TipoDominio
+
+        [AllowAnonymous]
+        [HttpGet]
+        public JsonResult ListarTipoDominio()
+        {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
+
+            List<TIPODOMINIO> lst = new List<TIPODOMINIO>();
+            lst = CN_TipoDominio.Listar();
+
+            return Json(new { data = lst }, JsonRequestBehavior.AllowGet);
         }
 
         #endregion

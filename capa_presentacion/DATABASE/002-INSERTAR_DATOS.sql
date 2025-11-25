@@ -388,7 +388,8 @@ INSERT INTO TIPO_DOMINIO (descripcion_tipo_dominio, nombre_procedimiento) VALUES
 ('Carreras', 'GetCarrera'),
 ('Departamentos', 'GetDepartamento'),
 ('AreasConocimiento', 'GetAreaConocimiento'),
-('Periodos', 'GetPeriodo')
+('Periodos', 'GetPeriodo'),
+('Reportes', 'GetReporte')
 GO
 
 --------------------------------------------------------------------------------------------------------------------    
@@ -550,6 +551,14 @@ VALUES ('Matutino', 1), ('Vespertino', 1),
 
 GO
 
+-- REGISTROS EN LA TABLA REPORTES
+INSERT INTO REPORTES (nombre, codigo, descripcion) VALUES
+('Resumen de Matriz', 'MIC-1', 'Mostrar la información general de una matriz de integración: código, nombre, asignatura propietaria, docente creador, periodo y modalidad; además el estado por semana, conteo de contenidos y estado de la acción integradora. Ideal para revisar rápidamente el estado global de una matriz.'),
+('Avance y Cumplimiento por Profesor', 'MIC-2', 'Mostrar el porcentaje de avance (completitud) de las asignaturas/matrices asignadas a cada docente: cuántas matrices/ asignaturas tiene, cuántos contenidos están finalizados vs totales, semanas finalizadas, matrices completas. Útil para supervisión académica y carga de trabajo.'),
+('Inventario de Contenidos Pendientes', 'MIC-3', 'Listar los contenidos que están pendientes (no iniciados) filtrados por periodo, carrera o modalidad. Sirve para coordinar qué semanas/asignaturas requieren atención inmediata antes de evaluaciones.')
+
+GO
+
 -- REGISTROS EN TABLA DOMINIO PARA CARRERAS
 INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
 SELECT 
@@ -591,6 +600,17 @@ SELECT
     anio,
     id_periodo
 FROM PERIODO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA REPORTES
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Reportes'),
+    nombre,
+    codigo,
+    id_reporte
+FROM REPORTES
 WHERE estado = 1
 GO
 

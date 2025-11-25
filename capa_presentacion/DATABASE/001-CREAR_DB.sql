@@ -290,6 +290,20 @@ CREATE TABLE TURNO (
     CONSTRAINT FK_TURNO_MODALIDAD FOREIGN KEY (fk_modalidad) REFERENCES MODALIDAD(id_modalidad)
 );
 
+GO
+
+-- (10) Tabla reportes
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'REPORTES')
+CREATE TABLE REPORTES (
+    id_reporte INT PRIMARY KEY IDENTITY(1,1),
+    nombre VARCHAR(255),
+    codigo VARCHAR(255),
+    descripcion VARCHAR(500),
+    ruta VARCHAR(255),
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+);
+
 -----------------------------------------------------Etapa 1: Matriz de Integracion de Componentes-----------------------------------------------------
 -- (1) Tabla MatrizIntegracionComponentes
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZINTEGRACIONCOMPONENTES')

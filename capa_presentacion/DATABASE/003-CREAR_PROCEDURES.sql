@@ -189,6 +189,19 @@ BEGIN
 END
 GO
 
+ALTER PROCEDURE [dbo].[GetReporte] (@UsuarioId INT)
+AS
+BEGIN
+    SELECT 
+        R.id_reporte AS Id,
+        CONCAT(R.codigo, ' - ', R.nombre) AS Descripcion
+    FROM REPORTES R
+    WHERE R.id_reporte IN (SELECT ReferenciaId FROM dbo.FiltrarDominio(@UsuarioId, 'Reportes'))
+    AND R.estado = 1
+    ORDER BY R.codigo
+END
+GO
+
 --------------------------------------------------------------------------------------------------------------------
 
 -- (1) PROCEDIMIENTO ALMACENADO PARA INICIAR SESIÓN DE USUARIO
@@ -4080,6 +4093,20 @@ BEGIN
 END
 GO
 
+-- LEER DATOS DE TIPO DE DOMINIO
+CREATE OR ALTER PROCEDURE usp_LeerTipoDominio
+AS
+BEGIN
+    SELECT 
+		id_tipo_dominio,
+		descripcion_tipo_dominio,
+        nombre_procedimiento
+        estado,
+        fecha_registro
+    FROM TIPO_DOMINIO
+	ORDER BY id_tipo_dominio ASC
+END
+GO
 ----------------------------------------------------------------------------
 
 -- Crear Matriz de Integración
