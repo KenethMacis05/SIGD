@@ -89,7 +89,7 @@ $("#datatable tbody").on("click", '.btn-viewSemanas', function () {
 // Redirigir a la pantalla de reporte PDF
 $('#datatable tbody').on('click', '.btn-pdf', function () {
     var data = dataTable.row($(this).parents('tr')).data();
-    window.open('/Reportes/ReporteViewer.aspx?Reporte=/MatrizIntegracionComponente/MatrizIntegracionComponente&id=' + data.id_matriz_integracion, '_blank');
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=MatrizIntegracionComponente&id=' + data.id_matriz_integracion, '_blank');
 });
 
 function abrirModal(json) {
@@ -243,6 +243,12 @@ $(document).ready(function () {
     $('#objetivoAnioSummernote').summernote(summernoteConfig);
     $('#objetivoSemestreSummernote').summernote(summernoteConfig);
     $('#objetivoIntegradorSummernote').summernote(summernoteConfig);
+
+    inicializarSelect2Area();
+    inicializarSelect2Departamento();
+    inicializarSelect2Carrera();
+    inicializarSelect2Modalidad();
+    inicializarSelect2Periodo();
 
     $tabs.not(':first').removeClass('active show');
     $tabButtons.not(':first').removeClass('active').attr('aria-selected', 'false');

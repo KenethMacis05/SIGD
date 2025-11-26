@@ -4,8 +4,8 @@
 });
 
 // Inicializa select2
-function inicializarSelect2Asignatura() {
-    $('#inputGroupSelectAsignatura').select2({
+function inicializarSelect2Asignatura(dropdownParent = null) {
+    var config = {
         placeholder: "Buscar asignatura...",
         allowClear: true,
         language: {
@@ -13,10 +13,17 @@ function inicializarSelect2Asignatura() {
                 return "No se encontraron resultados";
             }
         }
-    });
+    };
+
+    // Si se proporciona un dropdownParent, lo agregamos a la configuración
+    if (dropdownParent) {
+        config.dropdownParent = dropdownParent;
+    }
+
+    $('#inputGroupSelectAsignatura').select2(config);
 }
 
-function cargarAsignaturas(soloIntegradoras) {
+function cargarAsignaturas(soloIntegradoras, dropdownParent = null) {
     var asignaturaActual = $("#fk_asignatura_activa").val();
     var url = "/Catalogos/ListarAsignaturas";
     if (soloIntegradoras) {
@@ -44,6 +51,12 @@ function cargarAsignaturas(soloIntegradoras) {
                 );
             });
 
+            // Reinicializar Select2 con el dropdownParent si se proporciona
+            if (dropdownParent) {
+                $('#inputGroupSelectAsignatura').select2('destroy');
+                inicializarSelect2Asignatura(dropdownParent);
+            }
+
             if (asignaturaActual && asignaturaActual !== '0') {
                 $('#inputGroupSelectAsignatura').val(asignaturaActual).trigger('change');
             }
@@ -52,7 +65,7 @@ function cargarAsignaturas(soloIntegradoras) {
         },
 
         error: (xhr) => {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            showAlert("Error", `Error al conectar con el servidor (Asignaturas): ${xhr.statusText}`, "error");
         }
     });
 }

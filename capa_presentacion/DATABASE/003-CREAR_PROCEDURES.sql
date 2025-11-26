@@ -194,7 +194,8 @@ AS
 BEGIN
     SELECT 
         R.id_reporte AS Id,
-        CONCAT(R.codigo, ' - ', R.nombre) AS Descripcion
+        CONCAT(R.codigo, ' - ', R.nombre) AS Nombre,
+		R.descripcion AS Descripcion
     FROM REPORTES R
     WHERE R.id_reporte IN (SELECT ReferenciaId FROM dbo.FiltrarDominio(@UsuarioId, 'Reportes'))
     AND R.estado = 1
@@ -4475,7 +4476,7 @@ END;
 GO
 
 -- Actualizar Matriz de Integración
-CREATE PROCEDURE usp_ActualizarMatrizIntegracion
+CREATE OR ALTER PROCEDURE usp_ActualizarMatrizIntegracion
     @IdMatriz INT,
     @Nombre VARCHAR(255),
     @FKArea INT,
@@ -4567,9 +4568,9 @@ BEGIN
         END
 
         -- 8. Verificar si el nombre ya existe (excluyendo la matriz actual)
-        IF EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE nombre = @Nombre AND id_matriz_integracion != @IdMatriz AND estado = 1)
+        IF EXISTS (SELECT 1 FROM MATRIZINTEGRACIONCOMPONENTES WHERE nombre = @Nombre AND id_matriz_integracion != @IdMatriz AND estado = 1 AND fk_periodo != @FKPeriodo)
         BEGIN
-            SET @Mensaje = 'El nombre de la Matriz ya está en uso';
+            SET @Mensaje = 'El nombre de la Matriz ya está en uso en el periodo selecionado';
             ROLLBACK TRANSACTION;
             RETURN;
         END

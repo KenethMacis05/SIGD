@@ -50,7 +50,7 @@ function cargarContenidosSemana() {
         },
 
         error: (xhr) => {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            showAlert("Error", `Error al conectar con el servidor (ContenidosSemanas): ${xhr.statusText}`, "error");
         }
     });
 }

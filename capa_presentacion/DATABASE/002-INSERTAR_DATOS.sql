@@ -25,7 +25,7 @@ VALUES
 	('Planificacion', 'Asignaturas_Asignadas', 'Asignaturas asignadas', 'Vista'),
     ('Planificacion', 'Plan_Didactico_Semestral', 'Plan didáctico semestral', 'Vista'),
     ('Planificacion', 'Plan_de_Clases_Diario', 'Plan de clases diario', 'Vista'),
-    ('Reportes', 'Index', 'Reportes del sistema', 'Vista'),
+    ('Reporte', 'Index', 'Reportes del sistema', 'Vista'),
     ('Usuario', 'Configuraciones', 'Configuración del usuario', 'Vista'),
     
     ('Catalogos', 'AreaConocimiento', 'Area de conocimiento', 'Vista'),

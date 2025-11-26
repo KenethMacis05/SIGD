@@ -1,0 +1,181 @@
+﻿
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    /* CSS personalizado */
+    .select2-hidden {
+        opacity: 0;
+        position: absolute;
+        width: 1px;
+        height: 1px;
+    }
+
+    .input-group .select2-container {
+        flex: 1 1 auto;
+    }
+
+    .input-group .select2-selection {
+        height: 100%;
+    }
+
+        .input-group .select2-selection:focus {
+            border-color: #86b7fe;
+            outline: 0;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+</style>
+
+<link rel="stylesheet" href="@Url.Content("~/Content/Views/Contenidos.css")" />
+
+<!--Contenedor-->
+<div class="card shadow-sm mt-3">
+    <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <!-- Contenedor 1-->
+            <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3 gap-2">
+                    <div class="breadcrumb mb-0 shadow-sm rounded bg-light p-3 align-items-center flex-grow-1 me-md-3 w-100">
+                        <div class="breadcrumb-item text-truncate">
+                            <span class="text-primary fw-bold">
+                                <i class="fas fa-layer-group me-2"></i>Reportes
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <hr />
+
+                <!-- Contenidos -->
+                <div class="container-fluid mb-3">
+                    <!--Tabla-->
+                    <table class="display cell-border" style="width: 100%" id="datatable">
+                        <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                        <tfoot>
+
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade modal" id="VerReporte" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-light" style="background-color: #0072BB">
+                <h5 class="modal-title" id="exampleModalLabel">Reporte</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body g-2">
+
+                <input type="hidden" name="idReporte" id="idReporte" value="0">
+
+                <div class="row">
+                    <div class="col-lg-12 mb-3">
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" id="inputGroup-sizing-sm">Nombre del reporte</span>
+                            <input type="text" class="form-control" id="nombreReporte" name="nombreReporte" required autocomplete="off" disabled aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <label class="form-label fs-5 fw-medium mb-0">Parámetros de búsqueda</label>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- Nombre -->
+                            <div class="col col-md-12 col-sm-12" id="parametro-nombre">
+                                <div class="input-group mb-3">
+                                    <label class="input-group-text">Nombre</label>
+                                    <input type="text" class="form-control parametro-input" id="inputParametroNombre" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <!-- Código -->
+                            <div class="col col-md-12 col-sm-12" id="parametro-codigo">
+                                <div class="input-group mb-3">
+                                    <label class="input-group-text">Código</label>
+                                    <input type="text" class="form-control parametro-input" id="inputParametroCodigo" autocomplete="off">
+                                </div>
+                            </div>
+
+                            <!-- Área -->
+                            <div class="col col-md-12 col-sm-12" id="parametro-area">
+                                <div class="input-group mb-3">
+                                    <label for="inputGroupSelectArea" class="input-group-text">Área de Conocimiento</label>
+                                    <select class="form-select select2-hidden parametro-select" id="inputGroupSelectArea"></select>
+                                </div>
+                            </div>
+
+                            <!-- Departamento -->
+                            <div class="col col-md-12 col-sm-12" id="parametro-departamento">
+                                <div class="input-group mb-3">
+                                    <label for="inputGroupSelectDepartamento" class="input-group-text">Departamento</label>
+                                    <select class="form-select select2-hidden parametro-select" id="inputGroupSelectDepartamento"></select>
+                                </div>
+                            </div>
+
+                            <!-- Carrera -->
+                            <div class="col col-md-12 col-sm-12" id="parametro-carrera">
+                                <div class="input-group mb-3">
+                                    <label for="inputGroupSelectCarrera" class="input-group-text">Carrera</label>
+                                    <select class="form-select select2-hidden parametro-select" id="inputGroupSelectCarrera"></select>
+                                </div>
+                            </div>
+
+                            <!-- Modalidad -->
+                            <div class="col col-md-12 col-sm-12" id="parametro-modalidad">
+                                <div class="input-group mb-3">
+                                    <label for="inputGroupSelectModalidad" class="input-group-text">Modalidad</label>
+                                    <select class="form-select select2-hidden parametro-select" id="inputGroupSelectModalidad"></select>
+                                </div>
+                            </div>
+
+                            <!-- Periodo -->
+                            <div class="col col-md-12 col-sm-12" id="parametro-periodo">
+                                <div class="input-group mb-3">
+                                    <label for="inputGroupSelectPeriodo" class="input-group-text">Periodo</label>
+                                    <select class="form-select select2-hidden parametro-select" id="inputGroupSelectPeriodo"></select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                        <i class="fas fa-times-circle me-2"></i>Cerrar
+                    </button>
+                    <button type="submit" style="background: #0072BB" onclick="VerInforme()" class="btn btn-success w-50">
+                        <i class="fas fa-file-pdf me-2"></i>Ver informe
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+@section scripts
+{
+    <script src="@Url.Content("~/Scripts/Views/Reporte.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Template/Selects/SelectAreas.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Template/Selects/SelectDepartamentos.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Template/Selects/SelectCarreras.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Template/Selects/SelectPeriodos.js")" type="text/javascript"></script>
+}

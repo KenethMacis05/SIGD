@@ -96,6 +96,7 @@
     <Compile Include="PLANDIDACTICOSEMESTRAL.cs" />
     <Compile Include="PLANIFICACIONINDIVIDUALSEMESTRAL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="REPORTE.cs" />
     <Compile Include="ROL.cs" />
     <Compile Include="SEMANAS.cs" />
     <Compile Include="TEMAPLANIFICACIONSEMESTRAL.cs" />

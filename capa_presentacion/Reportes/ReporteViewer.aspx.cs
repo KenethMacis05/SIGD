@@ -36,20 +36,29 @@ namespace capa_presentacion.Reportes
         {
             try
             {
-                string reporte = Request.QueryString["Reporte"];
+                string nombreReporte = Request.QueryString["Reporte"];
 
-                if (string.IsNullOrEmpty(reporte))
+                if (string.IsNullOrEmpty(nombreReporte))
                 {
                     MostrarError("No se especificó el reporte");
                     return;
                 }
 
+                // Obtener la ruta completa del reporte
+                string rutaReporte = ObtenerRutaReporte(nombreReporte);
+
+                if (string.IsNullOrEmpty(rutaReporte))
+                {
+                    MostrarError($"Reporte '{nombreReporte}' no encontrado");
+                    return;
+                }
+
                 // Configurar servidor de reportes
                 RVReporte.ServerReport.ReportServerUrl = new Uri(ReportServerUrl);
-                RVReporte.ServerReport.ReportPath = reporte;
+                RVReporte.ServerReport.ReportPath = rutaReporte;
 
                 // Configurar parámetros
-                EstablecerParametros();
+                EstablecerParametros(nombreReporte);
 
                 RVReporte.ServerReport.Refresh();
             }
@@ -59,31 +68,63 @@ namespace capa_presentacion.Reportes
             }
         }
 
-        private void EstablecerParametros()
+        private string ObtenerRutaReporte(string nombreReporte)
+        {
+            var rutasReportes = new Dictionary<string, string>
+            {
+                { "MatrizIntegracionComponente", "/MatrizIntegracionComponente/MatrizIntegracionComponente" },
+                { "PlanDidacticoSemestral", "/PlanDidacticoSemestral/PlanDidacticoSemestral" },
+                { "PlanClasesDiario", "/PlanClasesDiario/PlanClasesDiario" },
+                { "MIC-5 - Resumen de Matrices por Área/Departamento/Carrera", "/MatrizIntegracionComponente/ReporteResumenMatrizXAreaXDepartamentoXCarrera" }
+            };
+
+            return rutasReportes.ContainsKey(nombreReporte)
+                ? rutasReportes[nombreReporte]
+                : null;
+        }
+
+        private void EstablecerParametros(string nombreReporte)
         {
             List<ReportParameter> reportParameters = new List<ReportParameter>();
 
-            switch (Request.QueryString["Reporte"])
+            switch (nombreReporte)
             {
-                case "/MatrizIntegracionComponente/MatrizIntegracionComponente":
+                case "MatrizIntegracionComponente":
                     reportParameters.Add(new ReportParameter("IdMatrizIntegracionInforme", Request.QueryString["id"]));
                     break;
-                case "/PlanDidacticoSemestral/PlanDidacticoSemestral":
+                case "PlanDidacticoSemestral":
                     reportParameters.Add(new ReportParameter("IdPlaSemestral", Request.QueryString["id"]));
                     break;
-                case "/PlanClasesDiario/PlanClasesDiario":
+                case "PlanClasesDiario":
                     reportParameters.Add(new ReportParameter("IdPlaClasesDiario", Request.QueryString["id"]));
+                    break;
+                case "MIC-5 - Resumen de Matrices por Área/Departamento/Carrera":
+                    reportParameters.Add(new ReportParameter("IdArea", NullSafeValue(Request.QueryString["area"])));
+                    reportParameters.Add(new ReportParameter("IdDepartamento", NullSafeValue(Request.QueryString["departamento"])));
+                    reportParameters.Add(new ReportParameter("IdCarrera", NullSafeValue(Request.QueryString["carrera"])));
+                    reportParameters.Add(new ReportParameter("Codigo", NullSafeValue(Request.QueryString["codigo"])));
+                    reportParameters.Add(new ReportParameter("Periodo", NullSafeValue(Request.QueryString["periodo"])));
+                    reportParameters.Add(new ReportParameter("IdMatrizIntegracion", NullSafeValue(null)));
                     break;
                 default:
                     break;
             }
 
-            this.RVReporte.ServerReport.SetParameters(reportParameters);
+            if (reportParameters.Count > 0)
+            {
+                this.RVReporte.ServerReport.SetParameters(reportParameters);
+            }
         }
 
         private void MostrarError(string mensaje)
         {
             Response.Write($"<script>alert('{mensaje}'); window.history.back();</script>");
         }
+
+        private string NullSafeValue(string value)
+        {
+            return (value == "NULL" || string.IsNullOrEmpty(value)) ? null : value;
+        }
+
     }
 }

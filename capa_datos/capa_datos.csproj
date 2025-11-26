@@ -71,6 +71,7 @@
     <Compile Include="CD_PlanClasesDiario.cs" />
     <Compile Include="CD_PlanificacionIndividual.cs" />
     <Compile Include="CD_PlanSemestral.cs" />
+    <Compile Include="CD_Reporte.cs" />
     <Compile Include="CD_Rol.cs" />
     <Compile Include="CD_Contenidos.cs" />
     <Compile Include="CD_Semanas.cs" />

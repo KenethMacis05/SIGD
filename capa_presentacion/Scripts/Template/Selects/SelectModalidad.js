@@ -1,10 +1,9 @@
 ﻿$(document).ready(function () {
-    inicializarSelect2Modalidad();
     cargarModalidades();
 });
 
-function inicializarSelect2Modalidad() {
-    $('#inputGroupSelectModalidad').select2({
+function inicializarSelect2Modalidad(dropdownParent = null) {
+    var config = {
         placeholder: "Buscar ...",
         allowClear: true,
         language: {
@@ -12,10 +11,17 @@ function inicializarSelect2Modalidad() {
                 return "No se encontraron resultados";
             }
         }
-    });
+    };
+
+    // Si se proporciona un dropdownParent, lo agregamos a la configuración
+    if (dropdownParent) {
+        config.dropdownParent = dropdownParent;
+    }
+
+    $('#inputGroupSelectModalidad').select2(config);
 }
 
-function cargarModalidades() {
+function cargarModalidades(dropdownParent = null) {
     var modalidadActual = $("#fk_modalidad_activa").val();
 
     jQuery.ajax({
@@ -39,6 +45,12 @@ function cargarModalidades() {
                 );
             });
 
+            // Reinicializar Select2 con el dropdownParent si se proporciona
+            if (dropdownParent) {
+                $('#inputGroupSelectModalidad').select2('destroy');
+                inicializarSelect2Modalidad(dropdownParent);
+            }
+
             // Si hay una modalidad actual, seleccionarla
             if (modalidadActual && modalidadActual !== '0') {
                 $('#inputGroupSelectModalidad').val(modalidadActual).trigger('change');
@@ -48,7 +60,7 @@ function cargarModalidades() {
         },
 
         error: (xhr) => {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            showAlert("Error", `Error al conectar con el servidor (Modalidades): ${xhr.statusText}`, "error");
         }
     });
 }

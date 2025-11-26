@@ -67,6 +67,7 @@
     <Compile Include="CN_PlanIndividual.cs" />
     <Compile Include="CN_PlanSemestral.cs" />
     <Compile Include="CN_Recursos.cs" />
+    <Compile Include="CN_Reporte.cs" />
     <Compile Include="CN_Rol.cs" />
     <Compile Include="CN_Contenidos.cs" />
     <Compile Include="CN_Semanas.cs" />

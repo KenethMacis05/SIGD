@@ -1,10 +1,9 @@
 ﻿$(document).ready(function () {
-    inicializarSelect2Carrera();
     cargarCarreras();
 });
 
-function inicializarSelect2Carrera() {
-    $('#inputGroupSelectCarrera').select2({
+function inicializarSelect2Carrera(dropdownParent = null) {
+    var config = {
         placeholder: "Buscar carrera...",
         allowClear: true,
         language: {
@@ -12,10 +11,17 @@ function inicializarSelect2Carrera() {
                 return "No se encontraron resultados";
             }
         }
-    });
+    };
+
+    // Si se proporciona un dropdownParent, lo agregamos a la configuración
+    if (dropdownParent) {
+        config.dropdownParent = dropdownParent;
+    }
+
+    $('#inputGroupSelectCarrera').select2(config);
 }
 
-function cargarCarreras() {
+function cargarCarreras(dropdownParent = null) {
     var carreraActual = $("#fk_carrera_activa").val();
 
     jQuery.ajax({
@@ -39,6 +45,12 @@ function cargarCarreras() {
                 );
             });
 
+            // Reinicializar Select2 con el dropdownParent si se proporciona
+            if (dropdownParent) {
+                $('#inputGroupSelectCarrera').select2('destroy');
+                inicializarSelect2Carrera(dropdownParent);
+            }
+
             // Si hay una carrera actual, seleccionarla
             if (carreraActual && carreraActual !== '0') {
                 $('#inputGroupSelectCarrera').val(carreraActual).trigger('change');
@@ -48,7 +60,7 @@ function cargarCarreras() {
         },
 
         error: (xhr) => {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            showAlert("Error", `Error al conectar con el servidor (Carreras): ${xhr.statusText}`, "error");
         }
     });
 }

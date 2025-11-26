@@ -156,6 +156,7 @@
     <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\PermisosController.cs" />
     <Compile Include="Controllers\PlanificacionController.cs" />
+    <Compile Include="Controllers\ReporteController.cs" />
     <Compile Include="Controllers\RolController.cs" />
     <Compile Include="Controllers\UsuarioController.cs" />
     <Compile Include="Filters\VerificarSession.cs" />
@@ -666,6 +667,7 @@
     <Content Include="Scripts\Views\PlanClasesDiario.js" />
     <Content Include="Scripts\Views\PlanIndividual.js" />
     <Content Include="Scripts\Views\PlanSemestral.js" />
+    <Content Include="Scripts\Views\Reporte.js" />
     <Content Include="Scripts\Views\Roles.js" />
     <Content Include="Scripts\Views\Contenidos.js" />
     <Content Include="Scripts\Views\Semanas.js" />
@@ -798,6 +800,7 @@
     <Content Include="Views\Planificacion\Planificacion_Individual.cshtml" />
     <Content Include="Views\Catalogos\Modalidad.cshtml" />
     <Content Include="Views\Catalogos\Turno.cshtml" />
+    <Content Include="Views\Reporte\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />
