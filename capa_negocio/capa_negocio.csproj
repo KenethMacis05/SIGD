@@ -55,6 +55,7 @@
     <Compile Include="CN_Carpeta.cs" />
     <Compile Include="CN_Carrera.cs" />
     <Compile Include="CN_Controlador.cs" />
+    <Compile Include="CN_Dashboard.cs" />
     <Compile Include="CN_Departamento.cs" />
     <Compile Include="CN_DominioRol.cs" />
     <Compile Include="CN_MatrizAsignatura.cs" />

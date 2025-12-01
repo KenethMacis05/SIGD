@@ -806,6 +806,7 @@
     <Folder Include="ARCHIVOS\" />
     <Folder Include="Views\Configuracion\" />
     <Folder Include="Views\Controlador\" />
+    <Folder Include="Views\Dashboard\" />
     <Folder Include="Views\Dominio\" />
   </ItemGroup>
   <ItemGroup>

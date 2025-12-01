@@ -60,6 +60,7 @@
     <Compile Include="CD_Carpeta.cs" />
     <Compile Include="CD_Carrera.cs" />
     <Compile Include="CD_Controller.cs" />
+    <Compile Include="CD_Dashboard.cs" />
     <Compile Include="CD_Departamento.cs" />
     <Compile Include="CD_DominioRol.cs" />
     <Compile Include="CD_MatrizAsignatura.cs" />

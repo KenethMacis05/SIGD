@@ -8157,5 +8157,59 @@ BEGIN
 END;
 GO
 
+CREATE OR ALTER PROCEDURE usp_ObtenerDashboardUsuario
+    @IdUsuario INT
+AS
+BEGIN
+    -- Métricas principales
+    SELECT 
+        dbo.ObtenerMatricesAsignadas(@IdUsuario) AS matrices_asignadas,
+        dbo.ObtenerAvanceGlobal(@IdUsuario) AS avance_global,
+        dbo.ObtenerContenidosPendientesUrgentes(@IdUsuario) AS contenidos_urgentes,
+        dbo.ObtenerSemanasCorteProximas(@IdUsuario) AS cortes_proximos;
+
+    -- Progreso por matriz
+    SELECT 
+        m.codigo,
+        m.nombre AS matriz_nombre,
+        a.nombre AS asignatura,
+        COUNT(c.id_contenido) AS total_contenidos,
+        COUNT(CASE WHEN c.estado = 'Finalizado' THEN 1 END) AS contenidos_finalizados,
+        CASE 
+            WHEN COUNT(c.id_contenido) = 0 THEN 0
+            ELSE CONVERT(DECIMAL(5,2), 
+                COUNT(CASE WHEN c.estado = 'Finalizado' THEN 1 END) * 100.0 / 
+                COUNT(c.id_contenido)
+            )
+        END AS porcentaje_avance
+    FROM MATRIZINTEGRACIONCOMPONENTES m
+    INNER JOIN MATRIZASIGNATURA ma ON m.id_matriz_integracion = ma.fk_matriz_integracion
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    LEFT JOIN CONTENIDOS c ON c.fk_matriz_asignatura = ma.id_matriz_asignatura
+    WHERE ma.fk_profesor_asignado = @IdUsuario
+    GROUP BY m.codigo, m.nombre, a.nombre
+    ORDER BY porcentaje_avance DESC;
+
+    -- Próximos vencimientos
+    SELECT 
+        s.fecha_fin,
+        DATEDIFF(DAY, GETDATE(), s.fecha_fin) AS dias_restantes,
+        m.nombre AS matriz_nombre,
+        a.nombre AS asignatura,
+        s.tipo_semana,
+        COUNT(CASE WHEN c.estado != 'Finalizado' THEN 1 END) AS contenidos_pendientes
+    FROM SEMANAS s
+    INNER JOIN MATRIZINTEGRACIONCOMPONENTES m ON s.fk_matriz_integracion = m.id_matriz_integracion
+    INNER JOIN MATRIZASIGNATURA ma ON m.id_matriz_integracion = ma.fk_matriz_integracion
+    INNER JOIN ASIGNATURA a ON ma.fk_asignatura = a.id_asignatura
+    LEFT JOIN CONTENIDOS c ON c.fk_semana = s.id_semana AND c.fk_matriz_asignatura = ma.id_matriz_asignatura
+    WHERE ma.fk_profesor_asignado = @IdUsuario
+        AND s.fecha_fin >= GETDATE()
+        AND s.fecha_fin <= DATEADD(DAY, 7, GETDATE())
+    GROUP BY s.fecha_fin, m.nombre, a.nombre, s.tipo_semana
+    ORDER BY s.fecha_fin ASC;
+END
+GO
+
 -- Conceder permisos de ejecución en todo el esquema
 GRANT EXECUTE ON SCHEMA::[dbo] TO [IIS APPPOOL\sigd]
