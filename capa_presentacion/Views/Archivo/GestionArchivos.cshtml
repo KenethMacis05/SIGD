@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleDropzone.css")" />
 <link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleInputSearch.css")" />
 <link rel="stylesheet" href="@Url.Content("~/Content/Views/Archivos.css")" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/css/lightgallery-bundle.min.css" />
 
 <!--Contenedor-->
 <div class="card shadow-sm mt-3">
@@ -307,6 +308,24 @@
 </div>
 
 @section scripts{
+    <!-- Core JS -->
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/lightgallery.umd.min.js"></script>
+
+    <!-- Plugins JS -->
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/zoom/lg-zoom.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/thumbnail/lg-thumbnail.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/fullscreen/lg-fullscreen.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/rotate/lg-rotate.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/share/lg-share.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/pager/lg-pager.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/autoplay/lg-autoplay.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/comment/lg-comment.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/hash/lg-hash.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/video/lg-video.umd.min.js"></script>
+
+    <!-- Script de OnlyOffice -->
+    <script src="http://192.168.1.50:8080/web-apps/apps/api/documents/api.js"></script>
+
     <script type="text/javascript">
         const config = {
             listarCarpetasRecientesUrl: '@Url.Action("ListarCarpetasRecientes", "Archivo")',

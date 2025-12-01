@@ -1033,7 +1033,7 @@ function mostrarDocumento(resp, extension, nombreArchivo) {
         $('#onlyofficeModal').modal('show');
         document.getElementById('onlyoffice-editor').innerHTML = "";
         $('#onlyofficeModalLabel').text(`Visualizando: ${nombreArchivo}`);
-        console.log(resp.ConfigOnlyOffice);
+        /*console.log(resp.ConfigOnlyOffice);*/
         if (docEditor) { docEditor.destroyEditor(); docEditor = null; }
         docEditor = new DocsAPI.DocEditor("onlyoffice-editor", resp.ConfigOnlyOffice);
         return;

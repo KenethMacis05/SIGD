@@ -32,9 +32,13 @@ namespace capa_presentacion.Controllers
         }
 
         // Enpoint(GET): Listar los usuarios
+        [AllowAnonymous]
         [HttpGet]
         public JsonResult ListarUsuarios()
         {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
             List<USUARIOS> lst = new List<USUARIOS>();
             lst = CN_Usuario.Listar();
 
