@@ -35,5 +35,10 @@ namespace capa_negocio
         {
             return CD_Dashboard.ObtenerContenidosPendientesUrgentes(idProfesor);
         }
+
+        public List<ProgresoSemanal> ObtenerProgresoSemanal(int idProfesor, int semanasAtras = 8)
+        {
+            return CD_Dashboard.ObtenerProgresoSemanal(idProfesor, semanasAtras);
+        }
     }
 }

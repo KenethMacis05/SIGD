@@ -2,16 +2,12 @@
     ViewBag.Title = "Dashboard";
 }
 
-<div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert">
-    <h2 class="fs-3">Dashboard</h2>
-</div>
-
-<div class="card">
+<div class="card mt-3">
     <div class="card-body">
         <!-- Mensaje de bienvenida personalizado -->
         <div class="card border-left-primary shadow-sm mb-3">
             <div class="card-body py-3">
-                <div class="h4 mb-0 font-weight-bold text-gray-800">¡Bienvenido/a! @ViewBag.NombreUsuario</div>
+                <div class="h4 mb-0 font-weight-bold text-gray-800">Dashboard: ¡Bienvenido/a! @ViewBag.NombreUsuario</div>
             </div>
         </div>
         <!-- Mensaje de error (si existe) -->
@@ -79,61 +75,100 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-xl-3 col-md-6">
-            <div class="card border-left-danger shadow-sm h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                Eventos Próximos
+            <div class="col-xl-3 col-md-6">
+                <div class="card border-left-success shadow-sm h-100 py-2">
+                    <div class="card-body">
+                        <div class="row no-gutters align-items-center">
+                            <div class="col mr-2">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                    Avance global
+                                </div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.AvanceGlobal %</div>
                             </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">2</div>
-                        </div>
-                        <div class="col-auto text-secondary">
-                            <i class="fas fa-calendar-alt fa-2x text-gray-300"></i>
+                            <div class="col-auto text-secondary">
+                                <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Gráficos y contenido adicional -->
-    <div class="row">
-        <div class="col-lg-8">
-            <div class="card shadow-sm">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Actividad Reciente</h6>
-                </div>
-                <div class="card-body">
-                    <div class="chart-area">
-                        <canvas id="myAreaChart"></canvas>
+        <!-- Gráficos y contenido adicional -->
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Progreso Semanal de Contenidos</h6>
+                        <span class="badge badge-info">Últimas 8 semanas</span>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-area" style="height: 300px;">
+                            <canvas id="chartProgresoSemanal"></canvas>
+                        </div>
+
+                        <!-- Resumen numérico -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <div class="card border-left-success shadow-sm h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                                    Contenidos Finalizados
+                                                </div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalFinalizados</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-check-circle fa-2x text-success"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-left-warning shadow-sm h-100 py-2">
+                                    <div class="card-body">
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col mr-2">
+                                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                    Contenidos Pendientes
+                                                </div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">@ViewBag.TotalPendientes</div>
+                                            </div>
+                                            <div class="col-auto">
+                                                <i class="fas fa-clock fa-2x text-warning"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="col-lg-4">
-            <div class="card shadow-sm">
-                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-                    <h6 class="m-0 font-weight-bold text-primary">Accesos Directos</h6>
-                </div>
-                <div class="card-body">
-                    <div class="list-group">
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-file-alt mr-2"></i> Nuevo Documento
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-users mr-2"></i> Gestión de Usuarios
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-cog mr-2"></i> Configuración
-                        </a>
-                        <a href="#" class="list-group-item list-group-item-action">
-                            <i class="fas fa-chart-line mr-2"></i> Reportes
-                        </a>
+            <div class="col-lg-4">
+                <div class="card shadow-sm">
+                    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                        <h6 class="m-0 font-weight-bold text-primary">Accesos Directos</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            @*<a href="#" class="list-group-item list-group-item-action">
+                                    <i class="fas fa-file-alt mr-2"></i> Nuevo Documento
+                                </a>*@
+                            <a href="@Url.Action("Index", "Usuario")" class="list-group-item list-group-item-action">
+                                <i class="fas fa-users mr-2"></i> Gestión de Usuarios
+                            </a>
+                            <a href="@Url.Action("Configuraciones", "Usuario")" class="list-group-item list-group-item-action">
+                                <i class="fas fa-cog mr-2"></i> Configuración
+                            </a>
+                            <a href="@Url.Action("Index", "Reporte")" class="list-group-item list-group-item-action">
+                                <i class="fas fa-chart-line mr-2"></i> Reportes
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -145,36 +180,69 @@
     <!-- Script para gráficos -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        // Gráfico de área
-        var ctx = document.getElementById('myAreaChart');
-        var myLineChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ["Ene", "Feb", "Mar", "Abr", "May", "Jun"],
-                datasets: [{
-                    label: "Actividad",
-                    lineTension: 0.3,
-                    backgroundColor: "rgba(78, 115, 223, 0.05)",
-                    borderColor: "rgba(78, 115, 223, 1)",
-                    pointRadius: 3,
-                    pointBackgroundColor: "rgba(78, 115, 223, 1)",
-                    pointBorderColor: "rgba(78, 115, 223, 1)",
-                    pointHoverRadius: 3,
-                    pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
-                    pointHoverBorderColor: "rgba(78, 115, 223, 1)",
-                    pointHitRadius: 10,
-                    pointBorderWidth: 2,
-                    data: [0, 10, 5, 15, 10, 20],
-                }],
+        var semanasLabels = @Html.Raw(ViewBag.SemanasLabels);
+    var datosFinalizados = @Html.Raw(ViewBag.ContenidosFinalizados);
+    var datosPendientes = @Html.Raw(ViewBag.ContenidosPendientes);
+
+    var ctx = document.getElementById('chartProgresoSemanal');
+    var myBarChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: semanasLabels,
+            datasets: [
+                {
+                    label: 'Contenidos Finalizados',
+                    backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1,
+                    data: datosFinalizados
+                },
+                {
+                    label: 'Contenidos Pendientes',
+                    backgroundColor: 'rgba(255, 193, 7, 0.8)',
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    borderWidth: 1,
+                    data: datosPendientes
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: true,
+                    title: {
+                        display: true,
+                        text: 'Semanas'
+                    }
+                },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Cantidad de Contenidos'
+                    },
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
             },
-            options: {
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            var label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            label += context.parsed.y;
+                            return label;
+                        }
                     }
                 }
             }
-        });
+        }
+    });
     </script>
 }

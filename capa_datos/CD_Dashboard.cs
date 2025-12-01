@@ -7,6 +7,25 @@ using System.Threading.Tasks;
 
 namespace capa_datos
 {
+
+    public class ProgresoSemanal
+    {
+        public int Semana { get; set; }
+        public int Finalizados { get; set; }
+        public int Pendientes { get; set; }
+        public int Total
+        {
+            get { return Finalizados + Pendientes; }
+        }
+        public decimal PorcentajeFinalizados
+        {
+            get
+            {
+                return Total > 0 ? Math.Round((Finalizados * 100m) / Total, 2) : 0;
+            }
+        }
+    }
+
     public class CD_Dashboard
     {
         public int ContarMatricesAsignaturasPendientes(int idProfesor)
@@ -149,6 +168,45 @@ namespace capa_datos
             }
 
             return contenidosUrgentes;
+        }
+
+        public List<ProgresoSemanal> ObtenerProgresoSemanal(int idProfesor, int semanasAtras = 8)
+        {
+            var progreso = new List<ProgresoSemanal>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand(@"
+                    SELECT Semana, ContenidosFinalizados, ContenidosPendientes 
+                    FROM dbo.ObtenerProgresoSemanal(@IdProfesor, @SemanasAtras)", conexion);
+
+                    cmd.Parameters.AddWithValue("@IdProfesor", idProfesor);
+                    cmd.Parameters.AddWithValue("@SemanasAtras", semanasAtras);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            progreso.Add(new ProgresoSemanal
+                            {
+                                Semana = Convert.ToInt32(dr["Semana"]),
+                                Finalizados = Convert.ToInt32(dr["ContenidosFinalizados"]),
+                                Pendientes = Convert.ToInt32(dr["ContenidosPendientes"])
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al obtener progreso semanal: " + ex.Message, ex);
+            }
+
+            return progreso;
         }
     }
 }

@@ -3,6 +3,7 @@ using capa_entidad;
 using capa_negocio;
 using capa_presentacion.Controllers;
 using capa_presentacion.Filters;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,19 @@ namespace capa_presentacion.Controllers
                 ViewBag.MatricesPendientes = CN_Dashboard.ContarMatricesAsignaturasPendientes(usuario.id_usuario);
                 ViewBag.AlmacenamientoUsado = CN_Dashboard.ObtenerAlmacenamientoUsuario(usuario.id_usuario);
                 ViewBag.ArchivosCompartidos = CN_Dashboard.ContarArchivosCompartidosPorMi(usuario.id_usuario);
+                ViewBag.AvanceGlobal = CN_Dashboard.ObtenerAvanceGlobal(usuario.id_usuario);
+                // Para el gráfico de progreso semanal
+                var progresoSemanal = CN_Dashboard.ObtenerProgresoSemanal(usuario.id_usuario, 8);
+
+                // Preparar datos para Chart.js
+                ViewBag.SemanasLabels = JsonConvert.SerializeObject(progresoSemanal.Select(p => $"Semana {p.Semana}").ToArray());
+                ViewBag.ContenidosFinalizados = JsonConvert.SerializeObject(progresoSemanal.Select(p => p.Finalizados).ToArray());
+                ViewBag.ContenidosPendientes = JsonConvert.SerializeObject(progresoSemanal.Select(p => p.Pendientes).ToArray());
+
+                // Datos para tabla o resumen
+                ViewBag.ProgresoSemanal = progresoSemanal;
+                ViewBag.TotalFinalizados = progresoSemanal.Sum(p => p.Finalizados);
+                ViewBag.TotalPendientes = progresoSemanal.Sum(p => p.Pendientes);
                 return View();
             }
             catch (Exception ex)
