@@ -66,6 +66,12 @@ namespace capa_negocio
                 return 0;
             }
 
+            if (usuario.telefono == 0)
+            {
+                mensaje = "Por favor, ingrese el numero telefonico.";
+                return 0;
+            }
+
             // Generación de contraseña aleatoria
             string clave = CN_Recursos.GenerarPassword();
 

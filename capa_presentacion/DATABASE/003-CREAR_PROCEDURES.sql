@@ -1062,12 +1062,12 @@ GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- (7) PROCEDIMIENTO ALMACENADO PARA MODIFICAR LOS DATOS DE UN USUARIO
-CREATE PROCEDURE usp_ActualizarUsuario
+CREATE OR ALTER PROCEDURE usp_ActualizarUsuario
     @IdUsuario INT,
     @PriNombre VARCHAR(60),
-    @SegNombre VARCHAR(60),
+    @SegNombre VARCHAR(60) = NULL,
     @PriApellido VARCHAR(60),
-    @SegApellido VARCHAR(60),
+    @SegApellido VARCHAR(60) = NULL,
     @Usuario VARCHAR(50),    
     @Correo VARCHAR(60),
     @Telefono INT,
@@ -1113,9 +1113,9 @@ BEGIN
     UPDATE USUARIOS
     SET 
         pri_nombre = @PriNombre,
-        seg_nombre = @SegNombre,
+        seg_nombre = NULLIF(@SegNombre, ''),
         pri_apellido = @PriApellido,
-        seg_apellido = @SegApellido,
+        seg_apellido = NULLIF(@SegApellido, ''),
         usuario = @Usuario,        
         correo = @Correo,
         telefono = @Telefono,
@@ -1237,7 +1237,7 @@ GO
 --------------------------------------------------------------------------------------------------------------------
 
 -- (11) PROCEDIMIENTO ALMACENADO PARA REGISTRAR UN NUEVO ROL
-CREATE PROCEDURE usp_CrearRol
+CREATE OR ALTER PROCEDURE usp_CrearRol
     @Descripcion VARCHAR(60),    
     @Resultado INT OUTPUT,
 	@Mensaje VARCHAR(255) OUTPUT
@@ -1256,6 +1256,10 @@ BEGIN
 	INSERT INTO ROL (descripcion) VALUES (@Descripcion)
     
     SET @Resultado = SCOPE_IDENTITY()
+
+    INSERT INTO PERMISOS (fk_rol, fk_controlador) 
+	VALUES (@Resultado, (SELECT id_controlador FROM CONTROLLER WHERE controlador = 'Usuario' AND accion = 'Configuraciones'))
+
 	SET @Mensaje = 'Rol registrado exitosamente'
 END
 GO

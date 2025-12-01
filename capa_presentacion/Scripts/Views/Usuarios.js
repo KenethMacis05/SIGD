@@ -104,14 +104,14 @@ function Guardar() {
         usuario: $("#usuario").val().trim(),
         correo: $("#correo").val().trim(),
         telefono: $("#telefono").val().trim(),
-        fk_rol: $("#obtenerRol").val().trim(),
+        fk_rol: $("#obtenerRol").val() ? $("#obtenerRol").val().trim() : null,
         estado: $("#estado").prop("checked")
     };
 
     showLoadingAlert("Procesando", "Guardando datos del usuario...");
 
     jQuery.ajax({
-        url: guardarUsuariosUrl,
+        url: '/Usuario/GuardarUsuario',
         type: "POST",
         data: JSON.stringify({ usuario: Usuario }),
         dataType: "json",
@@ -125,8 +125,7 @@ function Guardar() {
                 if (data.Resultado != 0) {
                     Usuario.id_usuario = data.Resultado;
                     Usuario.usuario = data.UsuarioGenerado;
-                    dataTable.row.add(Usuario).draw();
-                    dataTable.ajax.reload(null, false);
+                    dataTable.row.add(Usuario).draw(false);
                     Swal.fire({ icon: "success", title: "¡Éxito!", html: `Usuario creado correctamente. Usuario generado: <b>${data.UsuarioGenerado}</b>`});
                 } else { showAlert("Error", data.Mensaje || "No se pudo crear el usuario", "error") }
             }
