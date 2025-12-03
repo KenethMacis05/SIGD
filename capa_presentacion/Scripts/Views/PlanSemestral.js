@@ -452,3 +452,61 @@ $(document).ready(function () {
     $('#btnAnterior').hide();
     $('#btnGuardar').hide();
 });
+
+// Función específica para mostrar pasos después de crear un plan didáctico semestral
+function MostrarPasosCreacionPlanSemestral(mensaje) {
+    const pasos = `
+        <p class="mb-3"><strong>Plan didáctico semestral creado exitosamente:</strong> ${mensaje}</p>
+        
+        <h6 class="text-primary mb-2">📋 Acciones disponibles en la tabla:</h6>
+        <div class="mb-4 d-flex justify-content-between">
+            <button type="button" class="btn btn-warning btn-sm me-2 mb-2">
+                <i class="fas fa-list-alt me-1"></i> Gestionar Temas
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm mb-2">
+                <i class="fas fa-tasks me-1"></i> Generar Plan Individual
+            </button>
+        </div>
+        
+        <h6 class="text-primary mb-3">🚀 Pasos a seguir para completar la configuración:</h6>
+        <ol class="list-group list-group-numbered">
+            <li class="list-group-item border-0 ps-0">
+                <strong>Gestionar temas del plan:</strong> Haz clic en el botón 
+                <span class="badge bg-warning text-white">
+                    <i class="fas fa-list-alt"></i>
+                </span> 
+                para organizar y estructurar los contenidos temáticos del semestre.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Generar planes individuales:</strong> Una vez estructurado el plan general, 
+                presiona el botón 
+                <span class="badge bg-secondary text-white">
+                    <i class="fas fa-tasks"></i>
+                </span> 
+                para crear planes específicos para los contenidos elaborados anteriormente en la Matriz de Integración de Componentes.
+            </li>
+        </ol>
+        
+        <div class="alert alert-warning mt-3 mb-0">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Recomendación:</strong> Sigue el orden de los pasos para una planificación didáctica óptima.
+        </div>
+    `;
+
+    return ModalNota(pasos);
+}
+
+// Función para mostrar modal desde TempData automáticamente
+function MostrarModalTempData() {
+    const tempDataCREATE = {
+        mensaje: $('#tempDataCreate').text(),
+    };
+
+    if (tempDataCREATE) {
+        setTimeout(() => {
+            MostrarPasosCreacionPlanSemestral(tempDataCREATE.mensaje);
+
+            $('[id^="tempData"]').remove();
+        }, 800);
+    }
+}

@@ -97,6 +97,7 @@ namespace capa_presentacion.Controllers
                 if (esNuevo)
                 {
                     resultado = CN_MatrizIntegradora.Crear(matriz, out mensaje);
+                    TempData["CREATE"] = mensaje;
                 }
                 else
                 {
@@ -636,6 +637,7 @@ namespace capa_presentacion.Controllers
                 if (esNuevo)
                 {
                     resultado = CN_PlanSemestral.Crear(pds, out mensaje);
+                    TempData["CREATE"] = mensaje;
                 }
                 else
                 {
@@ -870,6 +872,7 @@ namespace capa_presentacion.Controllers
                 if (esNuevo)
                 {
                     resultado = CN_PlanClasesDiario.Registra(plan, out mensaje);
+                    TempData["CREATE"] = mensaje;
                 }
                 else
                 {

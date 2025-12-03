@@ -39,7 +39,7 @@ function cargarPeriodos(dropdownParent = null) {
                 $('#inputGroupSelectPeriodo').append(
                     $('<option>', {
                         value: periodo.id_periodo,
-                        text: periodo.periodo,
+                        text: periodo.anio + ' || ' + periodo.semestre,
                         selected: isSelected
                     })
                 );

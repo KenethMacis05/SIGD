@@ -268,3 +268,74 @@ $(document).ready(function () {
     $('#btnAnterior').hide();
     $('#btnGuardar').hide();
 });
+
+// Función específica para mostrar pasos después de crear matriz
+function MostrarPasosCreacionMatriz(mensaje) {
+    const pasos = `
+        <p class="mb-3"><strong>Matriz creada exitosamente:</strong> ${mensaje}</p>
+        
+        <h6 class="text-primary mb-2">📋 Acciones disponibles en la tabla:</h6>
+        <div class="mb-4 d-flex justify-content-between">
+            <button type="button" class="btn btn-info btn-sm me-2 mb-2">
+                <i class="fas fa-user-graduate me-1"></i> Gestionar Asignaturas
+            </button>
+            <button type="button" class="btn btn-primary btn-sm me-2 mb-2">
+                <i class="fas fa-calendar me-1"></i> Semanas Académicas
+            </button>
+            <button type="button" class="btn btn-dark btn-sm mb-2">
+                <i class="fas fa-tasks me-1"></i> Evaluaciones Integradoras
+            </button>
+        </div>
+        
+        <h6 class="text-primary mb-3">🚀 Pasos a seguir para completar la configuración:</h6>
+        <ol class="list-group list-group-numbered">
+            <li class="list-group-item border-0 ps-0">
+                <strong>Asignar asignaturas:</strong> Haz clic en el botón 
+                <span class="badge bg-info text-white">
+                    <i class="fas fa-user-graduate"></i>
+                </span> 
+                para agregar las asignaturas que integrarán esta matriz.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Configurar semanas:</strong> Presiona el botón 
+                <span class="badge bg-primary text-white">
+                    <i class="fas fa-calendar"></i>
+                </span> 
+                para definir el calendario académico, incluyendo cortes evaluativos.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Gestionar evaluaciones:</strong> Usa el botón 
+                <span class="badge bg-dark text-white">
+                    <i class="fas fa-tasks"></i>
+                </span> 
+                para establecer las acciones integradoras y tipo de eveluación por semana.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Contenidos:</strong> Finalmente, desde la gestión de asignaturas, 
+                al ingresar una asignatura vera los contenidos específicos para cada materia en las semanas correspondientes.
+            </li>
+        </ol>
+        
+        <div class="alert alert-warning mt-3 mb-0">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Recomendación:</strong> Sigue el orden de los pasos para una configuración óptima.
+        </div>
+    `;
+
+    return ModalNota(pasos);
+}
+
+// Función para mostrar modal desde TempData automáticamente
+function MostrarModalTempData() {
+    const tempDataCREATE = {
+        mensaje: $('#tempDataCreate').text(),
+    };
+
+    if (tempDataCREATE) {
+        setTimeout(() => {
+            MostrarPasosCreacionMatriz(tempDataCREATE.mensaje);
+
+            $('[id^="tempData"]').remove();
+        }, 800);
+    }
+}

@@ -576,3 +576,50 @@ const summernoteConfig = {
         }
     }
 };
+
+// Modal notas importantes
+function ModalNota(descripcion) {
+    const modalId = 'modalNota_' + Date.now();
+
+    // Crear el HTML del modal
+    const modalHTML = `
+        <div class="modal fade" id="${modalId}" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-body g-2">
+                        <div class="container-fluid text-center mb-3">
+                            <img class="img-fluid" src="/Assets/img/NOTA.png" alt="Nota" style="max-height: 350px;" />
+                        </div>
+                        
+                        <div class="card border-primary">
+                            <div class="card-body">
+                                <div class="descripcion-nota">
+                                    ${descripcion}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="modal-footer mt-3 pe-0 ps-0 flex-nowrap">
+                            <button type="button" class="btn btn-danger w-100" data-bs-dismiss="modal">
+                                <i class="fas fa-times-circle me-2"></i>Cerrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    $('body').append(modalHTML);
+
+    const modalElement = $(`#${modalId}`);
+    const modalInstance = new bootstrap.Modal(modalElement[0]);
+
+    modalElement.on('hidden.bs.modal', function () {
+        $(this).remove();
+    });
+
+    modalInstance.show();
+
+    return modalInstance;
+}

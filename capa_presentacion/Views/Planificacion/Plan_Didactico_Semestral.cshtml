@@ -44,6 +44,10 @@
     </div>
 </div>
 
+@if (TempData["CREATE"] != null)
+{
+    <div id="tempDataCreate" style="display: none">@TempData["CREATE"]</div>
+}
 
 @section scripts{
     <script>
@@ -51,7 +55,14 @@
         @if (TempData["Success"] != null)
         {
             <text>
-                showAlert("¡Éxito!", "@Html.Raw(TempData["Success"])", "success");
+                showAlert("¡Éxito!", "@Html.Raw(TempData["Success"])", "success").then((result) => {
+                     @if (TempData["CREATE"] != null)
+                     {
+                         <text>
+                            MostrarModalTempData();
+                         </text>
+                     }
+                });;
             </text>
         }
 
