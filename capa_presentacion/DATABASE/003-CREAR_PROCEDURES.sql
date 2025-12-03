@@ -3795,6 +3795,17 @@ BEGIN
         RETURN
     END
 
+    -- Nueva validación: Verificar si hay periodos activos
+    IF EXISTS (SELECT * FROM PERIODO WHERE activo = 1)
+    BEGIN
+        -- Si hay periodos activos, desactivarlos todos primero
+        UPDATE PERIODO 
+        SET activo = 0 
+        WHERE activo = 1;
+        
+        SET @Mensaje = 'Periodos anteriores desactivados. ';
+    END
+
     INSERT INTO PERIODO (anio, semestre) VALUES (@Anio, @Semestre)
 
     SET @Resultado = SCOPE_IDENTITY()

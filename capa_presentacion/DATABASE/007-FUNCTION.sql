@@ -197,3 +197,32 @@ AS BEGIN
     );
 END
 GO
+
+CREATE OR ALTER FUNCTION dbo.ObtenerProgresoSemanal
+    (@IdProfesor INT, @SemanasAtras INT = 8)
+RETURNS @Resultado TABLE (
+    Semana INT,
+    ContenidosFinalizados INT,
+    ContenidosPendientes INT
+)
+AS
+BEGIN
+    DECLARE @FechaInicio DATE = DATEADD(WEEK, -@SemanasAtras, GETDATE());
+    
+    INSERT INTO @Resultado
+    SELECT 
+        s.numero_semana AS Semana,
+        COUNT(CASE WHEN c.estado = 'Finalizado' THEN 1 END) AS ContenidosFinalizados,
+        COUNT(CASE WHEN c.estado IN ('Pendiente', 'En proceso') THEN 1 END) AS ContenidosPendientes
+    FROM SEMANAS s
+    INNER JOIN MATRIZINTEGRACIONCOMPONENTES m ON s.fk_matriz_integracion = m.id_matriz_integracion
+    INNER JOIN MATRIZASIGNATURA ma ON m.id_matriz_integracion = ma.fk_matriz_integracion
+    LEFT JOIN CONTENIDOS c ON c.fk_semana = s.id_semana AND c.fk_matriz_asignatura = ma.id_matriz_asignatura
+    WHERE ma.fk_profesor_asignado = @IdProfesor
+      AND s.fecha_inicio >= @FechaInicio
+    GROUP BY s.numero_semana
+    ORDER BY s.numero_semana;
+    
+    RETURN;
+END
+GO

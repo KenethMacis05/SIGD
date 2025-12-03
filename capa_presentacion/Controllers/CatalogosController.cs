@@ -261,9 +261,13 @@ namespace capa_presentacion.Controllers
         }
 
         // Enpoint(GET): listar los periodos
+        [AllowAnonymous]
         [HttpGet]
         public JsonResult ListarPeriodos()
         {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
             List<PERIODO> lst = new List<PERIODO>();
             lst = CN_Periodo.Listar();
 

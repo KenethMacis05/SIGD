@@ -25,7 +25,7 @@ function cargarPeriodos(dropdownParent = null) {
     var periodoActual = $("#fk_periodo_activo").val();
 
     jQuery.ajax({
-        url: "/Catalogos/GetPeriodo",
+        url: "/Catalogos/ListarPeriodos",
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",

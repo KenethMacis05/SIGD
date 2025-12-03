@@ -75,7 +75,7 @@ namespace capa_presentacion.Reportes
                 { "MatrizIntegracionComponente", "/MatrizIntegracionComponente/MatrizIntegracionComponente" },
                 { "PlanDidacticoSemestral", "/PlanDidacticoSemestral/PlanDidacticoSemestral" },
                 { "PlanClasesDiario", "/PlanClasesDiario/PlanClasesDiario" },
-                { "MIC-5 - Resumen de Matrices por Área/Departamento/Carrera", "/MatrizIntegracionComponente/ReporteResumenMatrizXAreaXDepartamentoXCarrera" }
+                { "MIC-5 - Resumen de Matrices por Carrera", "/MatrizIntegracionComponente/ReporteResumenMatrizXAreaXDepartamentoXCarrera" }
             };
 
             return rutasReportes.ContainsKey(nombreReporte)
@@ -98,12 +98,12 @@ namespace capa_presentacion.Reportes
                 case "PlanClasesDiario":
                     reportParameters.Add(new ReportParameter("IdPlaClasesDiario", Request.QueryString["id"]));
                     break;
-                case "MIC-5 - Resumen de Matrices por Área/Departamento/Carrera":
-                    reportParameters.Add(new ReportParameter("IdArea", NullSafeValue(Request.QueryString["area"])));
-                    reportParameters.Add(new ReportParameter("IdDepartamento", NullSafeValue(Request.QueryString["departamento"])));
+                case "MIC-5 - Resumen de Matrices por Carrera":
+                    reportParameters.Add(new ReportParameter("IdArea", NullSafeValue(null)));
+                    reportParameters.Add(new ReportParameter("IdDepartamento", NullSafeValue(null)));
                     reportParameters.Add(new ReportParameter("IdCarrera", NullSafeValue(Request.QueryString["carrera"])));
-                    reportParameters.Add(new ReportParameter("Codigo", NullSafeValue(Request.QueryString["codigo"])));
-                    reportParameters.Add(new ReportParameter("Periodo", NullSafeValue(Request.QueryString["periodo"])));
+                    reportParameters.Add(new ReportParameter("Codigo", NullSafeValue(null)));
+                    reportParameters.Add(new ReportParameter("Periodo", NullSafeValue(null)));
                     reportParameters.Add(new ReportParameter("IdMatrizIntegracion", NullSafeValue(null)));
                     break;
                 default:

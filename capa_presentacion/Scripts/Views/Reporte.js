@@ -41,8 +41,8 @@ function mostrarParametrosPorReporte(nombreReporte) {
         case "MIC-4 - Detalle de Matriz por Semana":
             mostrarParametros(['nombre', 'codigo', 'area', 'departamento', 'periodo']);
             break;
-        case "MIC-5 - Resumen de Matrices por Área/Departamento/Carrera":
-            mostrarParametros(['area', 'departamento', 'periodo', 'carrera']);
+        case "MIC-5 - Resumen de Matrices por Carrera":
+            mostrarParametros(['carrera']);
             /*$(".parametro-input, .parametro-select").closest('.col-md-12').show();*/
             break;
         default:
@@ -153,11 +153,7 @@ function obtenerParametrosPorReporte(nombreReporte) {
             }
             break;
 
-        case "MIC-5 - Resumen de Matrices por Área/Departamento/Carrera":
-                parametros.codigo = getSafeParameterValue($("#inputParametroCodigo").val());
-                parametros.area = getSafeParameterValue($("#inputGroupSelectArea").val());
-                parametros.departamento = getSafeParameterValue($("#inputGroupSelectDepartamento").val());
-                parametros.periodo = getSafeParameterValue($("#inputGroupSelectPeriodo").val());
+        case "MIC-5 - Resumen de Matrices por Carrera":
                 parametros.carrera = getSafeParameterValue($("#inputGroupSelectCarrera").val());
             break;
 
