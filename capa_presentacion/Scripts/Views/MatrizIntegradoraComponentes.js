@@ -92,6 +92,11 @@ $('#datatable tbody').on('click', '.btn-pdf', function () {
     window.open('/Reportes/ReporteViewer.aspx?Reporte=MatrizIntegracionComponente&id=' + data.id_matriz_integracion, '_blank');
 });
 
+//$('#datatable tbody').on('click', '.btn-pdf', function () {
+//    var data = dataTable.row($(this).parents('tr')).data();
+//    window.open('/ReportesRDLC/ReporteViewerRDLC.aspx?Reporte=MatrizIntegracionComponente&id=' + data.id_matriz_integracion, '_blank');
+//});
+
 function abrirModal(json) {
   
     $("#createUser").modal("show");
