@@ -64,14 +64,14 @@ function obtenerNombreCampo($elemento) {
 
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarMatrizIntegracion?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/EditarMatrizIntegracion?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de asignar asignaturas
 $('#datatable tbody').on('click', '.btn-viewAsignar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/AsignarAsignaturasMatrizIntegracion?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/AsignarAsignaturasMatrizIntegracion?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla Acción Integradora Tipo Evaluacion
@@ -228,14 +228,34 @@ const dataTableOptions = {
             }
         },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe"><i class="fa fa-file-pdf"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar" title="Modificar registro"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar" title="Asignaturas"><i class="fa fa-user-graduate"></i></button>' +
-                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-viewSemanas" title="Configurar semanas académicas"><i class="fa fa-calendar"></i></button>' +
-                '<button type="button" class="btn btn-dark btn-sm ms-1 btn-viewAccionIntegradoraTipoEvaluacion" title="Gestionar evaluaciones integradoras"><i class="fa fa-tasks"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar" title="Eliminar registro"><i class="fa fa-trash"></i></button>',
-            width: "200"
+            data: "id_encriptado",
+            title: "Acciones",
+            render: function (data, type, row) {
+                return `
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe">
+                            <i class="fa fa-file-pdf"></i>
+                        </button>
+                        <button type="button" class="btn btn-warning btn-sm btn-editar" title="Modificar registro" data-id="${data}">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm btn-viewAsignar" title="Asignaturas" data-id="${data}">
+                            <i class="fa fa-user-graduate"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm btn-viewSemanas" title="Configurar semanas académicas" data-id="${data}">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                        <button type="button" class="btn btn-dark btn-sm btn-viewAccionIntegradoraTipoEvaluacion" title="Gestionar evaluaciones integradoras" data-id="${data}">
+                            <i class="fa fa-tasks"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm btn-eliminar" title="Eliminar registro" data-id="${data}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            },
+            orderable: false,
+            width: "190px"
         },
     ]
 };
