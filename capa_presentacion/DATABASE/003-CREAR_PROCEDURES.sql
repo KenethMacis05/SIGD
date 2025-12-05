@@ -41,7 +41,7 @@ DROP PROCEDURE usp_LeerRoles
 GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_CrearRol')
-DROP PROCEDURE usp_CrearRolver
+DROP PROCEDURE usp_CrearRol
 GO
 
 IF EXISTS (SELECT * FROM sys.objects WHERE type = 'P' AND name = 'usp_ActualizarRol')
@@ -3764,52 +3764,52 @@ END
 GO
 
 -- PROCEDIMIENTO ALMACENADO PARA REGISTRAR UN PERIODO
-CREATE OR ALTER PROCEDURE usp_CrearPeriodo
-    @Anio VARCHAR(4),    
-    @Semestre VARCHAR(255),
-    @Resultado INT OUTPUT,
-    @Mensaje VARCHAR(255) OUTPUT
-AS
-BEGIN
-    SET @Resultado = 0
-    SET @Mensaje = ''
-
-    -- Validar que Anio solo contenga números y tenga longitud 4
-    IF LEN(@Anio) != 4 OR PATINDEX('%[^0-9]%', @Anio) > 0
-    BEGIN
-        SET @Mensaje = 'El año debe ser un valor numérico de 4 dígitos.'
-        RETURN
-    END
-
-    -- Validar que Semestre no esté vacío
-    IF @Semestre IS NULL OR LTRIM(RTRIM(@Semestre)) = ''
-    BEGIN
-        SET @Mensaje = 'El semestre no puede estar vacío.'
-        RETURN
-    END
-
-    -- Verificar si el periodo ya existe
-    IF EXISTS (SELECT * FROM PERIODO WHERE anio = @Anio AND semestre = @Semestre)
-    BEGIN
-        SET @Mensaje = 'El periodo ya está en uso'
-        RETURN
-    END
-
-    -- Nueva validación: Verificar si hay periodos activos
-    IF EXISTS (SELECT * FROM PERIODO WHERE activo = 1)
-    BEGIN
-        -- Si hay periodos activos, desactivarlos todos primero
-        UPDATE PERIODO 
-        SET activo = 0 
-        WHERE activo = 1;
-        
-        SET @Mensaje = 'Periodos anteriores desactivados. ';
-    END
-
-    INSERT INTO PERIODO (anio, semestre) VALUES (@Anio, @Semestre)
-
-    SET @Resultado = SCOPE_IDENTITY()
-    SET @Mensaje = 'Periodo registrado exitosamente'
+CREATE   PROCEDURE usp_CrearPeriodo  
+    @Anio VARCHAR(4),      
+    @Semestre VARCHAR(255),  
+    @Resultado INT OUTPUT,  
+    @Mensaje VARCHAR(255) OUTPUT  
+AS  
+BEGIN  
+    SET @Resultado = 0  
+    SET @Mensaje = ''  
+  
+    -- Validar que Anio solo contenga números y tenga longitud 4  
+    IF LEN(@Anio) != 4 OR PATINDEX('%[^0-9]%', @Anio) > 0  
+    BEGIN  
+        SET @Mensaje = 'El año debe ser un valor numérico de 4 dígitos.'  
+        RETURN  
+    END  
+  
+    -- Validar que Semestre no esté vacío  
+    IF @Semestre IS NULL OR LTRIM(RTRIM(@Semestre)) = ''  
+    BEGIN  
+        SET @Mensaje = 'El semestre no puede estar vacío.'  
+        RETURN  
+    END  
+  
+    -- Verificar si el periodo ya existe  
+    IF EXISTS (SELECT * FROM PERIODO WHERE anio = @Anio AND semestre = @Semestre)  
+    BEGIN  
+        SET @Mensaje = 'El periodo ya está en uso'  
+        RETURN  
+    END  
+  
+    -- Nueva validación: Verificar si hay periodos activos  
+    IF EXISTS (SELECT * FROM PERIODO WHERE estado = 1)  
+    BEGIN  
+        -- Si hay periodos activos, desactivarlos todos primero  
+        UPDATE PERIODO   
+        SET estado = 0   
+        WHERE estado = 1;  
+          
+        SET @Mensaje = 'Periodos anteriores desactivados. ';  
+    END  
+  
+    INSERT INTO PERIODO (anio, semestre) VALUES (@Anio, @Semestre)  
+  
+    SET @Resultado = SCOPE_IDENTITY()  
+    SET @Mensaje = 'Periodo registrado exitosamente'  
 END
 GO
 
@@ -8221,6 +8221,3 @@ BEGIN
     ORDER BY s.fecha_fin ASC;
 END
 GO
-
--- Conceder permisos de ejecución en todo el esquema
-GRANT EXECUTE ON SCHEMA::[dbo] TO [IIS APPPOOL\sigd]
