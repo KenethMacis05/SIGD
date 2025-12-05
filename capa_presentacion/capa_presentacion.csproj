@@ -456,6 +456,7 @@
     <Content Include="App_Data\onlyoffice_callback_debug.log" />
     <Content Include="Content\Views\AccionTipo.css" />
     <Content Include="libman.json" />
+    <Content Include="Manual de usuario\Manual de Usuario.pdf" />
     <None Include="Properties\PublishProfiles\MyFirstAzureWebAppASP - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.7.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />

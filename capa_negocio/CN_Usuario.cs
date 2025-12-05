@@ -139,7 +139,7 @@ namespace capa_negocio
                                     <img src='{urlBase}/Assets/img/instagram.png' alt='Instagram' style='width: 40px; height: 40px;'>
                                 </a>
                                 <a href='https://www.youtube.com/channel/UCaAtEPINZNv738R3vZI2Kjg' style='margin: 0 10px; text-decoration: none;'>
-                                    <img src='{urlBase}/Assets/img/youtube.png' alt='YouTube' style='width: 40px; height: 40px;'>
+                                    <img src='https://sigd-f0enhxetceeca7du.canadacentral-01.azurewebsites.net/Assets/img/youtube.png' alt='YouTube' style='width: 40px; height: 40px;'>
                                 </a>
                             </div>
                             <p style='text-align: center; margin-top: 30px; font-size: 14px; color: #666;'>

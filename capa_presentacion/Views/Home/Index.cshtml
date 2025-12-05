@@ -6,8 +6,16 @@
     <div class="card-body">
         <!-- Mensaje de bienvenida personalizado -->
         <div class="card border-left-primary shadow-sm mb-3">
-            <div class="card-body py-3">
-                <div class="h4 mb-0 font-weight-bold text-gray-800">Dashboard: ¡Bienvenido/a! @ViewBag.NombreUsuario</div>
+            <div class="card-body py-3 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+                <div class="h4 mb-2 mb-md-0 font-weight-bold text-gray-800">Dashboard: ¡Bienvenido/a! @ViewBag.NombreUsuario</div>
+                <div class="mt-2 mt-md-0">
+                    <a class="btn btn-primary"
+                       href="~/Manual de usuario/Manual de Usuario.pdf"
+                       download="Manual de Usuario SIGD.pdf"
+                       target="_blank">
+                        Manual de usuario
+                    </a>
+                </div>
             </div>
         </div>
         <!-- Mensaje de error (si existe) -->
