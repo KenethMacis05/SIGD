@@ -1,5 +1,6 @@
 ﻿using capa_datos;
 using capa_entidad;
+using System.Web.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,8 +84,18 @@ namespace capa_negocio
 
             if (resultado > 0)
             {
-                // Obtener la URL base
-                string urlBase = $"{HttpContext.Current.Request.Url.Scheme}://{HttpContext.Current.Request.Url.Authority}";
+                // Obtener la URL base desde web.config
+                string urlBase = WebConfigurationManager.AppSettings["Url-WebApp"];
+
+                // Validar que la URL base esté configurada
+                if (string.IsNullOrEmpty(urlBase))
+                {
+                    mensaje = "La URL base no está configurada en el sistema.";
+                    return 0;
+                }
+
+                // Asegurar que la URL no tenga slash al final
+                urlBase = urlBase.TrimEnd('/');
 
                 // Personalización del mensaje de correo
                 string asunto = "¡Bienvenido al Sistema Integrado de Gestión Didáctica!";
@@ -108,7 +119,7 @@ namespace capa_negocio
                                 </tr>
                             </table>
                             <p style='text-align: center;'>
-                                <a href='https://myfirstazurewebappasp-gee5asfwaufdawcs.canadacentral-01.azurewebsites.net' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
+                                <a href='{urlBase}' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
                                     Iniciar Sesión
                                 </a>
                             </p>

@@ -76,14 +76,14 @@ $('#datatable tbody').on('click', '.btn-viewAsignar', function () {
 
 // Redirigir a la pantalla Acción Integradora Tipo Evaluacion
 $('#datatable tbody').on('click', '.btn-viewAccionIntegradoraTipoEvaluacion', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/AccionIntegradoraTipoEvaluacion?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/AccionIntegradoraTipoEvaluacion?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de semanas
 $("#datatable tbody").on("click", '.btn-viewSemanas', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/SemanasMatriz?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/SemanasMatriz?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de reporte PDF
@@ -154,30 +154,46 @@ $('#btnAnterior').click(function () {
 });
 
 //Boton eliminar matríz de integración
-$("#datatable tbody").on("click", '.btn-eliminar', function () {
-    const matrizseleccionada = $(this).closest("tr");
-    const data = dataTable.row(matrizseleccionada).data();
+$("#datatable tbody").on("click", '.btn-eliminar', function (e) {
+    e.stopPropagation();
+
+    const $button = $(this);
+    const idMatrizIntegracion = $button.data('id');
+
+    if (!idMatrizIntegracion) {
+        showAlert("Error", "No se pudo obtener el ID de la matríz", "error");
+        return;
+    }
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
-            showLoadingAlert("Eliminando matríz de integración", "Por favor espere...")
+            showLoadingAlert("Eliminando matríz de integración", "Por favor espere...");
 
             // Enviar petición AJAX
             $.ajax({
                 url: "/Planificacion/EliminarMatrizIntegracion",
                 type: "POST",
-                data: JSON.stringify({ id_matriz_integracion: data.id_matriz_integracion }),
+                data: JSON.stringify({ id_matriz_integracion: idMatrizIntegracion }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
-
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        dataTable.row(matrizseleccionada).remove().draw();
-                        showAlert("¡Eliminado!", response.Mensaje || "Matríz de Integración eliminada correctamente", "success")
-                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la Matríz de Integración", "error") }
+                        // Encontrar la fila correctamente
+                        let $tr = $button.closest('tr');
+                        if ($tr.hasClass('child')) {
+                            $tr = $tr.prev('tr');
+                        }
+                        dataTable.row($tr).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Matríz de Integración eliminada correctamente", "success");
+                    } else {
+                        showAlert("Error", response.Mensaje || "No se pudo eliminar la Matríz de Integración", "error");
+                    }
                 },
-                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+                error: (xhr) => {
+                    Swal.close();
+                    showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+                }
             });
         }
     });
@@ -228,7 +244,7 @@ const dataTableOptions = {
             }
         },
         {
-            data: "id_encriptado",
+            data: null,
             title: "Acciones",
             render: function (data, type, row) {
                 return `
@@ -236,19 +252,19 @@ const dataTableOptions = {
                         <button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe">
                             <i class="fa fa-file-pdf"></i>
                         </button>
-                        <button type="button" class="btn btn-warning btn-sm btn-editar" title="Modificar registro" data-id="${data}">
+                        <button type="button" class="btn btn-warning btn-sm btn-editar" title="Modificar registro" data-id="${row.id_encriptado}">
                             <i class="fa fa-pen"></i>
                         </button>
-                        <button type="button" class="btn btn-info btn-sm btn-viewAsignar" title="Asignaturas" data-id="${data}">
+                        <button type="button" class="btn btn-info btn-sm btn-viewAsignar" title="Asignaturas" data-id="${row.id_encriptado}">
                             <i class="fa fa-user-graduate"></i>
                         </button>
-                        <button type="button" class="btn btn-primary btn-sm btn-viewSemanas" title="Configurar semanas académicas" data-id="${data}">
+                        <button type="button" class="btn btn-primary btn-sm btn-viewSemanas" title="Configurar semanas académicas" data-id="${row.id_encriptado}">
                             <i class="fa fa-calendar"></i>
                         </button>
-                        <button type="button" class="btn btn-dark btn-sm btn-viewAccionIntegradoraTipoEvaluacion" title="Gestionar evaluaciones integradoras" data-id="${data}">
+                        <button type="button" class="btn btn-dark btn-sm btn-viewAccionIntegradoraTipoEvaluacion" title="Gestionar evaluaciones integradoras" data-id="${row.id_encriptado}">
                             <i class="fa fa-tasks"></i>
                         </button>
-                        <button type="button" class="btn btn-danger btn-sm btn-eliminar" title="Eliminar registro" data-id="${data}">
+                        <button type="button" class="btn btn-danger btn-sm btn-eliminar" title="Eliminar registro" data-id="${row.id_matriz_integracion}">
                             <i class="fa fa-trash"></i>
                         </button>
                     </div>

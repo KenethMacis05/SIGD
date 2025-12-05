@@ -5,7 +5,7 @@
         semana: $(this).data("semana"),
         contenido: $(this).data("contenido"),
         estrategias_aprendizaje: $(this).data('estrategia_aprendizaje'),
-        estrategias_evaluacion: $(this).data('estrategias_evaluacion'),
+        estrategias_evaluacion: $(this).data('estrategia_evaluacion'),
         tipo_evaluacion: $(this).data('tipo_evaluacion'),
         instrumento_evaluacion: $(this).data('instrumento_evaluacion'),
         evidencias_aprendizaje: $(this).data('evidencias_aprendizaje')
