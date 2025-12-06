@@ -63,22 +63,16 @@ function obtenerNombreCampo($elemento) {
         'Campo sin nombre';
 }
 
-// Redirigir a la pantalla de detalles
-$('#datatable tbody').on('click', '.btn-detalles', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/DetallePlanDiario?id=" + data.id_plan_diario_encriptado;
-});
-
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarPlanDiario?id=" + data.id_plan_diario_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = "/Planificacion/EditarPlanDiario?id=" + idEncriptado;
 });
 
 // Redirigir a la pantalla de reporte PDF
 $('#datatable tbody').on('click', '.btn-pdf', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.open('/Reportes/ReporteViewer.aspx?Reporte=PlanClasesDiario&id=' + data.id_plan_diario, '_blank');
+    const id = $(this).data('id');
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=PlanClasesDiario&id=' + id, '_blank');
 });
 
 // Botón de navegación Siguiente
@@ -265,9 +259,16 @@ function cargarDatosEnFormulario(datos) {
 }
 
 //Boton eliminar plan de clases diario
-$("#datatable tbody").on("click", '.btn-eliminar', function () {
-    const planseleccionado = $(this).closest("tr");
-    const data = dataTable.row(planseleccionado).data();
+$("#datatable tbody").on("click", '.btn-eliminar', function (e) {
+    e.stopPropagation();
+
+    const $button = $(this);
+    const idPlanClases = $button.data('id');
+
+    if (!idPlanClases) {
+        showAlert("Error", "No se pudo obtener el ID del plan de clases", "error");
+        return;
+    }
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
@@ -277,14 +278,19 @@ $("#datatable tbody").on("click", '.btn-eliminar', function () {
             $.ajax({
                 url: "/Planificacion/EliminarPlanClasesDiario",
                 type: "POST",
-                data: JSON.stringify({ id_plan_diario: data.id_plan_diario }),
+                data: JSON.stringify({ id_plan_diario: idPlanClases }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
 
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        dataTable.row(planseleccionado).remove().draw();
+                        // Encontrar la fila correctamente
+                        let $tr = $button.closest('tr');
+                        if ($tr.hasClass('child')) {
+                            $tr = $tr.prev('tr');
+                        }
+                        dataTable.row($tr).remove().draw();
                         showAlert("¡Eliminado!", response.Mensaje || "Plan de clases eliminado correctamente", "success")
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el plan de clases", "error") }
                 },
@@ -322,11 +328,25 @@ const dataTableOptions = {
         },
         { data: "periodo", title: "Periodo" },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe"><i class="fa fa-file-pdf"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar" title="Modificar registro"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar" title="Eliminar registro"><i class="fa fa-trash"></i></button>',
-            width: "100"
+            data: null,
+            title: "Acciones",
+            render: function (data, type, row) {
+                return `
+                    <div class="btn-group" role="group">
+                        <button type="button" data-id="${row.id_plan_diario}" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe">
+                            <i class="fa fa-file-pdf"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_plan_diario_encriptado}" class="btn btn-warning btn-sm ms-1 btn-editar" title="Modificar registro">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_plan_diario}" class="btn btn-danger btn-sm ms-1 btn-eliminar" title="Eliminar registro">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            },
+            orderable: false,
+            width: "100px"
         },
     ]
 };
