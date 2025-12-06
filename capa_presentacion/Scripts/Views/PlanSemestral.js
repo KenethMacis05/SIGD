@@ -118,26 +118,26 @@ $('#btnAnterior').click(function () {
 
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarPlanDidactico?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/EditarPlanDidactico?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de temas
 $('#datatable tbody').on('click', '.btn-temas', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/TemasPlanSemestral?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/TemasPlanSemestral?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de planes individuales
 $('#datatable tbody').on('click', '.btn-planIndividual', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/Planificacion_Individual?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/Planificacion_Individual?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de reporte PDF
 $('#datatable tbody').on('click', '.btn-pdf', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.open('/Reportes/ReporteViewer.aspx?Reporte=PlanDidacticoSemestral&id=' + data.id_plan_didactico, '_blank');
+    const id = $(this).data('id');
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=PlanDidacticoSemestral&id=' + id, '_blank');
 });
 
 function abrirModal() {
@@ -294,10 +294,17 @@ function cargarDatosEnFormulario(datos) {
     $('#crearPlanSemestral').modal('hide');
 }
 
-//Boton eliminar plan de clases diario
-$("#datatable tbody").on("click", '.btn-eliminar', function () {
-    const planseleccionado = $(this).closest("tr");
-    const data = dataTable.row(planseleccionado).data();
+//Boton eliminar plan didáctico semestral
+$("#datatable tbody").on("click", '.btn-eliminar', function (e) {
+    e.stopPropagation();
+
+    const $button = $(this);
+    const idPlanSemestral = $button.data('id');
+
+    if (!idPlanSemestral) {
+        showAlert("Error", "No se pudo obtener el ID del plan didáctico semestral", "error");
+        return;
+    }
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
@@ -307,16 +314,20 @@ $("#datatable tbody").on("click", '.btn-eliminar', function () {
             $.ajax({
                 url: "/Planificacion/EliminarPlanDidactico",
                 type: "POST",
-                data: JSON.stringify({ id_plan_semestral: data.id_plan_didactico }),
+                data: JSON.stringify({ id_plan_semestral: idPlanSemestral }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
-
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        dataTable.row(planseleccionado).remove().draw();
-                        showAlert("¡Eliminado!", response.Mensaje || "Plan de semestral eliminado correctamente", "success")
-                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el plan de semestral", "error") }
+                        // Encontrar la fila correctamente
+                        let $tr = $button.closest('tr');
+                        if ($tr.hasClass('child')) {
+                            $tr = $tr.prev('tr');
+                        }
+                        dataTable.row($tr).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Plan didáctico semestral eliminado correctamente", "success")
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el plan didáctico semestral", "error") }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
             });
@@ -370,13 +381,31 @@ const dataTableOptions = {
             }
         },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe"><i class="fa fa-file-pdf"></i></button>' +
-                '<button type="button" class="btn btn-primary btn-sm ms-2 btn-editar" title="Editar registro"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-2 btn-temas" title="Gestionar temas"><i class="fa fa-list-alt"></i></button>' +
-                '<button type="button" class="btn btn-secondary btn-sm ms-2 btn-planIndividual" title="Generar plan individual"><i class="fa fa-tasks"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar" title="Eliminar registro"><i class="fa fa-trash"></i></button>',
-            width: "200"
+            data: null,
+            title: "Acciones",
+            render: function (data, type, row) {
+                return `
+                    <div class="btn-group" role="group">
+                        <button type="button" data-id="${row.id_plan_didactico}" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe">
+                            <i class="fa fa-file-pdf"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_encriptado}" class="btn btn-primary btn-sm btn-editar" title="Editar registro">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_encriptado}" class="btn btn-warning btn-sm btn-temas" title="Gestionar temas">
+                            <i class="fa fa-list-alt"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_encriptado}" class="btn btn-secondary btn-sm btn-planIndividual" title="Generar plan individual">
+                            <i class="fa fa-tasks"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_plan_didactico}" class="btn btn-danger btn-sm btn-eliminar" title="Eliminar registro">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            },
+            orderable: false,
+            width: "200px"
         },
     ]
 };

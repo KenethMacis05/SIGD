@@ -8221,3 +8221,7 @@ BEGIN
     ORDER BY s.fecha_fin ASC;
 END
 GO
+
+-- Conceder permisos de ejecución en todo el esquema
+GRANT EXECUTE ON SCHEMA::[dbo] TO [IIS APPPOOL\sigd]
+GO

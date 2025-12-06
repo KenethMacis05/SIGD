@@ -88,8 +88,8 @@ $("#datatable tbody").on("click", '.btn-viewSemanas', function () {
 
 // Redirigir a la pantalla de reporte PDF
 $('#datatable tbody').on('click', '.btn-pdf', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.open('/Reportes/ReporteViewer.aspx?Reporte=MatrizIntegracionComponente&id=' + data.id_matriz_integracion, '_blank');
+    const id = $(this).data('id');
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=MatrizIntegracionComponente&id=' + id, '_blank');
 });
 
 //$('#datatable tbody').on('click', '.btn-pdf', function () {
@@ -249,7 +249,7 @@ const dataTableOptions = {
             render: function (data, type, row) {
                 return `
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe">
+                        <button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe" data-id="${row.id_matriz_integracion}">
                             <i class="fa fa-file-pdf"></i>
                         </button>
                         <button type="button" class="btn btn-warning btn-sm btn-editar" title="Modificar registro" data-id="${row.id_encriptado}">
