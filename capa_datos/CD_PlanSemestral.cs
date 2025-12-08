@@ -43,6 +43,8 @@ namespace capa_datos
                                     id_plan_didactico = Convert.ToInt32(dr["id_plan_didactico"]),
                                     codigo = dr["codigo"].ToString(),
                                     nombre = dr["nombre"].ToString(),
+                                    usuario_asignado = dr["usuario_asignado"].ToString(),
+                                    estado_proceso_pds = dr["estado_proceso_pds"].ToString(),
 
                                     //Datos de la asignatura
                                     Asignatura = new ASIGNATURA
@@ -63,6 +65,7 @@ namespace capa_datos
                                         modalidad = dr["modalidad"].ToString(),
                                         usuario = dr["usuario_propietario"].ToString(),
                                         periodo = dr["periodo"].ToString(),
+                                        fk_periodo = Convert.ToInt32(dr["fk_periodo"]),
                                         estado = Convert.ToBoolean(dr["estado"]),
                                         estado_proceso = dr["estado_proceso"].ToString(),
                                         fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
@@ -81,6 +84,15 @@ namespace capa_datos
                 throw new Exception("Error al listar los detalles del Plan didactico semestral: " + ex.Message);
             }
             return lst;
+        }
+
+        public List<PLANDIDACTICOSEMESTRAL> BuscarPlanSemestral(int id_usuario, int periodo, out string mensaje)
+        {
+            int resultado;
+            List<PLANDIDACTICOSEMESTRAL> planes = ListarDatosGenerales(id_usuario, out resultado, out mensaje);
+
+            // Retorna la lista de planes filtrando por el periodo
+            return planes.Where(p => p.Matriz.fk_periodo == periodo).ToList();
         }
 
         public PLANDIDACTICOSEMESTRAL ObtenerPlanSemestralPorId(int idPlaSemestral, int idUsuario, out int resultado, out string mensaje)
@@ -148,6 +160,7 @@ namespace capa_datos
                                     modalidad = dr["modalidad"].ToString(),
                                     usuario = dr["usuario_propietario"].ToString(),
                                     periodo = dr["periodo"].ToString(),
+                                    fk_periodo = Convert.ToInt32(dr["fk_periodo_matriz"]),
                                     estado = Convert.ToBoolean(dr["estado_matriz"]),
                                     estado_proceso = dr["estado_proceso_matriz"].ToString(),
                                     fecha_registro = Convert.ToDateTime(dr["fecha_registro_matriz"]),

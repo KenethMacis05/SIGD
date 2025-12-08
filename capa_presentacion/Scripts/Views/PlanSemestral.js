@@ -118,36 +118,41 @@ $('#btnAnterior').click(function () {
 
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarPlanDidactico?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/EditarPlanDidactico?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de temas
 $('#datatable tbody').on('click', '.btn-temas', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/TemasPlanSemestral?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/TemasPlanSemestral?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de planes individuales
 $('#datatable tbody').on('click', '.btn-planIndividual', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/Planificacion_Individual?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/Planificacion_Individual?idEncriptado=${idEncriptado}`;
+});
+
+// Redirigir a la pantalla de reporte PDF
+$('#datatable tbody').on('click', '.btn-pdf', function () {
+    const id = $(this).data('id');
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=PlanDidacticoSemestral&id=' + id, '_blank');
 });
 
 function abrirModal() {
     $("#crearPlanSemestral").modal("show");
 }
 
+$(document).ready(function () {
+    $('#asignaturaNombre').on('focus', function () {
+        abrirModal();
+    });
+});
+
 function Buscar() {
     const filtros = {
-        usuario: limpiarFiltro($("#usuario").val().trim()),
-        nombres: limpiarFiltro($("#nombrecompleto").val().trim()),
         periodo: limpiarFiltro($("#inputGroupSelectPeriodo").val().trim())
-    }
-
-    if (!filtros.usuario && !filtros.nombres) {
-        showAlert("Advertencia", "Debe ingresar al menos un dato en algún filtro de Usuario y Nombre completo.", "warning", true);
-        return;
     }
 
     if (!filtros.periodo) {
@@ -278,7 +283,6 @@ function cargarDatosEnFormulario(datos) {
     if (datos.nombre_profesor) $('#usuarioPropietario').val(datos.nombre_profesor);
     if (datos.area) $('#areaConocimiento').val(datos.area);
     if (datos.departamento) $('#departamento').val(datos.departamento);
-    if (datos.carrera) $('#carrera').val(datos.carrera);
     if (datos.modalidad) $('#modalidad').val(datos.modalidad);
     if (datos.periodo_matriz) $('#periodo').val(datos.periodo_matriz);
     if (datos.id_matriz_asignatura) $('#fkMatrizAsignatura').val(datos.id_matriz_asignatura);
@@ -290,10 +294,17 @@ function cargarDatosEnFormulario(datos) {
     $('#crearPlanSemestral').modal('hide');
 }
 
-//Boton eliminar plan de clases diario
-$("#datatable tbody").on("click", '.btn-eliminar', function () {
-    const planseleccionado = $(this).closest("tr");
-    const data = dataTable.row(planseleccionado).data();
+//Boton eliminar plan didáctico semestral
+$("#datatable tbody").on("click", '.btn-eliminar', function (e) {
+    e.stopPropagation();
+
+    const $button = $(this);
+    const idPlanSemestral = $button.data('id');
+
+    if (!idPlanSemestral) {
+        showAlert("Error", "No se pudo obtener el ID del plan didáctico semestral", "error");
+        return;
+    }
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
@@ -303,16 +314,20 @@ $("#datatable tbody").on("click", '.btn-eliminar', function () {
             $.ajax({
                 url: "/Planificacion/EliminarPlanDidactico",
                 type: "POST",
-                data: JSON.stringify({ id_plan_semestral: data.id_plan_didactico }),
+                data: JSON.stringify({ id_plan_semestral: idPlanSemestral }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
-
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        dataTable.row(planseleccionado).remove().draw();
-                        showAlert("¡Eliminado!", response.Mensaje || "Plan de semestral eliminado correctamente", "success")
-                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el plan de semestral", "error") }
+                        // Encontrar la fila correctamente
+                        let $tr = $button.closest('tr');
+                        if ($tr.hasClass('child')) {
+                            $tr = $tr.prev('tr');
+                        }
+                        dataTable.row($tr).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Plan didáctico semestral eliminado correctamente", "success")
+                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el plan didáctico semestral", "error") }
                 },
                 error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
             });
@@ -345,12 +360,52 @@ const dataTableOptions = {
         { data: "Matriz.carrera", title: "Carrera" },
         { data: "Matriz.modalidad", title: "Modalidad" },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-editar"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-2 btn-temas"><i class="fa fa-list-alt"></i></button>' +
-                '<button type="button" class="btn btn-success btn-sm ms-2 btn-planIndividual"><i class="fa fa-tasks"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-2 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "150"
+            data: "estado_proceso_pds", title: "Estado",
+            render: function (data) {
+                let badgeClass = 'secondary';
+                let icon = 'fa-clock';
+
+                if (data === 'En proceso') {
+                    badgeClass = 'primary';
+                    icon = 'fa-spinner';
+                } else if (data === 'Finalizado') {
+                    badgeClass = 'success';
+                    icon = 'fa-check';
+                }
+
+                return `
+                    <span class="badge bg-${badgeClass} bg-gradient">
+                        <i class="fas ${icon} me-1"></i>${data}
+                    </span>
+                `;
+            }
+        },
+        {
+            data: null,
+            title: "Acciones",
+            render: function (data, type, row) {
+                return `
+                    <div class="btn-group" role="group">
+                        <button type="button" data-id="${row.id_plan_didactico}" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe">
+                            <i class="fa fa-file-pdf"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_encriptado}" class="btn btn-primary btn-sm btn-editar" title="Editar registro">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_encriptado}" class="btn btn-warning btn-sm btn-temas" title="Gestionar temas">
+                            <i class="fa fa-list-alt"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_encriptado}" class="btn btn-secondary btn-sm btn-planIndividual" title="Generar plan individual">
+                            <i class="fa fa-tasks"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_plan_didactico}" class="btn btn-danger btn-sm btn-eliminar" title="Eliminar registro">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            },
+            orderable: false,
+            width: "200px"
         },
     ]
 };
@@ -426,3 +481,61 @@ $(document).ready(function () {
     $('#btnAnterior').hide();
     $('#btnGuardar').hide();
 });
+
+// Función específica para mostrar pasos después de crear un plan didáctico semestral
+function MostrarPasosCreacionPlanSemestral(mensaje) {
+    const pasos = `
+        <p class="mb-3"><strong>Plan didáctico semestral creado exitosamente:</strong> ${mensaje}</p>
+        
+        <h6 class="text-primary mb-2">📋 Acciones disponibles en la tabla:</h6>
+        <div class="mb-4 d-flex justify-content-between">
+            <button type="button" class="btn btn-warning btn-sm me-2 mb-2">
+                <i class="fas fa-list-alt me-1"></i> Gestionar Temas
+            </button>
+            <button type="button" class="btn btn-secondary btn-sm mb-2">
+                <i class="fas fa-tasks me-1"></i> Generar Plan Individual
+            </button>
+        </div>
+        
+        <h6 class="text-primary mb-3">🚀 Pasos a seguir para completar la configuración:</h6>
+        <ol class="list-group list-group-numbered">
+            <li class="list-group-item border-0 ps-0">
+                <strong>Gestionar temas del plan:</strong> Haz clic en el botón 
+                <span class="badge bg-warning text-white">
+                    <i class="fas fa-list-alt"></i>
+                </span> 
+                para organizar y estructurar los contenidos temáticos del semestre.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Generar planes individuales:</strong> Una vez estructurado el plan general, 
+                presiona el botón 
+                <span class="badge bg-secondary text-white">
+                    <i class="fas fa-tasks"></i>
+                </span> 
+                para crear planes específicos para los contenidos elaborados anteriormente en la Matriz de Integración de Componentes.
+            </li>
+        </ol>
+        
+        <div class="alert alert-warning mt-3 mb-0">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Recomendación:</strong> Sigue el orden de los pasos para una planificación didáctica óptima.
+        </div>
+    `;
+
+    return ModalNota(pasos);
+}
+
+// Función para mostrar modal desde TempData automáticamente
+function MostrarModalTempData() {
+    const tempDataCREATE = {
+        mensaje: $('#tempDataCreate').text(),
+    };
+
+    if (tempDataCREATE) {
+        setTimeout(() => {
+            MostrarPasosCreacionPlanSemestral(tempDataCREATE.mensaje);
+
+            $('[id^="tempData"]').remove();
+        }, 800);
+    }
+}

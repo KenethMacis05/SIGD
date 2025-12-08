@@ -97,6 +97,7 @@ namespace capa_presentacion.Controllers
                 if (esNuevo)
                 {
                     resultado = CN_MatrizIntegradora.Crear(matriz, out mensaje);
+                    TempData["CREATE"] = mensaje;
                 }
                 else
                 {
@@ -569,13 +570,14 @@ namespace capa_presentacion.Controllers
             return View(planSemestral);
         }
 
-        public JsonResult BuscarMatrizAsignatura(string usuario, string nombres, int periodo)
+        [AllowAnonymous]
+        public JsonResult BuscarMatrizAsignatura(int periodo)
         {
             var usuarioAsignado = (USUARIOS)Session["UsuarioAutenticado"];
             if (usuarioAsignado == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
 
             string mensaje = string.Empty;
-            List<MATRIZASIGNATURA> lst = CN_MatrizAsignatura.BuscarMatriz(usuario, nombres, periodo, usuarioAsignado.id_usuario, out mensaje);
+            List<MATRIZASIGNATURA> lst = CN_MatrizAsignatura.BuscarMatriz(periodo, usuarioAsignado.id_usuario, out mensaje);
 
             return Json(new { data = lst, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
@@ -602,6 +604,20 @@ namespace capa_presentacion.Controllers
             }
         }
 
+
+        [AllowAnonymous]
+        public JsonResult BuscarPlanDidacticoSemestral(int periodo)
+        {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
+            string mensaje = string.Empty;
+            List<PLANDIDACTICOSEMESTRAL> lst = CN_PlanSemestral.BuscarPlanSemestral(usuario.id_usuario, periodo, out mensaje);
+
+            return Json(new { data = lst, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
+        }
+
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult GuardarPlanDidactico(PLANDIDACTICOSEMESTRAL pds)
@@ -621,6 +637,7 @@ namespace capa_presentacion.Controllers
                 if (esNuevo)
                 {
                     resultado = CN_PlanSemestral.Crear(pds, out mensaje);
+                    TempData["CREATE"] = mensaje;
                 }
                 else
                 {
@@ -807,7 +824,7 @@ namespace capa_presentacion.Controllers
 
         // Vista Detalle del Plan de Clases Diario
         [HttpGet]
-        public ActionResult DetallePlanDiario(int id)
+        public ActionResult DetallePlanDiario(string id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
             PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id, usuario.id_usuario);
@@ -823,7 +840,7 @@ namespace capa_presentacion.Controllers
 
         // Vista Editar del Plan de Clases Diario
         [HttpGet]
-        public ActionResult EditarPlanDiario(int id)
+        public ActionResult EditarPlanDiario(string id)
         {
             USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
             PLANCLASESDIARIO plan = CN_PlanClasesDiario.ObtenerPlanDiarioPorId(id, usuario.id_usuario);
@@ -852,13 +869,10 @@ namespace capa_presentacion.Controllers
                 int resultado;
                 bool esNuevo = plan.id_plan_diario == 0;
 
-                USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
-                
-                plan.fk_profesor = usuario.id_usuario;
-
                 if (esNuevo)
                 {
                     resultado = CN_PlanClasesDiario.Registra(plan, out mensaje);
+                    TempData["CREATE"] = mensaje;
                 }
                 else
                 {

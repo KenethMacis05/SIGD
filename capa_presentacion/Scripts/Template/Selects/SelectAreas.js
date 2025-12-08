@@ -1,10 +1,9 @@
 ﻿$(document).ready(function () {
-    inicializarSelect2Area();
     cargarAreas();
 });
 
-function inicializarSelect2Area() {
-    $('#inputGroupSelectArea').select2({
+function inicializarSelect2Area(dropdownParent = null) {
+    var config = {
         placeholder: "Buscar ...",
         allowClear: true,
         language: {
@@ -12,14 +11,21 @@ function inicializarSelect2Area() {
                 return "No se encontraron resultados";
             }
         }
-    });
+    };
+
+    // Si se proporciona un dropdownParent, lo agregamos a la configuración
+    if (dropdownParent) {
+        config.dropdownParent = dropdownParent;
+    }
+
+    $('#inputGroupSelectArea').select2(config);
 }
 
-function cargarAreas() {
+function cargarAreas(dropdownParent = null) {
     var areaActual = $("#fk_area_activa").val();
 
     jQuery.ajax({
-        url: "/Catalogos/ListarAreasDeConocimiento",
+        url: "/Catalogos/GetAreaConocimiento",
         type: "GET",
         dataType: "json",
         contentType: "application/json; charset=utf-8",
@@ -44,11 +50,17 @@ function cargarAreas() {
                 $('#inputGroupSelectArea').val(areaActual).trigger('change');
             }
 
+            // Reinicializar Select2 con el dropdownParent si se proporciona
+            if (dropdownParent) {
+                $('#inputGroupSelectArea').select2('destroy');
+                inicializarSelect2Area(dropdownParent);
+            }
+
             $('#inputGroupSelectArea').trigger('change.select2');
         },
 
         error: (xhr) => {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            showAlert("Error", `Error al conectar con el servidor (GetAreas): ${xhr.statusText}`, "error");
         }
     });
 }

@@ -32,9 +32,13 @@ namespace capa_presentacion.Controllers
         }
 
         // Enpoint(GET): Listar los usuarios
+        [AllowAnonymous]
         [HttpGet]
         public JsonResult ListarUsuarios()
         {
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" }, JsonRequestBehavior.AllowGet);
+
             List<USUARIOS> lst = new List<USUARIOS>();
             lst = CN_Usuario.Listar();
 
@@ -99,14 +103,12 @@ namespace capa_presentacion.Controllers
         }
 
         // Enpoint(POST): Actualizar los datos del usuario con session activa
+        [AllowAnonymous]
         [HttpPost]
         public JsonResult ActualizarDatosUsuarioAut(USUARIOS usuario)
         {
-            USUARIOS usuarioAut = (USUARIOS)Session["UsuarioAutenticado"];
-            if (usuarioAut == null)
-            {
-                return Json(new { Resultado = false, Mensaje = "Sesión no válida" });
-            }
+            var usuarioAut = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuarioAut == null) return Json(new { success = false, message = "Sesión expirada" });
 
             usuario.id_usuario = usuarioAut.id_usuario;
             usuario.estado = true;
@@ -158,9 +160,13 @@ namespace capa_presentacion.Controllers
         }
 
         // Enpoint(POST) Actualizar contraseña
+        [AllowAnonymous]
+        [HttpPost]
         public JsonResult ActualizarContrasena(string claveActual, string nuevaClave, string claveConfir)
         {
-            USUARIOS usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            var usuario = (USUARIOS)Session["UsuarioAutenticado"];
+            if (usuario == null) return Json(new { success = false, message = "Sesión expirada" });
+
             int idUsuario = usuario.id_usuario;
             string mensaje = string.Empty;
 
@@ -169,6 +175,7 @@ namespace capa_presentacion.Controllers
         }
 
         // Endpoint(POST): Actualizar foto de perfil del usuario autenticado
+        [AllowAnonymous]
         [HttpPost]
         public JsonResult ActualizarFoto(string imagenBase64)
         {

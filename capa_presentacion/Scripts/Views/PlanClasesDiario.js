@@ -1,4 +1,5 @@
 ﻿let dataTable;
+let dataTablePDS;
 const $tabs = $('.tab-pane');
 const $tabButtons = $('.nav-link-tab');
 let currentTabIndex = 0;
@@ -62,16 +63,16 @@ function obtenerNombreCampo($elemento) {
         'Campo sin nombre';
 }
 
-// Redirigir a la pantalla de detalles
-$('#datatable tbody').on('click', '.btn-detalles', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/DetallePlanDiario?id=" + data.id_plan_diario;
-});
-
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarPlanDiario?id=" + data.id_plan_diario;
+    const idEncriptado = $(this).data('id');
+    window.location.href = "/Planificacion/EditarPlanDiario?id=" + idEncriptado;
+});
+
+// Redirigir a la pantalla de reporte PDF
+$('#datatable tbody').on('click', '.btn-pdf', function () {
+    const id = $(this).data('id');
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=PlanClasesDiario&id=' + id, '_blank');
 });
 
 // Botón de navegación Siguiente
@@ -125,10 +126,149 @@ $('#btnAnterior').click(function () {
     }
 });
 
+function abrirModal() {
+    $("#crearPlanClasesDiario").modal("show");
+}
+
+$(document).ready(function () {
+    $('#asignaturaNombre').on('focus', function () {
+        abrirModal();
+    });
+});
+
+function Buscar() {
+    const filtros = {
+        periodo: limpiarFiltro($("#inputGroupSelectPeriodo").val().trim())
+    }
+
+    if (!filtros.periodo) {
+        showAlert("Advertencia", "El periodo es obligatorio.", "warning", true);
+        return;
+    }
+
+    dataTablePDS.clear().draw();
+
+    $.ajax({
+        url: '/Planificacion/BuscarPlanDidacticoSemestral',
+        type: "GET",
+        dataType: "json",
+        data: filtros,
+        beforeSend: () => $("#dataTablePDS tbody").LoadingOverlay("show"),
+        success: function (response) {
+            if (response && Array.isArray(response.data) && response.data.length > 0) {
+                dataTablePDS.rows.add(response.data).draw();
+            } else {
+                showAlert("Advertencia", "No se encontraron resultados", "warning", true);
+            }
+        },
+        complete: () => $("#dataTablePDS tbody").LoadingOverlay("hide"),
+        error: () => showAlert("Error", "Error al conectar con el servidor", "error")
+    });
+}
+
+function inicializarSelect2Periodo() {
+    $('#inputGroupSelectPeriodo').select2({
+        placeholder: "Buscar periodo...",
+        allowClear: true,
+        dropdownParent: $('#crearPlanClasesDiario'),
+        language: {
+            noResults: function () {
+                return "No se encontraron resultados";
+            }
+        }
+    });
+}
+
+function cargarPeriodos() {
+    jQuery.ajax({
+        url: "/Catalogos/ListarPeriodos",
+        type: "GET",
+        dataType: "json",
+        contentType: "application/json; charset=utf-8",
+
+        success: function (response) {
+            $('#inputGroupSelectPeriodo').empty()
+                .append('<option value="">Seleccione un periodo...</option>');
+
+            $.each(response.data, function (index, periodo) {
+                $('#inputGroupSelectPeriodo').append(
+                    $('<option>', {
+                        value: periodo.id_periodo,
+                        text: periodo.anio + " || " + periodo.semestre,
+                    })
+                );
+            });
+            $('#inputGroupSelectPeriodo').trigger('change.select2');
+        },
+
+        error: (xhr) => {
+            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+        }
+    });
+}
+
+function Seleccionar() {
+    var planDidacticoSeleccionado = [];
+    var datosPlanSemestral = null;
+
+    $('#dataTablePDS tbody').find('.planSemestralCheckbox:checked').each(function () {
+        const id = $(this).data('id');
+        planDidacticoSeleccionado.push(id);
+
+        // Obtener los datos completos de la fila
+        const fila = $(this).closest('tr');
+        datosPlanSemestral = dataTablePDS.row(fila).data();
+    });
+
+    if (planDidacticoSeleccionado.length === 0) {
+        showAlert("!Atención¡", "Debe seleccionar un plan semestral", "warning", true);
+        return;
+    }
+
+    if (planDidacticoSeleccionado.length > 1) {
+        showAlert("!Atención¡", "Solo debe seleccionar un plan semestral", "warning", true);
+        return;
+    }
+
+    // Cargar datos en los inputs
+    if (datosPlanSemestral) {
+        cargarDatosEnFormulario(datosPlanSemestral);
+    }
+}
+
+// Función para cargar datos en los inputs
+function cargarDatosEnFormulario(datos) {
+    if (datos.Asignatura.nombre) $('#asignaturaNombre').val(datos.Asignatura.nombre);
+    if (datos.usuario_asignado) $('#usuario').val(datos.usuario_asignado);
+    if (datos.Matriz.area) $('#areaConocimiento').val(datos.Matriz.area);
+    if (datos.Matriz.departamento) $('#departamento').val(datos.Matriz.departamento);
+    if (datos.Matriz.carrera) $('#carrera').val(datos.Matriz.carrera);
+    if (datos.Matriz.modalidad) $('#modalidad').val(datos.Matriz.modalidad);
+    if (datos.Matriz.periodo) $('#periodo').val(datos.Matriz.periodo);
+    if (datos.id_plan_didactico) $('#fkPlanSemestral').val(datos.id_plan_didactico);
+    if (datos.id_encriptado) {
+        $('#idEncriptadoPlanSemestral').val(datos.id_encriptado);
+        cargarTemas();
+        cargarContenidosSemana();
+    } 
+
+    // Mostrar mensaje de éxito
+    showAlert("Éxito", "Datos cargados correctamente en el formulario", "success", false);
+
+    $('#crearPlanClasesDiario').modal('hide');
+}
+
 //Boton eliminar plan de clases diario
-$("#datatable tbody").on("click", '.btn-eliminar', function () {
-    const planseleccionado = $(this).closest("tr");
-    const data = dataTable.row(planseleccionado).data();
+$("#datatable tbody").on("click", '.btn-eliminar', function (e) {
+    e.stopPropagation();
+
+    const $button = $(this);
+    const idPlanClases = $button.data('id');
+
+    if (!idPlanClases) {
+        showAlert("Error", "No se pudo obtener el ID del plan de clases", "error");
+        return;
+    }
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
@@ -138,14 +278,19 @@ $("#datatable tbody").on("click", '.btn-eliminar', function () {
             $.ajax({
                 url: "/Planificacion/EliminarPlanClasesDiario",
                 type: "POST",
-                data: JSON.stringify({ id_plan_diario: data.id_plan_diario }),
+                data: JSON.stringify({ id_plan_diario: idPlanClases }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
 
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        dataTable.row(planseleccionado).remove().draw();
+                        // Encontrar la fila correctamente
+                        let $tr = $button.closest('tr');
+                        if ($tr.hasClass('child')) {
+                            $tr = $tr.prev('tr');
+                        }
+                        dataTable.row($tr).remove().draw();
                         showAlert("¡Eliminado!", response.Mensaje || "Plan de clases eliminado correctamente", "success")
                     } else { showAlert("Error", response.Mensaje || "No se pudo eliminar el plan de clases", "error") }
                 },
@@ -183,34 +328,78 @@ const dataTableOptions = {
         },
         { data: "periodo", title: "Periodo" },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-primary btn-sm btn-detalles"><i class="fa fa-eye"></i></button>' +
-                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "130"
+            data: null,
+            title: "Acciones",
+            render: function (data, type, row) {
+                return `
+                    <div class="btn-group" role="group">
+                        <button type="button" data-id="${row.id_plan_diario}" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe">
+                            <i class="fa fa-file-pdf"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_plan_diario_encriptado}" class="btn btn-warning btn-sm ms-1 btn-editar" title="Modificar registro">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <button type="button" data-id="${row.id_plan_diario}" class="btn btn-danger btn-sm ms-1 btn-eliminar" title="Eliminar registro">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            },
+            orderable: false,
+            width: "100px"
         },
     ]
 };
 
+const dataTablePDSOptions = {
+    ...dataTableConfig,
+    columns: [
+        {
+            data: null,
+            render: function (data, type, row, meta) {
+                return meta.row + 1;
+            },
+            title: "#",
+            width: "50px",
+            orderable: false
+        },
+        { data: "codigo", title: "Codigo" },
+        { data: "nombre", title: "Nombre" },
+        { data: "Matriz.periodo", title: "Periodo" },
+        { data: "Asignatura.nombre", title: "Asignatura" },
+        { data: "Matriz.carrera", title: "Carrera" },
+        {
+            data: "id_plan_didactico",
+            render: function (data) {
+                return `
+                    <div class="icheck-primary">
+                    <input type="checkbox" class="checkboxIcheck planSemestralCheckbox"
+                        id="planSemestral_${data}" 
+                        data-id="${data}">
+                    <label for="planSemestral_${data}"></label>
+                    </div>
+                `;
+            },
+            orderable: false,
+            width: "100px"
+        }
+    ],
+};
+
 $(document).ready(function () {
     dataTable = $("#datatable").DataTable(dataTableOptions);
-    $('#competenciasSummernote').summernote(summernoteConfig);
+    dataTablePDS = $("#dataTablePDS").DataTable(dataTablePDSOptions)
+    inicializarSelect2Periodo();
+    cargarPeriodos();
+    $('#competenciasGenericasSummernote').summernote(summernoteConfig);
+    $('#competenciasEspecificasSummernote').summernote(summernoteConfig);
     $('#ejesSummernote').summernote(summernoteConfig);
     $('#boaSummernote').summernote(summernoteConfig);
     $('#objetivoSummernote').summernote(summernoteConfig);
-    $('#temaSummernote').summernote(summernoteConfig);
     $('#indicadorSummernote').summernote(summernoteConfig);
     $('#inicialesSummernote').summernote(summernoteConfig);
     $('#desarrolloSummernote').summernote(summernoteConfig);
     $('#sintesisSummernote').summernote(summernoteConfig);
-    $('#estrategiaSummernote').summernote(summernoteConfig);
-    $('#tipoEvaluacionSummernote').summernote(summernoteConfig);
-    $('#instrumentoSummernote').summernote(summernoteConfig);
-    $('#evidenciasSummernote').summernote(summernoteConfig);
-    $('#criteriosSummernote').summernote(summernoteConfig);
-    $('#indicadoresSummernote').summernote(summernoteConfig);
-    $('#nivelSummernote').summernote(summernoteConfig);
 
     $tabs.not(':first').removeClass('active show');
     $tabButtons.not(':first').removeClass('active').attr('aria-selected', 'false');

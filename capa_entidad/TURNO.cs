@@ -13,5 +13,6 @@ namespace capa_entidad
         public int fk_modalidad { get; set; }
         public bool estado { get; set; } = true;
         public DateTime fecha_registro { get; set; } = DateTime.Now;
+        public MODALIDAD Modalidad { get; set; }
     }
 }

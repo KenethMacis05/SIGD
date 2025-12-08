@@ -1,10 +1,9 @@
 ﻿$(document).ready(function () {
-    inicializarSelect2Periodo();
     cargarPeriodos();
 });
 
-function inicializarSelect2Periodo() {
-    $('#inputGroupSelectPeriodo').select2({
+function inicializarSelect2Periodo(dropdownParent = null) {
+    var config = {
         placeholder: "Buscar periodo...",
         allowClear: true,
         language: {
@@ -12,10 +11,17 @@ function inicializarSelect2Periodo() {
                 return "No se encontraron resultados";
             }
         }
-    });
+    };
+
+    // Si se proporciona un dropdownParent, lo agregamos a la configuración
+    if (dropdownParent) {
+        config.dropdownParent = dropdownParent;
+    }
+
+    $('#inputGroupSelectPeriodo').select2(config);
 }
 
-function cargarPeriodos() {
+function cargarPeriodos(dropdownParent = null) {
     var periodoActual = $("#fk_periodo_activo").val();
 
     jQuery.ajax({
@@ -33,13 +39,19 @@ function cargarPeriodos() {
                 $('#inputGroupSelectPeriodo').append(
                     $('<option>', {
                         value: periodo.id_periodo,
-                        text: periodo.anio + " || " + periodo.semestre,
+                        text: periodo.anio + ' || ' + periodo.semestre,
                         selected: isSelected
                     })
                 );
             });
 
-            // Si hay una periodo actual, seleccionarla
+            // Reinicializar Select2 con el dropdownParent si se proporciona
+            if (dropdownParent) {
+                $('#inputGroupSelectPeriodo').select2('destroy');
+                inicializarSelect2Periodo(dropdownParent);
+            }
+
+            // Si hay un periodo actual, seleccionarlo
             if (periodoActual && periodoActual !== '0') {
                 $('#inputGroupSelectPeriodo').val(periodoActual).trigger('change');
             }
@@ -48,7 +60,7 @@ function cargarPeriodos() {
         },
 
         error: (xhr) => {
-            showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+            showAlert("Error", `Error al conectar con el servidor (Periodos): ${xhr.statusText}`, "error");
         }
     });
 }

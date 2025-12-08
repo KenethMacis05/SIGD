@@ -16,7 +16,7 @@ namespace capa_datos
         {
             try
             {
-                conexion = ConfigurationManager.ConnectionStrings["cadenaLocal"].ConnectionString;
+                conexion = ConfigurationManager.ConnectionStrings["cadenaSOMEE"].ConnectionString;
             }
             catch (Exception ex)
             {

@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleDropzone.css")" />
 <link rel="stylesheet" href="@Url.Content("~/Content/EstilosComponentes/styleInputSearch.css")" />
 <link rel="stylesheet" href="@Url.Content("~/Content/Views/Archivos.css")" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/css/lightgallery-bundle.min.css" />
 
 <!--Contenedor-->
 <div class="card shadow-sm mt-3">
@@ -50,14 +51,14 @@
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h2 class="mb-0">Archivos recientes</h2>
-                    <div class="d-flex align-items-center">
-                        <button type="button" class="btn btn-secondary ms-2" onclick="abrirModalCarpeta(null)">
+                    <div>
+                        <button type="button" class="btn btn-secondary" onclick="abrirModalCarpeta(null)">
                             <i class="fa fa-folder me-2"></i>Crear Carpeta
                         </button>
-                        <button type="button" class="btn btn-primary ms-2" onclick="abrirModalSubirArchivo(null)">
+                        <button type="button" class="btn btn-primary" onclick="abrirModalSubirArchivo(null)">
                             <i class="fas fa-upload me-2"></i>Subir Archivo
                         </button>
-                        <button type="button" class="btn btn-outline-primary ms-2" onclick="descargar()">
+                        <button type="button" class="btn btn-outline-primary" onclick="descargar()">
                             <i class="fas fa-download me-2"></i>Descargar
                         </button>
                     </div>
@@ -307,6 +308,24 @@
 </div>
 
 @section scripts{
+    <!-- Core JS -->
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/lightgallery.umd.min.js"></script>
+
+    <!-- Plugins JS -->
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/zoom/lg-zoom.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/thumbnail/lg-thumbnail.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/fullscreen/lg-fullscreen.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/rotate/lg-rotate.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/share/lg-share.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/pager/lg-pager.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/autoplay/lg-autoplay.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/comment/lg-comment.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/hash/lg-hash.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lightgallery@2.7.2/plugins/video/lg-video.umd.min.js"></script>
+
+    <!-- Script de OnlyOffice -->
+    <script src="http://192.168.1.50:8080/web-apps/apps/api/documents/api.js"></script>
+
     <script type="text/javascript">
         const config = {
             listarCarpetasRecientesUrl: '@Url.Action("ListarCarpetasRecientes", "Archivo")',

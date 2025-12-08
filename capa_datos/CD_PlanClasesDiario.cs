@@ -41,42 +41,43 @@ namespace capa_datos
                             lst.Add(
                                 new PLANCLASESDIARIO
                                 {
+                                    // 1. Datos del plan de clases diario
                                     id_plan_diario = Convert.ToInt32(dr["id_plan_diario"]),
                                     codigo = dr["codigo"].ToString(),
                                     nombre = dr["nombre"].ToString(),
-                                    fecha_registro = Convert.ToDateTime(dr["fecha_registro"]),
-                                    fk_area = Convert.ToInt32(dr["fk_area"]),
-                                    fk_departamento = Convert.ToInt32(dr["fk_departamento"]),
-                                    fk_carrera = Convert.ToInt32(dr["fk_carrera"]),
-                                    fk_asignatura = Convert.ToInt32(dr["fk_asignatura"]),
+                                    fk_plan_didactico = Convert.ToInt32(dr["fk_plan_didactico"]),
+                                    fk_tema = Convert.ToInt32(dr["fk_tema"]),
+                                    fk_plan_individual = Convert.ToInt32(dr["fk_plan_individual"]),
                                     ejes = dr["ejes"].ToString(),
-                                    fk_profesor = Convert.ToInt32(dr["fk_profesor"]),
-                                    fk_periodo = Convert.ToInt32(dr["fk_periodo"]),
-                                    competencias = dr["competencias"].ToString(),
+                                    competencias_genericas = dr["competencias_genericas"].ToString(),
+                                    competencias_especificas = dr["competencias_especificas"].ToString(),
                                     BOA = dr["BOA"].ToString(),
                                     fecha_inicio = Convert.ToDateTime(dr["fecha_inicio"]),
                                     fecha_fin = Convert.ToDateTime(dr["fecha_fin"]),
                                     objetivo_aprendizaje = dr["objetivo_aprendizaje"].ToString(),
-                                    tema_contenido = dr["tema_contenido"].ToString(),
                                     indicador_logro = dr["indicador_logro"].ToString(),
                                     tareas_iniciales = dr["tareas_iniciales"].ToString(),
                                     tareas_desarrollo = dr["tareas_desarrollo"].ToString(),
                                     tareas_sintesis = dr["tareas_sintesis"].ToString(),
-                                    tipo_evaluacion = dr["tipo_evaluacion"].ToString(),
-                                    estrategia_evaluacion = dr["estrategia_evaluacion"].ToString(),
-                                    instrumento_evaluacion = dr["instrumento_evaluacion"].ToString(),
-                                    evidencias_aprendizaje = dr["evidencias_aprendizaje"].ToString(),
-                                    criterios_aprendizaje = dr["criterios_aprendizaje"].ToString(),
-                                    indicadores_aprendizaje = dr["indicadores_aprendizaje"].ToString(),
-                                    nivel_aprendizaje = dr["nivel_aprendizaje"].ToString(),
-                                    estado = Convert.ToBoolean(dr["estado"]),
-                                    
-                                    profesor = dr["profesor"].ToString(),
-                                    periodo = dr["periodo"].ToString(),
+
+                                    // 2. Datos relacionados
                                     area_conocimiento = dr["area_conocimiento"].ToString(),
                                     departamento = dr["departamento"].ToString(),
                                     carrera = dr["carrera"].ToString(),
-                                    asignatura = dr["asignatura"].ToString()
+                                    asignatura = dr["asignatura"].ToString(),
+                                    periodo = dr["periodo"].ToString(),
+                                    profesor = dr["profesor"].ToString(),
+                                    tema = dr["tema"].ToString(),
+                                    contenido = dr["contenido(s)"].ToString(),
+
+                                    // 3. Evaluación de los aprendizajes
+                                    tipo_evaluacion = dr["tipo_evaluacion"].ToString(),
+                                    estrategias_evaluacion = dr["estrategias_evaluacion"].ToString(),
+                                    instrumento_evaluacion = dr["instrumento_evaluacion"].ToString(),
+                                    evidencias_aprendizaje = dr["evidencias_aprendizaje"].ToString(),
+
+                                    estado = Convert.ToBoolean(dr["estado"]),
+                                    fecha_registro = Convert.ToDateTime(dr["fecha_registro"])
                                 }
                             );
                         }
@@ -119,30 +120,20 @@ namespace capa_datos
 
                     // Parámetros de entrada
                     cmd.Parameters.AddWithValue("Nombre", plan.nombre);
-                    cmd.Parameters.AddWithValue("FKAreaConocimiento", plan.fk_area);
-                    cmd.Parameters.AddWithValue("FKDepartamento", plan.fk_departamento);
-                    cmd.Parameters.AddWithValue("FKCarrera", plan.fk_carrera);
-                    cmd.Parameters.AddWithValue("FKAsignatura", plan.fk_asignatura);
+                    cmd.Parameters.AddWithValue("FKPlanDidactico", plan.fk_plan_didactico);
+                    cmd.Parameters.AddWithValue("FKTema", plan.fk_tema);
+                    cmd.Parameters.AddWithValue("FKPlanIndividual", plan.fk_plan_individual);
                     cmd.Parameters.AddWithValue("Ejes", plan.ejes);
-                    cmd.Parameters.AddWithValue("FKProfesor", plan.fk_profesor);
-                    cmd.Parameters.AddWithValue("FKPeriodo", plan.fk_periodo);
-                    cmd.Parameters.AddWithValue("Competencias", plan.competencias);
+                    cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);
+                    cmd.Parameters.AddWithValue("CompetenciasEspecificas", plan.competencias_especificas);
                     cmd.Parameters.AddWithValue("BOA", plan.BOA);
                     cmd.Parameters.AddWithValue("FechaInicio", plan.fecha_inicio);
                     cmd.Parameters.AddWithValue("FechaFin", plan.fecha_fin);
                     cmd.Parameters.AddWithValue("ObjetivoAprendizaje", plan.objetivo_aprendizaje);
-                    cmd.Parameters.AddWithValue("TemaContenido", plan.tema_contenido);
                     cmd.Parameters.AddWithValue("IndicadorLogro", plan.indicador_logro);
                     cmd.Parameters.AddWithValue("TareasIniciales", plan.tareas_iniciales);
                     cmd.Parameters.AddWithValue("TareasDesarrollo", plan.tareas_desarrollo);
                     cmd.Parameters.AddWithValue("TareasSintesis", plan.tareas_sintesis);
-                    cmd.Parameters.AddWithValue("TipoEvaluacion", plan.tipo_evaluacion);
-                    cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
-                    cmd.Parameters.AddWithValue("InstrumentoEvaluacion", plan.instrumento_evaluacion);
-                    cmd.Parameters.AddWithValue("EvidenciasAprendizaje", plan.evidencias_aprendizaje);
-                    cmd.Parameters.AddWithValue("CriteriosAprendizaje", plan.criterios_aprendizaje);
-                    cmd.Parameters.AddWithValue("IndicadoresAprendizaje", plan.indicadores_aprendizaje);
-                    cmd.Parameters.AddWithValue("NivelAprendizaje", plan.nivel_aprendizaje);
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Int).Direction = ParameterDirection.Output;
@@ -181,30 +172,21 @@ namespace capa_datos
                     // Agregar parámetros
                     cmd.Parameters.AddWithValue("IdPlanClasesDiario", plan.id_plan_diario);
                     cmd.Parameters.AddWithValue("Nombre", plan.nombre);
-                    cmd.Parameters.AddWithValue("FKAreaConocimiento", plan.fk_area);
-                    cmd.Parameters.AddWithValue("FKDepartamento", plan.fk_departamento);
-                    cmd.Parameters.AddWithValue("FKCarrera", plan.fk_carrera);
-                    cmd.Parameters.AddWithValue("FKAsignatura", plan.fk_asignatura);
+                    cmd.Parameters.AddWithValue("FKPlanDidactico", plan.fk_plan_didactico);
+                    cmd.Parameters.AddWithValue("FKTema", plan.fk_tema);
+                    cmd.Parameters.AddWithValue("FKPlanIndividual", plan.fk_plan_individual);
                     cmd.Parameters.AddWithValue("Ejes", plan.ejes);
-                    cmd.Parameters.AddWithValue("FKProfesor", plan.fk_profesor);
-                    cmd.Parameters.AddWithValue("FKPeriodo", plan.fk_periodo);
-                    cmd.Parameters.AddWithValue("Competencias", plan.competencias);
+                    cmd.Parameters.AddWithValue("CompetenciasGenericas", plan.competencias_genericas);
+                    cmd.Parameters.AddWithValue("CompetenciasEspecificas", plan.competencias_especificas);
                     cmd.Parameters.AddWithValue("BOA", plan.BOA);
                     cmd.Parameters.AddWithValue("FechaInicio", plan.fecha_inicio);
                     cmd.Parameters.AddWithValue("FechaFin", plan.fecha_fin);
                     cmd.Parameters.AddWithValue("ObjetivoAprendizaje", plan.objetivo_aprendizaje);
-                    cmd.Parameters.AddWithValue("TemaContenido", plan.tema_contenido);
                     cmd.Parameters.AddWithValue("IndicadorLogro", plan.indicador_logro);
                     cmd.Parameters.AddWithValue("TareasIniciales", plan.tareas_iniciales);
                     cmd.Parameters.AddWithValue("TareasDesarrollo", plan.tareas_desarrollo);
                     cmd.Parameters.AddWithValue("TareasSintesis", plan.tareas_sintesis);
-                    cmd.Parameters.AddWithValue("TipoEvaluacion", plan.tipo_evaluacion);
-                    cmd.Parameters.AddWithValue("EstrategiaEvaluacion", plan.estrategia_evaluacion);
-                    cmd.Parameters.AddWithValue("InstrumentoEvaluacion", plan.instrumento_evaluacion);
-                    cmd.Parameters.AddWithValue("EvidenciasAprendizaje", plan.evidencias_aprendizaje);
-                    cmd.Parameters.AddWithValue("CriteriosAprendizaje", plan.criterios_aprendizaje);
-                    cmd.Parameters.AddWithValue("IndicadoresAprendizaje", plan.indicadores_aprendizaje);
-                    cmd.Parameters.AddWithValue("NivelAprendizaje", plan.nivel_aprendizaje);
+
 
                     // Parámetros de salida
                     cmd.Parameters.Add("Resultado", SqlDbType.Bit).Direction = ParameterDirection.Output;

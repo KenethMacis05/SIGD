@@ -96,6 +96,45 @@ CREATE TABLE USUARIOS (
 )
 GO
 
+-- (6) TABLA TIPO_DOMINIO (Catálogo de tipos de dominio)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TIPO_DOMINIO')
+CREATE TABLE TIPO_DOMINIO (
+    id_tipo_dominio INT PRIMARY KEY IDENTITY(1,1),
+    descripcion_tipo_dominio VARCHAR(50) NOT NULL UNIQUE,
+    nombre_procedimiento VARCHAR(100) NULL,
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE()
+)
+GO
+
+-- (7) TABLA DOMINIO (Entidades específicas del sistema)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DOMINIO')
+CREATE TABLE DOMINIO (
+    id_dominio INT PRIMARY KEY IDENTITY(1,1),
+    fk_tipo_dominio INT NOT NULL,
+    descripcion_dominio VARCHAR(100) NOT NULL,
+    codigo VARCHAR(50) NULL,
+    referencia_id INT NOT NULL,
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_DOMINIO_TIPO FOREIGN KEY (fk_tipo_dominio) REFERENCES TIPO_DOMINIO(id_tipo_dominio)
+)
+GO
+
+-- (9) TABLA DOMINIO_ROL (Asignación de dominios a roles - acceso masivo)
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'DOMINIO_ROL')
+CREATE TABLE DOMINIO_ROL (
+    id_dominio_rol INT PRIMARY KEY IDENTITY(1,1),
+    fk_rol INT NOT NULL,
+    fk_dominio INT NOT NULL,
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    CONSTRAINT FK_DOMROL_ROL FOREIGN KEY (fk_rol) REFERENCES ROL(id_rol) ON DELETE CASCADE,
+    CONSTRAINT FK_DOMROL_DOMINIO FOREIGN KEY (fk_dominio) REFERENCES DOMINIO(id_dominio) ON DELETE CASCADE,
+    CONSTRAINT UQ_DOMINIO_ROL UNIQUE (fk_rol, fk_dominio)
+)
+GO
+
 --------------------------------------------------TABLAS PARA LA GESTION DE ARCHIVOS--------------------------------------------------
 
 -- (1) TABLA CARPETA
@@ -251,6 +290,20 @@ CREATE TABLE TURNO (
     CONSTRAINT FK_TURNO_MODALIDAD FOREIGN KEY (fk_modalidad) REFERENCES MODALIDAD(id_modalidad)
 );
 
+GO
+
+-- (10) Tabla reportes
+IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'REPORTES')
+CREATE TABLE REPORTES (
+    id_reporte INT PRIMARY KEY IDENTITY(1,1),
+    nombre VARCHAR(255),
+    codigo VARCHAR(255),
+    descripcion VARCHAR(500),
+    ruta VARCHAR(255),
+    estado BIT DEFAULT 1,
+    fecha_registro DATETIME DEFAULT GETDATE(),
+);
+
 -----------------------------------------------------Etapa 1: Matriz de Integracion de Componentes-----------------------------------------------------
 -- (1) Tabla MatrizIntegracionComponentes
 IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'MATRIZINTEGRACIONCOMPONENTES')
@@ -282,13 +335,13 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     fk_periodo INT NOT NULL,
 
     -- Competencias
-    competencias_genericas VARCHAR(255),
-    competencias_especificas VARCHAR(255),
+    competencias_genericas VARCHAR(MAX),
+    competencias_especificas VARCHAR(MAX),
     
     -- Objetivos
-    objetivo_anio VARCHAR(255),
-    objetivo_semestre VARCHAR(255),
-    objetivo_integrador VARCHAR(255),
+    objetivo_anio VARCHAR(MAX),
+    objetivo_semestre VARCHAR(MAX),
+    objetivo_integrador VARCHAR(MAX),
     
     -- Numero de semanas de la Matriz
     numero_semanas INT,
@@ -297,7 +350,7 @@ CREATE TABLE MATRIZINTEGRACIONCOMPONENTES (
     fecha_inicio DATE NOT NULL,
     
     -- Estrategia integradora
-    estrategia_integradora VARCHAR(255),
+    estrategia_integradora VARCHAR(MAX),
 
     estado BIT DEFAULT 1,
     estado_proceso VARCHAR(50) NOT NULL CHECK (estado_proceso IN ('Pendiente', 'En proceso', 'Finalizado')) DEFAULT 'Pendiente',
@@ -350,7 +403,7 @@ CREATE TABLE CONTENIDOS (
     id_contenido INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_asignatura INT NOT NULL,
     fk_semana INT NOT NULL,
-    contenido VARCHAR(255),
+    contenido VARCHAR(MAX),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_CONTENIDOS_ASIGNATURAMATRIZ FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura) ON DELETE CASCADE,
@@ -364,8 +417,8 @@ CREATE TABLE ACCIONINTEGRADORA_TIPOEVALUACION (
     id_accion_tipo INT PRIMARY KEY IDENTITY(1,1),
     fk_matriz_integracion INT NOT NULL,
     fk_semana INT NOT NULL,
-    accion_integradora VARCHAR(255),
-    tipo_evaluacion VARCHAR(50),
+    accion_integradora VARCHAR(MAX),
+    tipo_evaluacion VARCHAR(MAX),
     estado VARCHAR(50) NOT NULL CHECK (estado IN ('Pendiente', 'En proceso', 'Finalizado')),
     fecha_registro DATETIME DEFAULT GETDATE(),
     CONSTRAINT FK_ACCIONTIPO_MIC FOREIGN KEY (fk_matriz_integracion) REFERENCES MATRIZINTEGRACIONCOMPONENTES(id_matriz_integracion) ON DELETE CASCADE,
@@ -397,19 +450,19 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
     fk_matriz_asignatura INT NOT NULL,
 	
 	-- C.	Currículum
-	curriculum VARCHAR(255),
+	curriculum VARCHAR(MAX),
 
 	-- D.	Matriz del componente = Temas, horas y creditos	(En la tabla: TemaPlanificacionSemestral)
 
 	-- E.	Competencias con las que va a contribuir
-	competencias_genericas VARCHAR(255),
-	competencias_especificas VARCHAR(255),
+	competencias_genericas VARCHAR(MAX),
+	competencias_especificas VARCHAR(MAX),
 
     -- F.	Objetivos de aprendizaje a lograr
-    objetivos_aprendizaje VARCHAR(255),
+    objetivos_aprendizaje VARCHAR(MAX),
 
 	-- G.	Objetivo integrador
-	objetivo_integrador VARCHAR(255),
+	objetivo_integrador VARCHAR(MAX),
 
 	-- H.	Eje Transversal (En la tabla: EjeTransversal)
     competencia_generica VARCHAR(MAX),
@@ -417,19 +470,20 @@ CREATE TABLE PLANDIDACTICOSEMESTRAL (
     valores_transversales VARCHAR(MAX),
 
     -- I.	Estrategia Metodológica
-    estrategia_metodologica VARCHAR(255),
+    estrategia_metodologica VARCHAR(MAX),
     
     -- J.	Estrategia de Evaluación
-    estrategia_evaluacion VARCHAR(255),
+    estrategia_evaluacion VARCHAR(MAX),
 
     -- TABLA DE MATRIZ DE PLANIFICACIÓN SEMESTRAL (En la tabla: MatrizPlanificacionSemestral)
 
     -- K. Recursos
-    recursos VARCHAR(255),
+    recursos VARCHAR(MAX),
 
     -- L. Bibliografía fundamental
-	bibliografia VARCHAR(255),
-
+	bibliografia VARCHAR(MAX),
+    
+    estado_proceso VARCHAR(50) NOT NULL CHECK (estado_proceso IN ('Pendiente', 'En proceso', 'Finalizado')) DEFAULT 'Pendiente',
     estado BIT DEFAULT 1,
 	fecha_registro DATETIME DEFAULT GETDATE(),
 	CONSTRAINT FK_PLANDIDACTICOSEMESTRAL_MA FOREIGN KEY (fk_matriz_asignatura) REFERENCES MATRIZASIGNATURA(id_matriz_asignatura),
@@ -442,7 +496,7 @@ IF NOT EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'TEMAP
 CREATE TABLE TEMAPLANIFICACIONSEMESTRAL (
     id_tema INT PRIMARY KEY IDENTITY(1,1),
     fk_plan_didactico INT NOT NULL,
-    tema VARCHAR(100) NOT NULL,
+    tema VARCHAR(MAX) NOT NULL,
     horas_teoricas INT,
     horas_laboratorio INT,
     horas_practicas INT,
@@ -479,19 +533,19 @@ CREATE TABLE PLANIFICACIONINDIVIDUALSEMESTRAL (
 	fk_contenido INT,
 
 	--Estrategias de aprendizaje (Integradoras)
-    estrategias_aprendizaje VARCHAR(255),
+    estrategias_aprendizaje VARCHAR(MAX),
 
 	--Estrategias de evaluacion (Integradoras)
-    estrategias_evaluacion VARCHAR(255),
+    estrategias_evaluacion VARCHAR(MAX),
 
 	--Tipo de evaluacion
-    tipo_evaluacion VARCHAR(50),
+    tipo_evaluacion VARCHAR(MAX),
 
 	--Instrumento de evaluacion
-    instrumento_evaluacion VARCHAR(100),
+    instrumento_evaluacion VARCHAR(MAX),
 
 	--Evidencias de aprendizaje
-    evidencias_aprendizaje VARCHAR(255),
+    evidencias_aprendizaje VARCHAR(MAX),
 
 	CONSTRAINT FK_MATRIZPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico) ON DELETE CASCADE,
 	CONSTRAINT FK_CONTENIDOSPLANIFICACIONSEMESTRAL_PDS FOREIGN KEY (fk_contenido) REFERENCES CONTENIDOS(id_contenido)
@@ -505,68 +559,59 @@ CREATE TABLE PLANCLASESDIARIO (
     id_plan_diario INT PRIMARY KEY IDENTITY(1,1),
 	codigo VARCHAR(255) NOT NULL,	
 	nombre VARCHAR(255) NOT NULL,
-	fecha_registro DATETIME DEFAULT GETDATE(),
-    estado BIT DEFAULT 1,
+	
 
-	-- 1.	Datos Generales
+	-- 1.	Datos Generales (SE SACAN DE LA RELACIÓN CON EL PLAN DIDACTICO SEMESTRAL A TRAVEZ DE LA MATRIZ DE INTEGRACION DE COMPONENTES)
+    fk_plan_didactico INT NOT NULL,
     -- Area de conocimiento
-    fk_area INT NOT NULL,
-
     -- Departamento
-    fk_departamento INT NOT NULL,
-
     -- Carrera
-    fk_carrera INT NOT NULL,
+	-- Componente curricular (as)
+	-- Profesor
+	-- Año y semestre
     
 	-- Eje (s)
-	ejes VARCHAR(255),
-
-	-- Componente curricular (as)
-	fk_asignatura INT NOT NULL,
-
-	-- Profesor
-	fk_profesor INT NOT NULL,
-
-	-- Año y semestre
-	fk_periodo INT NOT NULL,
+	ejes VARCHAR(MAX),
 
 	-- Competencia o competencias
-	competencias VARCHAR(255),
+	competencias_genericas VARCHAR(MAX),
+	competencias_especificas VARCHAR(MAX),
 
 	-- BOA
-	BOA VARCHAR(255),
+	BOA VARCHAR(MAX),
 
 	-- Fecha de Inicio y de Finalizacion
 	fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,          
 
 	-- 2.	Aprendizaje
-    objetivo_aprendizaje VARCHAR(255),
-    tema_contenido VARCHAR(255),
-    indicador_logro VARCHAR(255),
+    objetivo_aprendizaje VARCHAR(MAX),
+    indicador_logro VARCHAR(MAX),
+    -- TEMA (Se sacan de la relación de la tabla TEMAS con el PLANDIDACTICOSEMESTRAL)
+    fk_tema INT NOT NULL,
+    -- CONTENIDO (Se sacan de la relación de la tabla CONTENIDO con la tabla MATRIZASIGNATURA con la tabla PLANDIDACTICOSEMESTRAL o con la tabla PLANIFICACIONINDIVIDUALSEMESTRAL)
+    fk_plan_individual INT NOT NULL,
 
 	-- 3.	Tareas o actividades de aprendizaje
-    tareas_iniciales VARCHAR(255),
-    tareas_desarrollo VARCHAR(255),
-    tareas_sintesis VARCHAR(255),
+    tareas_iniciales VARCHAR(MAX),
+    tareas_desarrollo VARCHAR(MAX),
+    tareas_sintesis VARCHAR(MAX),
 
-	-- 4.	Evaluación de los aprendizajes
-    tipo_evaluacion VARCHAR(50),
-    estrategia_evaluacion VARCHAR(255),
-    instrumento_evaluacion VARCHAR(100),
-    evidencias_aprendizaje VARCHAR(255),
-	criterios_aprendizaje VARCHAR(255),
-	indicadores_aprendizaje VARCHAR(255),
-	nivel_aprendizaje VARCHAR(255),
+	-- 4.	Evaluación de los aprendizajes (Se saca en dependencia del contenido seleccionado y se saca de la tabla PLANIFICACIONINDIVIDUALSEMESTRAL)
+    -- Tipo de evaluación
+    -- Estrategias de evaluación
+    -- Instrumento de evaluación
+    -- Evidencias de aprendizaje
+    -- Evidencias de aprendizaje
 	
     -- 5.	Anexos
 
-    CONSTRAINT FK_PCD_AREA FOREIGN KEY (fk_area) REFERENCES AREACONOCIMIENTO(id_area),
-    CONSTRAINT FK_PCD_DEPARTAMENTO FOREIGN KEY (fk_departamento) REFERENCES DEPARTAMENTO(id_departamento),
-    CONSTRAINT FK_PCD_CARRERA FOREIGN KEY (fk_carrera) REFERENCES CARRERA(id_carrera),
-    CONSTRAINT FK_PCD_ASIGNATURA FOREIGN KEY (fk_asignatura) REFERENCES Asignatura(id_asignatura),
-    CONSTRAINT FK_PCD_USUARIO FOREIGN KEY (fk_profesor) REFERENCES Usuarios(id_usuario),
-    CONSTRAINT FK_PCD_PERIODO FOREIGN KEY (fk_periodo) REFERENCES Periodo(id_periodo)
+    fecha_registro DATETIME DEFAULT GETDATE(),
+    estado BIT DEFAULT 1,
+
+    CONSTRAINT FK_PCD_PLANDIDACSEMES FOREIGN KEY (fk_plan_didactico) REFERENCES PLANDIDACTICOSEMESTRAL(id_plan_didactico),
+    CONSTRAINT FK_PCD_TEMAS FOREIGN KEY (fk_tema) REFERENCES TEMAPLANIFICACIONSEMESTRAL(id_tema),
+    CONSTRAINT FK_PCD_PDS FOREIGN KEY (fk_plan_individual) REFERENCES PLANIFICACIONINDIVIDUALSEMESTRAL(id_planificacion)
 );
 
 GO

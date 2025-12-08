@@ -24,6 +24,14 @@
 
 @model capa_entidad.PLANDIDACTICOSEMESTRAL
 
+<div class="col-md-12">
+    <div class="alert alert-warning d-flex align-items-center" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <div>
+            Para crear un Plan Didáctico Semestral, seleccione la asignatura asignada en la Matriz de Integración utilizando el campo <strong>Asignatura</strong>.
+        </div>
+    </div>
+</div>
 
 @using (Html.BeginForm("GuardarPlanDidactico", "Planificacion", FormMethod.Post, new { @class = "card", @autocomplete = "off", @id = "formPlanSemestral", @novalidate = "novalidate" }))
 {
@@ -224,7 +232,7 @@
                         <div class="card border-left-primary shadow-sm">
                             <div class="card-header">
                                 <i class="fas fa-book-open fa-lg text-primary me-2"></i>
-                                <label class="form-label fs-5 fw-medium mb-0">Curriculum</label>
+                                <label class="form-label fs-5 fw-medium mb-0">Currículum</label>
                             </div>
                             <div class="card-body">
                                 @Html.TextAreaFor(m => m.curriculum, 5, 50, new

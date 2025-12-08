@@ -25,7 +25,7 @@ VALUES
 	('Planificacion', 'Asignaturas_Asignadas', 'Asignaturas asignadas', 'Vista'),
     ('Planificacion', 'Plan_Didactico_Semestral', 'Plan didáctico semestral', 'Vista'),
     ('Planificacion', 'Plan_de_Clases_Diario', 'Plan de clases diario', 'Vista'),
-    ('Reportes', 'Index', 'Reportes del sistema', 'Vista'),
+    ('Reporte', 'Index', 'Reportes del sistema', 'Vista'),
     ('Usuario', 'Configuraciones', 'Configuración del usuario', 'Vista'),
     
     ('Catalogos', 'AreaConocimiento', 'Area de conocimiento', 'Vista'),
@@ -33,6 +33,8 @@ VALUES
     ('Catalogos', 'Carrera', 'Carrera', 'Vista'),
     ('Catalogos', 'Componente', 'Componente', 'Vista'),
     ('Catalogos', 'Periodo', 'Periodo', 'Vista'),
+    ('Catalogos', 'Modalidad', 'Modalidad', 'Vista'),
+    ('Catalogos', 'Turno', 'Turno', 'Vista'),
 
     -- Acciones API/AJAX
     -- UsuarioController
@@ -116,7 +118,13 @@ VALUES
     ('Catalogos', 'GuardarPeriodos', 'Crear/Editar periodos', 'API'),
     ('Catalogos', 'EliminarPeriodos', 'Eliminar periodos', 'API'),
 
-    ('Catalogos', 'ListarModalidad', 'Listar Modalidades', 'API'),
+    ('Catalogos', 'ListarModalidad', 'Listar modalidades', 'API'),
+    ('Catalogos', 'GuardarModalidad', 'Crear/Editar modalidades', 'API'),
+    ('Catalogos', 'EliminarModalidad', 'Eliminar modalidades', 'API'),
+
+    ('Catalogos', 'ListarTurnos', 'Listar turnos', 'API'),
+    ('Catalogos', 'GuardarTurno', 'Crear/Editar turnos', 'API'),
+    ('Catalogos', 'EliminarTurno', 'Eliminar turnos', 'API'),
 
     -- PlanificacionController
 
@@ -201,14 +209,16 @@ VALUES
     ('Plan Didactico Semestral', 11, 'fas fa-calendar-alt', '5'),
     ('Plan de Clases Diario', 12, 'fas fa-chalkboard-teacher', '6'),
     ('Catalogos', null, 'fas fa-th-list', '7'),  -- Menú padre
-        ('Menus', 3, 'fas fa-bars', '7.1'),
-        ('Roles', 4, 'fas fa-user-tag', '7.2'),
-        ('Permisos', 5, 'fas fa-key', '7.3'),
-        ('Área de Conocimiento', 15, 'fas fa-brain', '7.4'),
-        ('Departamento', 16, 'fas fa-building', '7.5'),
-        ('Carrera', 17, 'fas fa-graduation-cap', '7.6'),
-        ('Componente', 18, 'fas fa-puzzle-piece', '7.7'),
-        ('Periodo', 19, 'fas fa-calendar-week', '7.8'),
+        ('Menus', 3, 'fas fa-bars', '7.01'),
+        ('Roles', 4, 'fas fa-user-tag', '7.02'),
+        ('Permisos', 5, 'fas fa-key', '7.03'),
+        ('Área de Conocimiento', 15, 'fas fa-brain', '7.04'),
+        ('Departamento', 16, 'fas fa-building', '7.05'),
+        ('Carrera', 17, 'fas fa-graduation-cap', '7.06'),
+        ('Componente', 18, 'fas fa-puzzle-piece', '7.07'),
+        ('Periodo', 19, 'fas fa-calendar-week', '7.08'),
+        ('Modalidad', 20, 'fas fa-toggle-on', '7.09'),
+        ('Turno', 21, 'fas fa-clock', '7.10'),
     ('Reportes', 13, 'fas fa-chart-bar', '8')
 GO
 
@@ -372,6 +382,16 @@ VALUES
     ((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 10), -- Plan Didactico Semestral
 	((SELECT id_rol FROM ROL WHERE descripcion = 'PROFESOR'), 11); -- Plan Clases
 GO
+
+-- REGISTROS EN TABLA TIPO_DOMINIO
+INSERT INTO TIPO_DOMINIO (descripcion_tipo_dominio, nombre_procedimiento) VALUES
+('Carreras', 'GetCarrera'),
+('Departamentos', 'GetDepartamento'),
+('AreasConocimiento', 'GetAreaConocimiento'),
+('Periodos', 'GetPeriodo'),
+('Reportes', 'GetReporte')
+GO
+
 --------------------------------------------------------------------------------------------------------------------    
 
 -- (1) REGISTROS EN TABLA CARPETA
@@ -416,7 +436,16 @@ VALUES
 	('CING', 'Ingeniería de Software'),
 	('CWEB', 'Desarrollo Web Avanzado'),
 	('CCLO', 'Computación en la Nube'),
-	('CIOT', 'Internet de las Cosas');
+	('Int-I', 'Integrador I'),
+    ('Int-II', 'Integrador II'),
+    ('Int-III', 'Integrador III'),
+    ('Int-IV', 'Integrador IV'),
+    ('Int-V', 'Integrador V'),
+    ('Int-VI', 'Integrador VI'),
+    ('Int-VII', 'Integrador VII'),
+    ('Int-VIII', 'Integrador VIII'),
+    ('Int-IX', 'Integrador IX'),
+    ('Int-X', 'Integrador X');
 
 GO
 --------------------------------------------------------------------------------------------------------------------
@@ -520,6 +549,84 @@ VALUES ('Matutino', 1), ('Vespertino', 1),
         ('Sabatino', 2), ('Profecionalización', 2),
         ('En linea', 2);
 
+GO
+
+-- REGISTROS EN LA TABLA REPORTES
+INSERT INTO REPORTES (nombre, codigo, descripcion) VALUES
+('Resumen de Matriz', 'MIC-1', 'Mostrar la información general de una matriz de integración: código, nombre, asignatura propietaria, docente creador, periodo y modalidad; además el estado por semana, conteo de contenidos y estado de la acción integradora. Ideal para revisar rápidamente el estado global de una matriz.'),
+('Avance y Cumplimiento por Profesor', 'MIC-2', 'Mostrar el porcentaje de avance (completitud) de las asignaturas/matrices asignadas a cada docente: cuántas matrices/ asignaturas tiene, cuántos contenidos están finalizados vs totales, semanas finalizadas, matrices completas. Útil para supervisión académica y carga de trabajo.'),
+('Inventario de Contenidos Pendientes', 'MIC-3', 'Listar los contenidos que están pendientes (no iniciados) filtrados por periodo, carrera o modalidad. Sirve para coordinar qué semanas/asignaturas requieren atención inmediata antes de evaluaciones.'),
+('Detalle de Matriz por Semana', 'MIC-4', 'Mostrar el detalle completo de una matriz de integración por semana: información de cada semana, contenidos por asignatura, estados y acciones integradoras. Ideal para revisión detallada semana a semana.'),
+('Resumen de Matrices por Área/Departamento/Carrera', 'MIC-5', 'Reporte ejecutivo que agrupa matrices por área de conocimiento, departamento y carrera. Muestra totales, estados y porcentajes de avance por agrupación académica. Para análisis institucional.'),
+('Avance y Cumplimiento por Asignatura', 'MIC-6', 'Mostrar el porcentaje de avance detallado por cada asignatura/matriz. Incluye métricas por asignatura, profesor responsable, semanas y contenidos. Para seguimiento específico por materia.');
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA CARRERAS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Carreras'),
+    nombre,
+    codigo,
+    id_carrera
+FROM CARRERA
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA DEPARTAMENTOS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Departamentos'),
+    nombre,
+    codigo,
+    id_departamento
+FROM DEPARTAMENTO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA AREAS DE CONOCIMIENTO
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'AreasConocimiento'),
+    nombre,
+    codigo,
+    id_area
+FROM AREACONOCIMIENTO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA PERIODOS
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Periodos'),
+    semestre,
+    anio,
+    id_periodo
+FROM PERIODO
+WHERE estado = 1
+GO
+
+-- REGISTROS EN TABLA DOMINIO PARA REPORTES
+INSERT INTO DOMINIO (fk_tipo_dominio, descripcion_dominio, codigo, referencia_id)
+SELECT 
+    (SELECT id_tipo_dominio FROM TIPO_DOMINIO WHERE descripcion_tipo_dominio = 'Reportes'),
+    nombre,
+    codigo,
+    id_reporte
+FROM REPORTES
+WHERE estado = 1
+GO
+
+-- Dar acceso a TODOS los dominios existentes al rol 1 (ADMINISTRADOR)
+INSERT INTO DOMINIO_ROL (fk_rol, fk_dominio)
+SELECT 
+    1 AS fk_rol,
+    D.id_dominio
+FROM DOMINIO D
+WHERE D.estado = 1
+AND NOT EXISTS (
+    SELECT 1 FROM DOMINIO_ROL DR 
+    WHERE DR.fk_rol = 1 AND DR.fk_dominio = D.id_dominio
+)
 GO
 
 --------------------------------------------------------------------------------------------------------------------
@@ -1252,172 +1359,311 @@ GO
 
 -- (18) REGISTROS EN LA TABLA PLANCLASESDIARIO
 INSERT INTO PlanClasesDiario (
+    fk_plan_didactico,
     codigo,
     nombre,
-    fk_area,
-    fk_departamento,
-	fk_carrera,
     ejes,
-    fk_asignatura,
-    fk_profesor,
-    fk_periodo,
-    competencias,
+    competencias_genericas,
+    competencias_especificas,
     BOA,
     fecha_inicio,
     fecha_fin,
     objetivo_aprendizaje,
-    tema_contenido,
     indicador_logro,
     tareas_iniciales,
     tareas_desarrollo,
-    tareas_sintesis,
-    tipo_evaluacion,
-    estrategia_evaluacion,
-    instrumento_evaluacion,
-    evidencias_aprendizaje,
-    criterios_aprendizaje,
-    indicadores_aprendizaje,
-    nivel_aprendizaje
+    tareas_sintesis
 )
-VALUES (
-    'PCD-2025-001', -- codigo_documento
-    'Plan de Clases Diario de Hardware', -- nombre_plan_clases_diario
-    1, -- fk_area
-    1, -- fk_departamento
-    1, -- fk_carrera
-    'Ejes de hardware', -- ejes
-    1, -- fk_asignatura (Hardware)
-    1, -- fk_profesor
-    1, -- fk_periodo
-    'Competencias en hardware', -- competencias
-    'BOA de hardware', -- BOA
-    '2023-10-15', -- fecha_inicio
-    '2023-10-20', -- fecha_fin
-    'Comprender los conceptos básicos de hardware', -- objetivo_aprendizaje
-    'Introducción a los componentes de hardware', -- tema_contenido
-    'El estudiante identifica los componentes de hardware', -- indicador_logro
-    'Revisar conceptos previos', -- tareas_iniciales
-    'Identificar componentes de hardware', -- tareas_desarrollo
-    'Presentación de los componentes identificados', -- tareas_sintesis
-    'Sumativa', -- tipo_evaluacion
-    'Evaluación por proyecto', -- estrategia_evaluacion
-    'Rúbrica', -- instrumento_evaluacion
-    'Lista de componentes identificados', -- evidencias_aprendizaje
-    'Precisión en la identificación', -- criterios_aprendizaje
-    'Uso correcto de terminología', -- indicadores_aprendizaje
-    'Básico' -- nivel_aprendizaje
+VALUES 
+-- Primeros 5 registros (basados en los ejemplos anteriores)
+(
+    1, -- fk_plan_didactico
+    'PCD-2025-001',
+    'Plan de Clases Diario de Hardware',
+    'Ejes de hardware',
+    'Competencias genericas en hardware',
+    'Competencias especificas en hardware',
+    'BOA de hardware',
+    '2023-10-15',
+    '2023-10-20',
+    'Comprender los conceptos básicos de hardware',
+    'El estudiante identifica los componentes de hardware',
+    'Revisar conceptos previos',
+    'Identificar componentes de hardware',
+    'Presentación de los componentes identificados'
 ),
 (
-    'PCD-2025-002', -- codigo_documento
+    1,
+    'PCD-2025-002',
     'Plan de Clases Diario de Software',
-    2, -- fk_area (Software)
-    2, -- fk_departamento
-    1, -- fk_carrera
     'Ejes de desarrollo de software',
-    2, -- fk_asignatura (Software)
-    1, -- fk_profesor
-    1, -- fk_periodo
-    'Competencias en programación básica',
+    'Competencias genericas en programación',
+    'Competencias especificas en Python',
     'BOA de software',
     '2023-10-22',
     '2023-10-27',
     'Desarrollar habilidades básicas de programación',
-    'Introducción a la programación con Python',
     'El estudiante escribe programas simples en Python',
     'Discutir conceptos de algoritmos',
     'Escribir código Python básico',
-    'Presentar un programa funcional',
-    'Formativa',
-    'Evaluación por ejercicios prácticos',
-    'Lista de cotejo',
-    'Código fuente de programas',
-    'Correcta sintaxis y lógica',
-    'Uso adecuado de estructuras de control',
-    'Intermedio'
+    'Presentar un programa funcional'
 ),
 (
-    'PCD-2025-003', -- codigo_documento
+    1,
+    'PCD-2025-003',
     'Plan de Clases Diario de Redes',
-    3, -- fk_area (Redes)
-    3, -- fk_departamento
-    1, -- fk_carrera
     'Ejes de redes de computadoras',
-    3, -- fk_asignatura (Redes)
-    1, -- fk_profesor
-    1, -- fk_periodo
-    'Competencias en configuración de redes',
+    'Competencias genericas en comunicación',
+    'Competencias especificas en configuración de redes',
     'BOA de redes',
     '2023-10-29',
     '2023-11-03',
     'Comprender los fundamentos de redes de computadoras',
-    'Topologías de red y protocolos TCP/IP',
     'El estudiante configura una red LAN básica',
     'Revisar conceptos de comunicación',
     'Configurar equipos en red',
-    'Demostrar comunicación entre equipos',
-    'Sumativa',
-    'Evaluación por demostración práctica',
-    'Rúbrica de configuración',
-    'Diagramas de red y configuraciones',
-    'Correcta configuración de IP y conectividad',
-    'Resolución de problemas de conexión',
-    'Avanzado'
+    'Demostrar comunicación entre equipos'
 ),
 (
-    'PCD-2025-004', -- codigo_documento
+    1,
+    'PCD-2025-004',
     'Plan de Clases Diario de Base de Datos',
-    4, -- fk_area (Base de Datos)
-    4, -- fk_departamento
-    1, -- fk_carrera
     'Ejes de gestión de datos',
-    4, -- fk_asignatura (Base de Datos)
-    1, -- fk_profesor
-    1, -- fk_periodo
-    'Competencias en diseño de bases de datos',
+    'Competencias genericas en organización',
+    'Competencias especificas en diseño de bases de datos',
     'BOA de base de datos',
     '2023-11-05',
     '2023-11-10',
     'Diseñar e implementar bases de datos relacionales',
-    'Modelo entidad-relación y normalización',
     'El estudiante diseña un modelo ER correcto',
     'Discutir necesidades de almacenamiento de datos',
     'Diseñar diagramas entidad-relación',
-    'Presentar modelo completo de base de datos',
-    'Formativa',
-    'Evaluación por proyecto de diseño',
-    'Rúbrica de diseño',
-    'Diagramas ER y scripts SQL',
-    'Coherencia del modelo y normalización',
-    'Uso correcto de cardinalidades',
-    'Intermedio'
+    'Presentar modelo completo de base de datos'
 ),
 (
-    'PCD-2025-005', -- codigo_documento
+    1,
+    'PCD-2025-005',
     'Plan de Clases Diario de Seguridad Informática',
-    5, -- fk_area (Seguridad)
-    5, -- fk_departamento
-    1, -- fk_carrera
     'Ejes de seguridad de la información',
-    5, -- fk_asignatura (Seguridad Informática)
-    1, -- fk_profesor
-    1, -- fk_periodo
-    'Competencias en protección de sistemas',
+    'Competencias genericas en protección',
+    'Competencias especificas en ciberseguridad',
     'BOA de seguridad',
     '2023-11-12',
     '2023-11-17',
     'Aplicar medidas de seguridad en sistemas informáticos',
-    'Criptografía y políticas de seguridad',
     'El estudiante implementa medidas de seguridad básicas',
     'Discutir casos de brechas de seguridad',
     'Configurar firewalls y políticas de acceso',
-    'Presentar un plan de seguridad',
-    'Sumativa',
-    'Evaluación por implementación práctica',
-    'Lista de verificación de seguridad',
-    'Configuraciones de seguridad y documentación',
-    'Efectividad de las medidas implementadas',
-    'Identificación de vulnerabilidades',
-    'Avanzado'
+    'Presentar un plan de seguridad'
+),
+-- 13 registros adicionales para completar 18
+(
+    1,
+    'PCD-2025-006',
+    'Plan de Clases Diario de Programación Web',
+    'Ejes de desarrollo web',
+    'Competencias genericas en diseño web',
+    'Competencias especificas en HTML/CSS',
+    'BOA de programación web',
+    '2023-11-19',
+    '2023-11-24',
+    'Desarrollar páginas web estáticas',
+    'El estudiante crea una página web con HTML y CSS',
+    'Revisar conceptos de internet',
+    'Codificar estructura HTML y estilos CSS',
+    'Publicar página web funcional'
+),
+(
+    1,
+    'PCD-2025-007',
+    'Plan de Clases Diario de JavaScript',
+    'Ejes de programación cliente',
+    'Competencias genericas en lógica de programación',
+    'Competencias especificas en JavaScript',
+    'BOA de JavaScript',
+    '2023-11-26',
+    '2023-12-01',
+    'Implementar interactividad en páginas web',
+    'El estudiante agrega funcionalidad con JavaScript',
+    'Repasar conceptos de DOM',
+    'Programar funciones JavaScript',
+    'Implementar proyecto interactivo'
+),
+(
+    1,
+    'PCD-2025-008',
+    'Plan de Clases Diario de React',
+    'Ejes de frameworks frontend',
+    'Competencias genericas en desarrollo moderno',
+    'Competencias especificas en React',
+    'BOA de React',
+    '2023-12-03',
+    '2023-12-08',
+    'Desarrollar aplicaciones con React',
+    'El estudiante crea componentes React',
+    'Introducir conceptos de componentes',
+    'Desarrollar componentes funcionales',
+    'Construir aplicación React completa'
+),
+(
+    1,
+    'PCD-2025-009',
+    'Plan de Clases Diario de Node.js',
+    'Ejes de backend development',
+    'Competencias genericas en servidores',
+    'Competencias especificas en Node.js',
+    'BOA de Node.js',
+    '2023-12-10',
+    '2023-12-15',
+    'Crear servidores con Node.js',
+    'El estudiante implementa API REST',
+    'Conceptos de servidores web',
+    'Programar endpoints API',
+    'Desplegar servidor funcional'
+),
+(
+    1,
+    'PCD-2025-010',
+    'Plan de Clases Diario de MongoDB',
+    'Ejes de bases de datos NoSQL',
+    'Competencias genericas en datos no relacionales',
+    'Competencias especificas en MongoDB',
+    'BOA de MongoDB',
+    '2023-12-17',
+    '2023-12-22',
+    'Gestionar datos con MongoDB',
+    'El estudiante realiza operaciones CRUD',
+    'Diferencias SQL/NoSQL',
+    'Practicar consultas MongoDB',
+    'Implementar base de datos NoSQL'
+),
+(
+    1,
+    'PCD-2025-011',
+    'Plan de Clases Diario de Git',
+    'Ejes de control de versiones',
+    'Competencias genericas en colaboración',
+    'Competencias especificas en Git',
+    'BOA de Git',
+    '2024-01-07',
+    '2024-01-12',
+    'Utilizar sistema de control de versiones',
+    'El estudiante maneja repositorios Git',
+    'Importancia del control de versiones',
+    'Practicar comandos Git',
+    'Colaborar en proyecto grupal'
+),
+(
+    1,
+    'PCD-2025-012',
+    'Plan de Clases Diario de Docker',
+    'Ejes de contenedores',
+    'Competencias genericas en virtualización',
+    'Competencias especificas en Docker',
+    'BOA de Docker',
+    '2024-01-14',
+    '2024-01-19',
+    'Containerizar aplicaciones',
+    'El estudiante crea imágenes Docker',
+    'Conceptos de virtualización',
+    'Construir Dockerfiles',
+    'Desplegar aplicación containerizada'
+),
+(
+    1,
+    'PCD-2025-013',
+    'Plan de Clases Diario de AWS',
+    'Ejes de cloud computing',
+    'Competencias genericas en nube',
+    'Competencias especificas en AWS',
+    'BOA de AWS',
+    '2024-01-21',
+    '2024-01-26',
+    'Utilizar servicios en la nube',
+    'El estudiante despliega en AWS',
+    'Introducción a cloud computing',
+    'Configurar servicios AWS',
+    'Implementar infraestructura cloud'
+),
+(
+    1,
+    'PCD-2025-014',
+    'Plan de Clases Diario de Python Avanzado',
+    'Ejes de programación avanzada',
+    'Competencias genericas en resolución de problemas',
+    'Competencias especificas en Python avanzado',
+    'BOA de Python avanzado',
+    '2024-01-28',
+    '2024-02-02',
+    'Aplicar conceptos avanzados de Python',
+    'El estudiante implementa patrones avanzados',
+    'Repasar Python básico',
+    'Practicar decoradores y generadores',
+    'Desarrollar proyecto complejo'
+),
+(
+    1,
+    'PCD-2025-015',
+    'Plan de Clases Diario de Machine Learning',
+    'Ejes de inteligencia artificial',
+    'Competencias genericas en análisis de datos',
+    'Competencias especificas en ML',
+    'BOA de Machine Learning',
+    '2024-02-04',
+    '2024-02-09',
+    'Implementar modelos de machine learning',
+    'El estudiante entrena modelo predictivo',
+    'Conceptos de IA y ML',
+    'Construir y entrenar modelos',
+    'Evaluar modelo predictivo'
+),
+(
+    1,
+    'PCD-2025-016',
+    'Plan de Clases Diario de DevOps',
+    'Ejes de integración continua',
+    'Competencias genericas en automatización',
+    'Competencias especificas en CI/CD',
+    'BOA de DevOps',
+    '2024-02-11',
+    '2024-02-16',
+    'Implementar pipeline CI/CD',
+    'El estudiante configura pipeline automatizado',
+    'Conceptos de DevOps',
+    'Configurar herramientas CI/CD',
+    'Implementar pipeline completo'
+),
+(
+    1,
+    'PCD-2025-017',
+    'Plan de Clases Diario de UX/UI',
+    'Ejes de experiencia de usuario',
+    'Competencias genericas en diseño centrado en usuario',
+    'Competencias especificas en UX/UI',
+    'BOA de UX/UI',
+    '2024-02-18',
+    '2024-02-23',
+    'Diseñar interfaces centradas en usuario',
+    'El estudiante crea prototipos usables',
+    'Principios de diseño UX',
+    'Diseñar wireframes y prototipos',
+    'Presentar diseño completo'
+),
+(
+    1,
+    'PCD-2025-018',
+    'Plan de Clases Diario de Testing',
+    'Ejes de calidad de software',
+    'Competencias genericas en verificación',
+    'Competencias especificas en testing',
+    'BOA de Testing',
+    '2024-02-25',
+    '2024-03-01',
+    'Aplicar técnicas de testing',
+    'El estudiante implementa suite de pruebas',
+    'Importancia del testing',
+    'Escribir casos de prueba',
+    'Ejecutar pruebas automatizadas'
 );
 
 GO

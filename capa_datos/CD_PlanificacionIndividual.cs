@@ -41,6 +41,7 @@ namespace capa_datos
                                 {
                                     descripcion = dr["semana"].ToString(),
                                     tipo_semana = dr["tipo_semana"].ToString(),
+                                    numero_semana = Convert.ToInt32(dr["numero_semana"])
                                 },
 
                                 PLANSEMESTRAL = new PLANDIDACTICOSEMESTRAL

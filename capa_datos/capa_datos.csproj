@@ -60,7 +60,9 @@
     <Compile Include="CD_Carpeta.cs" />
     <Compile Include="CD_Carrera.cs" />
     <Compile Include="CD_Controller.cs" />
+    <Compile Include="CD_Dashboard.cs" />
     <Compile Include="CD_Departamento.cs" />
+    <Compile Include="CD_DominioRol.cs" />
     <Compile Include="CD_MatrizAsignatura.cs" />
     <Compile Include="CD_MatrizIntegracionComponentes.cs" />
     <Compile Include="CD_Menu.cs" />
@@ -70,10 +72,13 @@
     <Compile Include="CD_PlanClasesDiario.cs" />
     <Compile Include="CD_PlanificacionIndividual.cs" />
     <Compile Include="CD_PlanSemestral.cs" />
+    <Compile Include="CD_Reporte.cs" />
     <Compile Include="CD_Rol.cs" />
     <Compile Include="CD_Contenidos.cs" />
     <Compile Include="CD_Semanas.cs" />
     <Compile Include="CD_TemasPlanificacionSemestral.cs" />
+    <Compile Include="CD_TipoDominio.cs" />
+    <Compile Include="CD_Turno.cs" />
     <Compile Include="CD_Usuarios.cs" />
     <Compile Include="Conexion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

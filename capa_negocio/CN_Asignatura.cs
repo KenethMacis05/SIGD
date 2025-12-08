@@ -13,9 +13,9 @@ namespace capa_negocio
         private CD_Asignatura CD_Asignatura = new CD_Asignatura();
 
         //Listar asignaturas
-        public List<ASIGNATURA> Listar()
+        public List<ASIGNATURA> Listar(bool soloIntegradoras = false)
         {
-            return CD_Asignatura.Listar();
+            return CD_Asignatura.Listar(soloIntegradoras);
         }
 
         //Crear asignatura

@@ -55,7 +55,9 @@
     <Compile Include="CN_Carpeta.cs" />
     <Compile Include="CN_Carrera.cs" />
     <Compile Include="CN_Controlador.cs" />
+    <Compile Include="CN_Dashboard.cs" />
     <Compile Include="CN_Departamento.cs" />
+    <Compile Include="CN_DominioRol.cs" />
     <Compile Include="CN_MatrizAsignatura.cs" />
     <Compile Include="CN_MatrizIntegracionComponentes.cs" />
     <Compile Include="CN_Menu.cs" />
@@ -66,10 +68,13 @@
     <Compile Include="CN_PlanIndividual.cs" />
     <Compile Include="CN_PlanSemestral.cs" />
     <Compile Include="CN_Recursos.cs" />
+    <Compile Include="CN_Reporte.cs" />
     <Compile Include="CN_Rol.cs" />
     <Compile Include="CN_Contenidos.cs" />
     <Compile Include="CN_Semanas.cs" />
     <Compile Include="CN_TemasPlanificacionSemestral.cs" />
+    <Compile Include="CN_TipoDominio.cs" />
+    <Compile Include="CN_Turno.cs" />
     <Compile Include="CN_Usuario.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

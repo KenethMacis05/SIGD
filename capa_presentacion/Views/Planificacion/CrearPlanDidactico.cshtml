@@ -17,32 +17,25 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header text-light" style="background-color: #0072BB">
-                <h5 class="modal-title" id="exampleModalLabel">Plan didáctica semestral</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Buscar asignaturas de la Matriz de Integración de Componentes</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body g-2">
+                <div class="col-md-12">
+                    <div class="alert alert-warning d-flex align-items-center" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <div>
+                            Para seleccionar una <strong>Asignatura Asignada</strong>, esta debe estar previamente finalizada en la Matriz de Integración de Componentes.
+                        </div>
+                    </div>
+                </div>
 
                 <div class="mb-3" id="infoSemana">
                     <div class="card">
                         <div class="card-header">
-                            <span>Buscar asignatura de Matriz</span>
+                            <span>Buscar asignatura asignada en la Matriz de Integración de Componentes</span>
                         </div>
                         <div class="card-body py-2">
-                            <div class="row">
-                                <div class="col-lg-4 col-sm-12">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" id="basic-addon1">Usuario</span>
-                                        <input type="text" class="form-control" id="usuario" placeholder="Usuario" aria-label="Usuario" aria-describedby="basic-addon1">
-                                    </div>
-                                </div>
-                                <div class="col-lg-8 col-sm-12">
-                                    <div class="input-group mb-3">
-                                        <span class="input-group-text" id="basic-addon1">Nombre completo</span>
-                                        <input type="text" class="form-control" id="nombrecompleto" placeholder="Nombre completo" aria-label="Nombre completo" aria-describedby="basic-addon1">
-                                    </div>
-                                </div>
-                            </div>
-
                             <div class="row">
                                 <div class="col col-md-12 col-sm-12">
                                     <div class="input-group mb-3">
@@ -59,9 +52,7 @@
                     </div>
                 </div>
 
-
                 <hr />
-
                 <input type="hidden" name="idUsuario" id="idUsuario" value="0" autocomplete="off">
 
                 <!--Tabla-->
@@ -96,7 +87,6 @@
         </div>
     </div>
 </div>
-
 
 @section scripts{
     <script src="@Url.Content("~/Scripts/Views/PlanSemestral.js")" type="text/javascript"></script>

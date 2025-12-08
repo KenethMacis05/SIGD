@@ -5,7 +5,7 @@
         semana: $(this).data("semana"),
         contenido: $(this).data("contenido"),
         estrategias_aprendizaje: $(this).data('estrategia_aprendizaje'),
-        estrategias_evaluacion: $(this).data('estrategias_evaluacion'),
+        estrategias_evaluacion: $(this).data('estrategia_evaluacion'),
         tipo_evaluacion: $(this).data('tipo_evaluacion'),
         instrumento_evaluacion: $(this).data('instrumento_evaluacion'),
         evidencias_aprendizaje: $(this).data('evidencias_aprendizaje')
@@ -257,13 +257,13 @@ function generarHtmlPlanIndividual(PLANINDIVIDUAL) {
                     <p class="small mb-3">${PLANINDIVIDUAL.CONTENIDO.contenido || 'Sin contenido definido'}</p>
                 </div>
 
-                <!-- Objetivos de aprendizaje -->
+                <!-- Objetivos de aprendizaje 
                 <div class="mb-3">
                     <h6 class="text-muted small mb-2">
                         <i class="fas fa-bullseye me-1"></i>Objetivos:
                     </h6>
                     <p class="small mb-3">${PLANINDIVIDUAL.PLANSEMESTRAL.objetivos_aprendizaje || 'Sin objetivos definidos'}</p>
-                </div>
+                </div> -->
 
                 <!-- Campos de planificación individual -->
                 <div class="row g-2">

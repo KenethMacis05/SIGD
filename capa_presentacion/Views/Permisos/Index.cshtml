@@ -3,8 +3,37 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<link rel="stylesheet" href="@Url.Content("~/Content/Views/Dominios.css")" />
+
 <!--Titulo-->
 <div class="alert text-center mt-4" style="background-color: #F7F7F7; border: 1px #D2D2D2 solid " role="alert"><h2 class="fs-3">Permisos</h2></div>
+
+<!--Filtros-->
+<div class="card mb-3">
+    <div class="card-header">
+        Filtros de busqueda
+    </div>
+    <div class="card-body">
+        <form class="row g-3">
+            <div class="col-md-6">
+                <div class="input-group mb-3">
+                    <label class="input-group-text" for="obtenerRol">Seleccione un rol:</label>
+                    <select class="form-select" id="obtenerRol">
+                        <option selected disabled>Seleccionar...</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col-auto">
+                <button id="btnBuscar" type="button" class="btn btn-primary btn-block">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-outline-primary" onclick="abrirModal()"><i class="fa fa-plus"></i> Agregar permiso</button>
+            </div>
+        </form>
+    </div>
+</div>
 
 <!--Contenedor-->
 <div class="card">
@@ -16,30 +45,19 @@
                 <button class="nav-link active esp-link" id="home-tab" data-bs-toggle="tab" data-bs-target="#home" type="button" role="tab" aria-controls="home" aria-selected="true">
                     Asignar permisos
                 </button>
-            </li>            
+            </li>
+            <!-- Botón 2 -->
+            <li class="nav-item">
+                <button class="nav-link nav-link-tab esp-link" id="dominios-tab" data-bs-toggle="tab" data-bs-target="#dominios" type="button" role="tab" aria-controls="dominios" aria-selected="false">
+                    Asignar dominios
+                </button>
+            </li>
         </ul>
     </div>
     <div class="card-body">
         <div class="tab-content" id="myTabContent">
             <!--Contenedor 1-->
             <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">
-                <form class="row g-3">
-                    <div class="col-auto">
-                        <label>Seleccion Rol:</label>
-                    </div>
-                    <div class="col-md-4">
-                        <select class="form-control form-control-sm" id="obtenerRol"></select>
-                    </div>
-                    <div class="col-auto">
-                        <button id="btnBuscar" type="button" class="btn btn-primary btn-block">
-                            <i class="fas fa-search"></i> Buscar
-                        </button>
-                    </div>
-                    <div class="col-auto">
-                        <button type="button" class="btn btn-outline-primary" onclick="abrirModal()"><i class="fa fa-plus"></i> Agregar permiso</button>
-                    </div>
-                </form>
-
                 <!-- Filtros -->
                 <div class="row mt-3">
                     <div class="col-md-6">
@@ -48,7 +66,7 @@
                             <select class="form-select" id="inputGroupSelectControlador">
                                 <option selected disabled>Seleccionar...</option>
                             </select>
-                        </div>                        
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="input-group mb-3">
@@ -82,80 +100,168 @@
 
                     </tfoot>
                 </table>
-            </div>            
-        </div>
-    </div>
-
-    <!-- Modal para agregar permisos -->
-    <div class="modal fade" id="modalPermisos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header text-white" style="background-color: #0072BB">
-                    <h5 class="modal-title">Agregar Nuevos Permisos</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <!-- Filtros -->
-                    <div class="row mt-3">
-                        <div class="col-md-6">
-                            <div class="input-group mb-3">
-                                <label class="input-group-text" for="inputGroupSelectControladorNoAsignado">Filtrar por controlador:</label>
-                                <select class="form-select" id="inputGroupSelectControladorNoAsignado">
-                                    <option selected disabled>Seleccionar...</option>
-                                </select>
-                            </div>    
+            </div>
+            <!--Contenedor 2-->
+            <div class="tab-pane fade" id="dominios" role="tabpanel" aria-labelledby="dominios-tab">
+                <!-- Filtros -->
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelectTipoDominio">Filtrar por dominio:</label>
+                            <select class="form-select" id="inputGroupSelectTipoDominio"></select>
                         </div>
-                        <div class="col-md-6">
-                            <div class="input-group mb-3">
-                                <label class="input-group-text" for="inputGroupSelectTipoNoAsignado">Filtrar por tipo:</label>
-                                <select class="form-select" id="inputGroupSelectTipoNoAsignado">
-                                    <option selected disabled>Seleccionar...</option>
-                                    <option value="Todos">Todos</option>
-                                    <option value="API">API</option>
-                                    <option value="Vista">Vista</option>
-                                </select>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="alert alert-warning d-flex align-items-center" role="alert">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <div>
+                                Para consultar los dominios asociados a un rol, primero seleccione un rol y un dominio, luego haga clic en "Buscar".
                             </div>
                         </div>
                     </div>
-                    <form class="row g-3">
-                        <div class="col-auto">
-                            <button id="selectAll" class="btn btn-outline-primary" type="button">Seleccionar Todo</button>
-                        </div>
-                        <div class="col-auto">
-                            <button id="deselectAll" class="btn btn-outline-secondary" type="button">Deseleccionar Todo</button>
-                        </div>
-                    </form>
-                    <hr />
-                    <div class="table-responsive">
-                        <!--Tabla-->
-                        <table class="display cell-border" style="width: 100%" id="dataTablePermisosNoAsignados">
-                            <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
-                                <tr>
-                                    <th>#</th>
-                                    <th>Controlador</th>
-                                    <th>Acción</th>
-                                    <th>Descripción</th>
-                                    <th>Tipo</th>
-                                    <th>Seleccionar</th>
-                                </tr>
-                            </thead>
-                            <tbody class="tbody">
-                            </tbody>
-                            <tfoot>
+                </div>
 
-                            </tfoot>
-                        </table>
+                <!-- Contenedor lista de dominios -->
+                <div class="card hidden" id="contenedorListasDominios">
+                    <div class="card-header">
+                        Dominios:
+                    </div>
+                    <div class="card-body">
+                        <div class="container-fluid text-center mb-3">
+                            <button class="btn btn-outline-danger" id="btnIzquierda">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <button id="btnGuardarDominios" type="button" class="btn btn-success" disabled>
+                                <i class="fas fa-save me-2"></i> Guardar Cambios
+                            </button>
+                            <button class="btn btn-outline-primary" id="btnDerecha">
+                                <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-secondary text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-plus-circle me-2"></i>
+                                            Dominios Disponibles
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex mb-3">
+                                            <button class="btn btn-outline-primary w-50 select-all-btn" data-target="noAsignados" type="button">Seleccionar Todo</button>
+                                            <button class="btn btn-outline-secondary w-50 deselect-all-btn" data-target="noAsignados" type="button">Deseleccionar Todo</button>
+                                        </div>
+                                        <div id="listaDominiosNoAsignados" class="dominios-list">
+                                            <!-- Los dominios no asignados se cargarán aquí -->
+                                            <div class="text-center text-muted py-4">
+                                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                                <p>No hay dominios disponibles</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header bg-success text-white">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            Dominios Asignados al Rol
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex mb-3">
+                                            <button class="btn btn-outline-primary w-50 select-all-btn" data-target="asignados" type="button">Seleccionar Todo</button>
+                                            <button class="btn btn-outline-secondary w-50 deselect-all-btn" data-target="asignados" type="button">Deseleccionar Todo</button>
+                                        </div>
+                                        <div id="listaDominiosAsignados" class="dominios-list">
+                                            <!-- Los dominios asignados se cargarán aquí -->
+                                            <div class="text-center text-muted py-4">
+                                                <i class="fas fa-info-circle fa-2x mb-2"></i>
+                                                <p>No hay dominios asignados</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-                <div class="modal-footer pe-0 ps-0 flex-nowrap ">
-                    <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
-                        <i class="fas fa-times-circle me-2"></i>Cancelar
-                    </button>
-                    <button type="button" style="background: #0072BB" id="btnGuardarPermisos" class="btn btn-success w-50">
-                        <i class="fas fa-save me-2"></i>Guardar Permisos
-                    </button>
+<!-- Modal para agregar permisos -->
+<div class="modal fade" id="modalPermisos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background-color: #0072BB">
+                <h5 class="modal-title">Agregar Nuevos Permisos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Filtros -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelectControladorNoAsignado">Filtrar por controlador:</label>
+                            <select class="form-select" id="inputGroupSelectControladorNoAsignado">
+                                <option selected disabled>Seleccionar...</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="input-group mb-3">
+                            <label class="input-group-text" for="inputGroupSelectTipoNoAsignado">Filtrar por tipo:</label>
+                            <select class="form-select" id="inputGroupSelectTipoNoAsignado">
+                                <option selected disabled>Seleccionar...</option>
+                                <option value="Todos">Todos</option>
+                                <option value="API">API</option>
+                                <option value="Vista">Vista</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
+                <form class="row g-3">
+                    <div class="col-auto">
+                        <button id="selectAll" class="btn btn-outline-primary" type="button">Seleccionar Todo</button>
+                    </div>
+                    <div class="col-auto">
+                        <button id="deselectAll" class="btn btn-outline-secondary" type="button">Deseleccionar Todo</button>
+                    </div>
+                </form>
+                <hr />
+                <div class="table-responsive">
+                    <!--Tabla-->
+                    <table class="display cell-border" style="width: 100%" id="dataTablePermisosNoAsignados">
+                        <thead class="table-cabezera cell-border" style="background: #0072BB; color: white">
+                            <tr>
+                                <th>#</th>
+                                <th>Controlador</th>
+                                <th>Acción</th>
+                                <th>Descripción</th>
+                                <th>Tipo</th>
+                                <th>Seleccionar</th>
+                            </tr>
+                        </thead>
+                        <tbody class="tbody">
+                        </tbody>
+                        <tfoot>
+
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="modal-footer pe-0 ps-0 flex-nowrap ">
+                <button type="button" class="btn btn-danger w-50" data-bs-dismiss="modal">
+                    <i class="fas fa-times-circle me-2"></i>Cancelar
+                </button>
+                <button type="button" style="background: #0072BB" id="btnGuardarPermisos" class="btn btn-success w-50">
+                    <i class="fas fa-save me-2"></i>Guardar Permisos
+                </button>
             </div>
         </div>
     </div>
@@ -169,7 +275,8 @@
             AsignarPermisos: '@Url.Action("AsignarPermisos", "Permisos")',
             eliminarPermisoUrl: '@Url.Action("EliminarPermiso", "Permisos")',
             listarRolesUrl: '@Url.Action("ListarRoles", "Rol")',
-        } 
+        }
     </script>
-    <script src="@Url.Content("~/Scripts/Views/Permisos.js")" type="text/javascript"></script> 
+    <script src="@Url.Content("~/Scripts/Views/Permisos.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/Scripts/Views/Dominio.js")" type="text/javascript"></script>
 }

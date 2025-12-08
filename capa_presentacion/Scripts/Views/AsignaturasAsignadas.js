@@ -2,9 +2,8 @@
 
 // Redirigir a la pantalla de asignar asignaturas
 $('#datatable tbody').on('click', '.btn-viewSemanas', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    const idEncriptado = data.id_matriz_asignatura_encriptado;
-    window.location.href = "/Planificacion/Contenidos?idEncriptado=" + idEncriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/Contenidos?idEncriptado=${idEncriptado}`;
 });
 
 const dataTableOptions = {
@@ -49,8 +48,18 @@ const dataTableOptions = {
             }
         },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewSemanas"><i class="fa fa-user-graduate"></i></button>',
+            data: "id_matriz_asignatura_encriptado",
+            title: "Acciones",
+            render: function (data, type, row) {
+                return `
+                    <button type="button" 
+                            class="btn btn-info btn-sm ms-1 btn-viewSemanas"
+                            data-id="${data}"
+                            title="Ver contenidos">
+                        <i class="fa fa-user-graduate"></i>
+                    </button>
+                `;
+            },
             width: "50"
         },
     ]

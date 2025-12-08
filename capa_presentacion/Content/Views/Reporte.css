@@ -1,0 +1,79 @@
+﻿:root {
+    --primary-color: #02116F;
+    --secondary-color: #0072BB;
+    --accent-color: #3498db;
+    --text-color: #2c3e50;
+    --background-color: #ecf0f1;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.corporate-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 15px 0;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.report-info h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.corporate-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.corp-btn {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+    .corp-btn:hover {
+        background: rgba(255, 255, 255, 0.3);
+        transform: translateY(-1px);
+    }
+
+.main-content {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.report-frame {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.MSRS-RVC INPUT, .MSRS-RVC BUTTON, .MSRS-RVC SELECT, .MSRS-RVC TABLE, .MSRS-RVC BODY, .MSRS-RVC FRAMESET, .MSRS-RVC TEXTAREA {
+    margin: 0px auto !important
+}
+
+.ToolBarButtonsCell {
+    background: #d9d9d9;
+}

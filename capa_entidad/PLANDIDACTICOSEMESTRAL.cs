@@ -46,5 +46,7 @@ namespace capa_entidad
         public ASIGNATURA Asignatura { get; set; }
         [AllowHtml]
         public string eje_disciplinar { get; set; }
+        public string estado_proceso_pds { get; set; }
+        public string usuario_asignado { get; set; }
     }
 }

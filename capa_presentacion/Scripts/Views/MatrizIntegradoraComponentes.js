@@ -64,27 +64,38 @@ function obtenerNombreCampo($elemento) {
 
 // Redirigir a la pantalla de edición
 $('#datatable tbody').on('click', '.btn-editar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/EditarMatrizIntegracion?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/EditarMatrizIntegracion?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de asignar asignaturas
 $('#datatable tbody').on('click', '.btn-viewAsignar', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/AsignarAsignaturasMatrizIntegracion?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/AsignarAsignaturasMatrizIntegracion?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla Acción Integradora Tipo Evaluacion
 $('#datatable tbody').on('click', '.btn-viewAccionIntegradoraTipoEvaluacion', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/AccionIntegradoraTipoEvaluacion?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/AccionIntegradoraTipoEvaluacion?idEncriptado=${idEncriptado}`;
 });
 
 // Redirigir a la pantalla de semanas
 $("#datatable tbody").on("click", '.btn-viewSemanas', function () {
-    var data = dataTable.row($(this).parents('tr')).data();
-    window.location.href = "/Planificacion/SemanasMatriz?idEncriptado=" + data.id_encriptado;
+    const idEncriptado = $(this).data('id');
+    window.location.href = `/Planificacion/SemanasMatriz?idEncriptado=${idEncriptado}`;
 });
+
+// Redirigir a la pantalla de reporte PDF
+$('#datatable tbody').on('click', '.btn-pdf', function () {
+    const id = $(this).data('id');
+    window.open('/Reportes/ReporteViewer.aspx?Reporte=MatrizIntegracionComponente&id=' + id, '_blank');
+});
+
+//$('#datatable tbody').on('click', '.btn-pdf', function () {
+//    var data = dataTable.row($(this).parents('tr')).data();
+//    window.open('/ReportesRDLC/ReporteViewerRDLC.aspx?Reporte=MatrizIntegracionComponente&id=' + data.id_matriz_integracion, '_blank');
+//});
 
 function abrirModal(json) {
   
@@ -143,30 +154,46 @@ $('#btnAnterior').click(function () {
 });
 
 //Boton eliminar matríz de integración
-$("#datatable tbody").on("click", '.btn-eliminar', function () {
-    const matrizseleccionada = $(this).closest("tr");
-    const data = dataTable.row(matrizseleccionada).data();
+$("#datatable tbody").on("click", '.btn-eliminar', function (e) {
+    e.stopPropagation();
+
+    const $button = $(this);
+    const idMatrizIntegracion = $button.data('id');
+
+    if (!idMatrizIntegracion) {
+        showAlert("Error", "No se pudo obtener el ID de la matríz", "error");
+        return;
+    }
 
     confirmarEliminacion().then((result) => {
         if (result.isConfirmed) {
-            showLoadingAlert("Eliminando matríz de integración", "Por favor espere...")
+            showLoadingAlert("Eliminando matríz de integración", "Por favor espere...");
 
             // Enviar petición AJAX
             $.ajax({
                 url: "/Planificacion/EliminarMatrizIntegracion",
                 type: "POST",
-                data: JSON.stringify({ id_matriz_integracion: data.id_matriz_integracion }),
+                data: JSON.stringify({ id_matriz_integracion: idMatrizIntegracion }),
                 dataType: "json",
                 contentType: "application/json; charset=utf-8",
-
                 success: function (response) {
                     Swal.close();
                     if (response.Respuesta) {
-                        dataTable.row(matrizseleccionada).remove().draw();
-                        showAlert("¡Eliminado!", response.Mensaje || "Matríz de Integración eliminada correctamente", "success")
-                    } else { showAlert("Error", response.Mensaje || "No se pudo eliminar la Matríz de Integración", "error") }
+                        // Encontrar la fila correctamente
+                        let $tr = $button.closest('tr');
+                        if ($tr.hasClass('child')) {
+                            $tr = $tr.prev('tr');
+                        }
+                        dataTable.row($tr).remove().draw();
+                        showAlert("¡Eliminado!", response.Mensaje || "Matríz de Integración eliminada correctamente", "success");
+                    } else {
+                        showAlert("Error", response.Mensaje || "No se pudo eliminar la Matríz de Integración", "error");
+                    }
                 },
-                error: (xhr) => { showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error"); }
+                error: (xhr) => {
+                    Swal.close();
+                    showAlert("Error", `Error al conectar con el servidor: ${xhr.statusText}`, "error");
+                }
             });
         }
     });
@@ -217,14 +244,34 @@ const dataTableOptions = {
             }
         },
         {
-            defaultContent:
-                '<button type="button" class="btn btn-success btn-sm ms-1 btn-pdf"><i class="fa fa-file-pdf"></i></button>' +
-                '<button type="button" class="btn btn-warning btn-sm ms-1 btn-editar"><i class="fa fa-pen"></i></button>' +
-                '<button type="button" class="btn btn-info btn-sm ms-1 btn-viewAsignar"><i class="fa fa-user-graduate"></i></button>' +
-                '<button type="button" class="btn btn-primary btn-sm ms-1 btn-viewSemanas"><i class="fa fa-calendar"></i></button>' +
-                '<button type="button" class="btn btn-dark btn-sm ms-1 btn-viewAccionIntegradoraTipoEvaluacion"><i class="fa fa-tasks"></i></button>' +
-                '<button type="button" class="btn btn-danger btn-sm ms-1 btn-eliminar"><i class="fa fa-trash"></i></button>',
-            width: "200"
+            data: null,
+            title: "Acciones",
+            render: function (data, type, row) {
+                return `
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-success btn-sm ms-1 btn-pdf" title="Ver informe" data-id="${row.id_matriz_integracion}">
+                            <i class="fa fa-file-pdf"></i>
+                        </button>
+                        <button type="button" class="btn btn-warning btn-sm btn-editar" title="Modificar registro" data-id="${row.id_encriptado}">
+                            <i class="fa fa-pen"></i>
+                        </button>
+                        <button type="button" class="btn btn-info btn-sm btn-viewAsignar" title="Asignaturas" data-id="${row.id_encriptado}">
+                            <i class="fa fa-user-graduate"></i>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm btn-viewSemanas" title="Configurar semanas académicas" data-id="${row.id_encriptado}">
+                            <i class="fa fa-calendar"></i>
+                        </button>
+                        <button type="button" class="btn btn-dark btn-sm btn-viewAccionIntegradoraTipoEvaluacion" title="Gestionar evaluaciones integradoras" data-id="${row.id_encriptado}">
+                            <i class="fa fa-tasks"></i>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm btn-eliminar" title="Eliminar registro" data-id="${row.id_matriz_integracion}">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            },
+            orderable: false,
+            width: "190px"
         },
     ]
 };
@@ -237,6 +284,12 @@ $(document).ready(function () {
     $('#objetivoAnioSummernote').summernote(summernoteConfig);
     $('#objetivoSemestreSummernote').summernote(summernoteConfig);
     $('#objetivoIntegradorSummernote').summernote(summernoteConfig);
+
+    inicializarSelect2Area();
+    inicializarSelect2Departamento();
+    inicializarSelect2Carrera();
+    inicializarSelect2Modalidad();
+    inicializarSelect2Periodo();
 
     $tabs.not(':first').removeClass('active show');
     $tabButtons.not(':first').removeClass('active').attr('aria-selected', 'false');
@@ -256,3 +309,74 @@ $(document).ready(function () {
     $('#btnAnterior').hide();
     $('#btnGuardar').hide();
 });
+
+// Función específica para mostrar pasos después de crear matriz
+function MostrarPasosCreacionMatriz(mensaje) {
+    const pasos = `
+        <p class="mb-3"><strong>Matriz creada exitosamente:</strong> ${mensaje}</p>
+        
+        <h6 class="text-primary mb-2">📋 Acciones disponibles en la tabla:</h6>
+        <div class="mb-4 d-flex justify-content-between">
+            <button type="button" class="btn btn-info btn-sm me-2 mb-2">
+                <i class="fas fa-user-graduate me-1"></i> Gestionar Asignaturas
+            </button>
+            <button type="button" class="btn btn-primary btn-sm me-2 mb-2">
+                <i class="fas fa-calendar me-1"></i> Semanas Académicas
+            </button>
+            <button type="button" class="btn btn-dark btn-sm mb-2">
+                <i class="fas fa-tasks me-1"></i> Evaluaciones Integradoras
+            </button>
+        </div>
+        
+        <h6 class="text-primary mb-3">🚀 Pasos a seguir para completar la configuración:</h6>
+        <ol class="list-group list-group-numbered">
+            <li class="list-group-item border-0 ps-0">
+                <strong>Asignar asignaturas:</strong> Haz clic en el botón 
+                <span class="badge bg-info text-white">
+                    <i class="fas fa-user-graduate"></i>
+                </span> 
+                para agregar las asignaturas que integrarán esta matriz.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Configurar semanas:</strong> Presiona el botón 
+                <span class="badge bg-primary text-white">
+                    <i class="fas fa-calendar"></i>
+                </span> 
+                para definir el calendario académico, incluyendo cortes evaluativos.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Gestionar evaluaciones:</strong> Usa el botón 
+                <span class="badge bg-dark text-white">
+                    <i class="fas fa-tasks"></i>
+                </span> 
+                para establecer las acciones integradoras y tipo de eveluación por semana.
+            </li>
+            <li class="list-group-item border-0 ps-0">
+                <strong>Contenidos:</strong> Finalmente, desde la gestión de asignaturas, 
+                al ingresar una asignatura vera los contenidos específicos para cada materia en las semanas correspondientes.
+            </li>
+        </ol>
+        
+        <div class="alert alert-warning mt-3 mb-0">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Recomendación:</strong> Sigue el orden de los pasos para una configuración óptima.
+        </div>
+    `;
+
+    return ModalNota(pasos);
+}
+
+// Función para mostrar modal desde TempData automáticamente
+function MostrarModalTempData() {
+    const tempDataCREATE = {
+        mensaje: $('#tempDataCreate').text(),
+    };
+
+    if (tempDataCREATE) {
+        setTimeout(() => {
+            MostrarPasosCreacionMatriz(tempDataCREATE.mensaje);
+
+            $('[id^="tempData"]').remove();
+        }, 800);
+    }
+}

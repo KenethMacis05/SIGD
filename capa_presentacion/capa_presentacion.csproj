@@ -1,5 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\Microsoft.SqlServer.Types.170.1000.7\build\net472\Microsoft.SqlServer.Types.props" Condition="Exists('..\packages\Microsoft.SqlServer.Types.170.1000.7\build\net472\Microsoft.SqlServer.Types.props')" />
   <Import Project="..\packages\Microsoft.Net.Compilers.4.2.0\build\Microsoft.Net.Compilers.props" Condition="Exists('..\packages\Microsoft.Net.Compilers.4.2.0\build\Microsoft.Net.Compilers.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -45,13 +46,40 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="jose-jwt, Version=5.1.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\jose-jwt.5.1.1\lib\net472\jose-jwt.dll</HintPath>
+    <Reference Include="jose-jwt, Version=5.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\jose-jwt.5.2.0\lib\net472\jose-jwt.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CodeDom.Providers.DotNetCompilerPlatform, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\lib\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.ReportViewer.Common, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1652.0\lib\net40\Microsoft.ReportViewer.Common.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.DataVisualization, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1652.0\lib\net40\Microsoft.ReportViewer.DataVisualization.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.Design, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1652.0\lib\net40\Microsoft.ReportViewer.Design.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.ProcessingObjectModel, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1652.0\lib\net40\Microsoft.ReportViewer.ProcessingObjectModel.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WebDesign, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1652.0\lib\net40\Microsoft.ReportViewer.WebDesign.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.ReportViewer.WebForms, Version=15.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ReportingServices.ReportViewerControl.WebForms.150.1652.0\lib\net40\Microsoft.ReportViewer.WebForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Server, Version=1.0.0.0, Culture=neutral, PublicKeyToken=23ec7fc2d6eaa4a5, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Server.1.0.0\lib\net46\Microsoft.SqlServer.Server.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types, Version=17.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Types.170.1000.7\lib\net472\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -105,9 +133,6 @@
     <Reference Include="System.Web.Optimization">
       <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.1.3\lib\net40\System.Web.Optimization.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="WebGrease">
       <Private>True</Private>
       <HintPath>..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
@@ -126,12 +151,13 @@
     <Compile Include="Controllers\CatalogosController.cs" />
     <Compile Include="Controllers\ConfiguracionController.cs" />
     <Compile Include="Controllers\ControladorController.cs" />
+    <Compile Include="Controllers\DominioController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\MenuController.cs" />
     <Compile Include="Controllers\PermisosController.cs" />
     <Compile Include="Controllers\PlanificacionController.cs" />
+    <Compile Include="Controllers\ReporteController.cs" />
     <Compile Include="Controllers\RolController.cs" />
-    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Controllers\UsuarioController.cs" />
     <Compile Include="Filters\VerificarSession.cs" />
     <Compile Include="Global.asax.cs">
@@ -139,7 +165,32 @@
     </Compile>
     <Compile Include="Helpers\MenuHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReportesRDLC\Generadores\MatrizIntegracionGenerador.cs" />
+    <Compile Include="ReportesRDLC\Generadores\PlanClasesDiarioGenerador.cs" />
+    <Compile Include="ReportesRDLC\Generadores\PlanDidacticoSemestralGenerador.cs" />
+    <Compile Include="ReportesRDLC\Interfaces\IReporteGenerador.cs" />
+    <Compile Include="ReportesRDLC\ReporteDataHelper.cs" />
+    <Compile Include="ReportesRDLC\ReporteHelper.cs" />
+    <Compile Include="ReportesRDLC\ReporteViewerRDLC.aspx.cs">
+      <DependentUpon>ReporteViewerRDLC.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="ReportesRDLC\ReporteViewerRDLC.aspx.designer.cs">
+      <DependentUpon>ReporteViewerRDLC.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Reportes\ReporteViewer.aspx.cs">
+      <DependentUpon>ReporteViewer.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Reportes\ReporteViewer.aspx.designer.cs">
+      <DependentUpon>ReporteViewer.aspx</DependentUpon>
+    </Compile>
     <Compile Include="Services\ArchivoService.cs" />
+    <Compile Include="SISTEMA_DE_GESTION_DIDACTICADataSet.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SISTEMA_DE_GESTION_DIDACTICADataSet.xsd</DependentUpon>
+    </Compile>
     <Compile Include="Utilidades\Encriptar.cs" />
     <Compile Include="webtoken\GenerarOnlyOfficeToken.cs" />
   </ItemGroup>
@@ -156,6 +207,7 @@
     <Content Include="Assets\img\instagram.png" />
     <Content Include="Assets\img\loginIMG1920x180-711x682.png" />
     <Content Include="Assets\img\Marca.png" />
+    <Content Include="Assets\img\NOTA.png" />
     <Content Include="Assets\img\Sin_asignaturas.png" />
     <Content Include="Assets\img\Sin_contenidos.png" />
     <Content Include="Assets\img\Taza.png" />
@@ -362,14 +414,18 @@
     <Content Include="Content\v4-shims.css" />
     <Content Include="Content\v4-shims.min.css" />
     <Content Include="Content\Views\Archivos.css" />
+    <Content Include="Content\Views\Dominios.css" />
     <Content Include="Content\Views\MatrizAsignatura.css" />
     <Content Include="Content\Views\Contenidos.css" />
+    <Content Include="Content\Views\Reporte.css" />
     <Content Include="DATABASE\001-CREAR_DB.sql" />
     <Content Include="DATABASE\002-INSERTAR_DATOS.sql" />
     <Content Include="DATABASE\003-CREAR_PROCEDURES.sql" />
     <Content Include="DATABASE\004-CREAR_VIEWS.sql" />
+    <Content Include="DATABASE\008-REPORTES.sql" />
+    <Content Include="DATABASE\007-FUNCTION.sql" />
+    <Content Include="DATABASE\006-TRIGGER.sql" />
     <Content Include="DATABASE\005-JOD.sql" />
-    <Content Include="DATABASE\006-FORMATEARDBAZURE.sql" />
     <Content Include="DATABASE\DB_SINCATALOGOS\001-CREAR_DB.sql" />
     <Content Include="DATABASE\DB_SINCATALOGOS\002-INSERTAR_DATOS.sql" />
     <Content Include="DATABASE\DB_SINCATALOGOS\003-CREAR_PROCEDURES.sql" />
@@ -380,6 +436,8 @@
     <Content Include="fonts\fontawesome-webfont.svg" />
     <Content Include="Global.asax" />
     <Content Include="Content\Site.css" />
+    <Content Include="ReportesRDLC\ReporteViewerRDLC.aspx" />
+    <Content Include="Reportes\ReporteViewer.aspx" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.esm.js" />
@@ -397,6 +455,8 @@
     <Content Include="App_Data\onlyoffice_callback_errors.log" />
     <Content Include="App_Data\onlyoffice_callback_debug.log" />
     <Content Include="Content\Views\AccionTipo.css" />
+    <Content Include="libman.json" />
+    <Content Include="Manual de usuario\Manual de Usuario.pdf" />
     <None Include="Properties\PublishProfiles\MyFirstAzureWebAppASP - Web Deploy.pubxml" />
     <None Include="Scripts\jquery-3.7.1.intellisense.js" />
     <Content Include="Scripts\DataTables\autoFill.bootstrap.js" />
@@ -605,9 +665,11 @@
     <Content Include="Scripts\Template\Selects\SelectAreas.js" />
     <Content Include="Scripts\Template\Selects\SelectAsignaturas.js" />
     <Content Include="Scripts\Template\Selects\SelectCarreras.js" />
+    <Content Include="Scripts\Template\Selects\SelectContenidosSemanas.js" />
     <Content Include="Scripts\Template\Selects\SelectDepartamentos.js" />
     <Content Include="Scripts\Template\Selects\SelectModalidad.js" />
     <Content Include="Scripts\Template\Selects\SelectPeriodos.js" />
+    <Content Include="Scripts\Template\Selects\SelectTemas.js" />
     <Content Include="Scripts\Views\Acceso.js" />
     <Content Include="Scripts\Views\AccionIntegradora_TipoEvaluacion.js" />
     <Content Include="Scripts\Views\Archivos.js" />
@@ -616,18 +678,22 @@
     <Content Include="Scripts\Views\AsignaturasAsignadas.js" />
     <Content Include="Scripts\Views\Carrera.js" />
     <Content Include="Scripts\Views\Departamento.js" />
+    <Content Include="Scripts\Views\Dominio.js" />
     <Content Include="Scripts\Views\MatrizAsignatura.js" />
     <Content Include="Scripts\Views\MatrizIntegradoraComponentes.js" />
     <Content Include="Scripts\Views\Menu.js" />
+    <Content Include="Scripts\Views\Modalidad.js" />
     <Content Include="Scripts\Views\Periodo.js" />
     <Content Include="Scripts\Views\Permisos.js" />
     <Content Include="Scripts\Views\PlanClasesDiario.js" />
     <Content Include="Scripts\Views\PlanIndividual.js" />
     <Content Include="Scripts\Views\PlanSemestral.js" />
+    <Content Include="Scripts\Views\Reporte.js" />
     <Content Include="Scripts\Views\Roles.js" />
     <Content Include="Scripts\Views\Contenidos.js" />
     <Content Include="Scripts\Views\Semanas.js" />
     <Content Include="Scripts\Views\TemasPlanSemestral.js" />
+    <Content Include="Scripts\Views\Turno.js" />
     <Content Include="Scripts\Views\UserConfig.js" />
     <Content Include="Scripts\Views\Usuarios.js" />
     <Content Include="Web.config" />
@@ -668,7 +734,6 @@
     <Content Include="Views\Archivo\GestionArchivos.cshtml" />
     <Content Include="Views\Archivo\CarpetasCompartidas.cshtml" />
     <Content Include="Views\Archivo\ArchivosCompartidos.cshtml" />
-    <Content Include="Views\Test\Index.cshtml" />
     <Content Include="Scripts\Summernote\font\summernote.eot" />
     <Content Include="Scripts\Summernote\font\summernote.hash" />
     <Content Include="Scripts\Summernote\font\summernote.ttf" />
@@ -754,12 +819,23 @@
     <Content Include="Views\Planificacion\CrearPlanDidactico.cshtml" />
     <Content Include="Views\Planificacion\TemasPlanSemestral.cshtml" />
     <Content Include="Views\Planificacion\Planificacion_Individual.cshtml" />
+    <Content Include="Views\Catalogos\Modalidad.cshtml" />
+    <Content Include="Views\Catalogos\Turno.cshtml" />
+    <Content Include="Views\Reporte\Index.cshtml" />
+    <Content Include="SISTEMA_DE_GESTION_DIDACTICADataSet.xsc">
+      <DependentUpon>SISTEMA_DE_GESTION_DIDACTICADataSet.xsd</DependentUpon>
+    </Content>
+    <None Include="SISTEMA_DE_GESTION_DIDACTICADataSet.xsd">
+      <Generator>MSDataSetGenerator</Generator>
+      <LastGenOutput>SISTEMA_DE_GESTION_DIDACTICADataSet.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </None>
+    <Content Include="SISTEMA_DE_GESTION_DIDACTICADataSet.xss">
+      <DependentUpon>SISTEMA_DE_GESTION_DIDACTICADataSet.xsd</DependentUpon>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="ARCHIVOS\" />
-    <Folder Include="Models\" />
-    <Folder Include="Views\Configuracion\" />
-    <Folder Include="Views\Controlador\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.rtl.min.css.map" />
@@ -802,6 +878,11 @@
       <Name>capa_negocio</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="ReportesRDLC\Reportes\MatrizIntegracionComponente.rdlc" />
+    <EmbeddedResource Include="ReportesRDLC\Reportes\PlanClasesDiario.rdlc" />
+    <EmbeddedResource Include="ReportesRDLC\Reportes\PlanDidacticoSemestral.rdlc" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -841,6 +922,7 @@
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.4.1.0\build\net472\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.targets'))" />
     <Error Condition="!Exists('..\packages\Microsoft.Net.Compilers.4.2.0\build\Microsoft.Net.Compilers.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.Net.Compilers.4.2.0\build\Microsoft.Net.Compilers.props'))" />
+    <Error Condition="!Exists('..\packages\Microsoft.SqlServer.Types.170.1000.7\build\net472\Microsoft.SqlServer.Types.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.SqlServer.Types.170.1000.7\build\net472\Microsoft.SqlServer.Types.props'))" />
   </Target>
   <Import Project="..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.targets" Condition="Exists('..\packages\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.1.0.0\build\Microsoft.CodeDom.Providers.DotNetCompilerPlatform.BinFix.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.

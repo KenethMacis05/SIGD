@@ -50,6 +50,44 @@ namespace capa_datos
             return lst;
         }
 
+        //Listar carreras por dominios
+        public List<CARRERA> ListarPorDominios(int UsuarioId)
+        {
+            List<CARRERA> lst = new List<CARRERA>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.conexion))
+                {
+                    SqlCommand cmd = new SqlCommand("GetCarrera", conexion);
+                    cmd.CommandType = CommandType.StoredProcedure;
+
+                    cmd.Parameters.AddWithValue("UsuarioId", UsuarioId);
+
+                    conexion.Open();
+
+                    using (SqlDataReader dr = cmd.ExecuteReader())
+                    {
+                        while (dr.Read())
+                        {
+                            lst.Add(
+                                new CARRERA
+                                {
+                                    id_carrera = Convert.ToInt32(dr["Id"]),
+                                    nombre = dr["Descripcion"].ToString(),
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error al listar los dominios por carrera: " + ex.Message);
+            }
+            return lst;
+        }
+
         //Crear carrera
         public int Crear(CARRERA carrera, out string mensaje)
         {

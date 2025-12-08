@@ -18,6 +18,12 @@ namespace capa_negocio
             return CD_Periodos.Listar();
         }
 
+        //Listar áreas de conocimiento por dominios
+        public List<PERIODO> ListarPorDominios(int UsuarioId)
+        {
+            return CD_Periodos.ListarPorDominios(UsuarioId);
+        }
+
         //Crear periodo
         public int Crear(PERIODO periodo, out string mensaje)
         {

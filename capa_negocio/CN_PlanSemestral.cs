@@ -26,6 +26,20 @@ namespace capa_negocio
             return planesSemestrales;
         }
 
+        public List<PLANDIDACTICOSEMESTRAL> BuscarPlanSemestral(int id_usuario, int periodo, out string mensaje)
+        {
+            mensaje = string.Empty;
+            var planesSemestrales = CD_PlanSemestral.BuscarPlanSemestral(id_usuario, periodo, out mensaje);
+
+            // Solo agregar la propiedad encriptada a cada objeto existente
+            foreach (var planSemestral in planesSemestrales)
+            {
+                planSemestral.id_encriptado = CN_Recursos.EncryptValue(planSemestral.id_plan_didactico.ToString());
+            }
+
+            return planesSemestrales;
+        }
+
         public PLANDIDACTICOSEMESTRAL ObtenerPlanSemestralPorId(string idEncriptado, int id_usuario, out string mensaje)
         {
             int id = Convert.ToInt32(new CN_Recursos().DecryptValue(idEncriptado));

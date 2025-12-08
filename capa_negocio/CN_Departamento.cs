@@ -18,6 +18,12 @@ namespace capa_negocio
             return CD_Departamento.Listar();
         }
 
+        //Listar departamentos por dominios
+        public List<DEPARTAMENTO> ListarPorDominios(int UsuarioId)
+        {
+            return CD_Departamento.ListarPorDominios(UsuarioId);
+        }
+
         //Crear departamento
         public int Crear(DEPARTAMENTO departamento, out string mensaje)
         {

@@ -240,17 +240,11 @@ namespace capa_negocio
             return eliminado ? 1 : 0;
         }
 
-        public List<MATRIZASIGNATURA> BuscarMatriz(string usuario, string nombres, int periodo, int id_usuario, out string mensaje)
+        public List<MATRIZASIGNATURA> BuscarMatriz(int periodo, int id_usuario, out string mensaje)
         {
             mensaje = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(usuario) && string.IsNullOrWhiteSpace(nombres))
-            {
-                mensaje = "Por favor, complete al menos un campo de búsqueda.";
-                return new List<MATRIZASIGNATURA>();
-            }
-
-            return CD_MatrizAsignatura.BuscarMatrizAsignatura(usuario, nombres, id_usuario, periodo, out mensaje);
+            return CD_MatrizAsignatura.BuscarMatrizAsignatura(id_usuario, periodo, out mensaje);
         }
     }
 }

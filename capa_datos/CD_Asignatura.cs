@@ -12,7 +12,7 @@ namespace capa_datos
     public class CD_Asignatura
     {
         //Listar asignaturas
-        public List<ASIGNATURA> Listar()
+        public List<ASIGNATURA> Listar(bool soloIntegradoras = false)
         {
             List<ASIGNATURA> lst = new List<ASIGNATURA>();
 
@@ -22,6 +22,7 @@ namespace capa_datos
                 {
                     SqlCommand cmd = new SqlCommand("usp_LeerAsignaturas", conexion);
                     cmd.CommandType = CommandType.StoredProcedure;
+                    cmd.Parameters.AddWithValue("SoloIntegradoras", soloIntegradoras ? 1 : 0);
 
                     conexion.Open();
 
