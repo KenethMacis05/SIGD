@@ -133,13 +133,13 @@ namespace capa_negocio
                                     <img src='{urlBase}/Assets/img/facebook.png' alt='Facebook' style='width: 40px; height: 40px;'>
                                 </a>
                                  <a href='https://x.com/UNANManagua' style='margin: 0 10px; text-decoration: none;'>
-                                    <img src='{urlBase}/Assets/img/x.png' alt='Twitter' style='width: 40px; height: 40px;'>
+                                    <img src='~/Assets/img/x.png' alt='Twitter' style='width: 40px; height: 40px;'>
                                 </a>
                                 <a href='https://www.instagram.com/unan.managua' style='margin: 0 10px; text-decoration: none;'>
-                                    <img src='{urlBase}/Assets/img/instagram.png' alt='Instagram' style='width: 40px; height: 40px;'>
+                                    <img src='/Assets/img/instagram.png' alt='Instagram' style='width: 40px; height: 40px;'>
                                 </a>
                                 <a href='https://www.youtube.com/channel/UCaAtEPINZNv738R3vZI2Kjg' style='margin: 0 10px; text-decoration: none;'>
-                                    <img src='https://sigd-f0enhxetceeca7du.canadacentral-01.azurewebsites.net/Assets/img/youtube.png' alt='YouTube' style='width: 40px; height: 40px;'>
+                                    <img src='./Assets/img/youtube.png' alt='YouTube' style='width: 40px; height: 40px;'>
                                 </a>
                             </div>
                             <p style='text-align: center; margin-top: 30px; font-size: 14px; color: #666;'>
@@ -260,7 +260,7 @@ namespace capa_negocio
                             </tr>
                         </table>
                         <p style='text-align: center;'>
-                            <a href='https://myfirstazurewebappasp-gee5asfwaufdawcs.canadacentral-01.azurewebsites.net' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
+                            <a href='{urlBase}' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
                                 Iniciar Sesión
                             </a>
                         </p>
@@ -389,7 +389,7 @@ namespace capa_negocio
                             </tr>
                         </table>
                         <p style='text-align: center;'>
-                            <a href='https://myfirstazurewebappasp-gee5asfwaufdawcs.canadacentral-01.azurewebsites.net' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
+                            <a href='{urlBase}' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
                                 Iniciar Sesión
                             </a>
                         </p>

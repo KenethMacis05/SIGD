@@ -198,7 +198,7 @@ namespace capa_negocio
                             Puedes acceder a esta archivo y gestionar tus archivos iniciando sesión en el sistema.
                         </p>
                         <p style='text-align: center;'>
-                            <a href='https://myfirstazurewebappasp-gee5asfwaufdawcs.canadacentral-01.azurewebsites.net' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
+                            <a href='{urlBase}' style='display: inline-block; background-color: #007BFF; color: #fff; text-decoration: none; padding: 15px 30px; border-radius: 5px; font-size: 16px;'>
                                 Ir al Sistema
                             </a>
                         </p>
